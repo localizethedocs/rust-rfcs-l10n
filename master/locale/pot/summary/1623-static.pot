@@ -1,0 +1,205 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1623-static.md:1
+msgid "Feature Name: static_lifetime_in_statics"
+msgstr ""
+
+#: src/1623-static.md:2
+msgid "Start Date: 2016-05-20"
+msgstr ""
+
+#: src/1623-static.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1623](https://github.com/rust-lang/rfcs/pull/1623)"
+msgstr ""
+
+#: src/1623-static.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#35897](https://github.com/rust-lang/rust/"
+"issues/35897)"
+msgstr ""
+
+#: src/1623-static.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1623-static.md:9
+msgid "Let's default lifetimes in static and const declarations to `'static`."
+msgstr ""
+
+#: src/1623-static.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1623-static.md:14
+msgid ""
+"Currently, having references in `static` and `const` declarations is "
+"cumbersome due to having to explicitly write `&'static ..`. Also the long "
+"lifetime name causes substantial rightwards drift, which makes it hard to "
+"format the code to be visually appealing."
+msgstr ""
+
+#: src/1623-static.md:19
+msgid "For example, having a `'static` default for lifetimes would turn this:"
+msgstr ""
+
+#: src/1623-static.md:23
+msgid "into this:"
+msgstr ""
+
+#: src/1623-static.md:28
+msgid ""
+"The type declaration still causes some rightwards drift, but at least all "
+"the contained information is useful. There is one exception to the rule: "
+"lifetime elision for function signatures will work as it does now (see "
+"example below)."
+msgstr ""
+
+#: src/1623-static.md:32
+msgid "Detailed design"
+msgstr ""
+
+#: src/1623-static.md:35
+msgid ""
+"The same default that RFC #599 sets up for trait object is to be used for "
+"statics and const declarations. In those declarations, the compiler will "
+"assume `'static` when a lifetime is not explicitly given in all reference "
+"lifetimes, including reference lifetimes obtained via generic substitution."
+msgstr ""
+
+#: src/1623-static.md:40
+msgid ""
+"Note that this RFC does not forbid writing the lifetimes, it only sets a "
+"default when no is given. Thus the change will not cause any breakage and is "
+"therefore backwards-compatible. It's also very unlikely that implementing "
+"this RFC will restrict our design space for `static` and `const` definitions "
+"down the road."
+msgstr ""
+
+#: src/1623-static.md:46
+msgid ""
+"The `'static` default does _not_ override lifetime elision in function "
+"signatures, but work alongside it:"
+msgstr ""
+
+#: src/1623-static.md:50
+msgid "// for<'a> fn(&'a u32) -> &'a u32\n"
+msgstr ""
+
+#: src/1623-static.md:51
+msgid "// &'static for<'a> Fn(&'a u32) -> &'a u32\n"
+msgstr ""
+
+#: src/1623-static.md:54
+msgid ""
+"With generics, it will work as anywhere else, also differentiating between "
+"function lifetimes and reference lifetimes. Notably, writing out the "
+"lifetime is still possible."
+msgstr ""
+
+#: src/1623-static.md:60
+msgid "// &'static SomeObject<'static>\n"
+msgstr ""
+
+#: src/1623-static.md:61
+msgid "// &'static for<'a> SomeObject<'a>\n"
+msgstr ""
+
+#: src/1623-static.md:70
+msgid "// &'static SomeStruct<'static, 'b> for any 'b\n"
+msgstr ""
+
+#: src/1623-static.md:73
+msgid ""
+"It will still be an error to omit lifetimes in function types _not_ eligible "
+"for elision, e.g."
+msgstr ""
+
+#: src/1623-static.md:77
+msgid ""
+"//~ ERROR: missing lifetimes for\n"
+"                                               //^ &Foo, &Bar, &Baz\n"
+msgstr ""
+
+#: src/1623-static.md:81
+msgid ""
+"This ensures that the really hairy cases that need the full type documented "
+"aren't unduly abbreviated."
+msgstr ""
+
+#: src/1623-static.md:84
+msgid ""
+"It should also be noted that since statics and constants have no `self` "
+"type, elision will only work with distinct input lifetimes or one "
+"input+output lifetime."
+msgstr ""
+
+#: src/1623-static.md:88
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1623-static.md:91
+msgid "There are no known drawbacks to this change."
+msgstr ""
+
+#: src/1623-static.md:93
+msgid "Alternatives"
+msgstr ""
+
+#: src/1623-static.md:96
+msgid ""
+"Leave everything as it is. Everyone using static references is annoyed by "
+"having to add `'static` without any value to readability. People will resort "
+"to writing macros if they have many resources."
+msgstr ""
+
+#: src/1623-static.md:99
+msgid ""
+"Write the aforementioned macro. This is inferior in terms of UX. Depending "
+"on the implementation it may or may not be possible to default lifetimes in "
+"generics."
+msgstr ""
+
+#: src/1623-static.md:102
+msgid ""
+"Make all non-elided lifetimes `'static`. This has the drawback of creating "
+"hard-to-spot errors (that would also probably occur in the wrong place) and "
+"confusing users."
+msgstr ""
+
+#: src/1623-static.md:105
+msgid ""
+"Make all non-declared lifetimes `'static`. This would not be backwards "
+"compatible due to interference with lifetime elision."
+msgstr ""
+
+#: src/1623-static.md:107
+msgid ""
+"Infer types for statics. The absence of types makes it harder to reason "
+"about the code, so even if type inference for statics was to be implemented, "
+"defaulting lifetimes would have the benefit of pulling the cost-benefit "
+"relation in the direction of more explicit code. Thus it is advisable to "
+"implement this change even with the possibility of implementing type "
+"inference later."
+msgstr ""
+
+#: src/1623-static.md:114
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1623-static.md:117
+msgid ""
+"Are there third party Rust-code handling programs that need to be updated to "
+"deal with this change?"
+msgstr ""

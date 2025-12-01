@@ -1,0 +1,2003 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3654-return-type-notation.md:1
+msgid "Return type notation (RTN) in bounds and where-clauses"
+msgstr ""
+
+#: src/3654-return-type-notation.md:3
+msgid "Feature Name: `return_type_notation`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:4
+msgid "Start Date: 2024-06-04"
+msgstr ""
+
+#: src/3654-return-type-notation.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#3654](https://github.com/rust-lang/rfcs/pull/3654)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:6
+msgid ""
+"Tracking Issue: [rust-lang/rust#109417](https://github.com/rust-lang/rust/"
+"issues/109417)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:8
+msgid "Summary"
+msgstr ""
+
+#: src/3654-return-type-notation.md:11
+msgid ""
+"Return type notation (RTN) gives a way to reference or bound the type "
+"returned by a trait method. The new bounds look like `T: Trait<method(..): "
+"Send>` or `T::method(..): Send`. The primary use case is to add bounds such "
+"as `Send` to the futures returned by `async fn`s in traits and `-> impl "
+"Future` functions, but they work for any trait function defined with return-"
+"position impl trait (e.g., `where T: Factory<widgets(..): "
+"DoubleEndedIterator>` would also be valid)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:13
+msgid ""
+"This RFC proposes a new kind of type written `<T as Trait>::method(..)` (or "
+"`T::method(..)` for short). RTN refers to \"the type returned by invoking "
+"`method` on `T`\"."
+msgstr ""
+
+#: src/3654-return-type-notation.md:15
+msgid ""
+"To keep this RFC focused, it only covers usage of RTN as the `Self` type of "
+"a bound or where-clause. The expectation is that, after accepting this RFC, "
+"we will gradually expand RTN usage to other places as covered under [Future "
+"Possibilities](#future-possibilities). As a notable example, supporting RTN "
+"in struct field types would allow constructing types that store the results "
+"of a call to a trait `-> impl Trait` method, making them [more suitable for "
+"use in public APIs](https://rust-lang.github.io/api-guidelines/future-"
+"proofing.html)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:17
+msgid "Examples of RTN usage allowed by this RFC include:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:19
+msgid "`where <T as Trait>::method(..): Send`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:20
+msgid "(the base syntax)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:21
+msgid "`where T: Trait<method(..): Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:22
+msgid ""
+"(sugar for the base syntax with the (recently stabilized) [associated type "
+"bounds](https://github.com/rust-lang/rust/issues/52662))"
+msgstr ""
+
+#: src/3654-return-type-notation.md:23
+msgid "`where T::method(..): Send`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:24
+msgid "(sugar where `Trait` is inferred from the compiler)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:25
+msgid "`dyn Trait<method(..): Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:26
+msgid "(`dyn` types take lists of bounds)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:27
+msgid "`impl Trait<method(..): Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:28
+msgid "(...as do `impl` types)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:30
+msgid "Motivation"
+msgstr ""
+
+#: src/3654-return-type-notation.md:33
+msgid ""
+"Rust now supports async fns and `-> impl Trait` in traits (acronymized as "
+"AFIT and RPITIT, respectively), but we currently lack the ability for users "
+"to declare additional bounds on the values returned by such functions. This "
+"is often referred to as the [Send bound problem](https://smallcultfollowing."
+"com/babysteps/blog/2023/02/01/async-trait-send-bounds-part-1-intro/), "
+"because the most acute manifestation is the inability to require that an "
+"`async fn` returns a `Send` future, but it is actually more general than "
+"both async fns and the `Send` trait (as discussed below)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:37
+msgid ""
+"The [send bound problem](https://smallcultfollowing.com/babysteps/"
+"blog/2023/02/01/async-trait-send-bounds-part-1-intro/) blocks an "
+"interoperable async ecosystem"
+msgstr ""
+
+#: src/3654-return-type-notation.md:39
+msgid ""
+"To create an interoperable async ecosystem, we need the ability to write a "
+"single trait definition that can be used across all styles of async "
+"executors (workstealing, thread-per-core, single-threaded, embedded, etc). "
+"One example of such a trait is the `Service` trait found in the `tower` "
+"crate, which defines a generic \"service\" that can process a `Request` and "
+"yield some `Response`. The [current `Service` trait](https://docs.rs/tower/"
+"latest/tower/trait.Service.html) is defined with a custom `poll` method and "
+"explicit usage of `Pin`, but the goal is to be able to define `Service` like "
+"so:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:45 src/3654-return-type-notation.md:110
+#: src/3654-return-type-notation.md:241
+msgid "// Invoke the service.\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:50
+msgid ""
+"This `Service` trait can then be used to define generic middleware that "
+"operate over any service. For example, we could write a `LogService` that "
+"wraps any service and emit logs to stderr:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:63
+msgid "\"{request:?}\""
+msgstr ""
+
+#: src/3654-return-type-notation.md:68
+msgid "This definition today works only in some executors"
+msgstr ""
+
+#: src/3654-return-type-notation.md:70
+msgid ""
+"Defining `Service` as shown above works fine in a thread-per-core or single-"
+"threaded executor, where spawned tasks do not move between threads. But it "
+"can encounter compilation errors with a work-stealing executor, such as the "
+"default Tokio executor, where all spawned futures must be `Send`. Consider "
+"this example:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:78
+msgid "// <--- Error\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:83
+msgid ""
+"This code [will not compile](https://play.rust-lang.org/?"
+"version=nightly&mode=debug&edition=2021&gist=cc756422487005c51b65a9e53df2a7b9) "
+"because the future returned by invoking `S::call(..)` is not known to be "
+"`Send`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:87
+msgid ""
+"```\n"
+"error: future cannot be sent between threads safely\n"
+"   --> src/lib.rs:6:5\n"
+"    |\n"
+"6   | /     tokio::spawn(async move {\n"
+"7   | |         service.call(()).await // <--- Error\n"
+"8   | |     }).await.unwrap()\n"
+"    | |______^ future created by async block is not `Send`\n"
+"    |\n"
+"    = help: within `{async block@src/lib.rs:6:18: 8:6}`, the trait `Send` is "
+"not implemented for `impl Future<Output = <S as Service<()>>::Response>`, "
+"which is required by `{async block@src/lib.rs:6:18: 8:6}: Send`\n"
+"note: future is not `Send` as it awaits another future which is not `Send`\n"
+"   --> src/lib.rs:7:9\n"
+"    |\n"
+"7   |         service.call(()).await // <--- Error\n"
+"    |         ^^^^^^^^^^^^^^^^ await occurs here on type `impl Future<Output "
+"= <S as Service<()>>::Response>`, which is not `Send`\n"
+"```"
+msgstr ""
+
+#: src/3654-return-type-notation.md:104
+msgid ""
+"The only way today to make this code compile is to modify the `Service` "
+"trait definition to _always_ return a `Send` future, like so (and in fact if "
+"you [try the above example on the playground](https://play.rust-lang.org/?"
+"version=nightly&mode=debug&edition=2021&gist=cc756422487005c51b65a9e53df2a7b9), "
+"you will see the compiler suggests a change like this):"
+msgstr ""
+
+#: src/3654-return-type-notation.md:118
+msgid ""
+"But this `SendService` trait is too strong for use outside a work-stealing "
+"setup. This leaves generic middleware like the `LogService` struct we saw "
+"earlier in a bind: should they use `Service` or `SendService`? Really, we "
+"want a single single `Service` trait that can be used in both contexts."
+msgstr ""
+
+#: src/3654-return-type-notation.md:120
+msgid "Comparison to an analogous problem with `IntoIterator`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:122
+msgid ""
+"It is useful to compare this situation with analogous scenarios that arise "
+"elsewhere in Rust, such as with associated types. Imagine a function that "
+"takes an `I: IntoIterator` and which wishes to make use of the returned "
+"iterator in a separate thread:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:128
+msgid "// <-- Error!\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:133
+msgid ""
+"This code will also [not compile](https://play.rust-lang.org/?"
+"version=stable&mode=debug&edition=2021&gist=ce95a4a98ce2dc3edd6ef6b1e49533c4):"
+msgstr ""
+
+#: src/3654-return-type-notation.md:159
+msgid ""
+"There are two ways the function `into_iter_example` could be made to compile:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:161
+msgid ""
+"Modify the `IntoIterator` trait to require that the target iterator type is "
+"_always_ `Send`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:162
+msgid "Modify the function to have a where-clause `I::IntoIter: Send`."
+msgstr ""
+
+#: src/3654-return-type-notation.md:164
+msgid ""
+"The 1st option is less flexible but more convenient; it is inappropriate in "
+"a highly generic trait like `IntoIterator` which is used in a number of "
+"scenarios. It would be fine for an application- or library-specific crate "
+"that is only used in narrow circumstances. Referring back to the compiler's "
+"error message, you can see that an additional where-clause is exactly what "
+"it suggested."
+msgstr ""
+
+#: src/3654-return-type-notation.md:166
+msgid ""
+"This is the challenge: **Rust does not currently have a way to write the "
+"equivalent of `where I::IntoIter: Send` for the futures returned by `async "
+"fn` (or the results of `-> impl Trait` methods in traits).** This creates a "
+"gap between the first `Service` example, which can only be resolved by "
+"modifying the trait, and `IntoIterator`, which can be resolved either by "
+"modifying the trait or by adding a where-clause to the function, whichever "
+"is more appropriate."
+msgstr ""
+
+#: src/3654-return-type-notation.md:168
+msgid ""
+"Return type notation (RTN) permits the return type of AFIT and RPITIT to be "
+"bounded, closing the gap"
+msgstr ""
+
+#: src/3654-return-type-notation.md:170
+msgid ""
+"The core feature proposed in this RFC is the ability to write a bound that "
+"bounds the return type of an AFIT/RPITIT trait method. This allows the "
+"`spawn_call` definition to be amended to require that `call()` returns a "
+"`Send` future:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:178
+msgid "// \"The method `call` returns a `Send` future.\"\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:183 src/3654-return-type-notation.md:273
+msgid "// <--- OK!\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:188
+msgid ""
+"A variant of the proposal in this RFC is already implemented, so you can "
+"[try this example on the playground and see that it works](https://play.rust-"
+"lang.org/?"
+"version=nightly&mode=debug&edition=2021&gist=46ba0640607762280ae2380ff0167edf)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:190
+msgid "RTN is useful for more than `Send` bounds"
+msgstr ""
+
+#: src/3654-return-type-notation.md:192
+msgid ""
+"RTN is useful for more than `Send` bounds. For example, consider the trait "
+"`Factory`, which contains a method that returns an `impl Iterator`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:200
+msgid ""
+"Now imagine that there are many `Factory` implementations, but only some of "
+"them return iterators that support `DoubleEndedIterator`. Making use of RTN, "
+"we can write a \"reverse factory\" that can be used on precisely those "
+"instances ([playground](https://play.rust-lang.org/?"
+"version=nightly&mode=debug&edition=2021&gist=6d45f55355188001ea6499314ce30b4b)):"
+msgstr ""
+
+#: src/3654-return-type-notation.md:214
+msgid "//                     ^^^ requires that the iterator be double-ended\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:219
+msgid "RTN supports convenient trait aliases"
+msgstr ""
+
+#: src/3654-return-type-notation.md:221
+msgid ""
+"The async WG conducted several [case studies](https://rust-lang.github.io/"
+"async-fundamentals-initiative/evaluation/case-studies.html) to test the "
+"usefulness of RTN. We found that RTN is very important for using async fn in "
+"practice, but we also found that RTN alone can be repetitive in traits that "
+"have many methods."
+msgstr ""
+
+#: src/3654-return-type-notation.md:225
+msgid ""
+"We expect most users in the wild to define \"trait aliases\" to indicate "
+"cases where all methods in a trait are `Send` (and perhaps other traits). "
+"The (rust-lang supported) [trait-variant](https://github.com/rust-lang/impl-"
+"trait-utils) crate can automate this process. For example, the following "
+"code creates a `SendService` alias, which is automatically implemented by "
+"any type `T: Service` where `T: Send` and `T::call(..): Send`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:231
+msgid ""
+"//                    -----------  ----\n"
+"//                    |            |\n"
+"//        name of the trait alias  |\n"
+"//                                 |\n"
+"//                    additional bound that must be met\n"
+"//                    by async or `-> impl Trait` methods\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:246
+msgid ""
+"The expansion of this macro use RTN to create a trait that both (1) implies "
+"a `Service` whose methods return `Send` futures and (2) which is "
+"automatically implemented for all `Service` types whose methods are `Send` "
+"(this expansion could be altered to make use of [true trait aliases](https://"
+"github.com/rust-lang/rust/issues/41517) once those are stabilized):"
+msgstr ""
+
+#: src/3654-return-type-notation.md:249
+msgid "// a `SendService` is...\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:250
+msgid "// ...a `Service`...\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:252
+msgid ""
+"// ...where `call` returns\n"
+"                        // a `Send` future...\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:255
+msgid "// ...and which is itself `Send`.\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:264
+msgid "The function `spawn_call` can then be written as follows:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:270
+msgid "// ^^^^^^^^^^^ use the alias\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:278
+msgid ""
+"This trait alias setup means that users (and middleware like `LogService`) "
+"**always** write impls for `Service`. Functions that consume a service can "
+"choose to use `SendService` if they require `Send` bounds. Without RTN, the "
+"best that can be done is to have two distinct traits, which forces "
+"middleware like `LogService` to choose which they will implement (as "
+"previously discussed)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:280
+msgid ""
+"(This RFC is not advocating for a particular naming convention. We use "
+"`Service` and `SendService` to make clear that there is a base trait to "
+"which additional bounds are being added. For Tower specifically, based on "
+"discussion with Tokio team, the most likely final setup is to call the base "
+"trait `LocalService` and the `Send`\\-variant simply `Service`; this would "
+"mean that users would implement `LocalService` always. The [future "
+"directions](#future-directions) includes some ways to make the "
+"`LocalService`/`Service` convention more transparent for users.)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:282
+msgid ""
+"Expected usage pattern: \"Trait aliases\" for the common cases, explicit RTN "
+"for the exceptions"
+msgstr ""
+
+#: src/3654-return-type-notation.md:284
+msgid ""
+"Our expectation is that most traits will make use of `trait_variant` to "
+"define trait aliases like `SendService`. This provides the best experience "
+"for trait consumers, since they can conveniently bound all methods in the "
+"trait at once."
+msgstr ""
+
+#: src/3654-return-type-notation.md:286
+msgid ""
+"However, even when such an alias exists, there are times when trait "
+"consumers may not want to use them. Consider a trait like `Backend`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:296
+msgid ""
+"While `SendBackend` may be convenient most of the time, it is also stricter "
+"than necessary for functions that only invoke one of `get` or `put`. Now "
+"consider two backend types, `B1` and `B2`, where `B1` always returns `Send` "
+"futures, but only `B2::put(..)` operation on `B2` is `Send`, because `B2::"
+"get(..)` makes use of `Rc` for caching purposes. In that case, a generic "
+"function with a bound like `Backend<put(..): Send>` could be used on both "
+"`B1` and `B2`."
+msgstr ""
+
+#: src/3654-return-type-notation.md:298
+msgid "Design axioms"
+msgstr ""
+
+#: src/3654-return-type-notation.md:300
+msgid ""
+"**Minimal bounds in trait defintion, consumers apply the bounds they need.** "
+"Rust's typical pattern is to have traits with minimal bounds (e.g., "
+"`IntoIterator` declares only that its `IntoIter` type will be an `Iterator`) "
+"and then to have consumers apply additional bounds when they need them (e."
+"g., that `IntoIter: DoubleEndedIterator`). This makes for widely reusable "
+"traits."
+msgstr ""
+
+#: src/3654-return-type-notation.md:301
+msgid ""
+"**Just say \"async fn\".** We want simply writing `async fn foo(&self)` to "
+"result in a maximally reusable trait (just as it results in a maximally "
+"reusable free function today); \"best practice\" trait definitions should "
+"still be simple to read and should not limit the trait's consumers or future "
+"uses."
+msgstr ""
+
+#: src/3654-return-type-notation.md:302
+msgid ""
+"**Support both async fn and `-> impl Trait`.** The most pressing user need "
+"is for send bounds on async fns, but we want to add a primitive that will "
+"also address the limitations of `-> impl Trait` methods (both in traits and, "
+"eventually, outside of them)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:304
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3654-return-type-notation.md:307
+msgid ""
+"Async functions can be used in many ways. The most common configuration is "
+"to use a _work stealing_ setup, in which spawned tasks may migrate between "
+"threads. In this case, all futures have to be `Send` to ensure that this "
+"migration is safe. But many applications prefer to use a _thread-per-core_ "
+"setup, in which tasks, once spawned, never move to another thread (one "
+"important special case is where the entire application runs on a single "
+"thread to begin with, common in embedded environments but also in e.g. "
+"Google's Fuchsia operating system)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:309
+msgid ""
+"For the most part, async functions today do not declare whether they are "
+"`Send` explicitly. Instead, when a future `F` is spawned on a multithreaded "
+"executor, the compiler determines whether it implements `Send`. So long as "
+"`F` results from an `async fn` that only calls other `async fn`s, the "
+"compiler can analyze the full range of possible executions. But there are "
+"limitations, especially around calls to async trait methods like `f."
+"method()`. If the type of `f` is either a generic type or a `dyn` trait, the "
+"compiler cannot determine which impl will be used and hence cannot analyze "
+"the function body to see if it is `Send`. This can result in compilation "
+"errors."
+msgstr ""
+
+#: src/3654-return-type-notation.md:311
+msgid "Example: `HealthCheck` and `SendHealthCheck`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:313
+msgid ""
+"For traits whose futures may or may not be `Send`, the recommend pattern is "
+"to leverage the (rust-lang provided) `trait_variant` crate, which can "
+"automatically declare two versions of the trait. The default trait, "
+"`HealthCheck`, returns a future from each method; the alias "
+"`SendHealthCheck` is used to indicate those cases where all futures are "
+"known to be `Send`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:324
+msgid "Most code can reference `HealthCheck` directly"
+msgstr ""
+
+#: src/3654-return-type-notation.md:326
+msgid ""
+"The `HealthCheck` trait can now be implemented normally. This includes "
+"cases, like `DummyCheck`, where the returned future will always be `Send`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:341
+msgid ""
+"But also cases like `LogCheck`, which return a `Send` future if and only if "
+"their generic type argument returns a `Send` future:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:359
+msgid "Generic code that needs `Send` can use `SendHealthCheck`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:361
+msgid ""
+"When writing generic functions that spawn tasks, invoking async functions "
+"can lead to compilation failures:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:370
+msgid ""
+"//             ----- Error: Returned future must\n"
+"            //             be Send because this code runs.\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:378
+msgid ""
+"//     ----- Error: Returned future must be Send\n"
+"        //           because this code runs.\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:384
+msgid ""
+"The problem is that `tokio::spawn` requires a `Send` future, but the future "
+"returned by `health_check.check` is not guaranteed to be `Send`. To address "
+"this, refall that the `HealthCheck` trait also used the `trait_variant::"
+"make` macro to create an alias, `SendHealthCheck`, that required all futures "
+"to be `Send`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:393
+msgid ""
+"Therefore you can change the `HC: HealthCheck` bound to `HC: "
+"SendHealthCheck`, the alias that requires all of its futures to be `Send`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:405
+msgid "Bounding specific methods"
+msgstr ""
+
+#: src/3654-return-type-notation.md:407
+msgid ""
+"Trait aliases like `SendHealthCheck` require all the async methods in the "
+"trait to return a `Send` future. Sometimes that is too strict. For example, "
+"the following function spawns a task to shutdown the server:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:415
+msgid "//  --------------- stricter than necessary\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:423
+msgid ""
+"Because `spawn_shutdown` only invokes `shutdown`, using `SendHealthCheck` is "
+"stricter than necessary. It may be that there are types where the `check` "
+"method does not return a `Send` future but `shutdown` does. In this case, "
+"you can write a bound that specifically applies to the future returned by "
+"the `shutdown()` method, like so:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:432
+msgid "//              ------------------ \"just right\"\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:440
+msgid ""
+"The `shutdown(..)` notation acts like an associated type referring to the "
+"return type of the method. The bound `HC: HealthCheck<shutdown(..): Send>` "
+"indicates that the `shutdown` method, regardless of what arguments it is "
+"given, will return a `Send` future. These bounds do not have to be written "
+"in the `HealthCheck` trait, it could also be written as follows:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:453
+msgid "Guidelines and best practices"
+msgstr ""
+
+#: src/3654-return-type-notation.md:455
+msgid "Authoring async traits"
+msgstr ""
+
+#: src/3654-return-type-notation.md:457
+msgid ""
+"When defining an async trait (a trait with async functions), best practice "
+"is to define a \"send variant\" with the `trait_variant` crate:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:467
+msgid ""
+"Defining a \"send alias\" in this way has advantages for users of your trait:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:469
+msgid ""
+"Referencing `T: SendMyTrait` is shorter than using RTN if there are multiple "
+"functions"
+msgstr ""
+
+#: src/3654-return-type-notation.md:470
+msgid "(compare to `T: Send + Mytrait<method1(..): Send, method2(..): Send>`)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:471
+msgid "Referencing `T: SendMyTrait` is more forwards compatible:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:472
+msgid ""
+"If you add a new method to your trait (with a default impl), all users of "
+"the send alias will be able to call this new method. Users that have named "
+"individual methods will not (on the flip side)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:474
+msgid ""
+"But defining a \"send alias\" in this way comes with obligations for you:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:476
+msgid ""
+"If you add a new default method to your trait, it must be \"Send-"
+"preserving\" (meaning that it will be `Send` if other functions return "
+"`Send` futures)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:477
+msgid ""
+"_Why?_ If there is an existing function that requires `T: SendMyTrait` for "
+"some type `T`, then this must remain true even when `MyTrait` grows a new "
+"(defaulted) method, or else you will have broken your downstream clients."
+msgstr ""
+
+#: src/3654-return-type-notation.md:478
+msgid ""
+"On the flip side, if you don't define an alias, you can add new defaulted "
+"methods that are not Send. This won't break downstream crates but neither "
+"will they be able to use them."
+msgstr ""
+
+#: src/3654-return-type-notation.md:480
+msgid "Using async traits"
+msgstr ""
+
+#: src/3654-return-type-notation.md:482
+msgid ""
+"When using a trait `MyTrait` that defines a sendable alias `SendMyTrait`..."
+msgstr ""
+
+#: src/3654-return-type-notation.md:484
+msgid ""
+"Implement `MyTrait` directly. Your type will implement `SendMyTrait` "
+"automatically if appropriate."
+msgstr ""
+
+#: src/3654-return-type-notation.md:485
+msgid ""
+"Prefer `T: SendMyTrait` over a more explicit, method-by-method bound like "
+"`T: MyTrait<method1(..): Send, method2(..): Send>` _unless you specifically "
+"want to \"opt-out\" from requiring a particular method is `Send`._"
+msgstr ""
+
+#: src/3654-return-type-notation.md:486
+msgid ""
+"Using the alias is shorter, but it also means that if the trait grows new "
+"default methods, they will be included in the alias by default, allowing you "
+"to call them."
+msgstr ""
+
+#: src/3654-return-type-notation.md:488
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3654-return-type-notation.md:491
+msgid "Background and running examples"
+msgstr ""
+
+#: src/3654-return-type-notation.md:493
+msgid "The `Widgets` trait"
+msgstr ""
+
+#: src/3654-return-type-notation.md:495
+msgid ""
+"Throughout this section we will make use of the `Widgets` trait as a simple "
+"running example."
+msgstr ""
+
+#: src/3654-return-type-notation.md:503
+msgid "Background: desugaring to associated types"
+msgstr ""
+
+#: src/3654-return-type-notation.md:505
+msgid ""
+"Per [RFC 3425](https://github.com/rust-lang/rfcs/pull/3425), the return-"
+"position `impl Trait` types that appear in `Widgets` and `Log` are desugared "
+"by the compiler into generic associated types, roughly as follows:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:510
+msgid "// desugared\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:516
+msgid ""
+"These desugarings are not exposed to users, so the associated types "
+"`$Widgets` and `$Log` are not directly nameable, but we will use it to "
+"define the semantics of Return Type Notation."
+msgstr ""
+
+#: src/3654-return-type-notation.md:519
+msgid "Grammar"
+msgstr ""
+
+#: src/3654-return-type-notation.md:521
+msgid "Return type notation"
+msgstr ""
+
+#: src/3654-return-type-notation.md:523
+msgid ""
+"Return Type Notation extends the type grammar roughly as follows, where `?` "
+"indicates an optional nonterminal and `,*` indicates a comma separated list. "
+"These changes permit `where T::method(..): Send`."
+msgstr ""
+
+#: src/3654-return-type-notation.md:527
+msgid ""
+"```ebnf\n"
+"Type = i32\n"
+"     | u32\n"
+"     | ...\n"
+"     | Type \"::\" AssociatedTypeName\n"
+"     | \"<\" Type as TraitName Generics? \">\" \"::\" AssociatedTypeName\n"
+"     | ...\n"
+"     | Type \"::\" MethodName \"(\" \"..\" \")\" // <--- new\n"
+"     | \"<\" Type as TraitName Generics? \">\" \"::\" MethodName \"(\" \".."
+"\" \")\" // <--- new\n"
+"\n"
+"Generics = \"<\" Generic,* \">\"\n"
+"Generic = Type | Lifetime | ...\n"
+"```"
+msgstr ""
+
+#: src/3654-return-type-notation.md:541 src/3654-return-type-notation.md:560
+msgid "Examples: given the `Widgets` trait defined earlier in this section..."
+msgstr ""
+
+#: src/3654-return-type-notation.md:543
+msgid ""
+"`T::widgets(..)` is a valid RTN that refers to \"`widgets` invoked with any "
+"arguments\""
+msgstr ""
+
+#: src/3654-return-type-notation.md:544
+msgid ""
+"`<T as Widgets>::widgets(..)` is a valid RTN that refers to \"`widgets` "
+"invoked with any arguments\""
+msgstr ""
+
+#: src/3654-return-type-notation.md:546
+msgid ""
+"To support the `()` notation for `Fn` trait bounds (e.g., `T: Fn(u8)`), the "
+"Rust grammar already permits `T::method_name(T0, T1)` to be parsed as a type "
+"([example](https://play.rust-lang.org/?"
+"version=nightly&mode=debug&edition=2021&gist=354ec7908a44619145d2ce8d5296a4a2)), "
+"but those examples will result in a compiler error in later phases. This RFC "
+"requires them to be interpreted as RTN types instead."
+msgstr ""
+
+#: src/3654-return-type-notation.md:548
+msgid "Associated type bounds"
+msgstr ""
+
+#: src/3654-return-type-notation.md:550
+msgid ""
+"[Associated type bounds](https://github.com/rust-lang/rust/issues/52662) are "
+"a recently stabilized feature that permits `T: Trait<Type: Foo>` to be used "
+"to bound an associated type `T::Type`. The grammar for these trait "
+"references is extended to support RTN notation in this position:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:552
+msgid ""
+"```ebnf\n"
+"TraitRef = TraitName \"<\" Generic,* AssociatedBound \">\"\n"
+"\n"
+"AssociatedBound = Identifier \"=\" Generic\n"
+"                | Identifier \":\" TraitRef // (from RFC #2289)\n"
+"                | Identifier \"(\" \"..\" \")\" \":\" TraitRef // <--- new\n"
+"```"
+msgstr ""
+
+#: src/3654-return-type-notation.md:562
+msgid "`T: Widgets<widgets(..): Send>` is a valid associated type bound"
+msgstr ""
+
+#: src/3654-return-type-notation.md:564
+msgid ""
+"RTN bounds are internally desugared to an RTN in a standalone where-clause, "
+"so e.g. `where T: Widgets<widgets(..): Send>` becomes `where <T as Widgets>::"
+"widgets(..): Send`. We will not consider them further in this section."
+msgstr ""
+
+#: src/3654-return-type-notation.md:568
+msgid "Where RTN can be used (for now)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:570
+msgid ""
+"Although RTN types extend the type grammar, the compiler will not allow them "
+"to appear in all positions. Positions where RTN is currently supported "
+"include:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:572
+msgid ""
+"As a standalone type, RTN can only be used as the `Self` type of a where-"
+"clause, e.g., `where W::widgets(..): Send`."
+msgstr ""
+
+#: src/3654-return-type-notation.md:573
+msgid ""
+"As an associated type bound, RTN can be used where associated type bounds "
+"appear, e.g.,"
+msgstr ""
+
+#: src/3654-return-type-notation.md:574
+msgid "`trait SendWidgets: Widgets<widgets(..): Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:575
+msgid "`fn foo<W: Widgets<widgets(..): Send>>()`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:576
+msgid "`dyn Widgets<widgets(..): Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:577 src/3654-return-type-notation.md:591
+msgid "`impl Widgets<widgets(..): Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:579
+msgid ""
+"_Nonnormative:_ The current set of allowed locations correspond to places "
+"where generics on the method (e.g., `widgets(..)`) can be converted into "
+"higher-ranked trait bounds, as described in the next section. We expect "
+"[future RFCs](#future-possibilities) to extend the places where RTN can "
+"appear. These RFCs will detail how to manage generic parameters in those "
+"functions. The expectation is that the behavior will generally match "
+"\"whatever `'_` would do\". For example, `let w: W::widgets(..) = ...` would "
+"be equivalent to `let w: W::$Widgets<'_> = ...`."
+msgstr ""
+
+#: src/3654-return-type-notation.md:581
+msgid "Converting to higher-ranked trait bounds"
+msgstr ""
+
+#: src/3654-return-type-notation.md:583
+msgid ""
+"The method named in an RTN type may have generic parameters (e.g., `fn "
+"widgets<'a>(&'a self)` has a lifetime parameter `'a`). Because RTN locations "
+"are limited to where-clauses and trait bounds in this RFC, these parameters "
+"can always be captured in a `for` to form a [higher-ranked trait bound]"
+"(https://rust-lang.github.io/rfcs/0387-higher-ranked-trait-bounds.html)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:585
+msgid ""
+"The semantics are illustrated by the following examples which desugar "
+"references to `widgets(..)` into the (generic) associated type "
+"`$Widgets<'_>` described earlier:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:587
+msgid "`<T as Widgets>::widgets(..): Send`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:588
+msgid "`where for<'a> <T as Widgets>::$Widgets<'a>: Send`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:589
+msgid "`T: Widgets<widgets(..): Send`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:590
+msgid "Equivalent to `where T: Widgets<for<'a> $Widgets<'a>: Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:592
+msgid "`impl for<'a> Widgets<$Widgets<'a>: Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:593
+msgid "`dyn Widgets<widgets(..): Send`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:594
+msgid "`dyn for<'a> Widgets<$Widgets<'a>: Send>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:595
+msgid ""
+"But note that async fn and RPITIT are not yet dyn-safe; this is forward "
+"looking."
+msgstr ""
+
+#: src/3654-return-type-notation.md:597
+msgid ""
+"While all of these examples are using lifetimes, there is ongoing work to "
+"support higher-ranked trait bounds that are generic over types, and the "
+"expectation is that RTN will be extended to work over generic types and "
+"constants when possible."
+msgstr ""
+
+#: src/3654-return-type-notation.md:599
+msgid "How this is implemented"
+msgstr ""
+
+#: src/3654-return-type-notation.md:601
+msgid ""
+"The examples above illustrate the semantics but do not make clear how RTN "
+"can be implemented in the compiler. A RTN bound like `widgets(..)` is "
+"implemented internally via unification. To keep the RFC focused on how RTN "
+"feels to users, we defer a detailed description to reference material and a "
+"future stabilization report."
+msgstr ""
+
+#: src/3654-return-type-notation.md:603
+msgid "RTN only applies to AFIT and RPITIT methods"
+msgstr ""
+
+#: src/3654-return-type-notation.md:605
+msgid ""
+"Although conceptually RTN could be used for any trait method, we choose to "
+"limits its use to `async fn` and other methods that directly return an `-> "
+"impl Trait`. This limitation can be lifted in the future as we gain more "
+"experience."
+msgstr ""
+
+#: src/3654-return-type-notation.md:607
+msgid "RTN may refer to the following examples:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:608
+msgid "`async fn method(&self)`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:609
+msgid "`fn method(&self) -> impl Iterator<Item = u32>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:610
+msgid "RTN may not presently refer to the following examples:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:611
+msgid "`fn method(&self) -> u32`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:612
+msgid "`fn method(&self) -> Option<impl Iterator<Item = u32>>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:614
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3654-return-type-notation.md:617
+msgid "Confusion about future type vs awaited type"
+msgstr ""
+
+#: src/3654-return-type-notation.md:619
+msgid "When writing an async function, the future is implicit:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:627
+msgid ""
+"It could be confusing that `HC::check(..)` refers to a future and not the "
+"`()` type that results from await. This is however consistent with "
+"expressions (i.e., `let c = hc.check(..)` will yield a future, not the "
+"result)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:629
+msgid "Automatic impl of `Send` based on current method definition"
+msgstr ""
+
+#: src/3654-return-type-notation.md:631
+msgid ""
+"Implementations of async functions automatically expose whether they are "
+"`Send` or not, limiting their future (semver-compatible) evolution. E.g., "
+"the following impl..."
+msgstr ""
+
+#: src/3654-return-type-notation.md:641
+msgid ""
+"...could not in the future be modified to reference an `Rc` internally. This "
+"is different from ordinary functions which can add references to `Rc`  "
+"transiently without an issue."
+msgstr ""
+
+#: src/3654-return-type-notation.md:643
+msgid ""
+"The fact that the `Send` requirement limits what values async functions can "
+"internally reference is not new, however, nor specific to trait functions. "
+"It is a consequence of existing precedent:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:646
+msgid "Async functions desugar to returning an `impl Future` value."
+msgstr ""
+
+#: src/3654-return-type-notation.md:647
+msgid "Values are automatically `Send` based on their contents."
+msgstr ""
+
+#: src/3654-return-type-notation.md:649
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3654-return-type-notation.md:652
+msgid "What is the impact of not doing this?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:654
+msgid ""
+"The Async Working Group has performed [five case studies](https://rust-lang."
+"github.io/async-fundamentals-initiative/evaluation/case-studies.html) around "
+"the use of async functions in trait, covering usage in the following "
+"scenarios:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:658
+msgid ""
+"configuration and parameterization in the AWS SDK, such as providing a "
+"generic credentials provider ([link](https://rust-lang.github.io/async-"
+"fundamentals-initiative/evaluation/case-studies/builder-provider-api.html));"
+msgstr ""
+
+#: src/3654-return-type-notation.md:659
+msgid ""
+"redefining the `Service` trait defined by `tower` ([link](https://rust-lang."
+"github.io/async-fundamentals-initiative/evaluation/case-studies/tower.html));"
+msgstr ""
+
+#: src/3654-return-type-notation.md:660
+msgid ""
+"usage in the Fuchsia Netstack3 socket handler developed at Google ([link]"
+"(https://rust-lang.github.io/async-fundamentals-initiative/evaluation/case-"
+"studies/socket-handler.html));"
+msgstr ""
+
+#: src/3654-return-type-notation.md:661
+msgid ""
+"usage in an internal Microsoft application ([link](https://rust-lang.github."
+"io/async-fundamentals-initiative/evaluation/case-studies/microsoft.html));"
+msgstr ""
+
+#: src/3654-return-type-notation.md:662
+msgid ""
+"usage in the embedded runtime [`embassy`](https://github.com/embassy-rs/"
+"embassy), which targets simple processors without an operating system ([link]"
+"(https://rust-lang.github.io/async-fundamentals-initiative/evaluation/case-"
+"studies/embassy.html))."
+msgstr ""
+
+#: src/3654-return-type-notation.md:671
+msgid ""
+"We found that all of these key use cases required a way to handle send "
+"bounds, with only two exceptions:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:673
+msgid ""
+"`embassy`, where the entire process is single-threaded (and hence `Send` is "
+"not important),"
+msgstr ""
+
+#: src/3654-return-type-notation.md:674
+msgid ""
+"Fuchsia, where the developers at first thought they needed `Send` bounds, "
+"but ultimately found they were able to refactor so that spawns did not occur "
+"in generic code ([link to the relevant section](https://rust-lang.github.io/"
+"async-fundamentals-initiative/evaluation/case-studies/socket-handler."
+"html#send-bound-limitation))."
+msgstr ""
+
+#: src/3654-return-type-notation.md:676
+msgid ""
+"From this we conclude that offering async functions in traits without _some_ "
+"solution to the \"send bound problem\" means it will not be usable for most "
+"Rust developers. The Fuchsia case also provides evidence that, even when "
+"workarounds exist, they are not obvious to Rust developers."
+msgstr ""
+
+#: src/3654-return-type-notation.md:678
+msgid ""
+"For most of the cases above, return-type notation as described in this RFC "
+"worked well. The major exception was the Microsoft application, which "
+"included a trait with many methods. Since doing this study we have developed "
+"the [trait-variant](https://github.com/rust-lang/impl-trait-utils) crate and "
+"thus the ability to define \"send aliases\", as described in this RFC, which "
+"addresses this ergonomic gap."
+msgstr ""
+
+#: src/3654-return-type-notation.md:680
+msgid "How did you settle on this particular design?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:682
+msgid "The goal of this RFC is offer a"
+msgstr ""
+
+#: src/3654-return-type-notation.md:684
+msgid ""
+"**flexible primitive** that can support many use cases (including "
+"constructing aliases)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:685
+msgid "and which is **ergonomic enough** to be useful directly when needed."
+msgstr ""
+
+#: src/3654-return-type-notation.md:687
+msgid ""
+"The primitive alone doesn't fill all needs as it doesn't address the need to "
+"create aliases, but it provides the means for the `#[trait_variant::make]` "
+"procedural macro to be written as a stable crate; in the future providing a "
+"more ergonomic syntax -- such as [trait transformers](#why-not-send-trait-"
+"transformers) -- for \"all async functions return send futures\" may be "
+"worthwhile."
+msgstr ""
+
+#: src/3654-return-type-notation.md:691
+msgid "What are cases where that flexibility is useful?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:693
+msgid "Versus aliases that always bound every method, RTN can be used to"
+msgstr ""
+
+#: src/3654-return-type-notation.md:695
+msgid "bound individual methods"
+msgstr ""
+
+#: src/3654-return-type-notation.md:696
+msgid "introduce bounds for traits other than `Send`."
+msgstr ""
+
+#: src/3654-return-type-notation.md:698
+msgid ""
+"As [described in the motivation](#bounding-specific-methods), bounding "
+"individual methods allows for greater reuse. For functions that only make "
+"use of a subset of the methods in a trait, RTN can be used to create a "
+"\"maximally reusable\" signature."
+msgstr ""
+
+#: src/3654-return-type-notation.md:701
+msgid "What other syntax options were considered?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:703
+msgid ""
+"The lang team held a design meeting [reviewing RTN syntax options](https://"
+"hackmd.io/@rust-lang-team/ByUojGAn6) and covering the pros/cons for each of "
+"them in detail. The document also includes a detailed [evaluation and "
+"recommendations](https://hackmd.io/KPRLXXmISoWgX38alWUEnA?view#Evaluation-"
+"and-recommendation)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:705
+msgid "The document reviewed the following designs overall:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:707
+msgid "Option"
+msgstr ""
+
+#: src/3654-return-type-notation.md:707
+msgid "Bound"
+msgstr ""
+
+#: src/3654-return-type-notation.md:709
+msgid "StatusQuo"
+msgstr ""
+
+#: src/3654-return-type-notation.md:709
+msgid "`D: Database<items(): DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:710
+msgid "DotDot"
+msgstr ""
+
+#: src/3654-return-type-notation.md:710
+msgid "`D: Database<items(..): DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:711
+msgid "Return"
+msgstr ""
+
+#: src/3654-return-type-notation.md:711
+msgid "`D: Database<items::return: DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:712
+msgid "Output"
+msgstr ""
+
+#: src/3654-return-type-notation.md:712
+msgid "`D: Database<items::Output: DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:713
+msgid "Fn"
+msgstr ""
+
+#: src/3654-return-type-notation.md:713
+msgid "`D: Database<fn items(): DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:714
+msgid "FnDotDot"
+msgstr ""
+
+#: src/3654-return-type-notation.md:714
+msgid "`D: Database<fn items(..): DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:715
+msgid "FnReturn"
+msgstr ""
+
+#: src/3654-return-type-notation.md:715
+msgid "`D: Database<fn items::return: DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:716
+msgid "FnOutput"
+msgstr ""
+
+#: src/3654-return-type-notation.md:716
+msgid "`D: Database<fn items::Output: DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:718
+msgid "We briefly review the key arguments here:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:720
+msgid "\"StatusQuo\": `D: Database<items(): DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:721
+msgid ""
+"This notation is more concise and feels less heavy-weight. However, we "
+"expect users to primarily use aliases; also, the syntax \"feels\" surprising "
+"to many users, since Rust tends to use `..` to indicate elided items. The "
+"biggest concern here is a potential future conflict. If we (a) extend the "
+"notation to allow argument types to be specified ([as described in the "
+"future possibilities section](#future-possibilities)) AND (b) support some "
+"kind of variadic arguments, then `D::items()` would most naturally indicate "
+"\"no arguments\"."
+msgstr ""
+
+#: src/3654-return-type-notation.md:722
+msgid "\"Return\": `D: Database<items::return: DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:723
+msgid ""
+"This notation avoids looking like a function call. Many team members found "
+"it dense and difficult to read. While intended to look more like an "
+"associated type, the use of a lower-case keyword still makes it feel like a "
+"new thing. The syntax does not support future extensions (e.g., specifying "
+"the value of argument types)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:724
+msgid ""
+"\"Output\": `D: Database<items::Output: DoubleEndedIterator>` (see [this "
+"blog post](https://smallcultfollowing.com/babysteps/blog/2023/06/12/higher-"
+"ranked-projections-send-bound-problem-part-4/) for details)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:725
+msgid ""
+"This reuses associated types but, as both the function and future traits "
+"define an `Output` associated type, raises the potential for confusion about "
+"whether this notation means \"the future that gets returned\" or \"the "
+"result of the future\"."
+msgstr ""
+
+#: src/3654-return-type-notation.md:726
+msgid ""
+"\"FnDotDot\" and friends: `D: Database<fn items(..): DoubleEndedIterator>`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:727
+msgid ""
+"This notation was deemed too close to `fn` pointer types, particularly in "
+"stand-alone where-clauses."
+msgstr ""
+
+#: src/3654-return-type-notation.md:729
+msgid "Why not use `typeof`, isn't that more general?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:731
+msgid ""
+"The compiler currently supports a `typeof` operation as an experimental "
+"feature (never RFC'd). The idea is that `typeof <expr>` type-checks `expr` "
+"and evaluates to the result of that expression. Therefore `typeof 22_i32` "
+"would be equivalent to `i32`, and `typeof x` would be equivalent to whatever "
+"the type of `x` is in that context (or an error if there is no identifier "
+"`x` in scope)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:733
+msgid ""
+"It might appear that `typeof`  can be used in a similar way to RTN, but in "
+"fact it is significantly more complex. Consider our first example, the "
+"`HealthCheck` trait:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:741
+msgid "and a function bounding it"
+msgstr ""
+
+#: src/3654-return-type-notation.md:747
+msgid "// <--- How would we write this with `typeof`?\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:750
+msgid "To write the above with `typeof`, you would do something like this"
+msgstr ""
+
+#: src/3654-return-type-notation.md:764
+msgid "Alternatively, one could write something like this"
+msgstr ""
+
+#: src/3654-return-type-notation.md:777
+msgid ""
+"Note that we had to supply a callable expression (even if it will never "
+"execute), so we can't directly talk about the types of the arguments "
+"provided to `H::check`, instead we have to use the `dummy` function to "
+"produce a fake value of the type we want or introduce dummy let-bound "
+"variables."
+msgstr ""
+
+#: src/3654-return-type-notation.md:779
+msgid ""
+"Clearly, `typeof` on its own fails the \"ergonomic enough to use for simple "
+"cases\" threshold we were shooting for. But it's also a significantly more "
+"powerful feature that introduces a _lot_ of complications. We were able to "
+"implement a minimal version of RTN in a few days, demonstrating that it fits "
+"relatively naturally into the compiler's architecture and existing trait "
+"system. In contrast, integrating `typeof` would be rather more complicated. "
+"To start, we would need to be running the type checker in new contexts (e."
+"g., in a where clause) at large scale in order to normalize a type like "
+"`typeof H::check(x, y)` into the final type it represents."
+msgstr ""
+
+#: src/3654-return-type-notation.md:781
+msgid ""
+"With `typeof`, one would also expect to be able to reference local variables "
+"and parameters freely. This would bring Rust full on into dependent types, "
+"since one could have a variable whose type is something like `typeof x."
+"method_call()`, which is clearly dependent on the type of `x`. This isn't an "
+"impossible thing to consider -- and indeed the same could be true of some "
+"extensions of RTN, if we chose to permit naming closures or other local "
+"variables -- but it's a significant bundle of work to sort it out."
+msgstr ""
+
+#: src/3654-return-type-notation.md:783
+msgid ""
+"Finally, while `typeof` clearly is a more general feature, it's not clear "
+"how well motivated that generality is. The main use cases we have in mind "
+"are more naturally and directly handled by RTN. To justify `typeof`, we'd "
+"want to have a solid rationale of use cases."
+msgstr ""
+
+#: src/3654-return-type-notation.md:785
+msgid "Why not make _all_ futures `Send`?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:787
+msgid ""
+"The `#[async_trait]` macro solves the send bounds problem by forcing the "
+"trait to declare up front whether it will require send or not. This is "
+"required by the desugaring that async-trait uses. For many users, this is a "
+"fine solution, since they always work with sendable futures. But there are a "
+"significant set of users that do not want send bounds, either because they "
+"are in an embedded context or because they are using a thread-per-core "
+"architecture. The widely used tokio runtime, for example, can be configured "
+"to either use work-stealing (which requires `Send` futures) or to be a "
+"single-threaded executor (which does not). The `glommio` executor does not "
+"require `Send` bounds on futures because it never moves tasks between "
+"threads. The Fuchsia project makes extensive use of single-threaded "
+"executors in their runtime, and hence they do not require `Send` bounds. The "
+"`embassy` runtime targets embedded environments that only have a "
+"uniprocessor and which have no need for `Send` bounds. All of these "
+"environments are disadvantaged by defaults that require send bounds."
+msgstr ""
+
+#: src/3654-return-type-notation.md:789
+msgid ""
+"One of our design goals with async-trait is to support core interoperability "
+"traits for things like reading, writing, HTTP, etc. The whole point of these "
+"traits is to be usable across many runtimes. If those traits forced `Send` "
+"bounds, that would be unnecessarily limiting, which would lead to users of "
+"non-Send-requiring runtimes to avoid them. If the traits did NOT force "
+"`Send` bounds, they would not be compatible with work stealing runtimes (the "
+"most popular choice) unless there was some additional feature to \"opt-in\" "
+"to needing send bounds -- which is exactly the gap RTN is looking to close."
+msgstr ""
+
+#: src/3654-return-type-notation.md:791
+msgid "Why not create an associated type that represents the return type?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:793
+msgid ""
+"Early on in our design work, we expected to simply create an associated type "
+"within the trait to represent the return type. For example this trait:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:801
+msgid "might have been desugared as follows:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:805
+msgid "// <--- implicitly introduced\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:810
+msgid ""
+"This would mean that users could write a bound on `F::widgets` to bound the "
+"return type of `widgets`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:820
+msgid "We encountered a number of problems with this design."
+msgstr ""
+
+#: src/3654-return-type-notation.md:822
+msgid "If the name is implicit, what name should we use?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:824
+msgid ""
+"The most impmediate problem with this proposal was trying to decide what "
+"name to use."
+msgstr ""
+
+#: src/3654-return-type-notation.md:826
+msgid ""
+"Using `Widgets` (capitalized) feels arbitrary and there is no precedent "
+"within Rust for automatically creating names with different case conventions "
+"in this way."
+msgstr ""
+
+#: src/3654-return-type-notation.md:828
+msgid ""
+"Using the same name as the method (`widgets`) results in an associated type "
+"that does not follow Rust's naming conventions. It also introduces the "
+"potential for a shadowing conflict as today it is allowed to have methods "
+"and associated types with the same name:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:838
+msgid "Why not use an explicit name?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:840
+msgid ""
+"To address the challenge of an implicit name, we could allow people to "
+"explicitly annotate a name:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:849
+msgid "However, this has some downsides:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:851
+msgid ""
+"It goes against our design axiom that people should be able to \"just write "
+"`async fn`\". Now for maximum reuse the trait body requires extra "
+"annotations."
+msgstr ""
+
+#: src/3654-return-type-notation.md:853
+msgid ""
+"It means that trait authors must remember to add such an annotation or else "
+"their consumers will be limited in their ability to use the trait. Trait "
+"authors should expect a stream of PRs adding this annotation to most every "
+"`async fn` in their trait."
+msgstr ""
+
+#: src/3654-return-type-notation.md:856
+msgid "What generic parameters should this associated type have?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:858
+msgid ""
+"Regardless of how it is named, it's not obvious what set of generic type "
+"parameters the function should have. In our example, there was only a single "
+"lifetime, but in other cases, functions can have a large number of implicit "
+"parameters. This occurs with anonymous lifetimes but also with argument-"
+"position impl Trait. We have so far avoided committing to a particular order "
+"or way of specifying those implicit parameters explicitly, but desugaring to "
+"a (user-visible) generic associated type would force us to make a "
+"commitment. Example:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:866
+msgid ""
+"How many generic type parameters should `consume_elements` have, and in what "
+"order? There are at least three anonymous lifetimes mentioned, and one "
+"anonymous type parameter (the `impl Iterator`), but that's not enough to "
+"answer the question. First off, without seeing the definitions of `Context` "
+"and `Widget`, we do not know if they have lifetime parameters (although it's "
+"discouraged, Rust permits you to elide lifetime parameters from structs in "
+"function declarations). Second, all of the lifetime parameters we see appear "
+"in \"variant\" positions, and so we could get away with a single GAT "
+"parameter (simpler). But if (for example) `Context` were defined like so:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:874
+msgid ""
+"then the function would require a separate lifetime parameter for `Context`. "
+"Committing to specific rules here limits us as language designers, but it's "
+"also a demands a deep understanding of the compiler and its desugaring to be "
+"successfully used and explained."
+msgstr ""
+
+#: src/3654-return-type-notation.md:876
+msgid ""
+"Why not use a named associated type that represents the zero-sized method "
+"type?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:878
+msgid ""
+"In the previous question, we mentioned that every function in Rust has a "
+"unique zero-sized type associated with it, including methods. One natural "
+"desugaring then might be to introduce an associated type that represents the "
+"method type itself. One could then use the `Output` associated type to talk "
+"about the return type. Given the `Factory` trait we saw before:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:886
+msgid ""
+"one might then take \"any factory whose widgets iterator is sendable\" like "
+"this:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:893
+msgid ""
+"//      --------------  ------\n"
+"    //      type of the     return type\n"
+"    //      method\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:899
+msgid ""
+"This approach has an appealing generality to it, and it opens up some "
+"interesting possibilities. For example, one might consider a trait `Const` "
+"that is implemented by all function types which are `const fn` (discussed in "
+"withoutboats's [const as an auto trait](https://without.boats/blog/const-as-"
+"an-auto-trait/) blog post). Users could then write `for<'a> F::widgets<'a>: "
+"Const` to declare that the method is a const method. However, it's rather "
+"unergonomic for the common case. It also doesn't compose well with the "
+"associated type bounds notation -- i.e., would we write something like `F: "
+"Factory<widgets::Output: Send>`?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:901
+msgid ""
+"To resolve the ergonomic problems, our exporations of this future wound up "
+"proposing some form of sugar to reference the `Output` type -- for example, "
+"being able to write `F::widgets(..): Send`. But that is precisely what this "
+"RFC proposes! Indeed, in the [future possibilities](#future-possibilities) "
+"section of the RFC, we discuss the possibility of giving users some way to "
+"name the type of the `widgets` method itself, and not just its return type."
+msgstr ""
+
+#: src/3654-return-type-notation.md:903
+msgid ""
+"So why not just start with this more general approach, if we think it might "
+"be a useful extension? First, it's not clear if it would be useful. We don't "
+"have to solve the question of \"const as an auto trait\" in order to address "
+"the send bounds problem. Second, this approach suffers from some of the "
+"complications mentioned in the previous question, such as needing to specify "
+"the order of arguments for anonymous lifetime or impl trait parameters, and "
+"having to deal with existing traits that may shadow the desired name. "
+"Lacking a strong motivation to have this much generality, it's hard to tell "
+"how to resolve those questions, since we don't really know where/when this "
+"more general form would be used."
+msgstr ""
+
+#: src/3654-return-type-notation.md:907
+msgid "Why not make `trait_variant` crate magic?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:909
+msgid ""
+"With RTN, the `#[trait_variant::make]` macro can be defined in \"user "
+"space\". It would also be possible to build it into the stdlib and have it "
+"defined \"magically\" through compiler intrinsics. This would still allow "
+"async traits to be defined that can be used across all executors (in roughly "
+"the same way as we recommend), but it has several downsides. First, it makes "
+"the stdlib more special, which works against the goals of Rust. Second, it "
+"covers far fewer use cases than RTN: it cannot be used to express "
+"specifically which methods must be `Send`, nor can it be used for traits "
+"that were not \"pre-imagined\" by the trait author."
+msgstr ""
+
+#: src/3654-return-type-notation.md:917
+msgid "Why not Send trait transformers?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:919
+msgid ""
+"[Trait transformers](https://smallcultfollowing.com/babysteps/"
+"blog/2023/03/03/trait-transformers-send-bounds-part-3/) are a proposal to "
+"have \"modifiers\" on trait bounds that produce a derived version of the "
+"trait. For example, `T: async Iterator` might mean \"T implements a version "
+"of `Iterator` where the `next` function is `async`\". Following this idea, "
+"one can imagine `T: Send HealthCheck` to mean \"implement a version of "
+"`HealthCheck` where every async fn returns a `Send` future\". This idea is "
+"an ergonomic way to manage traits that have a lot of async functions, as "
+"[came up in the Microsoft case study](https://rust-lang.github.io/async-"
+"fundamentals-initiative/evaluation/case-studies/microsoft.html#send-bounds)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:923
+msgid ""
+"It seems likely that trait transformers would be more ergonomic than RTN in "
+"practice, since they easily accommodate traits with many async functions. "
+"However, they are less flexible, as the current idea can only encode the "
+"case where you want to add the same auto trait to the return type of all "
+"async functions, whereas RTN can be used to encode all manner of patterns, "
+"as described in the [guide-level explanation](#guide-level-explanation). "
+"Furthermore, trait transformers are a more fundamental extension to Rust "
+"than RTN, and their design is tied up in questions of whether we should have "
+"other kinds of transformers, such as `async` or `const`. It is preferable to "
+"give time for exploration until we have a better handle on the motivation "
+"and use cases so that we can avoid constraining ourselves today in a way "
+"that we might not want in the future. In contrast, it's hard to imagine a "
+"future where we don't want _some_ way to constrain or refer to the return "
+"types of individual methods within a trait."
+msgstr ""
+
+#: src/3654-return-type-notation.md:925
+msgid "Prior art"
+msgstr ""
+
+#: src/3654-return-type-notation.md:928
+msgid "C++"
+msgstr ""
+
+#: src/3654-return-type-notation.md:930
+msgid ""
+"C++ has [`decltype`](https://en.cppreference.com/w/cpp/language/decltype) "
+"expressions which give the type of an expression and the type of a "
+"declaration, respectively. Some compilers (e.g., GCC) also support [`typeof`]"
+"(https://gcc.gnu.org/onlinedocs/gcc/Typeof.html). The [drawbacks]"
+"(#drawbacks) section listed reasons why we believe `typeof` is not a "
+"suitable primitive for us to build upon."
+msgstr ""
+
+#: src/3654-return-type-notation.md:932
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3654-return-type-notation.md:935
+msgid ""
+"Does stabilizing `T::foo(..)` notation as a standalone type create a "
+"confusing inconsistency with `-> ()` shorthand?"
+msgstr ""
+
+#: src/3654-return-type-notation.md:937
+msgid ""
+"Unlike a regular associated type, this RFC does not allow a trait bound that "
+"specifies the return type of a method, only the ability to put bounds on "
+"that return type. rpjohnst suggested that we may wish to support a syntax "
+"like `T: Trait<method(..) -> T>`, perhaps in conjunction with specified "
+"argument types. They further pointed out that permitting `T::method(..)` as "
+"a standalone type could be seen as inconsistent, given that `fn foo()` is "
+"normally shorthand for `-> ()`. However, _not_ supporting `T::method(..)` as "
+"a standalone type could also be seen as inconsistent, since normally `T: "
+"Trait<Bar: Send>` and `T::Bar: Send` are equivalent. Prior to stabilizing "
+"the \"associated type position\" syntax, we should be sure we are "
+"comfortable with this."
+msgstr ""
+
+#: src/3654-return-type-notation.md:944
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3654-return-type-notation.md:947
+msgid "Implementing trait aliases"
+msgstr ""
+
+#: src/3654-return-type-notation.md:949
+msgid ""
+"Referring to the `Service` trait specifically, the Tokio developers "
+"expressed a preference to name the \"base trait\" `LocalService` and to call "
+"the \"sendable alias\" `Service`. This reflects the way that Tokio uses work-"
+"stealing executors by default. This formulation can be done with "
+"`trait_variant` like so"
+msgstr ""
+
+#: src/3654-return-type-notation.md:964
+msgid ""
+"However, it carries the downside that users must implement `LocalService` "
+"and hence must be aware of the desugaring. It would be nicer if users could "
+"choose to implement `Service` and then (in so doing) effectively assert that "
+"all their async functions are _always_ `Send`. This is not possible today "
+"due to the fact that `trait-variant` is emulating trait alias functioanlity "
+"with a blanket impl and supertraits; this is because true trait alias "
+"functionality is not yet stable. [RFC 3437](https://github.com/rust-lang/"
+"rfcs/pull/3437) has proposed an extension to trait aliases that makes them "
+"implementable. The combination of accepting [RFC 3437](https://github.com/"
+"rust-lang/rfcs/pull/3437) and stabilizing trait aliases would make these "
+"aliases nicer for users as a result."
+msgstr ""
+
+#: src/3654-return-type-notation.md:972
+msgid "Permit RTN for more functions"
+msgstr ""
+
+#: src/3654-return-type-notation.md:974
+msgid ""
+"RTN is currently limited to `async fn` and `-> impl Trait` methods in "
+"traits. But the same syntax could be used for any methods as well as for "
+"free functions (e.g., `foo(..)` might refer to the return type of `fn "
+"foo()`). One area that would be challenging to support is RTN for the return "
+"types of closures, as that would introduce an element of dependent types "
+"that would complicate the type checker (e.g., if `let y: x(..)` meant that "
+"`y` is the type returned from invoking the closure `x`, another local "
+"variable)."
+msgstr ""
+
+#: src/3654-return-type-notation.md:980
+msgid "Specifying the values for argument types"
+msgstr ""
+
+#: src/3654-return-type-notation.md:982
+msgid ""
+"The `T::method(..): Send` notation we've been using so far means \"the "
+"return type of `method(..)` is `Send`, no matter what arguments you "
+"provide\". We could extend this notation to permit specifying the argument "
+"types explicitly. For example, consider the `capture` method below, which "
+"takes a parameter of type `input`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:993
+msgid "and now consider a function that invokes `capture` with an `i32` value:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1001
+msgid ""
+"Now imagine we wanted to invoke `capture` on another thread, and hence we "
+"need a where-clause indicating that the future returned by `capture` will be "
+"`Send`:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1008
+msgid "/* where-clause for C::check() needed here! */"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1016
+msgid ""
+"There are multiple ways we could write this where-clause, varying in their "
+"specificity..."
+msgstr ""
+
+#: src/3654-return-type-notation.md:1018
+msgid ""
+"`where C::capture(..): Send` -- this indicates that `C::capture()` will "
+"return a `Send` value for any possible set of parameters"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1019
+msgid ""
+"`where C::capture(&mut C, i32): Send` -- this indicates that `C::capture()` "
+"will return a `Send` value when invoked specifically on a `&mut C` (for the "
+"`self` parameter) and an `i32`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1020
+msgid ""
+"`where for<'a> C::capture(&'a mut C, i32): Send` -- same as the previous "
+"rule, but with the higher-ranked `'a` written explicitly"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1021
+msgid ""
+"`where C::capture::<i32>(..): Send` -- this indicates that `C::capture()` "
+"will return a `Send` value for any possible set of parameters, but with its "
+"`T` parameter set explicitly to `i32`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1022
+msgid ""
+"`where C::capture::<i32>(&mut C, i32): Send` -- this indicates that `C::"
+"capture()` will return a `Send` value when its `T` parameter is `i32`"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1023
+msgid ""
+"`where for<'a> C::capture::<i32>(&'a mut C, i32): Send` -- same as the "
+"previous rule, but with the higher-ranked `'a` written explicitly"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1025
+msgid "Possible rules for an RTN are as follows:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1027
+msgid "Parameter types:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1028
+msgid ""
+"If parameter types are specified as `..` (e.g., `C::check(..)` or `C::check::"
+"<i32>(..)`), then the where-clause applies to any possible argument types"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1029
+msgid ""
+"If parameter types are given, then the where-clause applies to those "
+"specific argument types"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1030
+msgid ""
+"the `self` type must be given explicitly when using `C::check(..)` notation, "
+"just as it would in a function call (e.g., `let x = C::check(a, b)`)"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1031
+msgid ""
+"elided lifetimes like (e.g., `C::check(&mut Self, i32)`) are translated to a "
+"higher-ranked lifetime (e.g., `for<'a> C::check(&'a mut Self, i32)`) "
+"covering the where-clause"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1032
+msgid "Turbofish:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1033
+msgid ""
+"If turbofish is not used, then the where-clause applies to any possible "
+"values for the type parameters"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1034
+msgid ""
+"If turbofish is used, then the values for the type parameters are explicitly "
+"specified"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1036
+msgid "Supporting RTN in more locations"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1038
+msgid ""
+"To contain the scope, this RFC only describes how RTN types work as the self "
+"type of a where-clause. However, one advantage of RTNs is that they can be "
+"extended to work in more places. This would address the gap that has existed "
+"in `-> impl Trait` (and hence in `async fn`) since it was introduced in [RFC "
+"1522](./1522-conservative-impl-trait.md), namely that there is no way to "
+"name the return type of such a function explicitly. This in turn means that "
+"given a function like `fn odd_integers() -> impl Iterator<Item = u32>`, one "
+"cannot name the iterator type that is returned. For free functions, best "
+"practice today is to use a named return type; once [type alias impl trait]"
+"(./2071-impl-trait-type-alias.md) is stabilized, that will also be an "
+"option. But neither of these are practical for async functions that appear "
+"in traits."
+msgstr ""
+
+#: src/3654-return-type-notation.md:1047
+msgid ""
+"RTN as specified in this RFC could be extended with relative ease to appear "
+"in any location where `'_` is accepted. For example:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1056
+msgid ""
+"//               -------\n"
+"    //   Expands to `D::load(&'_ D)` -- in this context,\n"
+"    //   `'_` means that the compiler will infer a suitable\n"
+"    //   value.\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1064
+msgid ""
+"//                                       -------\n"
+"    //                      As above, expands to `D::load(&'_ D)`, which\n"
+"    //                      means \"for some `_`\".\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1071
+msgid ""
+"The most useful place to use RTN, however, is likely struct fields, and in "
+"that location we do not accept `'_`. We would therefore have to support "
+"specifying the types of arguments in RTN. That would enable writing structs "
+"that wrap the future returned via some trait method:"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1077
+msgid "// the future returned by `D::load`.\n"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1081
+msgid "Dyn support"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1083
+msgid ""
+"We expect to  make traits with async functions and RPITIT dyn safe in the "
+"future. One benefit of the RTN design is that it continues to hide the "
+"presence and precise value of the associated types that define the return "
+"value of an async function. This means that given `HealthCheck`, we can "
+"later define the type of the future `<dyn HealthCheck>::check(..)` to be "
+"anything."
+msgstr ""
+
+#: src/3654-return-type-notation.md:1085
+msgid "Naming the zero-sized types for a method"
+msgstr ""
+
+#: src/3654-return-type-notation.md:1087
+msgid ""
+"Every function and method `f` in Rust has a corresponding zero-sized type "
+"that uniquely identifies `f`. The RTN notation `T::check(..)` refers to the "
+"return value of `check`; conceivably `T::check` (without the parens) could "
+"be used to refer the type of `check` itself. In this case, `T::check(..)` "
+"can be thought of as shorthand for `<T::check as Fn<_>>::Output`."
+msgstr ""

@@ -1,0 +1,201 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1440-drop-types-in-const.md:1
+msgid "Feature Name: `drop_types_in_const`"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:2
+msgid "Start Date: 2016-01-01"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1440](https://github.com/rust-lang/rfcs/pull/1440)"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#33156](https://github.com/rust-lang/rust/"
+"issues/33156)"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:9
+msgid ""
+"Allow types with destructors to be used in `static` items, `const` items, "
+"and `const` functions."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:14
+msgid ""
+"Some of the collection types do not allocate any memory when constructed "
+"empty (most notably `Vec`). With the change to make leaking safe, the "
+"restriction on `static` or `const` items with destructors is no longer "
+"required to be a hard error (as it is safe and accepted that these "
+"destructors may never run)."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:17
+msgid ""
+"Allowing types with destructors to be directly used in `const` functions and "
+"stored in `static`s or `const`s will remove the need to have runtime-"
+"initialization for global variables."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:20
+msgid "Detailed design"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:23
+msgid ""
+"Lift the restriction on types with destructors being used in `static` or "
+"`const` items."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:24
+msgid ""
+"`static`s containing Drop-types will not run the destructor upon program/"
+"thread exit."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:25
+msgid ""
+"`const`s containing Drop-types _will_ run the destructor at the appropriate "
+"point in the program."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:26
+msgid ""
+"(Optionally adding a lint that warn about the possibility of resource leak)"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:27
+msgid ""
+"Allow instantiating structures with destructors in constant expressions."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:28
+msgid "Allow `const fn` to return types with destructors."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:29
+msgid ""
+"Disallow constant expressions that require destructors to run during compile-"
+"time constant evaluation (i.e: a `drop(foo)` in a `const fn`)."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:31
+msgid "Examples"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:32
+msgid ""
+"Assuming that `RwLock` and `Vec` have `const fn new` methods, the following "
+"example is possible and avoids runtime validity checks."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:35
+msgid "/// Logging output handler\n"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:37
+msgid "// ...\n"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:38
+msgid "/// List of registered logging handlers\n"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:41
+msgid "/// Just an empty byte vector.\n"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:46
+msgid "Disallowed code"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:48
+msgid "// The `Vec` would be dropped\n"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:51
+msgid "// Discards the input vector, dropping it\n"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:55
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:58
+msgid ""
+"Destructors do not run on `static` items (by design), so this can lead to "
+"unexpected behavior when a type's destructor has effects outside the program "
+"(e.g. a RAII temporary folder handle, which deletes the folder on drop). "
+"However, this can already happen using the `lazy_static` crate."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:60
+msgid ""
+"A `const` item's destructor _will_ run at each point where the `const` item "
+"is used. If a `const` item is never used, its destructor will never run. "
+"These behaviors may be unexpected."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:62
+msgid "Alternatives"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:65
+msgid ""
+"Runtime initialization of a raw pointer can be used instead (as the "
+"`lazy_static` crate currently does on stable)."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:66
+msgid ""
+"On nightly, a bug related to `static` and `UnsafeCell<Option<T>>` can be "
+"used to remove the dynamic allocation."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:67
+msgid ""
+"Both of these alternatives require runtime initialization, and incur a "
+"checking overhead on subsequent accesses."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:68
+msgid ""
+"Leaking of objects could be addressed by using C++-style `.dtors` support"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:69
+msgid ""
+"This is undesirable, as it introduces confusion around destructor execution "
+"order."
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:71
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1440-drop-types-in-const.md:74
+msgid "TBD"
+msgstr ""

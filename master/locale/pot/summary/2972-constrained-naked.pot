@@ -1,0 +1,440 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2972-constrained-naked.md:1
+msgid "Feature Name: `constrained_naked`"
+msgstr ""
+
+#: src/2972-constrained-naked.md:2
+msgid "Start Date: 2020-08-06"
+msgstr ""
+
+#: src/2972-constrained-naked.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2972](https://github.com/rust-lang/rfcs/pull/2972)"
+msgstr ""
+
+#: src/2972-constrained-naked.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#90957](https://github.com/rust-lang/rust/"
+"issues/90957)"
+msgstr ""
+
+#: src/2972-constrained-naked.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2972-constrained-naked.md:7
+msgid ""
+"This document attempts to increase the utility of [naked functions](https://"
+"github.com/rust-lang/rfcs/blob/master/text/1201-naked-fns.md) by "
+"constraining their use and increasing their defined invariants."
+msgstr ""
+
+#: src/2972-constrained-naked.md:9
+msgid "Motivation"
+msgstr ""
+
+#: src/2972-constrained-naked.md:11
+msgid ""
+"Naked functions have long been a feature of compilers. These functions are "
+"typically defined as normal functions in every regard, except that the "
+"compiler does not emit the function prologue and epilogue. Rust's early "
+"attempt to support this feature ([RFC 1201](https://github.com/rust-lang/"
+"rfcs/blob/master/text/1201-naked-fns.md)) mostly copied the existing "
+"compiler behaviors."
+msgstr ""
+
+#: src/2972-constrained-naked.md:13
+msgid ""
+"However, naked functions are often avoided in practice because their "
+"behavior is not well defined. The root cause of this problem is that naked "
+"functions are defined by negation: they are functions which lack a prologue "
+"and epilogue. Unfortunately, functions that lack a prologue and epilogue "
+"present a number of complicated problems that the compiler needs to solve "
+"and developers need to work around. And there is a long history of compilers "
+"and developers getting this wrong."
+msgstr ""
+
+#: src/2972-constrained-naked.md:15
+msgid ""
+"This document seeks to define naked functions in a much more constrained, "
+"positivistic way. In doing so, naked functions can become more useful."
+msgstr ""
+
+#: src/2972-constrained-naked.md:17
+msgid "Naked function definition"
+msgstr ""
+
+#: src/2972-constrained-naked.md:19
+msgid ""
+"A naked function has a defined calling convention and a body which contains "
+"only assembly code which can rely upon the defined calling convention."
+msgstr ""
+
+#: src/2972-constrained-naked.md:21
+msgid "A naked function is identified by the `#[naked]` attribute and:"
+msgstr ""
+
+#: src/2972-constrained-naked.md:22
+msgid "should specify a calling convention besides `extern \"Rust\"`."
+msgstr ""
+
+#: src/2972-constrained-naked.md:23
+msgid "should define only FFI-safe arguments and return types."
+msgstr ""
+
+#: src/2972-constrained-naked.md:24
+msgid "must not specify the `#[inline]` or `#[inline(*)]` attribute."
+msgstr ""
+
+#: src/2972-constrained-naked.md:25
+msgid "must have a body which contains only a single `asm!()` statement which:"
+msgstr ""
+
+#: src/2972-constrained-naked.md:26
+msgid "may be wrapped in an `unsafe` block."
+msgstr ""
+
+#: src/2972-constrained-naked.md:27
+msgid "must not contain any operands except `const` or `sym`."
+msgstr ""
+
+#: src/2972-constrained-naked.md:28
+msgid "must contain the `noreturn` option."
+msgstr ""
+
+#: src/2972-constrained-naked.md:29
+msgid "must not contain any other options except `att_syntax`."
+msgstr ""
+
+#: src/2972-constrained-naked.md:30
+msgid ""
+"must ensure that the calling convention is followed or the function is "
+"`unsafe`."
+msgstr ""
+
+#: src/2972-constrained-naked.md:32
+msgid "In exchange for the above constraints, the compiler commits to:"
+msgstr ""
+
+#: src/2972-constrained-naked.md:33
+msgid "produce a clear error if any of the above requirements are violated."
+msgstr ""
+
+#: src/2972-constrained-naked.md:34
+msgid "produce a clear warning if any of the above suggestions are not heeded."
+msgstr ""
+
+#: src/2972-constrained-naked.md:35
+msgid ""
+"disable the unused argument lint for the function (implicit "
+"`#[allow(unused_variables)]`)."
+msgstr ""
+
+#: src/2972-constrained-naked.md:36
+msgid "never inline the function (implicit `#[inline(never)]`)."
+msgstr ""
+
+#: src/2972-constrained-naked.md:37
+msgid ""
+"emit no additional instructions to the function body before the `asm!()` "
+"statement."
+msgstr ""
+
+#: src/2972-constrained-naked.md:39
+msgid ""
+"As a (weaker) corollary to the last compiler commitment, the initial state "
+"of all registers in the `asm!()` statement conform to the specified calling "
+"convention."
+msgstr ""
+
+#: src/2972-constrained-naked.md:41
+msgid "Explanation"
+msgstr ""
+
+#: src/2972-constrained-naked.md:43
+msgid ""
+"Since a naked function has no prologue, any naive attempt to use the stack "
+"can produce invalid code. This certainly includes local variables. But this "
+"can also include attempts to reference function arguments which may be "
+"placed on the stack. This is why a naked function may only contain a single "
+"`asm!()` statement."
+msgstr ""
+
+#: src/2972-constrained-naked.md:45
+msgid ""
+"Further, since many platforms store the return address on the stack, it is "
+"the responsibility of the `asm!()` statement to return in the appropriate "
+"way. This is why the `options(noreturn)` option is required."
+msgstr ""
+
+#: src/2972-constrained-naked.md:47
+msgid ""
+"Any attempt to use function arguments, even as operands, may cause stack "
+"access or modification. Likewise, any register operands may cause the "
+"compiler to attempt to preserve registers on the stack. Since the function "
+"has no prologue, this is problematic. To avoid this problem, we simply "
+"refuse to allow the use of any function arguments in Rust."
+msgstr ""
+
+#: src/2972-constrained-naked.md:49
+msgid ""
+"If this were the end of the story, naked functions would not be very useful. "
+"In order to re-enable access to the function arguments, the compiler ensures "
+"that the initial state of the registers in the `asm!()` statement conform to "
+"the function's calling convention. This allows hand-crafted assembly access "
+"to the function arguments through the calling convention. Since the `extern "
+"\"Rust\"` calling convention is undefined, its use is discouraged and an "
+"alternative, well-defined calling convention should be specified. Likewise, "
+"since the `asm!()` statement can access the function arguments through the "
+"calling convention, the arguments themselves should be FFI safe to ensure "
+"that they can be reliably accessed from assembly."
+msgstr ""
+
+#: src/2972-constrained-naked.md:51
+msgid ""
+"Because naked functions depend upon the calling convention so heavily, "
+"inlining of these functions would make code generation extremely difficult. "
+"Therefore, we disallow inlining."
+msgstr ""
+
+#: src/2972-constrained-naked.md:53
+msgid ""
+"Since the `const` and `sym` operands modify neither the stack nor the "
+"registers, their use is permitted."
+msgstr ""
+
+#: src/2972-constrained-naked.md:55
+msgid "Examples"
+msgstr ""
+
+#: src/2972-constrained-naked.md:57
+msgid "This function adds three to a number and returns the result:"
+msgstr ""
+
+#: src/2972-constrained-naked.md:63
+msgid "\"sysv64\""
+msgstr ""
+
+#: src/2972-constrained-naked.md:66
+msgid "\"add rdi, {}\""
+msgstr ""
+
+#: src/2972-constrained-naked.md:67
+msgid "\"mov rax, rdi\""
+msgstr ""
+
+#: src/2972-constrained-naked.md:68
+msgid "\"ret\""
+msgstr ""
+
+#: src/2972-constrained-naked.md:76
+msgid ""
+"The calling convention is defined as `extern \"sysv64\"`, therefore we know "
+"that the input is in the `rdi` register and the return value is in the `rax` "
+"register. The `asm!()` statement contains `options(noreturn)` and therefore "
+"we handle the return directly through the `ret` instruction. We can provide "
+"a `const` operand since it modifies neither registers nor stack. Since we "
+"have strong guarantees about the state of the registers, we can mark this "
+"function as safe and wrap the `asm!()` statement in an `unsafe` block."
+msgstr ""
+
+#: src/2972-constrained-naked.md:78
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2972-constrained-naked.md:80
+msgid ""
+"Implementing this will break compatibility of existing uses of the nightly "
+"`#[naked]` attribute. All of these uses likely depend on undefined behavior. "
+"If this is a problem, we could simply use a different attribute."
+msgstr ""
+
+#: src/2972-constrained-naked.md:82
+msgid ""
+"This definition may be overly strict. There is certainly some code that "
+"would work without this. The counter argument is that this code relies on "
+"undefined behavior and is probably not worth preserving. It might also be "
+"possible to reasonably ease the constraints over time."
+msgstr ""
+
+#: src/2972-constrained-naked.md:84
+msgid ""
+"This proposal requires the use of assembly where it is theoretically "
+"possible to use Rust in a naked function. However, practically the use of "
+"Rust in naked functions is nearly impossible and relies on extensively "
+"undefined behavior."
+msgstr ""
+
+#: src/2972-constrained-naked.md:86
+msgid ""
+"Adopting this definition changes the invariants of `asm!()`. Currently, all "
+"registers not supplied as operands to `asm!()` contain undefined values. "
+"This proposal changes this to define that the initial register state is "
+"unmodified from the function call. This is an even stronger commitment than "
+"merely guaranteeing calling convention conformance, which some may dislike. "
+"However, the change to permit defined initial register state applies "
+"**only** to the use of `asm!()` as the body of a naked function."
+msgstr ""
+
+#: src/2972-constrained-naked.md:88
+msgid ""
+"Refusing to allow argument operands means that architectures that have "
+"multiple calling conventions (i.e. x86_64 SystemV vs Windows) cannot share "
+"function bodies. This could be remedied with a future improvement."
+msgstr ""
+
+#: src/2972-constrained-naked.md:90
+msgid "Alternatives"
+msgstr ""
+
+#: src/2972-constrained-naked.md:92
+msgid "Do nothing"
+msgstr ""
+
+#: src/2972-constrained-naked.md:94
+msgid ""
+"We could do nothing and let naked functions work as they currently do. "
+"However, this is likely to be a source of a long stream of difficult "
+"compiler bugs and therefore there is no clear path to stabilization. "
+"Further, because of the lack of clear constraints, naked functions today are "
+"hard to use correctly. And when the developer fails to get every detail "
+"right, the result can be hard to debug."
+msgstr ""
+
+#: src/2972-constrained-naked.md:96
+msgid "Remove naked functions"
+msgstr ""
+
+#: src/2972-constrained-naked.md:98
+msgid ""
+"Another possibility is to simply remove support for naked functions "
+"altogether. This does solve the undefined behavior problem. But it forces "
+"the developer to pursue other options. Most notably `global_asm!()` or using "
+"an external assembler."
+msgstr ""
+
+#: src/2972-constrained-naked.md:100
+msgid ""
+"It would be possible to use `global_asm!()` to define functions with "
+"existing constraints. However, there is not currently a clear path to "
+"stabilization for `global_asm!()` since it is a thin wrapper around LLVM "
+"functionality. Further, `global_asm!()` does not provide features like "
+"namespacing and documentation. Nor can you use `global_asm!()` to provide "
+"`const` or `sym` operands, which are very useful."
+msgstr ""
+
+#: src/2972-constrained-naked.md:102
+msgid ""
+"Alternatively, developers could use an external assembler and link in the "
+"result. This approach is similar to `global_asm!()` but offloads the problem "
+"to external tooling such as the `cc` crate. It has the same drawbacks as "
+"`global_asm!()` and also puts additional requirements on compilers of the "
+"software."
+msgstr ""
+
+#: src/2972-constrained-naked.md:104
+msgid "Prior art"
+msgstr ""
+
+#: src/2972-constrained-naked.md:106
+msgid ""
+"All languages represented here follow the weaker definition of naked "
+"functions:"
+msgstr ""
+
+#: src/2972-constrained-naked.md:108
+msgid "supported"
+msgstr ""
+
+#: src/2972-constrained-naked.md:111
+msgid "C/C++ (GCC)"
+msgstr ""
+
+#: src/2972-constrained-naked.md:111 src/2972-constrained-naked.md:112
+#: src/2972-constrained-naked.md:113 src/2972-constrained-naked.md:115
+#: src/2972-constrained-naked.md:117 src/2972-constrained-naked.md:118
+#: src/2972-constrained-naked.md:119
+msgid "x"
+msgstr ""
+
+#: src/2972-constrained-naked.md:112
+msgid "C/C++ (Clang)"
+msgstr ""
+
+#: src/2972-constrained-naked.md:113
+msgid "C/C++ (MSVC)"
+msgstr ""
+
+#: src/2972-constrained-naked.md:114
+msgid "C/C++ (ICC)"
+msgstr ""
+
+#: src/2972-constrained-naked.md:115
+msgid "D"
+msgstr ""
+
+#: src/2972-constrained-naked.md:116
+msgid "Go"
+msgstr ""
+
+#: src/2972-constrained-naked.md:117
+msgid "Nim"
+msgstr ""
+
+#: src/2972-constrained-naked.md:118
+msgid "Rust"
+msgstr ""
+
+#: src/2972-constrained-naked.md:119
+msgid "Zig"
+msgstr ""
+
+#: src/2972-constrained-naked.md:121
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2972-constrained-naked.md:123
+msgid "All outstanding questions have been resolved."
+msgstr ""
+
+#: src/2972-constrained-naked.md:125
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2972-constrained-naked.md:127
+msgid ""
+"It would be possible to define new calling conventions that can be used with "
+"naked functions."
+msgstr ""
+
+#: src/2972-constrained-naked.md:129
+msgid ""
+"A previous version of this document defined an `extern \"custom\"` calling "
+"convention. It was observed in conversation that calling conventions are "
+"really a _type_ and that it could be useful to have calling conventions as "
+"part of the type system. In the interest of moving forward with constrained "
+"naked functions, it is best to limit the scope of this RFC and defer this "
+"(very good) conversation to a future RFC. As a simple workaround, naked "
+"functions which do not conform to their specified calling convention should "
+"be marked as unsafe and the caller requirements should be documented in the "
+"safety section of the documentation per standard convention."
+msgstr ""
+
+#: src/2972-constrained-naked.md:131
+msgid ""
+"It may also be possible to loosen the definition of a naked function in a "
+"future RFC. For example, it might be possible to allow the use of some "
+"additional, possibly new, operands to the `asm!()` block."
+msgstr ""

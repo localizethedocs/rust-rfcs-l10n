@@ -1,0 +1,222 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2169-euclidean-modulo.md:1
+msgid "Feature Name: `euclidean_modulo`"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:2
+msgid "Start Date: 2017-10-09"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2169](https://github.com/rust-lang/rfcs/pull/2169)"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#49048](https://github.com/rust-lang/rust/"
+"issues/49048)"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:9
+msgid ""
+"This RFC proposes the addition of a modulo method with more useful and "
+"mathematically regular properties over the built-in remainder `%` operator "
+"when the dividend or divisor is negative, along with the associated division "
+"method."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:11
+msgid ""
+"For previous discussion, see: https://internals.rust-lang.org/t/mathematical-"
+"modulo-operator/5952."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:16
+msgid ""
+"The behaviour of division and modulo, as implemented by Rust's (truncated) "
+"division `/` and remainder (or truncated modulo) `%` operators, with respect "
+"to negative operands is unintuitive and has fewer useful mathematical "
+"properties than that of other varieties of division and modulo, such as "
+"flooring and Euclidean[\\[1\\]](https://dl.acm.org/citation.cfm?"
+"doid=128861.128862). While there are good reasons for this design "
+"decision[\\[2\\]](https://mail.mozilla.org/pipermail/rust-dev/2013-"
+"April/003786.html), having convenient access to a modulo operation, in "
+"addition to the remainder is very useful, and has often been "
+"requested[\\[3\\]](https://mail.mozilla.org/pipermail/rust-dev/2013-"
+"April/003680.html)[\\[4\\]](https://github.com/rust-lang/rust/issues/13909)"
+"[\\[5\\]](https://stackoverflow.com/questions/31210357/is-there-a-modulus-"
+"not-remainder-function-operation)[\\[6\\]](https://users.rust-lang.org/t/"
+"proper-modulo-support/903)[\\[7\\]](https://www.reddit.com/r/rust/"
+"comments/3yoo1q/remainder/)."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:18
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:22
+msgid ""
+"// Comparison of the behaviour of Rust's truncating division\n"
+"// and remainder, vs Euclidean division & modulo.\n"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:24
+msgid "// (-2, -2)\n"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:25
+msgid "// (-3,  1)\n"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:27
+msgid ""
+"Euclidean division & modulo for integers and floating-point numbers will be "
+"achieved using the `div_euc` and `mod_euc` methods. The `%` operator has "
+"identical behaviour to `mod_euc` for unsigned integers. However, when using "
+"signed integers or floating-point numbers, you should be careful to consider "
+"the behaviour you want: often Euclidean modulo will be more appropriate."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:29
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:32
+msgid ""
+"It is important to have both division and modulo methods, as the two "
+"operations are intrinsically linked[\\[8\\]](https://en.wikipedia.org/wiki/"
+"Modulo_operation), though it is often the modulo operator that is "
+"specifically requested."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:34
+msgid ""
+"A complete implementation of Euclidean modulo would involve adding 8 methods "
+"to the integer primitives in `libcore/num/mod.rs` and 2 methods to the "
+"floating-point primitives in `libcore/num` and `libstd`:"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:36
+msgid "// Implemented for all numeric primitives.\n"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:40
+msgid "// Implemented for all integer primitives (signed and unsigned).\n"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:51
+msgid "Sample implementations for `div_euc` and `mod_euc` on signed integers:"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:69
+msgid "And on `f64` (analogous to the `f32` implementation):"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:88
+msgid ""
+"The unsigned implementations of these methods are trivial. The `checked_*`, "
+"`overflowing_*` and `wrapping_*` methods would operate analogously to their "
+"non-Euclidean `*_div` and `*_rem` counterparts that already exist. The edge "
+"cases are identical."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:91
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:94
+msgid ""
+"Standard drawbacks of adding methods to primitives apply. However, with the "
+"proposed method names, there are unlikely to be conflicts downstream[\\[9\\]]"
+"(https://github.com/search?"
+"q=div_euc+language%3ARust&type=Code&utf8=%E2%9C%93)[\\[10\\]](https://github."
+"com/search?q=mod_euc+language%3ARust&type=Code&utf8=%E2%9C%93)."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:96
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:99
+msgid ""
+"Flooring modulo is another variant that also has more useful behaviour with "
+"negative dividends than the remainder (truncating modulo). The difference in "
+"behaviour between flooring and Euclidean division & modulo come up rarely in "
+"practice, but there are arguments in favour of the mathematical properties "
+"of Euclidean division and modulo[\\[1\\]](https://dl.acm.org/citation.cfm?"
+"doid=128861.128862). Alternatively, both methods (flooring _and_ Euclidean) "
+"could be made available, though the difference between the two is likely "
+"specialised-enough that this would be overkill."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:101
+msgid ""
+"The functionality could be provided as an operator. However, it is likely "
+"that the functionality of remainder and modulo are small enough that it is "
+"not worth providing a dedicated operator for the method."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:103
+msgid ""
+"This functionality could instead reside in a separate crate, such as `num` "
+"(floored division & modulo is already available in this crate). However, "
+"there are strong points for inclusion into core itself:"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:104
+msgid ""
+"Modulo as an operation is more often desirable than remainder for signed "
+"operations (so much so that it is the default in a number of languages) -- "
+"[the mailing list discussion has more support in favour of flooring/"
+"Euclidean division](https://mail.mozilla.org/pipermail/rust-dev/2013-"
+"April/003687.html)."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:105
+msgid ""
+"Many people are unaware that the remainder can cause problems with signed "
+"integers, and having a method displaying the other behaviour would draw "
+"attention to this subtlety."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:106
+msgid ""
+"The previous support for this functionality in core shows that many are keen "
+"to have this available."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:107
+msgid ""
+"The Euclidean or flooring modulo is used (or reimplemented) commonly enough "
+"that it is worth having it generally accessible, rather than in a separate "
+"crate that must be depended on by each project."
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:109
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2169-euclidean-modulo.md:112
+msgid "None."
+msgstr ""

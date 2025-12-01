@@ -1,0 +1,323 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2307-concrete-nonzero-types.md:1
+msgid "Feature Name: `concrete-nonzero-types`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:2
+msgid "Start Date: 2018-01-21"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2307](https://github.com/rust-lang/rfcs/pull/2307)"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#49137](https://github.com/rust-lang/rust/"
+"issues/49137)"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:9
+msgid ""
+"Add `std::num::NonZeroU32` and eleven other concrete types (one for each "
+"primitive integer type) to replace and deprecate `core::nonzero::"
+"NonZero<T>`. (Non-zero/non-null raw pointers are available through [`std::"
+"ptr::NonNull<U>`](https://doc.rust-lang.org/nightly/std/ptr/struct.NonNull."
+"html).)"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:14
+msgid "Background"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:17
+msgid ""
+"The `&T` and `&mut T` types are represented in memory as pointers, and the "
+"type system ensures that they’re always valid. In particular, they can never "
+"be NULL. Since at least 2013, rustc has taken advantage of that fact to "
+"optimize the memory representation of `Option<&T>` and `Option<&mut T>` to "
+"be the same as `&T` and `&mut T`, with the forbidden NULL value indicating "
+"`Option::None`."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:24
+msgid ""
+"Later (still before Rust 1.0), a `core::nonzero::NonZero<T>` generic wrapper "
+"type was added to extend this optimization to raw pointers (as used in types "
+"like `Box<T>` or `Vec<T>`) and integers, encoding in the type system that "
+"they can not be null/zero. Its API today is:"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:31 src/2307-concrete-nonzero-types.md:133
+msgid "\"non_zero\""
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:47
+msgid "/* {{i,u}{8, 16, 32, 64, 128, size}, *{const,mut} T where T: ?Sized} */"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:50
+msgid ""
+"The tracking issue for these unstable APIs is [rust#27730](https://github."
+"com/rust-lang/rust/issues/27730)."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:53
+msgid ""
+"[`std::ptr::NonNull`](https://doc.rust-lang.org/nightly/std/ptr/struct."
+"NonNull.html) was stabilized in [in Rust 1.25](https://github.com/rust-lang/"
+"rust/pull/46952), wrapping `NonZero` further for raw pointers and adding "
+"pointer-specific APIs."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:57
+msgid "Motivation"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:60
+msgid ""
+"With `NonNull` covering pointers, the remaining use cases for `NonZero` are "
+"integers."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:62
+msgid ""
+"One problem of the current API is that it is unclear what happens or what "
+"_should_ happen to `NonZero<T>` or `Option<NonZero<T>>` when `T` is some "
+"type other than a raw pointer or a primitive integer. In particular, crates "
+"outside of `std` can implement `Zeroable` for their arbitrary types since it "
+"is a public trait."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:68
+msgid ""
+"To avoid this question entirely, this RFC proposes replacing the generic "
+"type and trait with twelve concrete types in `std::num`, one for each "
+"primitive integer type. This is similar to the existing atomic integer types "
+"like `std::sync::atomic::AtomicU32`."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:73
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:76
+msgid ""
+"When an integer value can never be zero because of the way an algorithm "
+"works, this fact can be encoded in the type system by using for example the "
+"`NonZeroU32` type instead of `u32`."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:80
+msgid ""
+"This enables code receiving such a value to safely make some assumptions, "
+"for example that dividing by this value will not cause a `attempt to divide "
+"by zero` panic. This may also enable the compiler to make some memory "
+"optimizations, for example `Option<NonZeroU32>` might take no more space "
+"than `u32` (with `None` represented as zero)."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:86
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:89
+msgid ""
+"A new private `macro_rules!` macro is defined and used in `core::num` that "
+"expands to twelve sets of items like below, one for each of:"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:92
+msgid "`u8`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:93
+msgid "`u16`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:94
+msgid "`u32`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:95
+msgid "`u64`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:96
+msgid "`u128`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:97
+msgid "`usize`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:98
+msgid "`i8`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:99
+msgid "`i16`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:100
+msgid "`i32`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:101
+msgid "`i64`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:102
+msgid "`i128`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:103
+msgid "`isize`"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:105
+msgid "These types are also re-exported in `std::num`."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:122
+msgid "// Similar impls for Display, Binary, Octal, LowerHex, and UpperHex\n"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:126
+msgid ""
+"Additionally, the `core::nonzero` module and its contents (`NonZero` and "
+"`Zeroable`) are deprecated with a warning message that suggests using `ptr::"
+"NonNull` or `num::NonZero*` instead."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:129
+msgid ""
+"A couple release cycles later, the module is made private to libcore and "
+"reduced to:"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:132
+msgid "/// Implementation detail of `ptr::NonNull` and `num::NonZero*`\n"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:140
+msgid ""
+"The memory layout of `Option<&T>` is a [documented](https://doc.rust-lang."
+"org/nomicon/other-reprs.html#reprc) guarantee of the Rust language. This RFC "
+"does **not** propose extending this guarantee to these new types. For "
+"example, `size_of::<Option<NonZeroU32>>() == size_of::<NonZeroU32>()` may or "
+"may not be true. It happens to be in current rustc, but an alternative Rust "
+"implementation could define `num::NonZero*` purely as library types."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:148
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:151
+msgid "This adds to the ever-expanding API surface of the standard library."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:153
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:156
+msgid ""
+"Memory layout optimization for non-zero integers mostly exist in rustc today "
+"because their implementation is very close (or the same) as for non-null "
+"pointers. But maybe they’re not useful enough to justify any dedicated "
+"public API. `core::nonzero` could be deprecated and made private without "
+"adding `num::NonZero*`, with only `ptr::NonNull` exposing such functionality."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:162
+msgid ""
+"On the other hand, maybe zero is “less special” for integers than NULL is "
+"for pointers. Maybe instead of `num::NonZero*` we should consider some other "
+"feature to enable creating integer wrapper types that restrict values to an "
+"arbitrary sub-range (making this known to the compiler for memory layout "
+"optimizations), similar to how [PR #45225](https://github.com/rust-lang/rust/"
+"pull/45225) restricts the primitive type `char` to `0 ..= 0x10FFFF`. Making "
+"entire bits available unlocks more potential future optimizations than a "
+"single value."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:171
+msgid ""
+"However no design for such a feature has been proposed, whereas `NonZero` is "
+"already implemented. The author’s position is that `num::NonZero*` should be "
+"added as it is still useful and can be stabilized such sooner, and it does "
+"not prevent adding another language feature later."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:176
+msgid ""
+"In response to “what if `Zeroable` is implemented for other types” it was "
+"suggested to prevent such `impl`s by making the trait permanently-unstable, "
+"or effectively private (by moving it in a private module and keeping it `pub "
+"trait` to fool the _private in public_ lint). The author feels that such "
+"abuses of the stability or privacy systems do not belong in stable APIs. "
+"(Stable APIs that mention traits like `RangeArgument` that are not stable "
+"_yet_ but have a path to stabilization are less of an abuse.)"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:185
+msgid ""
+"Still, we could decide on some answer to “`Zeroable` for arbitrary types”, "
+"implement and test it, stabilize `NonZero<T>` and `Zeroable` as-is (re-"
+"exported in `std`), and not add `num::NonZero*`."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:189
+msgid ""
+"Instead of `std::num` the new types could be in some other location, such as "
+"the modules named after their respective primitive types. For example `std::"
+"u32::NonZeroU32` or `std::u32::NonZero`. The former looks redundant, and the "
+"latter might lead to code that looks ambiguous if the type itself is "
+"imported instead of importing the module and using a qualified `u32::"
+"NonZero` path."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:196
+msgid ""
+"We could drop the `NonZeroI*` wrappers for signed integers. They’re included "
+"in this RFC because it’s easy, but every use of non-zero integers the author "
+"has seen so far has been with unsigned ones. This would cut the number of "
+"new types from 12 to 6."
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:201
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:204
+msgid ""
+"Should the memory layout of e.g. `Option<NonZeroU32>` be a language "
+"guarantee?"
+msgstr ""
+
+#: src/2307-concrete-nonzero-types.md:206
+msgid ""
+"Discussion of the design of a new language feature for integer types "
+"restricted to an arbitrary sub-range (see second unresolved question) is out "
+"of scope for this RFC. Discussing the potential existence of such a feature "
+"as a reason **not** to add non-zero integer types is in scope."
+msgstr ""

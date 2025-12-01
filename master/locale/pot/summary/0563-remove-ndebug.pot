@@ -1,0 +1,133 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0563-remove-ndebug.md:1
+msgid "Start Date: 2015-01-08"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#563](https://github.com/rust-lang/rfcs/pull/563)"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#22492](https://github.com/rust-lang/rust/"
+"issues/22492)"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:7
+msgid ""
+"Remove official support for the `ndebug` config variable, replace the "
+"current usage of it with a more appropriate `debug_assertions` compiler-"
+"provided config variable."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:10
+msgid "Motivation"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:12
+msgid ""
+"The usage of 'ndebug' to indicate a release build is a strange holdover from "
+"C/C++. It is not used much and is easy to forget about. Since it used like "
+"any other value passed to the `cfg` flag, it does not interact with other "
+"flags such as `-g` or `-O`."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:16
+msgid ""
+"The only current users of `ndebug` are the implementations of the "
+"`debug_assert!` macro. At the time of this writing integer overflow checking "
+"is will also be controlled by this variable. Since the optimisation setting "
+"does not influence `ndebug`, this means that code that the user expects to "
+"be optimised will still contain the overflow checking logic. Similarly, "
+"`debug_assert!` invocations are not removed, contrary to what intuition "
+"should expect. Enabling optimisations should been seen as a request to make "
+"the user's code faster, removing `debug_assert!` and other checks seems like "
+"a natural consequence."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:24
+msgid "Detailed design"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:26
+msgid ""
+"The `debug_assertions` configuration variable, the replacement for the "
+"`ndebug` variable, will be compiler provided based on the value of the `opt-"
+"level` codegen flag, including the implied value from `-O`.  Any value "
+"higher than 0 will disable the variable."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:30
+msgid ""
+"Another codegen flag `debug-assertions` will override this, forcing it on or "
+"off based on the value passed to it."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:33
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:35
+msgid ""
+"Technically backwards incompatible change. However the only usage of the "
+"`ndebug` variable in the rust tree is in the implementation of `debug_assert!"
+"`, so it's unlikely that any external code is using it."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:39
+msgid "Alternatives"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:41
+msgid "No real alternatives beyond different names and defaults."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:43
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:45
+msgid "From the RFC discussion there remain some unresolved details:"
+msgstr ""
+
+#: src/0563-remove-ndebug.md:47
+msgid ""
+"brson [writes](https://github.com/rust-lang/rfcs/"
+"pull/563#issuecomment-72549694), \"I have a minor concern that `-C debug-"
+"assertions` might not be the right place for this command line flag - it "
+"doesn't really affect code generation, at least in the current codebase "
+"(also `--cfg debug_assertions` has the same effect).\"."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:53
+msgid ""
+"huonw [writes](https://github.com/rust-lang/rfcs/"
+"pull/563#issuecomment-72550619), \"It seems like the flag could be more than "
+"just a boolean, but rather take a list of what to enable to allow fine-"
+"grained control, e.g. none, overflow-checks, debug_cfg,overflow-checks, all. "
+"(Where \\-C debug-assertions=debug_cfg acts like --cfg debug.)\"."
+msgstr ""
+
+#: src/0563-remove-ndebug.md:59
+msgid ""
+"huonw [writes](https://github.com/rust-lang/rfcs/"
+"pull/563#issuecomment-74762795), \"if we want this to apply to more than "
+"just debug_assert do we want to use a name other than -C debug-assertions?\"."
+msgstr ""

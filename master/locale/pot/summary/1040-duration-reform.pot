@@ -1,0 +1,390 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1040-duration-reform.md:1
+msgid "Feature Name: duration"
+msgstr ""
+
+#: src/1040-duration-reform.md:2
+msgid "Start Date: 2015-03-24"
+msgstr ""
+
+#: src/1040-duration-reform.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1040](https://github.com/rust-lang/rfcs/pull/1040)"
+msgstr ""
+
+#: src/1040-duration-reform.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#24874](https://github.com/rust-lang/rust/"
+"issues/24874)"
+msgstr ""
+
+#: src/1040-duration-reform.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1040-duration-reform.md:8
+msgid ""
+"This RFC suggests stabilizing a reduced-scope `Duration` type that is "
+"appropriate for interoperating with various system calls that require "
+"timeouts. It does not stabilize a large number of conversion methods in "
+"`Duration` that have subtle caveats, with the intent of revisiting those "
+"conversions more holistically in the future."
+msgstr ""
+
+#: src/1040-duration-reform.md:10
+msgid "Motivation"
+msgstr ""
+
+#: src/1040-duration-reform.md:12
+msgid ""
+"There are a number of different notions of \"time\", each of which has a "
+"different set of caveats, and each of which can be designed for optimal "
+"ergonomics for its domain. This proposal focuses on one particular one: an "
+"amount of time in high-precision units."
+msgstr ""
+
+#: src/1040-duration-reform.md:14
+msgid ""
+"Eventually, there are a number of concepts of time that deserve fleshed out "
+"APIs. Using the terminology from the popular Java time library [JodaTime]"
+"(http://www.joda.org/joda-time/):"
+msgstr ""
+
+#: src/1040-duration-reform.md:16
+msgid ""
+"`Duration`: an amount of time, described in terms of a high precision unit."
+msgstr ""
+
+#: src/1040-duration-reform.md:18
+msgid ""
+"`Period`: an amount of time described in human terms (\"5 minutes, 27 "
+"seconds\"), and which can only be resolved into a `Duration` relative to a "
+"moment in time."
+msgstr ""
+
+#: src/1040-duration-reform.md:21
+msgid ""
+"`Instant`: a moment in time represented in terms of a `Duration` since some "
+"epoch."
+msgstr ""
+
+#: src/1040-duration-reform.md:26
+msgid ""
+"Human complications such as leap seconds, days in a month, and leap years, "
+"and machine complications such as NTP adjustments make these concepts and "
+"their full APIs more complicated than they would at first appear. This "
+"proposal focuses on fleshing out a design for `Duration` that is sufficient "
+"for use as a timeout, leaving the other concepts of time to a future "
+"proposal."
+msgstr ""
+
+#: src/1040-duration-reform.md:30
+msgid ""
+"For the most part, the system APIs that this type is used to communicate "
+"with either use `timespec` (`u64` seconds plus `u32` nanos) or take a "
+"timeout in milliseconds (`u32` on Windows)."
+msgstr ""
+
+#: src/1040-duration-reform.md:32
+msgid ""
+"For example, [`GetQueuedCompletionStatus`](https://msdn.microsoft.com/en-us/"
+"library/windows/desktop/aa364986%28v=vs.85%29.aspx), one of the primary APIs "
+"in the Windows IOCP API, takes a `dwMilliseconds` parameter as a [`DWORD`]"
+"(https://msdn.microsoft.com/en-us/library/cc230318.aspx), which is a `u32`. "
+"Some Windows APIs use \"ticks\" or 100-nanosecond units."
+msgstr ""
+
+#: src/1040-duration-reform.md:40
+msgid "In light of that, this proposal has two primary goals:"
+msgstr ""
+
+#: src/1040-duration-reform.md:42
+msgid ""
+"to define a type that can describe portable timeouts for cross- platform APIs"
+msgstr ""
+
+#: src/1040-duration-reform.md:44
+msgid ""
+"to describe what should happen if a large `Duration` is passed into an API "
+"that does not accept timeouts that large"
+msgstr ""
+
+#: src/1040-duration-reform.md:47
+msgid ""
+"In general, this proposal considers it acceptable to reduce the granularity "
+"of timeouts (eliminating nanosecond granularity if only milliseconds are "
+"supported) and to truncate very large timeouts."
+msgstr ""
+
+#: src/1040-duration-reform.md:49
+msgid "This proposal retains the two fields in the existing `Duration`:"
+msgstr ""
+
+#: src/1040-duration-reform.md:51
+msgid "a `u64` of seconds"
+msgstr ""
+
+#: src/1040-duration-reform.md:52
+msgid "a `u32` of additional nanosecond precision"
+msgstr ""
+
+#: src/1040-duration-reform.md:54
+msgid ""
+"Timeout APIs defined in terms of milliseconds will truncate `Duration`s that "
+"are more than `u32::MAX` in milliseconds, and will reduce the granularity of "
+"the nanosecond field."
+msgstr ""
+
+#: src/1040-duration-reform.md:56
+msgid "A `u32` of milliseconds supports a timeout longer than 45 days."
+msgstr ""
+
+#: src/1040-duration-reform.md:58
+msgid ""
+"Future APIs to support a broader set of [Durations](http://www.joda.org/joda-"
+"time/key_duration.html) APIs, a [Period](http://www.joda.org/joda-time/"
+"key_period.html) and [Instant](http://www.joda.org/joda-time/key_instant."
+"html) type, as well as coercions between these types, would be useful, "
+"compatible follow-ups to this RFC."
+msgstr ""
+
+#: src/1040-duration-reform.md:64
+msgid "Detailed design"
+msgstr ""
+
+#: src/1040-duration-reform.md:66
+msgid ""
+"A `Duration` represents a period of time represented in terms of nanosecond "
+"granularity. It has `u64` seconds and an additional `u32` nanoseconds. There "
+"is no concept of a negative `Duration`."
+msgstr ""
+
+#: src/1040-duration-reform.md:68
+msgid ""
+"A negative `Duration` has no meaning for many APIs that may wish to take a "
+"`Duration`, which means that all such APIs would need to decide what to do "
+"when confronted with a negative `Duration`. As a result, this proposal "
+"focuses on the predominant use-cases for `Duration`, where unsigned types "
+"remove a number of caveats and ambiguities."
+msgstr ""
+
+#: src/1040-duration-reform.md:78
+msgid "// may not be more than 1 billion\n"
+msgstr ""
+
+#: src/1040-duration-reform.md:82
+msgid ""
+"/// create a Duration from a number of seconds and an\n"
+"    /// additional nanosecond precision. If nanos is one\n"
+"    /// billion or greater, it carries into secs.\n"
+msgstr ""
+
+#: src/1040-duration-reform.md:87
+msgid "/// create a Duration from a number of seconds\n"
+msgstr ""
+
+#: src/1040-duration-reform.md:90
+msgid "/// create a Duration from a number of milliseconds\n"
+msgstr ""
+
+#: src/1040-duration-reform.md:93
+msgid "/// the number of seconds represented by the Duration\n"
+msgstr ""
+
+#: src/1040-duration-reform.md:96
+msgid "/// the number of additional nanosecond precision\n"
+msgstr ""
+
+#: src/1040-duration-reform.md:101
+msgid ""
+"When `Duration` is used with a system API that expects `u32` milliseconds, "
+"the `Duration`'s precision is coarsened to milliseconds, and, and the number "
+"is truncated to `u32::MAX`."
+msgstr ""
+
+#: src/1040-duration-reform.md:103
+msgid ""
+"In general, this RFC assumes that timeout APIs permit spurious updates (see, "
+"for example, [pthread_cond_timedwait](http://pubs.opengroup.org/"
+"onlinepubs/009695399/functions/pthread_cond_timedwait.html), \"Spurious "
+"wakeups from the pthread_cond_timedwait() or pthread_cond_wait() functions "
+"may occur\")."
+msgstr ""
+
+#: src/1040-duration-reform.md:107
+msgid "`Duration` implements:"
+msgstr ""
+
+#: src/1040-duration-reform.md:109
+msgid ""
+"`Add`, `Sub`, `Mul`, `Div` which follow the overflow and underflow rules for "
+"`u64` when applied to the `secs` field (in particular, `Sub` will panic if "
+"the result would be negative). Nanoseconds must be less than 1 billion and "
+"great than or equal to 0, and carry into the `secs` field."
+msgstr ""
+
+#: src/1040-duration-reform.md:114
+msgid ""
+"`Display`, which prints a number of seconds, milliseconds and nanoseconds "
+"(if more than 0). For example, a `Duration` would be represented as `\"15 "
+"seconds, 306 milliseconds, and 13 nanoseconds\"`"
+msgstr ""
+
+#: src/1040-duration-reform.md:117
+msgid ""
+"`Debug`, `Ord` (and `PartialOrd`), `Eq` (and `PartialEq`), `Copy` and "
+"`Clone`, which are derived."
+msgstr ""
+
+#: src/1040-duration-reform.md:120
+msgid ""
+"This proposal does not, at this time, include mechanisms for instantiating a "
+"`Duration` from `weeks`, `days`, `hours` or `minutes`, because there are "
+"caveats to each of those units. In particular, the existence of leap seconds "
+"means that it is only possible to properly understand them relative to a "
+"particular starting point."
+msgstr ""
+
+#: src/1040-duration-reform.md:122
+msgid ""
+"The Joda-Time library in Java explains the problem well [in their "
+"documentation](http://www.joda.org/joda-time/key_period.html):"
+msgstr ""
+
+#: src/1040-duration-reform.md:126
+msgid ""
+"A duration in Joda-Time represents a duration of time measured in "
+"milliseconds. The duration is often obtained from an interval. Durations are "
+"a very simple concept, and the implementation is also simple. They have no "
+"chronology or time zone, **and consist solely of the millisecond duration.**"
+msgstr ""
+
+#: src/1040-duration-reform.md:128
+msgid ""
+"A period in Joda-Time represents a period of time defined in terms of "
+"fields, for example, 3 years 5 months 2 days and 7 hours. This differs from "
+"a duration in that it is inexact in terms of milliseconds. **A period can "
+"only be resolved to an exact number of milliseconds by specifying the "
+"instant (including chronology and time zone) it is relative to**."
+msgstr ""
+
+#: src/1040-duration-reform.md:130
+msgid ""
+"In short, this is saying that people expect \"23:50:00 + 10 minutes\" to "
+"equal \"00:00:00\", but it's impossible to know for sure whether that's true "
+"unless you know the exact starting point so you can take leap seconds into "
+"consideration."
+msgstr ""
+
+#: src/1040-duration-reform.md:132
+msgid ""
+"In order to address this confusion, Joda-Time's Duration has methods like "
+"`standardDays`/`toStandardDays` and `standardHours`/`toStandardHours`, which "
+"are meant to indicate to the user that the number of milliseconds is based "
+"on the standard number of milliseconds in an hour, rather than the "
+"colloquial notion of an \"hour\"."
+msgstr ""
+
+#: src/1040-duration-reform.md:134
+msgid ""
+"An approach like this could work for Rust, but this RFC is intentionally "
+"limited in scope to areas without substantial tradeoffs in an attempt to "
+"allow a minimal solution to progress more quickly."
+msgstr ""
+
+#: src/1040-duration-reform.md:136
+msgid ""
+"This proposal does not include a method to get a number of milliseconds from "
+"a `Duration`, because the number of milliseconds could exceed `u64`, and we "
+"would have to decide whether to return an `Option`, panic, or wait for a "
+"standard bignum. In the interest of limiting this proposal to APIs with a "
+"straight-forward design, this proposal defers such a method."
+msgstr ""
+
+#: src/1040-duration-reform.md:138
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1040-duration-reform.md:140
+msgid ""
+"The main drawback to this proposal is that it is significantly more minimal "
+"than the existing `Duration` API. However, this API is quite sufficient for "
+"timeouts, and without the caveats in the existing `Duration` API."
+msgstr ""
+
+#: src/1040-duration-reform.md:142
+msgid "Alternatives"
+msgstr ""
+
+#: src/1040-duration-reform.md:144
+msgid ""
+"We could stabilize the existing `Duration` API. However, it has a number of "
+"serious caveats:"
+msgstr ""
+
+#: src/1040-duration-reform.md:146
+msgid "The caveats described above about some of the units it supports."
+msgstr ""
+
+#: src/1040-duration-reform.md:147
+msgid ""
+"It supports converting a `Duration` into a number of microseconds or "
+"nanoseconds. Because that cannot be done reliably, those methods return "
+"`Option`s, and APIs that need to convert `Duration` into nanoseconds have to "
+"re-surface the `Option` (unergonomic) or panic."
+msgstr ""
+
+#: src/1040-duration-reform.md:151
+msgid ""
+"More generally, it has a fairly large API surface area, and almost every "
+"method has some caveat that would need to be explored in order to stabilize "
+"it."
+msgstr ""
+
+#: src/1040-duration-reform.md:157
+msgid ""
+"We could also include a number of convenience APIs that convert from other "
+"units into `Duration`s. This proposal assumes that some of those "
+"conveniences will eventually be added. However, the design of each of those "
+"conveniences is ambiguous, so they are not included in this initial proposal."
+msgstr ""
+
+#: src/1040-duration-reform.md:161
+msgid ""
+"Finally, we could avoid any API for timeouts, and simply take milliseconds "
+"throughout the standard library. However, this has two drawbacks."
+msgstr ""
+
+#: src/1040-duration-reform.md:163
+msgid ""
+"First, it does not allow us to represent higher-precision timeouts on "
+"systems that could support them."
+msgstr ""
+
+#: src/1040-duration-reform.md:165
+msgid ""
+"Second, while this proposal does not yet include conveniences, it assumes "
+"that some conveniences should be added in the future once the design space "
+"is more fully explored. Starting with a simple type gives us space to grow "
+"into."
+msgstr ""
+
+#: src/1040-duration-reform.md:167
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1040-duration-reform.md:169
+msgid "Should we implement all of the listed traits? Others?"
+msgstr ""

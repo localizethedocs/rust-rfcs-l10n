@@ -1,0 +1,546 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1122-language-semver.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1122-language-semver.md:2
+msgid "Start Date: 2015-05-07"
+msgstr ""
+
+#: src/1122-language-semver.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1122](https://github.com/rust-lang/rfcs/pull/1122)"
+msgstr ""
+
+#: src/1122-language-semver.md:4
+msgid "Rust Issue: N/A"
+msgstr ""
+
+#: src/1122-language-semver.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1122-language-semver.md:8
+msgid ""
+"This RFC has the goal of defining what sorts of breaking changes we will "
+"permit for the Rust language itself, and giving guidelines for how to go "
+"about making such changes."
+msgstr ""
+
+#: src/1122-language-semver.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1122-language-semver.md:14
+msgid ""
+"With the release of 1.0, we need to establish clear policy on what precisely "
+"constitutes a \"minor\" vs \"major\" change to the Rust language itself (as "
+"opposed to libraries, which are covered by [RFC 1105](https://github.com/"
+"rust-lang/rfcs/pull/1105)). **This RFC proposes that minor releases may only "
+"contain breaking changes that fix compiler bugs or other type-system "
+"issues**. Primarily, this means soundness issues where \"innocent\" code can "
+"cause undefined behavior (in the technical sense), but it also covers cases "
+"like compiler bugs and tightening up the semantics of \"underspecified\" "
+"parts of the language (more details below)."
+msgstr ""
+
+#: src/1122-language-semver.md:24
+msgid ""
+"However, simply landing all breaking changes immediately could be very "
+"disruptive to the ecosystem. Therefore, **the RFC also proposes specific "
+"measures to mitigate the impact of breaking changes**, and some criteria "
+"when those measures might be appropriate."
+msgstr ""
+
+#: src/1122-language-semver.md:29
+msgid ""
+"In rare cases, it may be deemed a good idea to make a breaking change that "
+"is not a soundness problem or compiler bug, but rather correcting a defect "
+"in design. Such cases should be rare. But if such a change is deemed "
+"worthwhile, then the guidelines given here can still be used to mitigate its "
+"impact."
+msgstr ""
+
+#: src/1122-language-semver.md:35
+msgid "Detailed design"
+msgstr ""
+
+#: src/1122-language-semver.md:37
+msgid ""
+"The detailed design is broken into two major sections: how to address "
+"soundness changes, and how to address other, opt-in style changes. We do not "
+"discuss non-breaking changes here, since obviously those are safe."
+msgstr ""
+
+#: src/1122-language-semver.md:42
+msgid "Soundness changes"
+msgstr ""
+
+#: src/1122-language-semver.md:44
+msgid ""
+"When compiler or type-system bugs are encountered in the language itself (as "
+"opposed to in a library), clearly they ought to be fixed. However, it is "
+"important to fix them in such a way as to minimize the impact on the "
+"ecosystem."
+msgstr ""
+
+#: src/1122-language-semver.md:49
+msgid ""
+"The first step then is to evaluate the impact of the fix on the crates found "
+"in the `crates.io` website (using e.g. the crater tool). If impact is found "
+"to be \"small\" (which this RFC does not attempt to precisely define), then "
+"the fix can simply be landed. As today, the commit message of any breaking "
+"change should include the term `[breaking-change]` along with a description "
+"of how to resolve the problem, which helps those people who are affected to "
+"migrate their code. A description of the problem should also appear in the "
+"relevant subteam report."
+msgstr ""
+
+#: src/1122-language-semver.md:59
+msgid ""
+"In cases where the impact seems larger, any effort to ease the transition is "
+"sure to be welcome. The following are suggestions for possible steps we "
+"could take (not all of which will be applicable to all scenarios):"
+msgstr ""
+
+#: src/1122-language-semver.md:64
+msgid ""
+"Identify important crates (such as those with many dependants) and work with "
+"the crate author to correct the code as quickly as possible, ideally before "
+"the fix even lands."
+msgstr ""
+
+#: src/1122-language-semver.md:67
+msgid ""
+"Work hard to ensure that the error message identifies the problem clearly "
+"and suggests the appropriate solution."
+msgstr ""
+
+#: src/1122-language-semver.md:69
+msgid ""
+"If we develop a rustfix tool, in some cases we may be able to extend that "
+"tool to perform the fix automatically."
+msgstr ""
+
+#: src/1122-language-semver.md:71
+msgid ""
+"Provide an annotation that allows for a scoped \"opt out\" of the newer "
+"rules, as described below. While the change is still breaking, this at least "
+"makes it easy for crates to update and get back to compiling status quickly."
+msgstr ""
+
+#: src/1122-language-semver.md:75
+msgid ""
+"Begin with a deprecation or other warning before issuing a hard error. In "
+"extreme cases, it might be nice to begin by issuing a deprecation warning "
+"for the unsound behavior, and only make the behavior a hard error after the "
+"deprecation has had time to circulate. This gives people more time to update "
+"their crates. However, this option may frequently not be available, because "
+"the source of a compilation error is often hard to pin down with precision."
+msgstr ""
+
+#: src/1122-language-semver.md:84
+msgid ""
+"Some of the factors that should be taken into consideration when deciding "
+"whether and how to minimize the impact of a fix:"
+msgstr ""
+
+#: src/1122-language-semver.md:87
+msgid "How important is the change?"
+msgstr ""
+
+#: src/1122-language-semver.md:88
+msgid ""
+"Soundness holes that can be easily exploited or which impact running code "
+"are obviously much more concerning than minor corner cases. There is "
+"somewhat in tension with the other factors: if there is, for example, a "
+"widely deployed vulnerability, fixing that vulnerability is important, but "
+"it will also cause a larger disruption."
+msgstr ""
+
+#: src/1122-language-semver.md:94
+msgid "How many crates on `crates.io` are affected?"
+msgstr ""
+
+#: src/1122-language-semver.md:95
+msgid ""
+"This is a general proxy for the overall impact (since of course there will "
+"always be private crates that are not part of crates.io)."
+msgstr ""
+
+#: src/1122-language-semver.md:98
+msgid "Were particularly vital or widely used crates affected?"
+msgstr ""
+
+#: src/1122-language-semver.md:99
+msgid ""
+"This could indicate that the impact will be wider than the raw number would "
+"suggest."
+msgstr ""
+
+#: src/1122-language-semver.md:101
+msgid ""
+"Does the change silently change the result of running the program, or simply "
+"cause additional compilation failures?"
+msgstr ""
+
+#: src/1122-language-semver.md:103
+msgid "The latter, while frustrating, are easier to diagnose."
+msgstr ""
+
+#: src/1122-language-semver.md:104
+msgid ""
+"What changes are needed to get code compiling again? Are those changes "
+"obvious from the error message?"
+msgstr ""
+
+#: src/1122-language-semver.md:106
+msgid ""
+"The more cryptic the error, the more frustrating it is when compilation "
+"fails."
+msgstr ""
+
+#: src/1122-language-semver.md:109
+msgid "What is a \"compiler bug\" or \"soundness change\"?"
+msgstr ""
+
+#: src/1122-language-semver.md:111
+msgid ""
+"In the absence of a formal spec, it is hard to define precisely what "
+"constitutes a \"compiler bug\" or \"soundness change\" (see also the section "
+"below on underspecified parts of the language). The obvious cases are "
+"soundness violations in a rather strict sense:"
+msgstr ""
+
+#: src/1122-language-semver.md:116
+msgid ""
+"Cases where the user is able to produce Undefined Behavior (UB) purely from "
+"safe code."
+msgstr ""
+
+#: src/1122-language-semver.md:118
+msgid ""
+"Cases where the user is able to produce UB using standard library APIs or "
+"other unsafe code that \"should work\"."
+msgstr ""
+
+#: src/1122-language-semver.md:121
+msgid ""
+"However, there are other kinds of type-system inconsistencies that might be "
+"worth fixing, even if they cannot lead directly to UB.  Bugs in the "
+"coherence system that permit uncontrolled overlap between impls are one "
+"example. Another example might be inference failures that cause code to "
+"compile which should not (because ambiguities exist). Finally, there is a "
+"list below of areas of the language which are generally considered "
+"underspecified."
+msgstr ""
+
+#: src/1122-language-semver.md:129
+msgid ""
+"We expect that there will be cases that fall on a grey line between bug and "
+"expected behavior, and discussion will be needed to determine where it "
+"falls. The recent conflict between `Rc` and scoped threads is an example of "
+"such a discussion: it was clear that both APIs could not be legal, but not "
+"clear which one was at fault. The results of these discussions will feed "
+"into the Rust spec as it is developed."
+msgstr ""
+
+#: src/1122-language-semver.md:136
+msgid "Opting out"
+msgstr ""
+
+#: src/1122-language-semver.md:138
+msgid ""
+"In some cases, it may be useful to permit users to opt out of new type "
+"rules. The intention is that this \"opt out\" is used as a temporary crutch "
+"to make it easy to get the code up and running. Typically this opt out will "
+"thus be removed in a later release. But in some cases, particularly those "
+"cases where the severity of the problem is relatively small, it could be an "
+"option to leave the \"opt out\" mechanism in place permanently. In either "
+"case, use of the \"opt out\" API would trigger the deprecation lint."
+msgstr ""
+
+#: src/1122-language-semver.md:147
+msgid ""
+"Note that we should make every effort to ensure that crates which employ "
+"this opt out can be used compatibly with crates that do not."
+msgstr ""
+
+#: src/1122-language-semver.md:150
+msgid "Changes that alter dynamic semantics versus typing rules"
+msgstr ""
+
+#: src/1122-language-semver.md:152
+msgid ""
+"In some cases, fixing a bug may not cause crates to stop compiling, but "
+"rather will cause them to silently start doing something different than they "
+"were doing before. In cases like these, the same principle of using "
+"mitigation measures to lessen the impact (and ease the transition) applies, "
+"but the precise strategy to be used will have to be worked out on a more "
+"case-by-case basis. This is particularly relevant to the underspecified "
+"areas of the language described in the next section."
+msgstr ""
+
+#: src/1122-language-semver.md:161
+msgid ""
+"Our approach to handling [dynamic drop](https://github.com/rust-lang/rfcs/"
+"pull/320) is a good example. Because we expect that moving to the complete "
+"non-zeroing dynamic drop semantics will break code, we've made an "
+"intermediate change that [altered the compiler to fill with use a non-zero "
+"value](https://github.com/rust-lang/rust/pull/23535), which helps to expose "
+"code that was implicitly relying on the current behavior (much of which has "
+"since been restructured in a more future-proof way)."
+msgstr ""
+
+#: src/1122-language-semver.md:170
+msgid "Underspecified language semantics"
+msgstr ""
+
+#: src/1122-language-semver.md:172
+msgid ""
+"There are a number of areas where the precise language semantics are "
+"currently somewhat underspecified. Over time, we expect to be fully defining "
+"the semantics of all of these areas. This may cause some existing code -- "
+"and in particular existing unsafe code -- to break or become invalid. "
+"Changes of this nature should be treated as soundness changes, meaning that "
+"we should attempt to mitigate the impact and ease the transition wherever "
+"possible."
+msgstr ""
+
+#: src/1122-language-semver.md:180
+msgid "Known areas where change is expected include the following:"
+msgstr ""
+
+#: src/1122-language-semver.md:182
+msgid "Destructors semantics:"
+msgstr ""
+
+#: src/1122-language-semver.md:183
+msgid ""
+"We plan to stop zeroing data and instead use marker flags on the stack, as "
+"specified in [RFC 320](https://github.com/rust-lang/rfcs/pull/320). This may "
+"affect destructors that rely on overwriting memory or using the "
+"`unsafe_no_drop_flag` attribute."
+msgstr ""
+
+#: src/1122-language-semver.md:186
+msgid ""
+"Currently, panicking in a destructor can cause unintentional memory leaks "
+"and other poor behavior (see [\\#14875](https://github.com/rust-lang/rust/"
+"issues/14875), [\\#16135](https://github.com/rust-lang/rust/issues/16135)). "
+"We are likely to make panic in a destructor simply abort, but the precise "
+"mechanism is not yet decided."
+msgstr ""
+
+#: src/1122-language-semver.md:190
+msgid ""
+"Order of dtor execution within a data structure is somewhat inconsistent "
+"(see [\\#744](https://github.com/rust-lang/rfcs/issues/744))."
+msgstr ""
+
+#: src/1122-language-semver.md:192
+msgid ""
+"The legal aliasing rules between unsafe pointers is not fully settled (see "
+"[\\#19733](https://github.com/rust-lang/rust/issues/19733))."
+msgstr ""
+
+#: src/1122-language-semver.md:193
+msgid ""
+"The interplay of assoc types and lifetimes is not fully settled and can lead "
+"to unsoundness in some cases (see [\\#23442](https://github.com/rust-lang/"
+"rust/issues/23442))."
+msgstr ""
+
+#: src/1122-language-semver.md:195
+msgid ""
+"The trait selection algorithm is expected to be improved and made more "
+"complete over time. It is possible that this will affect existing code."
+msgstr ""
+
+#: src/1122-language-semver.md:197
+msgid ""
+"[Overflow semantics](https://github.com/rust-lang/rfcs/pull/560): in "
+"particular, we may have missed some cases."
+msgstr ""
+
+#: src/1122-language-semver.md:198
+msgid ""
+"Memory allocation in unsafe code is currently unstable. We expect to be "
+"defining safe interfaces as part of the work on supporting tracing garbage "
+"collectors (see [\\#415](https://github.com/rust-lang/rfcs/issues/415))."
+msgstr ""
+
+#: src/1122-language-semver.md:201
+msgid ""
+"The treatment of hygiene in macros is uneven (see [\\#22462](https://github."
+"com/rust-lang/rust/issues/22462#issuecomment-81756673), [\\#24278](https://"
+"github.com/rust-lang/rust/issues/24278)). In some cases, changes here may be "
+"backwards compatible, or may be more appropriate only with explicit opt-in "
+"(or perhaps an alternate macro system altogether, such as [this proposal]"
+"(https://internals.rust-lang.org/t/pre-rfc-macro-improvements/2088))."
+msgstr ""
+
+#: src/1122-language-semver.md:205
+msgid ""
+"Lints will evolve over time (both the lints that are enabled and the precise "
+"cases that lints catch). We expect to introduce a [means to limit the effect "
+"of these changes on dependencies](https://github.com/rust-lang/rfcs/"
+"issues/1029)."
+msgstr ""
+
+#: src/1122-language-semver.md:208
+msgid ""
+"Stack overflow is currently detected via a segmented stack check prologue "
+"and results in an abort. We expect to experiment with a system based on "
+"guard pages in the future."
+msgstr ""
+
+#: src/1122-language-semver.md:211
+msgid ""
+"We currently abort the process on OOM conditions (exceeding the heap space, "
+"overflowing the stack). We may attempt to panic in such cases instead if "
+"possible."
+msgstr ""
+
+#: src/1122-language-semver.md:213
+msgid ""
+"Some details of type inference may change. For example, we expect to "
+"implement the fallback mechanism described in [RFC 213](https://github.com/"
+"rust-lang/rfcs/pull/213), and we may wish to make minor changes to "
+"accommodate overloaded integer literals. In some cases, type inferences "
+"changes may be better handled via explicit opt-in."
+msgstr ""
+
+#: src/1122-language-semver.md:219
+msgid ""
+"There are other kinds of changes that can be made in a minor version that "
+"may break unsafe code but which are not considered breaking changes, because "
+"the unsafe code is relying on things known to be intentionally unspecified. "
+"One obvious example is the layout of data structures, which is considered "
+"undefined unless they have a `#[repr(C)]` attribute."
+msgstr ""
+
+#: src/1122-language-semver.md:226
+msgid ""
+"Although it is not directly covered by this RFC, it's worth noting in "
+"passing that some of the CLI flags to the compiler may change in the future "
+"as well. The `-Z` flags are of course explicitly unstable, but some of the `-"
+"C`, rustdoc, and linker-specific flags are expected to evolve over time (see "
+"e.g. [\\#24451](https://github.com/rust-lang/rust/pull/24451))."
+msgstr ""
+
+#: src/1122-language-semver.md:232
+msgid "\\[Amendment\\] Misuse of `accessible(..)`"
+msgstr ""
+
+#: src/1122-language-semver.md:236
+msgid ""
+"[RFC 2523](https://github.com/rust-lang/rfcs/blob/master/text/2523-cfg-path-"
+"version.md) introduces `#[cfg(accessible($path)]`. Based on the "
+"accessibility of a to-the-current-crate external `$path`, the flag allows "
+"conditional compilation. When combined with `#[cfg(feature = "
+"\"unstable\")]`, this has certain breakage risks. Such breakage due to "
+"misuse, as outlined in the RFC, is considered acceptable and not covered by "
+"our stability promises. Please see the RFC for more details."
+msgstr ""
+
+#: src/1122-language-semver.md:242
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1122-language-semver.md:244
+msgid ""
+"The primary drawback is that making breaking changes are disruptive, even "
+"when done with the best of intentions. The alternatives list some ways that "
+"we could avoid breaking changes altogether, and the downsides of each."
+msgstr ""
+
+#: src/1122-language-semver.md:249
+msgid "Notes on phasing"
+msgstr ""
+
+#: src/1122-language-semver.md:251
+msgid "Alternatives"
+msgstr ""
+
+#: src/1122-language-semver.md:253
+msgid ""
+"**Rather than simply fixing soundness bugs, we could issue new major "
+"releases, or use some sort of opt-in mechanism to fix them conditionally.** "
+"This was initially considered as an option, but eventually rejected for the "
+"following reasons:"
+msgstr ""
+
+#: src/1122-language-semver.md:258
+msgid ""
+"Opting in to type system changes would cause deep splits between minor "
+"versions; it would also create a high maintenance burden in the compiler, "
+"since both older and newer versions would have to be supported."
+msgstr ""
+
+#: src/1122-language-semver.md:262
+msgid ""
+"It seems likely that all users of Rust will want to know that their code is "
+"sound and would not want to be working with unsafe constructs or bugs."
+msgstr ""
+
+#: src/1122-language-semver.md:265
+msgid ""
+"We already have several mitigation measures, such as opt-out or temporary "
+"deprecation, that can be used to ease the transition around a soundness fix. "
+"Moreover, separating out new type rules so that they can be \"opted into\" "
+"can be very difficult and would complicate the compiler internally; it would "
+"also make it harder to reason about the type system as a whole."
+msgstr ""
+
+#: src/1122-language-semver.md:272
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1122-language-semver.md:274
+msgid ""
+"**What precisely constitutes \"small\" impact?** This RFC does not attempt "
+"to define when the impact of a patch is \"small\" or \"not small\". We will "
+"have to develop guidelines over time based on precedent. One of the big "
+"unknowns is how indicative the breakage we observe on `crates.io` will be of "
+"the total breakage that will occur: it is certainly possible that all crates "
+"on `crates.io` work fine, but the change still breaks a large body of code "
+"we do not have access to."
+msgstr ""
+
+#: src/1122-language-semver.md:282
+msgid ""
+"**What attribute should we use to \"opt out\" of soundness changes?** The "
+"section on breaking changes indicated that it may sometimes be appropriate "
+"to include an \"opt out\" that people can use to temporarily revert to "
+"older, unsound type rules, but did not specify precisely what that opt-out "
+"should look like. Ideally, we would identify a specific attribute in advance "
+"that will be used for such purposes.  In the past, we have simply created ad-"
+"hoc attributes (e.g., `#[old_orphan_check]`), but because custom attributes "
+"are forbidden by stable Rust, this has the unfortunate side-effect of "
+"meaning that code which opts out of the newer rules cannot be compiled on "
+"older compilers (even though it's using the older type system rules). If we "
+"introduce an attribute in advance we will not have this problem."
+msgstr ""
+
+#: src/1122-language-semver.md:295
+msgid ""
+"**Are there any other circumstances in which we might perform a breaking "
+"change?** In particular, it may happen from time to time that we wish to "
+"alter some detail of a stable component. If we believe that this change will "
+"not affect anyone, such a change may be worth doing, but we'll have to work "
+"out more precise guidelines. [RFC 1156](https://github.com/rust-lang/rfcs/"
+"pull/1156) is an example."
+msgstr ""

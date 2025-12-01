@@ -1,0 +1,357 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1624-loop-break-value.md:1
+msgid "Feature Name: loop_break_value"
+msgstr ""
+
+#: src/1624-loop-break-value.md:2
+msgid "Start Date: 2016-05-20"
+msgstr ""
+
+#: src/1624-loop-break-value.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1624](https://github.com/rust-lang/rfcs/pull/1624)"
+msgstr ""
+
+#: src/1624-loop-break-value.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#37339](https://github.com/rust-lang/rust/"
+"issues/37339)"
+msgstr ""
+
+#: src/1624-loop-break-value.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1624-loop-break-value.md:9
+msgid ""
+"(This is a result of discussion of [issue #961](https://github.com/rust-lang/"
+"rfcs/issues/961) and related to RFCs [352](https://github.com/rust-lang/rfcs/"
+"pull/352) and [955](https://github.com/rust-lang/rfcs/pull/955).)"
+msgstr ""
+
+#: src/1624-loop-break-value.md:14
+msgid "Let a `loop { ... }` expression return a value via `break my_value;`."
+msgstr ""
+
+#: src/1624-loop-break-value.md:16
+msgid "Motivation"
+msgstr ""
+
+#: src/1624-loop-break-value.md:19
+msgid ""
+"Rust is an expression-oriented language. Currently loop constructs don't "
+"provide any useful value as expressions, they are run only for their side-"
+"effects. But there clearly is a \"natural-looking\", practical case, "
+"described in [this thread](https://github.com/rust-lang/rfcs/issues/961) and "
+"\\[this\\] RFC, where the loop expressions could have meaningful values. I "
+"feel that not allowing that case runs against the expression-oriented "
+"conciseness of Rust. [comment by golddranks](https://github.com/rust-lang/"
+"rfcs/issues/961#issuecomment-220820787)"
+msgstr ""
+
+#: src/1624-loop-break-value.md:28
+msgid "Some examples which can be much more concisely written with this RFC:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:31 src/1624-loop-break-value.md:49
+msgid "// without loop-break-value:\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:43 src/1624-loop-break-value.md:62
+msgid "// with loop-break-value:\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:72
+msgid "Detailed design"
+msgstr ""
+
+#: src/1624-loop-break-value.md:75
+msgid ""
+"This proposal does two things: let `break` take a value, and let `loop` have "
+"a result type other than `()`."
+msgstr ""
+
+#: src/1624-loop-break-value.md:78
+msgid "Break Syntax"
+msgstr ""
+
+#: src/1624-loop-break-value.md:80
+msgid "Four forms of `break` will be supported:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:82
+msgid "`break;`"
+msgstr ""
+
+#: src/1624-loop-break-value.md:83
+msgid "`break 'label;`"
+msgstr ""
+
+#: src/1624-loop-break-value.md:84
+msgid "`break EXPR;`"
+msgstr ""
+
+#: src/1624-loop-break-value.md:85
+msgid "`break 'label EXPR;`"
+msgstr ""
+
+#: src/1624-loop-break-value.md:87
+msgid ""
+"where `'label` is the name of a loop and `EXPR` is an expression. `break` "
+"and `break 'label` become equivalent to `break ()` and `break 'label ()` "
+"respectively."
+msgstr ""
+
+#: src/1624-loop-break-value.md:90
+msgid "Result type of loop"
+msgstr ""
+
+#: src/1624-loop-break-value.md:92
+msgid ""
+"Currently the result type of a 'loop' without 'break' is `!` (never "
+"returns), which may be coerced to any type. The result type of a 'loop' with "
+"a 'break' is `()`. This is important since a loop may appear as the last "
+"expression of a function:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:101
+msgid "// never breaks\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:113
+msgid "// this loop must diverge for the function to typecheck\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:118
+msgid ""
+"This proposal allows 'loop' expression to be of any type `T`, following the "
+"same typing and inference rules that are applicable to other expressions in "
+"the language. Type of `EXPR` in every `break EXPR` and `break 'label EXPR` "
+"must be coercible to the type of the loop the `EXPR` appears in."
+msgstr ""
+
+#: src/1624-loop-break-value.md:135
+msgid ""
+"It is an error if these types do not agree or if the compiler's type "
+"deduction rules do not yield a concrete type."
+msgstr ""
+
+#: src/1624-loop-break-value.md:138
+msgid "Examples of errors:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:141
+msgid "// error: loop type must be () and must be i32\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:142
+msgid "// error: loop type must be i32 and must be &str\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:144
+msgid "\"I am not an integer.\""
+msgstr ""
+
+#: src/1624-loop-break-value.md:144
+msgid "// error: loop type must be Option<_> and must be &str\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:148
+msgid "\"answer\""
+msgstr ""
+
+#: src/1624-loop-break-value.md:154
+msgid ""
+"// function does not return\n"
+"    // error: loop may break (same behaviour as before)\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:162
+msgid "Example showing the equivalence of `break;` and `break ();`:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:176
+msgid "Coercion examples:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:179
+msgid "// ! coerces to any type\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:186 src/1624-loop-break-value.md:188
+#: src/1624-loop-break-value.md:196 src/1624-loop-break-value.md:198
+msgid "// ...\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:191
+msgid "// break EXPRs are not of the same type, but both coerce to `&[u8]`.\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:204
+msgid "Result value"
+msgstr ""
+
+#: src/1624-loop-break-value.md:206
+msgid ""
+"A loop only yields a value if broken via some form of `break ...;` "
+"statement, in which case it yields the value resulting from the evaluation "
+"of the statement's expression (`EXPR` above), or `()` if there is no `EXPR` "
+"expression."
+msgstr ""
+
+#: src/1624-loop-break-value.md:211
+msgid "Examples:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:225
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1624-loop-break-value.md:228
+msgid ""
+"The proposal changes the syntax of `break` statements, requiring updates to "
+"parsers and possibly syntax highlighters."
+msgstr ""
+
+#: src/1624-loop-break-value.md:231
+msgid "Alternatives"
+msgstr ""
+
+#: src/1624-loop-break-value.md:234
+msgid ""
+"No alternatives to the design have been suggested. It has been suggested "
+"that the feature itself is unnecessary, and indeed much Rust code already "
+"exists without it, however the pattern solves some cases which are difficult "
+"to handle otherwise and allows more flexibility in code layout."
+msgstr ""
+
+#: src/1624-loop-break-value.md:239
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1624-loop-break-value.md:242
+msgid "Extension to for, while, while let"
+msgstr ""
+
+#: src/1624-loop-break-value.md:244
+msgid ""
+"A frequently discussed issue is extension of this concept to allow `for`, "
+"`while` and `while let` expressions to return values in a similar way. There "
+"is however a complication: these expressions may also terminate "
+"\"naturally\" (not via break), and no consensus has been reached on how the "
+"result value should be determined in this case, or even the result type."
+msgstr ""
+
+#: src/1624-loop-break-value.md:250
+msgid "There are three options:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:252
+msgid "Do not adjust `for`, `while` or `while let` at this time"
+msgstr ""
+
+#: src/1624-loop-break-value.md:253
+msgid ""
+"Adjust these control structures to return an `Option<T>`, returning `None` "
+"in the default case"
+msgstr ""
+
+#: src/1624-loop-break-value.md:255
+msgid "Specify the default return value via some extra syntax"
+msgstr ""
+
+#: src/1624-loop-break-value.md:257
+msgid "Via `Option<T>`"
+msgstr ""
+
+#: src/1624-loop-break-value.md:259
+msgid ""
+"Unfortunately, option (2) is not possible to implement cleanly without "
+"breaking a lot of existing code: many functions use one of these control "
+"structures in tail position, where the current \"value\" of the expression, "
+"`()`, is implicitly used:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:265
+msgid "// function returns `()`\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:268
+msgid "\"Value: {}\""
+msgstr ""
+
+#: src/1624-loop-break-value.md:270
+msgid ""
+"// loop exits with `()` which is implicitly \"returned\" from the function\n"
+msgstr ""
+
+#: src/1624-loop-break-value.md:274
+msgid "Two variations of option (2) are possible:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:276
+msgid ""
+"Only adjust the control structures where they contain a `break EXPR;` or "
+"`break 'label EXPR;` statement. This may work but would necessitate that "
+"`break;` and `break ();` mean different things."
+msgstr ""
+
+#: src/1624-loop-break-value.md:279
+msgid ""
+"As a special case, make `break ();` return `()` instead of `Some(())`, while "
+"for other values `break x;` returns `Some(x)`."
+msgstr ""
+
+#: src/1624-loop-break-value.md:282
+msgid "Via extra syntax for the default value"
+msgstr ""
+
+#: src/1624-loop-break-value.md:284
+msgid ""
+"Several syntaxes have been proposed for how a control structure's default "
+"value is set. For example:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:297
+msgid "or:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:300
+msgid "\"nope\""
+msgstr ""
+
+#: src/1624-loop-break-value.md:301
+msgid "\"found it!\""
+msgstr ""
+
+#: src/1624-loop-break-value.md:305
+msgid "There are two things to bear in mind when considering new syntax:"
+msgstr ""
+
+#: src/1624-loop-break-value.md:307
+msgid "It is undesirable to add a new keyword to the list of Rust's keywords"
+msgstr ""
+
+#: src/1624-loop-break-value.md:308
+msgid ""
+"It is strongly desirable that unbounded lookahead is _not_ required while "
+"syntax parsing Rust code"
+msgstr ""
+
+#: src/1624-loop-break-value.md:311
+msgid ""
+"For more discussion on this topic, see [issue #961](https://github.com/rust-"
+"lang/rfcs/issues/961)."
+msgstr ""

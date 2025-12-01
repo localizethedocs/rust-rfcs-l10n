@@ -1,0 +1,155 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2342-const-control-flow.md:1
+msgid "Feature Name: `const-control-flow`"
+msgstr ""
+
+#: src/2342-const-control-flow.md:2
+msgid "Start Date: 2018-01-11"
+msgstr ""
+
+#: src/2342-const-control-flow.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2342](https://github.com/rust-lang/rfcs/pull/2342)"
+msgstr ""
+
+#: src/2342-const-control-flow.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#49146](https://github.com/rust-lang/rust/"
+"issues/49146)"
+msgstr ""
+
+#: src/2342-const-control-flow.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2342-const-control-flow.md:9
+msgid ""
+"Enable `if` and `match` during const evaluation and make them evaluate "
+"lazily. In short, this will allow `if x < y { y - x } else { x - y }` even "
+"though the else branch would emit an overflow error for unsigned types if `x "
+"< y`."
+msgstr ""
+
+#: src/2342-const-control-flow.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2342-const-control-flow.md:16
+msgid ""
+"Conditions in constants are important for making functions like `NonZero::"
+"new` const fn and interpreting assertions."
+msgstr ""
+
+#: src/2342-const-control-flow.md:19
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2342-const-control-flow.md:22
+msgid "If you write"
+msgstr ""
+
+#: src/2342-const-control-flow.md:30 src/2342-const-control-flow.md:45
+msgid "// do something with a\n"
+msgstr ""
+
+#: src/2342-const-control-flow.md:32 src/2342-const-control-flow.md:48
+msgid "// do something with b\n"
+msgstr ""
+
+#: src/2342-const-control-flow.md:36
+msgid ""
+"The program will always panic (except if both `x` and `y` are `0`) because "
+"either `x - y` will overflow or `y - x` will. To resolve this one must move "
+"the `let a` and `let b` into the `if` and `else` branch respectively."
+msgstr ""
+
+#: src/2342-const-control-flow.md:52
+msgid "When constants are involved, new issues arise:"
+msgstr ""
+
+#: src/2342-const-control-flow.md:66
+msgid ""
+"`A` and `B` are evaluated before `FOO`, since constants are by definition "
+"constant, so their order of evaluation should not matter. This assumption "
+"breaks in the presence of errors, because errors are side effects, and thus "
+"not pure."
+msgstr ""
+
+#: src/2342-const-control-flow.md:70
+msgid ""
+"To resolve this issue, one needs to eliminate the intermediate constants and "
+"directly evaluate `X - Y` and `Y - X`."
+msgstr ""
+
+#: src/2342-const-control-flow.md:85
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2342-const-control-flow.md:88
+msgid ""
+"`match` on enums whose variants have no fields or `if` is translated during "
+"HIR \\-> MIR lowering to a `switchInt` terminator. Mir interpretation will "
+"now have to evaluate those terminators (which it already can)."
+msgstr ""
+
+#: src/2342-const-control-flow.md:92
+msgid ""
+"`match` on enums with variants which have fields is translated to `switch`, "
+"which will check either the discriminant or compute the discriminant in the "
+"case of packed enums like `Option<&T>` (which has no special memory location "
+"for the discriminant, but encodes `None` as all zeros and treats everything "
+"else as a `Some`). When entering a `match` arm's branch, the matched on "
+"value is essentially transmuted to the enum variant's type, allowing further "
+"code to access its fields."
+msgstr ""
+
+#: src/2342-const-control-flow.md:100
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2342-const-control-flow.md:103
+msgid ""
+"This makes it easier to fail compilation on random \"constant\" values like "
+"`size_of::<T>()` or other platform specific constants."
+msgstr ""
+
+#: src/2342-const-control-flow.md:106
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2342-const-control-flow.md:109
+msgid "Require intermediate const fns to break the eager const evaluation"
+msgstr ""
+
+#: src/2342-const-control-flow.md:111
+msgid "Instead of writing"
+msgstr ""
+
+#: src/2342-const-control-flow.md:123
+msgid ""
+"where either `X - Y` or `Y - X` would emit an error, add an intermediate "
+"const fn"
+msgstr ""
+
+#: src/2342-const-control-flow.md:138
+msgid ""
+"Since the const fn's `x` and `y` arguments are unknown, they cannot be const "
+"evaluated. When the const fn is evaluated with given arguments, only the "
+"taken branch is evaluated."
+msgstr ""
+
+#: src/2342-const-control-flow.md:142
+msgid "Unresolved questions"
+msgstr ""

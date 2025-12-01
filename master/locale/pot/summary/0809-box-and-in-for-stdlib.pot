@@ -1,0 +1,790 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0809-box-and-in-for-stdlib.md:1
+msgid "Feature Name: box_syntax, placement_in_syntax"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:2
+msgid "Start Date: 2015-02-04"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#809](https://github.com/rust-lang/rfcs/pull/809)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#22181](https://github.com/rust-lang/rust/"
+"issues/22181)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:6
+msgid "This RFC was previously approved, but later **withdrawn**"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:8
+msgid ""
+"For details see the [summary comment](https://github.com/rust-lang/rust/"
+"issues/27779#issuecomment-378416911)."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:12
+msgid "Summary"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:14
+msgid ""
+"Change placement-new syntax from: `box (<place-expr>) <expr>` instead to: "
+"`in <place-expr> { <block> }`."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:17
+msgid ""
+"Change `box <expr>` to an overloaded operator that chooses its "
+"implementation based on the expected type."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:20
+msgid ""
+"Use unstable traits in `core::ops` for both operators, so that libstd can "
+"provide support for the overloaded operators; the traits are unstable so "
+"that the language designers are free to revise the underlying protocol in "
+"the future post 1.0."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:25
+msgid ""
+"Feature-gate the placement-`in` syntax via the feature name "
+"`placement_in_syntax`."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:27
+msgid "The overloaded `box <expr>` will reuse the `box_syntax` feature name."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:29
+msgid ""
+"(Note that `<block>` here denotes the interior of a block expression; i.e.:"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:33
+msgid ""
+"This is the same sense in which the `block` nonterminal is used in the "
+"reference manual.)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:36
+msgid "Motivation"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:38
+msgid ""
+"Goal 1: We want to support an operation analogous to C++'s placement new, as "
+"discussed previously in [Placement Box RFC PR 470](https://github.com/rust-"
+"lang/rfcs/pull/470)."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:43
+msgid ""
+"Goal 2: We also would like to overload our `box` syntax so that more types, "
+"such as `Rc<T>` and `Arc<T>` can gain the benefit of avoiding intermediate "
+"copies (i.e. allowing expressions to install their result value directly "
+"into the backing storage of the `Rc<T>` or `Arc<T>` when it is created)."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:49
+msgid ""
+"However, during discussion of [Placement Box RFC PR 470](https://github.com/"
+"rust-lang/rfcs/pull/470), some things became clear:"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:52
+msgid ""
+"Many syntaxes using the `in` keyword are superior to `box (<place-expr>) "
+"<expr>` for the operation analogous to placement-new."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:55
+msgid ""
+"The proposed `in`\\-based syntax avoids ambiguities such as having to write "
+"`box () (<expr>)` (or `box (alloc::HEAP) (<expr>)`) when one wants to "
+"surround `<expr>` with parentheses. It allows the parser to provide clearer "
+"error messages when encountering `in <place-expr> <expr>` (clearer compared "
+"to the previous situation with `box <place-expr> <expr>`)."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:62
+msgid ""
+"It would be premature for Rust to commit to any particular protocol for "
+"supporting placement-`in`. A number of participants in the discussion of "
+"[Placement Box RFC PR 470](https://github.com/rust-lang/rfcs/pull/470) were "
+"unhappy with the baroque protocol, especially since it did not support DST "
+"and potential future language changes would allow the protocol proposed "
+"there to be significantly simplified."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:69
+msgid ""
+"Therefore, this RFC proposes a middle ground for 1.0: Support the desired "
+"syntax, but do not provide stable support for end-user implementations of "
+"the operators. The only stable ways to use the overloaded `box <expr>` or "
+"`in <place-expr> { <block> }` operators will be in tandem with types "
+"provided by the stdlib, such as `Box<T>`."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:75
+msgid "Detailed design"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:77
+msgid ""
+"Add traits to `core::ops` for supporting the new operators. This RFC does "
+"not commit to any particular set of traits, since they are not currently "
+"meant to be implemented outside of the stdlib. (However, a demonstration of "
+"one working set of traits is given in [Appendix A](#appendix-a-sample-"
+"operator-traits).)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:83
+msgid ""
+"Any protocol that we adopt for the operators needs to properly handle "
+"panics; i.e., `box <expr>` must properly cleanup any intermediate state if "
+"`<expr>` panics during its evaluation, and likewise for `in <place-expr> "
+"{ <block> }`"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:88
+msgid ""
+"(See [Placement Box RFC PR 470](https://github.com/rust-lang/rfcs/pull/470) "
+"or [Appendix A](#appendix-a-sample-operator-traits) for discussion on ways "
+"to accomplish this.)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:91
+msgid ""
+"Change `box <expr>` from built-in syntax (tightly integrated with `Box<T>`) "
+"into an overloaded-`box` operator that uses the expected return type to "
+"decide what kind of value to create.  For example, if `Rc<T>` is extended "
+"with an implementation of the appropriate operator trait, then"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:98
+msgid "\"Hello\""
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:101
+msgid ""
+"could be a legal way to create an `Rc<String>` without having to invoke the "
+"`Rc::new` function. This will be more efficient for building instances of "
+"`Rc<T>` when `T` is a large type.  (It is also arguably much cleaner syntax "
+"to read, regardless of the type `T`.)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:106
+msgid ""
+"Note that this change will require end-user code to no longer assume that "
+"`box <expr>` always produces a `Box<T>`; such code will need to either add a "
+"type annotation e.g. saying `Box<_>`, or will need to call `Box::"
+"new(<expr>)` instead of using `box <expr>`."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:111
+msgid ""
+"Add support for parsing `in <place-expr> { <block> }` as the basis for the "
+"placement operator."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:114
+msgid "Remove support for `box (<place-expr>) <expr>` from the parser."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:116
+msgid ""
+"Make `in <place-expr> { <block> }` an overloaded operator that uses the "
+"`<place-expr>` to determine what placement code to run."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:119
+msgid ""
+"Note: when `<place-expr>` is just an identifier, `<place-expr> { <block> }` "
+"is not parsed as a struct literal. We accomplish this via the same means "
+"that is used e.g. for `if` expressions: we restrict `<place-expr>` to not "
+"include struct literals (see [RFC 92](https://github.com/rust-lang/rfcs/blob/"
+"master/text/0092-struct-grammar.md))."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:127
+msgid ""
+"The only stabilized implementation for the `box <expr>` operator proposed by "
+"this RFC is `Box<T>`. The question of which other types should support "
+"integration with `box <expr>` is a library design issue and needs to go "
+"through the conventions and library stabilization process."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:133
+msgid ""
+"Similarly, this RFC does not propose _any_ stabilized implementation for the "
+"`in <place-expr> { <block> }` operator. (An obvious candidate for `in <place-"
+"expr> { <block> }` integration would be a `Vec::emplace_back` method; but "
+"again, the choice of which such methods to add is a library design issue, "
+"beyond the scope of this RFC.)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:139
+msgid ""
+"(A sample implementation illustrating how to support the operators on other "
+"types is given in [Appendix A](#appendix-a-sample-operator-traits).)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:142
+msgid ""
+"Feature-gate the two syntaxes under separate feature identifiers, so that we "
+"have the option of removing the gate for one syntax without the other. (I.e. "
+"we already have much experience with non-overloaded `box <expr>`, but we "
+"have nearly no experience with placement-`in` as described here)."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:147
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:149
+msgid ""
+"End-users might be annoyed that they cannot add implementations of the "
+"overloaded-`box` and placement-`in` operators themselves. But such users who "
+"want to do such a thing will probably be using the nightly release channel, "
+"which will not have the same stability restrictions."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:155
+msgid ""
+"The currently-implemented desugaring does not infer that in an expression "
+"like `box <expr> as Box<Trait>`, the use of `box <expr>` should evaluate to "
+"some `Box<_>`. pnkfelix has found that this is due to a weakness in compiler "
+"itself ([Rust PR 22012](https://github.com/rust-lang/rust/pull/22012))."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:160
+msgid ""
+"Likewise, the currently-implemented desugaring does not interact well with "
+"the combination of type-inference and implicit coercions to trait objects. "
+"That is, when `box <expr>` is used in a context like this:"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:168
+msgid ""
+"the type inference system attempts to unify the type `Box<SomeTrait>` with "
+"the return-type of `::protocol::Boxed::finalize(place)`. This may also be "
+"due to weakness in the compiler, but that is not immediately obvious."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:173
+msgid ""
+"[Appendix B](#appendix-b-examples-of-interaction-between-desugaring-type-"
+"inference-and-coercion) has a complete code snippet (using a desugaring much "
+"like the one found in the other appendix) that illustrates two cases of "
+"interest where this weakness arises."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:179
+msgid "Alternatives"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:181
+msgid ""
+"We could keep the `box (<place-expr>) <expr>` syntax. It is hard to see what "
+"the advantage of that is, unless (1.) we can identify many cases of types "
+"that benefit from supporting both overloaded-`box` and placement-`in`, or "
+"unless (2.) we anticipate some integration with `box` pattern syntax that "
+"would motivate using the `box` keyword for placement."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:188
+msgid ""
+"We could use the `in (<place-expr>) <expr>` syntax. An earlier version of "
+"this RFC used this alternative. It is easier to implement on the current "
+"code base, but I do not know of any other benefits. (Well, maybe parentheses "
+"are less \"heavyweight\" than curly-braces?)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:193
+msgid ""
+"A number of other syntaxes for placement have been proposed in the past; see "
+"for example discussion on [RFC PR 405](https://github.com/rust-lang/rfcs/"
+"issues/405) as well as [the previous placement RFC](https://github.com/"
+"pnkfelix/rfcs/blob/fsk-placement-box-rfc/text/0000-placement-box.md#same-"
+"semantics-but-different-surface-syntax)."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:197
+msgid "The main constraints I want to meet are:"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:198
+msgid "Do not introduce ambiguity into the grammar for Rust"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:199
+msgid ""
+"Maintain left-to-right evaluation order (so the place should appear to the "
+"left of the value expression in the text)."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:202
+msgid "But otherwise I am not particularly attached to any single syntax."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:205
+msgid ""
+"One particular alternative that might placate those who object to placement-"
+"`in`'s `box`\\-free form would be: `box (in <place-expr>) <expr>`."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:213
+msgid ""
+"Do nothing. I.e. do not even accept an unstable libstd-only protocol for "
+"placement-`in` and overloaded-`box`. This would be okay, but unfortunate, "
+"since in the past some users have identified intermediate copies to be a "
+"source of inefficiency, and proper use of `box <expr>` and placement-`in` "
+"can help remove intermediate copies."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:220
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:222
+msgid ""
+"This RFC represents the current plan for `box`/`in`. However, in the [RFC "
+"discussion](https://github.com/rust-lang/rfcs/pull/809) a number of "
+"questions arose, including possible design alternatives that might render "
+"the `in` keyword unnecessary. Before the work in this RFC can be unfeature-"
+"gated, these questions should be satisfactorily resolved:"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:228
+msgid ""
+"Can the type-inference and coercion system of the compiler be enriched to "
+"the point where overloaded `box` and `in` are seamlessly usable? Or are type-"
+"ascriptions unavoidable when supporting overloading?"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:233
+msgid ""
+"In particular, I am assuming here that some amount of current weakness "
+"cannot be blamed on any particular details of the sample desugaring."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:237
+msgid ""
+"(See [Appendix B](#appendix-b-examples-of-interaction-between-desugaring-"
+"type-inference-and-coercion) for example code showing weaknesses in `rustc` "
+"of today.)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:239
+msgid ""
+"Do we want to change the syntax for `in(place) expr` / `in place { expr }`?"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:240
+msgid ""
+"Do we need `in` at all, or can we replace it with some future possible "
+"feature such as `DerefSet` or `&out` etc?"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:241
+msgid "Do we want to improve the protocol in some way?"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:242
+msgid "Note that the protocol was specifically excluded from this RFC."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:243
+msgid ""
+"Support for DST expressions such as `box [22, ..count]` (where `count` is a "
+"dynamic value)?"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:244
+msgid "Protocol making use of more advanced language features?"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:246
+msgid "Appendices"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:248
+msgid "Appendix A: sample operator traits"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:251
+msgid ""
+"The goal is to show that code like the following can be made to work in Rust "
+"today via appropriate desugarings and trait definitions."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:259
+msgid "// has return type `()`\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:260 src/0809-box-and-in-for-stdlib.md:612
+msgid "\"v: {:?}\""
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:260
+msgid "// prints [1,2,3]\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:263 src/0809-box-and-in-for-stdlib.md:615
+msgid "\"b4: {}\""
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:266 src/0809-box-and-in-for-stdlib.md:618
+msgid "\"b5: {}\""
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:268 src/0809-box-and-in-for-stdlib.md:620
+msgid "// return type Box<i32>\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:269 src/0809-box-and-in-for-stdlib.md:621
+msgid "\"b6: {}\""
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:273
+msgid ""
+"To demonstrate the above, this appendix provides code that runs today; it "
+"demonstrates sample protocols for the proposed operators. (The entire code-"
+"block below should work when e.g. cut-and-paste into http::play.rust-lang."
+"org )"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:279
+msgid "// (hopefully unnecessary soon with RFC PR 769)\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:281
+msgid ""
+"// The easiest way to illustrate the desugaring is by implementing\n"
+"// it with macros.  So, we will use the macro `in_` for placement-`in`\n"
+"// and the macro `box_` for overloaded-`box`; you should read\n"
+"// `in_!( (<place-expr>) <expr> )` as if it were `in <place-expr> { <expr> }"
+"`\n"
+"// and\n"
+"// `box_!( <expr> )` as if it were `box <expr>`.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:288
+msgid ""
+"// The two macros have been designed to both 1. work with current Rust\n"
+"// syntax (which in some cases meant avoiding certain associated-item\n"
+"// syntax that currently causes the compiler to ICE) and 2. infer the\n"
+"// appropriate code to run based only on either `<place-expr>` (for\n"
+"// placement-`in`) or on the expected result type (for\n"
+"// overloaded-`box`).\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:320
+msgid ""
+"// Note that while both desugarings are very similar, there are some\n"
+"// slight differences.  In particular, the placement-`in` desugaring\n"
+"// uses `InPlace::finalize(place)`, which is a `finalize` method that\n"
+"// is overloaded based on the `place` argument (the type of which is\n"
+"// derived from the `<place-expr>` input); on the other hand, the\n"
+"// overloaded-`box` desugaring uses `Boxed::finalize(place)`, which is\n"
+"// a `finalize` method that is overloaded based on the expected return\n"
+"// type. Thus, the determination of which `finalize` method to call is\n"
+"// derived from different sources in the two desugarings.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:330
+msgid ""
+"// The above desugarings refer to traits in a `protocol` module; these\n"
+"// are the traits that would be put into `std::ops`, and are given\n"
+"// below.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:336
+msgid ""
+"/// Both `in PLACE { BLOCK }` and `box EXPR` desugar into expressions\n"
+"/// that allocate an intermediate \"place\" that holds uninitialized\n"
+"/// state.  The desugaring evaluates EXPR, and writes the result at\n"
+"/// the address returned by the `pointer` method of this trait.\n"
+"///\n"
+"/// A `Place` can be thought of as a special representation for a\n"
+"/// hypothetical `&uninit` reference (which Rust cannot currently\n"
+"/// express directly). That is, it represents a pointer to\n"
+"/// uninitialized storage.\n"
+"///\n"
+"/// The client is responsible for two steps: First, initializing the\n"
+"/// payload (it can access its address via `pointer`). Second,\n"
+"/// converting the agent to an instance of the owning pointer, via the\n"
+"/// appropriate `finalize` method (see the `InPlace`.\n"
+"///\n"
+"/// If evaluating EXPR fails, then the destructor for the\n"
+"/// implementation of Place to clean up any intermediate state\n"
+"/// (e.g. deallocate box storage, pop a stack, etc).\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:356
+msgid ""
+"/// Returns the address where the input value will be written.\n"
+"    /// Note that the data at this address is generally uninitialized,\n"
+"    /// and thus one should use `ptr::write` for initializing it.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:361
+msgid ""
+"/// Interface to implementations of  `in PLACE { BLOCK }`.\n"
+"///\n"
+"/// `in PLACE { BLOCK }` effectively desugars into:\n"
+"///\n"
+"/// ```\n"
+"/// let p = PLACE;\n"
+"/// let mut place = Placer::make_place(p);\n"
+"/// let raw_place = Place::pointer(&mut place);\n"
+"/// let value = { BLOCK };\n"
+"/// unsafe {\n"
+"///     std::ptr::write(raw_place, value);\n"
+"///     InPlace::finalize(place)\n"
+"/// }\n"
+"/// ```\n"
+"///\n"
+"/// The type of `in PLACE { BLOCK }` is derived from the type of `PLACE`;\n"
+"/// if the type of `PLACE` is `P`, then the final type of the whole\n"
+"/// expression is `P::Place::Owner` (see the `InPlace` and `Boxed`\n"
+"/// traits).\n"
+"///\n"
+"/// Values for types implementing this trait usually are transient\n"
+"/// intermediate values (e.g. the return value of `Vec::emplace_back`)\n"
+"/// or `Copy`, since the `make_place` method takes `self` by value.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:386
+msgid ""
+"/// `Place` is the intermediate agent guarding the\n"
+"    /// uninitialized state for `Data`.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:390
+msgid "/// Creates a fresh place from `self`.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:393
+msgid "/// Specialization of `Place` trait supporting `in PLACE { BLOCK }`.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:396
+msgid ""
+"/// `Owner` is the type of the end value of `in PLACE { BLOCK }`\n"
+"    ///\n"
+"    /// Note that when `in PLACE { BLOCK }` is solely used for\n"
+"    /// side-effecting an existing data-structure,\n"
+"    /// e.g. `Vec::emplace_back`, then `Owner` need not carry any\n"
+"    /// information at all (e.g. it can be the unit type `()` in that\n"
+"    /// case).\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:405
+msgid ""
+"/// Converts self into the final value, shifting\n"
+"    /// deallocation/cleanup responsibilities (if any remain), over to\n"
+"    /// the returned instance of `Owner` and forgetting self.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:410
+msgid ""
+"/// Core trait for the `box EXPR` form.\n"
+"///\n"
+"/// `box EXPR` effectively desugars into:\n"
+"///\n"
+"/// ```\n"
+"/// let mut place = BoxPlace::make_place();\n"
+"/// let raw_place = Place::pointer(&mut place);\n"
+"/// let value = $value;\n"
+"/// unsafe {\n"
+"///     ::std::ptr::write(raw_place, value);\n"
+"///     Boxed::finalize(place)\n"
+"/// }\n"
+"/// ```\n"
+"///\n"
+"/// The type of `box EXPR` is supplied from its surrounding\n"
+"/// context; in the above expansion, the result type `T` is used\n"
+"/// to determine which implementation of `Boxed` to use, and that\n"
+"/// `<T as Boxed>` in turn dictates determines which\n"
+"/// implementation of `BoxPlace` to use, namely:\n"
+"/// `<<T as Boxed>::Place as BoxPlace>`.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:432
+msgid "/// The kind of data that is stored in this kind of box.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:433
+msgid "/* (`Data` unused b/c cannot yet express below bound.) */"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:434
+msgid "/* should be bounded by BoxPlace<Self::Data> */"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:436
+msgid ""
+"/// Converts filled place into final owning value, shifting\n"
+"    /// deallocation/cleanup responsibilities (if any remain), over to\n"
+"    /// returned instance of `Self` and forgetting `filled`.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:441
+msgid "/// Specialization of `Place` trait supporting `box EXPR`.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:444
+msgid "/// Creates a globally fresh place.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:448
+msgid "// end of `mod protocol`\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:449
+msgid ""
+"// Next, we need to see sample implementations of these traits.\n"
+"// First, `Box<T>` needs to support overloaded-`box`: (Note that this\n"
+"// is not the desired end implementation; e.g.  the `BoxPlace`\n"
+"// representation here is less efficient than it could be. This is\n"
+"// just meant to illustrate that an implementation *can* be made;\n"
+"// i.e. that the overloading *works*.)\n"
+"//\n"
+"// Also, just for kicks, I am throwing in `in HEAP { <block> }` support,\n"
+"// though I do not think that needs to be part of the stable libstd.\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:489 src/0809-box-and-in-for-stdlib.md:530
+msgid "\"impossible\""
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:509
+msgid ""
+"// Second, it might be nice if `Rc<T>` supported overloaded-`box`.\n"
+"//\n"
+"// (Note again that this may not be the most efficient implementation;\n"
+"// it is just meant to illustrate that an implementation *can* be\n"
+"// made; i.e. that the overloading *works*.)\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:553
+msgid ""
+"// Third, we want something to demonstrate placement-`in`. Let us use\n"
+"// `Vec::emplace_back` for that:\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:601
+msgid ""
+"// Okay, that's enough for us to actually demonstrate the syntax!\n"
+"// Here's our `fn main`:\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:607
+msgid "// get hacked-in `emplace_back` into scope\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:625
+msgid ""
+"Appendix B: examples of interaction between desugaring, type-inference, and "
+"coercion"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:628
+msgid ""
+"The following code works with the current version of `box` syntax in Rust, "
+"but needs some sort of type annotation in Rust as it stands today for the "
+"desugaring of `box` to work out."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:631
+msgid ""
+"(The following code uses `cfg` attributes to make it easy to switch between "
+"slight variations on the portions that expose the weakness.)"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:636
+msgid "// NOTE: Scroll down to \"START HERE\"\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:649
+msgid "// (Support traits and impls for examples below.)\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:665
+msgid "// START HERE\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:679
+msgid "// (This one assumes PR 22012 has landed)\n"
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:695
+msgid ""
+"You can pass `--cfg duh_worksN` and `--cfg coerce_worksM` for suitable `N` "
+"and `M` to see them compile.  Here is a transcript with those attempts, "
+"including the cases where type-inference fails in the desugaring."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:730
+msgid ""
+"The point I want to get across is this: It looks like both of these cases "
+"can be worked around via explicit type ascription.  Whether or not this is "
+"an acceptable cost is a reasonable question."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:735
+msgid ""
+"Note that type ascription is especially annoying for the `fn duh` case, "
+"where one needs to keep the array-length encoded in the type consistent with "
+"the length of the array generated by the expression. This might motivate "
+"extending the use of wildcard `_` within type expressions to include "
+"wildcard constants, for use in the array length, i.e.: `[T; _]`."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:741
+msgid ""
+"The `fn coerce` example comes from uses of the `fn combine_structure` "
+"function in the `libsyntax` crate."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:744
+msgid ""
+"The `fn duh` example comes from the implementation of the `Default` trait "
+"for `Box<[T]>`."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:747
+msgid ""
+"Both examples are instances of coercion; the `fn coerce` example is trying "
+"to express a coercion of a `Box<Type>` to a `Box<Trait>` (i.e. making a "
+"trait-object), and the `fn duh` example is trying to express a coercion of a "
+"`Box<[T; k]>` (specifically `[T; 0]`) to a `Box<[T]>`.  Both are going from "
+"a pointer-to-sized to a pointer-to-unsized."
+msgstr ""
+
+#: src/0809-box-and-in-for-stdlib.md:754
+msgid ""
+"(Maybe there is a way to handle both of these cases in a generic fashion; "
+"pnkfelix is not sufficiently familiar with how coercions currently interact "
+"with type-inference in the first place.)"
+msgstr ""

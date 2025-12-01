@@ -1,0 +1,205 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1193-cap-lints.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1193-cap-lints.md:2
+msgid "Start Date: 2015-07-07"
+msgstr ""
+
+#: src/1193-cap-lints.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1193](https://github.com/rust-lang/rfcs/pull/1193)"
+msgstr ""
+
+#: src/1193-cap-lints.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#27259](https://github.com/rust-lang/rust/"
+"issues/27259)"
+msgstr ""
+
+#: src/1193-cap-lints.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1193-cap-lints.md:8
+msgid ""
+"Add a new flag to the compiler, `--cap-lints`, which set the maximum "
+"possible lint level for the entire crate (and cannot be overridden). Cargo "
+"will then pass `--cap-lints allow` to all upstream dependencies when "
+"compiling code."
+msgstr ""
+
+#: src/1193-cap-lints.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1193-cap-lints.md:14
+msgid ""
+"Note: this RFC represents issue [\\#1029](https://github.com/rust-lang/rfcs/"
+"issues/1029)"
+msgstr ""
+
+#: src/1193-cap-lints.md:16
+msgid ""
+"Currently any modification to a lint in the compiler is strictly speaking a "
+"breaking change. All crates are free to place `#![deny(warnings)]` at the "
+"top of their crate, turning any new warnings into compilation errors. This "
+"means that if a future version of Rust starts to emit new warnings it may "
+"fail to compile some previously written code (a breaking change)."
+msgstr ""
+
+#: src/1193-cap-lints.md:22
+msgid ""
+"We would very much like to be able to modify lints, however. For example "
+"[rust-lang/rust#26473](https://github.com/rust-lang/rust/pull/26473) updated "
+"the `missing_docs` lint to also look for missing documentation on `const` "
+"items. This ended up [breaking some crates](https://github.com/rust-lang/"
+"term/pull/34) in the ecosystem due to their usage of `#!"
+"[deny(missing_docs)]`."
+msgstr ""
+
+#: src/1193-cap-lints.md:32
+msgid ""
+"The mechanism proposed in this RFC is aimed at providing a method to compile "
+"upstream dependencies in a way such that they are resilient to changes in "
+"the behavior of the standard lints in the compiler. A new lint warning or "
+"error will never represent a memory safety issue (otherwise it'd be a real "
+"error) so it should be safe to ignore any new instances of a warning that "
+"didn't show up before."
+msgstr ""
+
+#: src/1193-cap-lints.md:39
+msgid "Detailed design"
+msgstr ""
+
+#: src/1193-cap-lints.md:41
+msgid ""
+"There are two primary changes propsed by this RFC, the first of which is a "
+"new flag to the compiler:"
+msgstr ""
+
+#: src/1193-cap-lints.md:49
+msgid ""
+"For example when `--cap-lints allow` is passed, all instances of `#[warn]`, "
+"`#[deny]`, and `#[forbid]` are ignored. If, however `--cap-lints warn` is "
+"passed only `deny` and `forbid` directives are ignored."
+msgstr ""
+
+#: src/1193-cap-lints.md:53
+msgid ""
+"The acceptable values for `LEVEL` will be `allow`, `warn`, `deny`, or "
+"`forbid`."
+msgstr ""
+
+#: src/1193-cap-lints.md:55
+msgid ""
+"The second change proposed is to have Cargo pass `--cap-lints allow` to all "
+"upstream dependencies. Cargo currently passes `-A warnings` to all upstream "
+"dependencies (allow all warnings by default), so this would just be "
+"guaranteeing that no lints could be fired for upstream dependencies."
+msgstr ""
+
+#: src/1193-cap-lints.md:60
+msgid ""
+"With these two pieces combined together it is now possible to modify lints "
+"in the compiler in a backwards compatible fashion. Modifications to existing "
+"lints to emit new warnings will not get triggered, and new lints will also "
+"be entirely suppressed **only for upstream dependencies**."
+msgstr ""
+
+#: src/1193-cap-lints.md:65
+msgid "Cargo Backwards Compatibility"
+msgstr ""
+
+#: src/1193-cap-lints.md:67
+msgid ""
+"This flag would be first non-1.0 flag that Cargo would be passing to the "
+"compiler. This means that Cargo can no longer drive a 1.0 compiler, but only "
+"a 1.N+ compiler which has the `--cap-lints` flag. To handle this discrepancy "
+"Cargo will detect whether `--cap-lints` is a valid flag to the compiler."
+msgstr ""
+
+#: src/1193-cap-lints.md:72
+msgid ""
+"Cargo already runs `rustc -vV` to learn about the compiler (e.g. a \"unique "
+"string\" that's opaque to Cargo) and it will instead start passing `rustc -"
+"vV --cap-lints allow` to the compiler instead. This will allow Cargo to "
+"simultaneously detect whether the flag is valid and learning about the "
+"version string. If this command fails and `rustc -vV` succeeds then Cargo "
+"will fall back to the old behavior of passing `-A warnings`."
+msgstr ""
+
+#: src/1193-cap-lints.md:79
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1193-cap-lints.md:81
+msgid ""
+"This RFC adds surface area to the command line of the compiler with a "
+"relatively obscure option `--cap-lints`. The option will almost never be "
+"passed by anything other than Cargo, so having it show up here is a little "
+"unfortunate."
+msgstr ""
+
+#: src/1193-cap-lints.md:85
+msgid ""
+"Some crates may inadvertently rely on memory safety through lints, or "
+"otherwise very much not want lints to be turned off. For example if "
+"modifications to a new lint to generate more warnings caused an upstream "
+"dependency to fail to compile, it could represent a serious bug indicating "
+"the dependency needs to be updated. This system would paper over this issue "
+"by forcing compilation to succeed. This use case seems relatively rare, "
+"however, and lints are also perhaps not the best method to ensure the safety "
+"of a crate."
+msgstr ""
+
+#: src/1193-cap-lints.md:93
+msgid ""
+"Cargo may one day grow configuration to _not_ pass this flag by default (e."
+"g. go back to passing `-Awarnings` by default), which is yet again more "
+"expansion of API surface area."
+msgstr ""
+
+#: src/1193-cap-lints.md:97
+msgid "Alternatives"
+msgstr ""
+
+#: src/1193-cap-lints.md:99
+msgid ""
+"Modifications to lints or additions to lints could be considered backwards-"
+"incompatible changes."
+msgstr ""
+
+#: src/1193-cap-lints.md:101
+msgid ""
+"The meaning of the `-A` flag could be reinterpreted as \"this cannot be "
+"overridden\""
+msgstr ""
+
+#: src/1193-cap-lints.md:103
+msgid ""
+"A new \"meta lint\" could be introduced to represent the maximum cap, for "
+"example `-A everything`. This is semantically different enough from `-A foo` "
+"that it seems worth having a new flag."
+msgstr ""
+
+#: src/1193-cap-lints.md:107
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1193-cap-lints.md:109
+msgid "None yet."
+msgstr ""

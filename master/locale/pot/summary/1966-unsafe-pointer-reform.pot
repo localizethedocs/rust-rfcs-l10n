@@ -1,0 +1,438 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1966-unsafe-pointer-reform.md:1
+msgid "Feature Name: Unsafe Pointer ~~Reform~~ Methods"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:2
+msgid "Start Date: 2015-08-01"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1966](https://github.com/rust-lang/rfcs/pull/1966)"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#43941](https://github.com/rust-lang/rust/"
+"issues/43941)"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:10
+msgid ""
+"Copy most of the static `ptr::` functions to methods on unsafe pointers "
+"themselves. Also add a few conveniences for `ptr.offset` with unsigned "
+"integers."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:14
+msgid "// So this:\n"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:16
+msgid "// Becomes this:\n"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:21
+msgid ""
+"More conveniences should probably be added to unsafe pointers, but this "
+"proposal is basically the \"minimally controversial\" conveniences."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:26
+msgid "Motivation"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:30
+msgid "Swift lets you do this:"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:36
+msgid "And we want to be cool like Swift, right?"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:41
+msgid "Static Functions"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:43
+msgid ""
+"`ptr::foo(ptr)` is an odd interface. Rust developers generally favour the "
+"type-directed dispatch provided by methods; `ptr.foo()`. Generally the only "
+"reason we've ever shied away from methods is when they would be added to a "
+"type that implements Deref generically, as the `.` operator will follow "
+"Deref impls to try to find a matching function. This can lead to really "
+"confusing compiler errors, or code \"spuriously compiling\" but doing "
+"something unexpected because there was an unexpected match somewhere in the "
+"Deref chain. This is why many of Rc's operations are static functions that "
+"need to be called as `Rc::foo(&the_rc)`."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:45
+msgid ""
+"This reasoning doesn't apply to the raw pointer types, as they don't provide "
+"a Deref impl. Although there are coercions involving the raw pointer types, "
+"these coercions aren't performed by the dot operator. This is why it has "
+"long been considered fine for raw pointers to have the `deref` and `as_ref` "
+"methods."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:47
+msgid ""
+"In fact, the static functions are sometimes useful precisely because they "
+"_do_ perform raw pointer coercions, so it's possible to do `ptr::"
+"read(&val)`, rather than `ptr::read(&val as *const _)`."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:49
+msgid ""
+"However these static functions are fairly cumbersome in the common case, "
+"where you already have a raw pointer."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:54
+msgid "Signed Offset"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:56
+msgid ""
+"The cast in `ptr.offset(idx as isize)` is unnecessarily annoying. Idiomatic "
+"Rust code uses unsigned offsets, but low level code is forced to constantly "
+"cast those offsets. To understand why this interface is designed as it is, "
+"some background is needed."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:58
+msgid ""
+"`offset` is directly exposing LLVM's `getelementptr` instruction, with the "
+"`inbounds` keyword. `wrapping_offset` removes the `inbounds` keyword. "
+"`offset` takes a signed integer, because that's what GEP exposes. It's "
+"understandable that we've been conservative here; GEP is so confusing that "
+"it has an [entire FAQ](http://llvm.org/docs/GetElementPtr.html)."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:60
+msgid ""
+"That said, LLVM is pretty candid that it models pointers as two's complement "
+"integers, and a negative integer is just a really big positive integer, "
+"right? So can we provide an unsigned version of offset, and just feed it "
+"down into GEP?"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:62
+msgid ""
+"[The relevant FAQ entry](http://llvm.org/docs/GetElementPtr.html#what-"
+"happens-if-a-gep-computation-overflows) is as follows:"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:64
+msgid "What happens if a GEP computation overflows?"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:66
+msgid ""
+"If the GEP lacks the inbounds keyword, the value is the result from "
+"evaluating the implied two’s complement integer computation. However, since "
+"there’s no guarantee of where an object will be allocated in the address "
+"space, such values have limited meaning."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:68
+msgid ""
+"If the GEP has the inbounds keyword, the result value is undefined (a “trap "
+"value”) if the GEP overflows (i.e. wraps around the end of the address "
+"space)."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:70
+msgid ""
+"As such, there are some ramifications of this for inbounds GEPs: scales "
+"implied by array/vector/pointer indices are always known to be “nsw” since "
+"they are signed values that are scaled by the element size. These values are "
+"also allowed to be negative (e.g. “`gep i32 *%P, i32 -1`”) but the pointer "
+"itself is logically treated as an unsigned value. This means that GEPs have "
+"an asymmetric relation between the pointer base (which is treated as "
+"unsigned) and the offset applied to it (which is treated as signed). The "
+"result of the additions within the offset calculation cannot have signed "
+"overflow, but when applied to the base pointer, there can be signed overflow."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:72
+msgid ""
+"This is written in a bit of a confusing way, so here's a simplified summary "
+"of what we care about:"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:74
+msgid "The pointer is treated as an unsigned number, and the offset as signed."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:75
+msgid ""
+"While computing the offset in bytes (`idx * size_of::<T>()`), we aren't "
+"allowed to do signed overflow (nsw)."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:76
+msgid ""
+"While applying the offset to the pointer (`ptr + offset`), we aren't allowed "
+"to do unsigned overflow (nuw)."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:78
+msgid ""
+"Part of the historical argument for signed offset in Rust has been a "
+"_warning_ against these overflow concerns, but upon inspection that doesn't "
+"really make sense."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:80
+msgid ""
+"If you offset a `*const i16` by `isize::MAX / 3 * 2` (which fits into a "
+"signed integer), then you'll still overflow a signed integer in the implicit "
+"`offset` computation."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:81
+msgid ""
+"There's no indication that unsigned overflow should be a concern at all."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:82
+msgid ""
+"The location of the offset _isn't even_ the place to handle this issue. The "
+"ultimate consequence of `offset` being signed is that LLVM can't support "
+"allocations larger than `isize::MAX` bytes. Therefore this issue should be "
+"handled at the level of memory allocation code."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:83
+msgid ""
+"The fact that `offset` is `unsafe` is already surprising to anyone with the "
+"\"it's just addition\" mental model, pushing them to read the documentation "
+"and learn the actual rules."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:85
+msgid "In conclusion: `as isize` doesn't help developers write better code."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:90
+msgid "Detailed design"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:94
+msgid "Methodization"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:96
+msgid ""
+"Add the following method equivalents for the static `ptr` functions on "
+"`*const T` and `*mut T`:"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:98
+msgid ""
+"(Note that this proposal doesn't deprecate the static functions, as they "
+"still make some code more ergonomic than methods, and we'd like to avoid "
+"regressing the ergonomics of any usecase. More discussion can be found in "
+"the alternatives.)"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:113
+msgid "And these only on `*mut T`:"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:117
+msgid ""
+"// note that I've moved these from both to just `*mut T`, to go along with "
+"`copy_from`\n"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:128
+msgid "(see the alternatives for why we provide both copy_to and copy_from)"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:131
+msgid "Unsigned Offset"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:133
+msgid "Add the following conveniences to both `*const T` and `*mut T`:"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:144
+msgid ""
+"I expect `ptr.add` to replace ~95% of all uses of `ptr.offset`, and `ptr."
+"sub` to replace ~95% of the remaining 5%. It's very rare to have an offset "
+"that you don't know the sign of, and _also_ don't need special handling for."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:150
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:153
+msgid ""
+"Docs should be updated to use the new methods over the old ones, pretty much "
+"unconditionally. Otherwise I don't think there's anything to do there."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:156
+msgid ""
+"All the docs for these methods can be basically copy-pasted from the "
+"existing functions they're wrapping, with minor tweaks."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:162
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:165
+msgid ""
+"The only drawback I can think of is that this introduces a \"what is "
+"idiomatic\" schism between the old functions and the new ones."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:171
+msgid "Alternatives"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:175
+msgid "Overload operators for more ergonomic offsets"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:177
+msgid ""
+"Rust doesn't support \"unsafe operators\", and `offset` is an unsafe "
+"function because of the semantics of GetElementPointer. We could make "
+"`wrapping_add` be the implementation of `+`, but almost no code should "
+"actually be using wrapping offsets, so we shouldn't do anything to make it "
+"seem \"preferred\" over non-wrapping offsets."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:179
+msgid ""
+"Beyond that, `(ptr + idx).read_volatile()` is a bit wonky to write -- "
+"methods chain better than operators."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:184
+msgid "Make `offset` generic"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:186
+msgid ""
+"We could make `offset` generic so it accepts `usize` and `isize`. However we "
+"would still want the `sub` method, and at that point we might as well have "
+"`add` for symmetry. Also `add` is shorter which is a nice carrot for users "
+"to migrate to it."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:191
+msgid "Only one of `copy_to` or `copy_from`"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:193
+msgid ""
+"`copy` is the only mutating `ptr` operation that doesn't write to the "
+"_first_ argument. In fact, it's clearly backwards compared to C's memcpy. "
+"Instead it's ordered in analogy to `fs::copy`."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:195
+msgid ""
+"Methodization could be an opportunity to \"fix\" this, and reorder the "
+"arguments, providing only `copy_from`. However there is concern that this "
+"will lead to users doing a blind migration without checking argument order."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:197
+msgid ""
+"One possibly solution would be deprecating `ptr::copy` along with this as a "
+"\"signal\" that something strange has happened. But as discussed in the "
+"following section, immediately deprecating an API along with the "
+"introduction of its replacement tends to cause a mess in the broader "
+"ecosystem."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:199
+msgid ""
+"On the other hand, `copy_to` isn't as idiomatic (see: `clone_from`), and "
+"there was disastisfaction in reinforcing this API design quirk."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:201
+msgid ""
+"As a compromise, we opted to provide both, forcing users of `copy` to "
+"decided which they want. Ideally this will be copy_from with reversed "
+"arguments, as this is more idiomatic. Longterm we can look to deprecating "
+"`copy_to` and `ptr::copy` if desirable. Otherwise having these duplicate "
+"methods isn't a big deal (and is _technically_ a bit more convenient for "
+"users with a reference and a raw pointer)."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:208
+msgid "Deprecate the Static Functions"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:210
+msgid ""
+"To avoid any issues with the methods and static functions coexisting, we "
+"could deprecate the static functions. As noted in the motivation, these "
+"functions are currently useful for their ability to perform coercions on the "
+"first argument. However those who were taking advantage of this property can "
+"easily rewrite their code to either of the following:"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:217
+msgid ""
+"I personally consider this a minor ergonomic and readability regression from "
+"`ptr::foo(ptr)`, and so would rather not do this."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:219
+msgid ""
+"More importantly, this would cause needless churn for old code which is "
+"still perfectly _fine_, if a bit less ergonomic than it could be. More "
+"ergonomic interfaces should be adopted based on their own merits; not "
+"because This Is The New Way, And Everyone Should Do It The New Way."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:221
+msgid ""
+"In fact, even if we decide we should deprecate these functions, we should "
+"still stagger the deprecation out several releases to minimize ecosystem "
+"churn. When a deprecation occurs, users of the latest compiler will be "
+"pressured by diagnostics to update their code to the new APIs. If those APIs "
+"were introduced in the same release, then they'll be making their library "
+"only compile on the latest release, effectively breaking the library for "
+"anyone who hasn't had a chance to upgrade yet. If the deprecation were "
+"instead done several releases later, then by the time users are pressured to "
+"use the new APIs there will be a buffer of several stable releases that can "
+"compile code using the new APIs."
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:224
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1966-unsafe-pointer-reform.md:227
+msgid "None."
+msgstr ""

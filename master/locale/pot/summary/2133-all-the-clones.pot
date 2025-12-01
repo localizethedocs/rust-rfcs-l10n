@@ -1,0 +1,272 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2133-all-the-clones.md:1
+msgid "Feature Name: `all_the_clones`"
+msgstr ""
+
+#: src/2133-all-the-clones.md:2
+msgid "Start Date: 2017-08-28"
+msgstr ""
+
+#: src/2133-all-the-clones.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2133](https://github.com/rust-lang/rfcs/pull/2133)"
+msgstr ""
+
+#: src/2133-all-the-clones.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44496](https://github.com/rust-lang/rust/"
+"issues/44496)"
+msgstr ""
+
+#: src/2133-all-the-clones.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2133-all-the-clones.md:9
+msgid ""
+"Add compiler-generated `Clone` implementations for tuples and arrays with "
+"`Clone` elements of all lengths."
+msgstr ""
+
+#: src/2133-all-the-clones.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/2133-all-the-clones.md:14
+msgid ""
+"Currently, the `Clone` trait for arrays and tuples is implemented using a "
+"[macro](https://github.com/rust-lang/rust/blob/"
+"f3d6973f41a7d1fb83029c9c0ceaf0f5d4fd7208/src/libcore/tuple.rs#L25) in "
+"libcore, for tuples of size 11 or less and for `Copy` arrays of size 32 or "
+"less. This breaks the uniformity of the language and annoys users."
+msgstr ""
+
+#: src/2133-all-the-clones.md:16
+msgid ""
+"Also, the compiler already implements `Copy` for all arrays and tuples with "
+"all elements `Copy`, which forces the compiler to provide an implementation "
+"for `Copy`'s supertrait `Clone`. There is no reason the compiler couldn't "
+"provide `Clone` impls for all arrays and tuples."
+msgstr ""
+
+#: src/2133-all-the-clones.md:20
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2133-all-the-clones.md:23
+msgid ""
+"Arrays and tuples of `Clone` arrays are `Clone` themselves. Cloning them "
+"clones all of their elements."
+msgstr ""
+
+#: src/2133-all-the-clones.md:25
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2133-all-the-clones.md:28
+msgid ""
+"Make `clone` a lang-item, add the following trait rules to the compiler:"
+msgstr ""
+
+#: src/2133-all-the-clones.md:43
+msgid ""
+"And add the obvious implementations of `Clone::clone` and `Clone::"
+"clone_from` as MIR shim implementations, in the same manner as "
+"`drop_in_place`. The implementations could also do a shallow copy if the "
+"type ends up being `Copy`."
+msgstr ""
+
+#: src/2133-all-the-clones.md:45
+msgid ""
+"Remove the macro implementations in libcore. We still have macro "
+"implementations for other \"derived\" traits, such as `PartialEq`, `Hash`, "
+"etc."
+msgstr ""
+
+#: src/2133-all-the-clones.md:47
+msgid ""
+"Note that independently of this RFC, we're adding builtin `Clone` impls for "
+"all \"scalar\" types, most importantly fn pointer and fn item types (where "
+"manual impls are impossible in the foreseeable future because of higher-"
+"ranked types, e.g. `for<'a> fn(SomeLocalStruct<'a>)`), which are already "
+"`Copy`:"
+msgstr ""
+
+#: src/2133-all-the-clones.md:79
+msgid ""
+"This was considered a bug-fix (these types are all `Copy`, so it's easy to "
+"witness that they are `Clone`)."
+msgstr ""
+
+#: src/2133-all-the-clones.md:81
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2133-all-the-clones.md:84
+msgid ""
+"The MIR shims add complexity to the compiler. Along with the `derive(Clone)` "
+"implementation in `libsyntax`, we have 2 separate sets of implementations of "
+"`Clone`."
+msgstr ""
+
+#: src/2133-all-the-clones.md:86
+msgid ""
+"Having `Copy` and `Clone` impls for all arrays and tuples, but not "
+"`PartialEq` etc. impls, could be confusing to users."
+msgstr ""
+
+#: src/2133-all-the-clones.md:88
+msgid "Rationale and Alternatives"
+msgstr ""
+
+#: src/2133-all-the-clones.md:91
+msgid ""
+"Even with all proposed expansions to Rust's type-system, for consistency, "
+"the compiler needs to have at least _some_ built-in `Clone` implementations: "
+"the type `for<'a> fn(Foo<'a>)` is `Copy` for all user-defined types `Foo`, "
+"but there is no way to implement `Clone`, which is a supertrait of `Copy`, "
+"for it (an `impl<T> Clone for fn(T)` won't match against the higher-ranked "
+"type)."
+msgstr ""
+
+#: src/2133-all-the-clones.md:93
+msgid ""
+"The MIR shims for `Clone` of arrays and tuples are actually pretty simple "
+"and don't add much complexity after we have `drop_in_place` and shims for "
+"`Copy` types."
+msgstr ""
+
+#: src/2133-all-the-clones.md:95
+msgid "The array situation"
+msgstr ""
+
+#: src/2133-all-the-clones.md:97
+msgid ""
+"In Rust 1.19, arrays are `Clone` only if they are `Copy`. This code does not "
+"compile:"
+msgstr ""
+
+#: src/2133-all-the-clones.md:100
+msgid "//~ ERROR\n"
+msgstr ""
+
+#: src/2133-all-the-clones.md:101
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/2133-all-the-clones.md:105
+msgid ""
+"~~The reason (I think) is that there is no good way to write a variable-"
+"length array expression in macros. This wouldn't be fixed by the first "
+"iteration of const generics.~~ Actually, this can be done using a for-loop "
+"(`ArrayVec` is used here instead of a manual panic guard for simplicity, but "
+"it can be easily implemented given const generics)."
+msgstr ""
+
+#: src/2133-all-the-clones.md:120
+msgid ""
+"OTOH, this means that making non-`Copy` arrays `Clone` is less of a bugfix "
+"and more of a new feature. It's however a nice feature - `[Box<u32>; 1]` not "
+"being `Clone` is an annoying and seemingly-pointless edge case."
+msgstr ""
+
+#: src/2133-all-the-clones.md:122
+msgid "Implement `Clone` only for `Copy` types"
+msgstr ""
+
+#: src/2133-all-the-clones.md:124
+msgid ""
+"As of Rust 1.19, the compiler _does not_ have the `Clone` implementations, "
+"which causes ICEs such as [rust-lang/rust#25733](https://github.com/rust-"
+"lang/rust/issues/25733) because `Clone` is a supertrait of `Copy`."
+msgstr ""
+
+#: src/2133-all-the-clones.md:126
+msgid ""
+"One alternative, which would solve ICEs while being conservative, would be "
+"to have compiler implementations for `Clone` only for _`Copy`_ tuples of "
+"size 12+ and arrays, and maintain the `libcore` macros for `Clone` of tuples "
+"(in Rust 1.19, arrays are only `Clone` if they are `Copy`)."
+msgstr ""
+
+#: src/2133-all-the-clones.md:128
+msgid ""
+"This would make the shims _trivial_ (a `Clone` implementation for a `Copy` "
+"type is just a memcpy), and would not implement any features that are not "
+"needed."
+msgstr ""
+
+#: src/2133-all-the-clones.md:130
+msgid ""
+"When we get variadic generics, we could make all tuples with `Clone` "
+"elements `Clone`. When we get const generics, we could make all arrays with "
+"`Clone` elements `Clone`."
+msgstr ""
+
+#: src/2133-all-the-clones.md:132
+msgid "Use a MIR implementation of `Clone` for all derived impls"
+msgstr ""
+
+#: src/2133-all-the-clones.md:134
+msgid ""
+"The implementation on the other end of the conservative-radical end would be "
+"to use the MIR shims for _all_ `#[derive(Clone)]` implementations. This "
+"would increase uniformity by getting rid of the separate `libsyntax` derived "
+"implementation. However:"
+msgstr ""
+
+#: src/2133-all-the-clones.md:136
+msgid ""
+"We'll still need the `#[derive_Clone]` hook in libsyntax, which would "
+"presumably result in an attribute that trait selection can see. That's not a "
+"significant concern."
+msgstr ""
+
+#: src/2133-all-the-clones.md:138
+msgid ""
+"The more annoying issue is that, as a workaround to trait matching being "
+"inductive, derived implementations are imperfect - see [rust-lang/rust#26925]"
+"(https://github.com/rust-lang/rust/issues/26925). This means that we either "
+"have to solve that issue for `Clone` (which is dedicatedly non-trivial) or "
+"have some sort of type-checking for the generated MIR shims, both annoying "
+"options."
+msgstr ""
+
+#: src/2133-all-the-clones.md:140
+msgid ""
+"A MIR shim implementation would also have to deal with edge cases such as "
+"`#[repr(packed)]`, which normal type-checking would handle for ordinary "
+"`derive`. I think drop glue already encounters all of these edge cases so we "
+"have to deal with them anyway."
+msgstr ""
+
+#: src/2133-all-the-clones.md:142
+msgid "`Copy` and `Clone` for closures"
+msgstr ""
+
+#: src/2133-all-the-clones.md:144
+msgid ""
+"We could also add implementations of `Copy` and `Clone` to closures. That is "
+"[RFC #2132](https://github.com/rust-lang/rfcs/pull/2132) and should be "
+"discussed there."
+msgstr ""
+
+#: src/2133-all-the-clones.md:146
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2133-all-the-clones.md:149
+msgid "See Alternatives."
+msgstr ""

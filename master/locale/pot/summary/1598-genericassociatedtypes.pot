@@ -1,0 +1,600 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1598-generic_associated_types.md:1
+msgid "Feature Name: generic_associated_types"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:2
+msgid "Start Date: 2016-04-29"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1598](https://github.com/rust-lang/rfcs/pull/1598)"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44265](https://github.com/rust-lang/rust/"
+"issues/44265)"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:9
+msgid ""
+"Allow type constructors to be associated with traits. This is an incremental "
+"step toward a more general feature commonly called \"higher-kinded types,\" "
+"which is often ranked highly as a requested feature by Rust users. This "
+"specific feature (associated type constructors) resolves one of the most "
+"common use cases for higher-kindedness, is a relatively simple extension to "
+"the type system compared to other forms of higher-kinded polymorphism, and "
+"is forward compatible with more complex forms of higher-kinded polymorphism "
+"that may be introduced in the future."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:21
+msgid "Consider the following trait as a representative motivating example:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:30
+msgid ""
+"This trait is very useful - it allows for a kind of Iterator which yields "
+"values which have a lifetime tied to the lifetime of the reference passed to "
+"`next`. A particular obvious use case for this trait would be an iterator "
+"over a vector which yields overlapping, mutable subslices with each "
+"iteration. Using the standard `Iterator` interface, such an implementation "
+"would be invalid, because each slice would be required to exist for as long "
+"as the iterator, rather than for as long as the borrow initiated by `next`."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:38
+msgid ""
+"This trait cannot be expressed in Rust as it exists today, because it "
+"depends on a sort of higher-kinded polymorphism. This RFC would extend Rust "
+"to include that specific form of higher-kinded polymorphism, which is "
+"referred to here as associated type constructors. This feature has a number "
+"of applications, but the primary application is along the same lines as the "
+"`StreamingIterator` trait: defining traits which yield types which have a "
+"lifetime tied to the local borrowing of the receiver type."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:46
+msgid "Detailed design"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:49
+msgid "Background: What is kindedness?"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:51
+msgid ""
+"\"Higher-kinded types\" is a vague term, conflating multiple language "
+"features under a single banner, which can be inaccurate. As background, this "
+"RFC includes a brief overview of the notion of kinds and kindedness. Kinds "
+"are often called 'the type of a type,' the exact sort of unhelpful "
+"description that only makes sense to someone who already understands what is "
+"being explained. Instead, let's try to understand kinds by analogy to types."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:58
+msgid ""
+"In a well-typed language, every expression has a type. Many expressions have "
+"what are sometimes called 'base types,' types which are primitive to the "
+"language and which cannot be described in terms of other types. In Rust, the "
+"types `bool`, `i64`, `usize`, and `char` are all prominent examples of base "
+"types. In contrast, there are types which are formed by arranging other "
+"types - functions are a good example of this. Consider this simple function:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:71
+msgid ""
+"`not` has the type `bool -> bool` (my apologies for using a syntax different "
+"from Rust's). Note that this is different from the type of `not(true)`, "
+"which is `bool`. This difference is important to understanding higher-"
+"kindedness."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:75
+msgid ""
+"In the analysis of kinds, all of these types - `bool`, `char`, `bool -> "
+"bool` and so on - have the kind `type`. Every type has the kind `type`. "
+"However, `type` is a base kind, just as `bool` is a base type, and there are "
+"terms with more complex kinds, such as `type -> type`. An example of a term "
+"of this kind is `Vec`, which takes a type as a parameter and evaluates to a "
+"type. The difference between the kind of `Vec` and the kind of `Vec<i32>` "
+"(which is `type`) is analogous to the difference between the type of `not` "
+"and `not(true)`. Note that `Vec<T>` has the kind `type`, just like "
+"`Vec<i32>`: even though `T` is a type parameter, `Vec` is still being "
+"applied to a type, just like `not(x)` still has the type `bool` even though "
+"`x` is a variable."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:86
+msgid ""
+"A relatively uncommon feature of Rust is that it has _two_ base kinds, "
+"whereas many languages which deal with higher-kindedness only have the base "
+"kind `type`. The other base kind of Rust is the lifetime parameter. If you "
+"have a type like `Foo<'a>`, the kind of `Foo` is `lifetime -> type`."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:91
+msgid ""
+"Higher-kinded terms can take multiple arguments as well, of course. `Result` "
+"has the kind `type, type -> type`. Given `vec::Iter<'a, T>` `vec::Iter` has "
+"the kind `lifetime, type -> type`."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:95
+msgid ""
+"Terms of a higher kind are often called 'type operators'; the type operators "
+"which evaluate to a type are called 'type constructors'. There are other "
+"type operators which evaluate to other type operators, and there are even "
+"higher order type operators, which take type operators as their argument (so "
+"they have a kind like `(type -> type) -> type`). This RFC doesn't deal with "
+"anything as exotic as that."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:102
+msgid ""
+"Specifically, the goal of this RFC is to allow type constructors to be "
+"associated with traits, just as you can currently associate functions, "
+"types, and consts with traits. There are other forms of polymorphism "
+"involving type constructors, such as implementing traits for a type "
+"constructor instead of a type, which are not a part of this RFC."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:108
+msgid "Features of associated type constructors"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:110
+msgid "Declaring & assigning an associated type constructor"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:112
+msgid ""
+"This RFC proposes a very simple syntax for defining an associated type "
+"constructor, which looks a lot like the syntax for creating aliases for type "
+"constructors. The goal of using this syntax is to avoid to creating "
+"roadblocks for users who do not already understand higher kindedness."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:123
+msgid ""
+"It is clear that the `Item` associated item is a type constructor, rather "
+"than a type, because it has a type parameter attached to it."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:126
+msgid ""
+"Associated type constructors can be bounded, just like associated types can "
+"be:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:137
+msgid ""
+"This bound is applied to the \"output\" of the type constructor, and the "
+"parameter is treated as a higher rank parameter. That is, the above bound is "
+"roughly equivalent to adding this bound to the trait:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:145
+msgid ""
+"Assigning associated type constructors in impls is very similar to the "
+"syntax for assigning associated types:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:155
+msgid "Using an associated type constructor to construct a type"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:157
+msgid ""
+"Once a trait has an associated type constructor, it can be applied to any "
+"parameters or concrete terms that are in scope. This can be done both inside "
+"the body of the trait and outside of it, using syntax which is analogous to "
+"the syntax for using associated types. Here are some examples:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:165
+msgid ""
+"// Applying the lifetime parameter `'a` to `Self::Item` inside the trait.\n"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:170
+msgid "// Applying a concrete lifetime to the constructor outside the trait.\n"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:175
+msgid ""
+"Associated type constructors can also be used to construct other type "
+"constructors:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:192
+msgid ""
+"Lastly, lifetimes can be elided in associated type constructors in the same "
+"manner that they can be elided in other type constructors. Considering "
+"lifetime elision, the full definition of `StreamingIterator` is:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:203
+msgid "Using associated type constructors in bounds"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:205
+msgid ""
+"Users can bound parameters by the type constructed by that trait's "
+"associated type constructor of a trait using HRTB. Both type equality bounds "
+"and trait bounds of this kind are valid:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:215
+msgid ""
+"This RFC does not propose allowing any sort of bound by the type constructor "
+"itself, whether an equality bound or a trait bound (trait bounds of course "
+"are also impossible)."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:219
+msgid "Associated type constructors of type arguments"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:221
+msgid ""
+"All of the examples in this RFC have focused on associated type constructors "
+"of lifetime arguments, however, this RFC proposes adding ATCs of types as "
+"well:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:230
+msgid ""
+"This RFC does **not** propose extending HRTBs to take type arguments, which "
+"makes these less expressive than they could be. Such an extension is "
+"desired, but out of scope for this RFC."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:234
+msgid ""
+"Type arguments can be used to encode other forms of higher kinded "
+"polymorphism using the \"family\" pattern. For example, Using the "
+"`PointerFamily` trait, you can abstract over Arc and Rc:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:267
+msgid "Evaluating bounds and where clauses"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:269
+msgid "Bounds on associated type constructors"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:271
+msgid ""
+"Bounds on associated type constructors are treated as higher rank bounds on "
+"the trait itself. This makes their behavior consistent with the behavior of "
+"bounds on regular associated types. For example:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:281
+msgid "Is equivalent to:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:289
+msgid "`where` clauses on associated types"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:291
+msgid ""
+"In contrast, where clauses on associated types introduce constraints which "
+"must be proven each time the associated type is used. For example:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:300
+msgid ""
+"Each invocation of `<T as Foo>::Assoc` will need to prove `T: Sized`, as "
+"opposed to the impl needing to prove the bound as in other cases."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:303
+msgid ""
+"(@nikomatsakis believes that where clauses will be needed on associated type "
+"constructors specifically to handle lifetime well formedness in some cases. "
+"The exact details are left out of this RFC because they will emerge more "
+"fully during implementation.)"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:308
+msgid ""
+"Benefits of implementing only this feature before other higher-kinded "
+"polymorphisms"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:310
+msgid ""
+"This feature is not full-blown higher-kinded polymorphism, and does not "
+"allow for the forms of abstraction that are so popular in Haskell, but it "
+"does provide most of the unique-to-Rust use cases for higher-kinded "
+"polymorphism, such as streaming iterators and collection traits. It is "
+"probably also the most accessible feature for most users, being somewhat "
+"easy to understand intuitively without understanding higher-kindedness."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:317
+msgid ""
+"This feature has several tricky implementation challenges, but avoids all of "
+"these features that other kinds of higher-kinded polymorphism require:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:320
+msgid "Defining higher-kinded traits"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:321
+msgid "Implementing higher-kinded traits for type operators"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:322
+msgid "Higher order type operators"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:323
+msgid "Type operator parameters bound by higher-kinded traits"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:324
+msgid "Type operator parameters applied to a given type or type parameter"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:326
+msgid "Advantages of proposed syntax"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:328
+msgid ""
+"The advantage of the proposed syntax is that it leverages syntax that "
+"already exists. Type constructors can already be aliased in Rust using the "
+"same syntax that this used, and while type aliases play no polymorphic role "
+"in type resolution, to users they seem very similar to associated types. A "
+"goal of this syntax is that many users will be able to use types which have "
+"associated type constructors without even being aware that this has "
+"something to do with a type system feature called higher-kindedness."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:336
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:339
+msgid ""
+"This RFC uses the terminology \"associated type constructor,\" which has "
+"become the standard way to talk about this feature in the Rust community. "
+"This is not a very accessible framing of this concept; in particular the "
+"term \"type constructor\" is an obscure piece of jargon from type theory "
+"which most users cannot be expected to be familiar with."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:345
+msgid ""
+"Upon accepting this RFC, we should begin (with haste) referring to this "
+"concept as simply \"generic associated types.\" Today, associated types "
+"cannot be generic; after this RFC, this will be possible. Rather than "
+"teaching this as a separate feature, it will be taught as an advanced use "
+"case for associated types."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:351
+msgid ""
+"Patterns like \"family traits\" should also be taught in some way, possible "
+"in the book or possibly just through supplemental forms of documentation "
+"like blog posts."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:355
+msgid ""
+"This will also likely increase the frequency with which users have to employ "
+"higher rank trait bounds; we will want to put additional effort into "
+"teaching and making teachable HRTBs."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:359
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:362
+msgid "Adding language complexity"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:364
+msgid ""
+"This would add a somewhat complex feature to the language, being able to "
+"polymorphically resolve type constructors, and requires several extensions "
+"to the type system which make the implementation more complicated."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:368
+msgid ""
+"Additionally, though the syntax is designed to make this feature easy to "
+"learn, it also makes it more plausible that a user may accidentally use it "
+"when they mean something else, similar to the confusion between `impl .. for "
+"Trait` and `impl<T> .. for T where T: Trait`. For example:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:374
+msgid "// The user means this\n"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:378
+msgid "// But they write this\n"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:385
+msgid "Not full \"higher-kinded types\""
+msgstr ""
+
+#: src/1598-generic_associated_types.md:387
+msgid ""
+"This does not add all of the features people want when they talk about "
+"higher- kinded types. For example, it does not enable traits like `Monad`. "
+"Some people may prefer to implement all of these features together at once. "
+"However, this feature is forward compatible with other kinds of higher-"
+"kinded polymorphism, and doesn't preclude implementing them in any way. In "
+"fact, it paves the way by solving some implementation details that will "
+"impact other kinds of higher- kindedness as well, such as partial "
+"application."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:395
+msgid "Syntax isn't like other forms of higher-kinded polymorphism"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:397
+msgid ""
+"Though the proposed syntax is very similar to the syntax for associated "
+"types and type aliases, it is probably not possible for other forms of "
+"higher-kinded polymorphism to use a syntax along the same lines. For this "
+"reason, the syntax used to define an associated type constructor will "
+"probably be very different from the syntax used to e.g. implement a trait "
+"for a type constructor."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:403
+msgid ""
+"However, the syntax used for these other forms of higher-kinded polymorphism "
+"will depend on exactly what features they enable. It would be hard to design "
+"a syntax which is consistent with unknown features."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:407
+msgid "Alternatives"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:410
+msgid "Push HRTBs harder without associated type constructors"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:412
+msgid ""
+"An alternative is to push harder on HRTBs, possibly introducing some elision "
+"that would make them easier to use."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:415
+msgid ""
+"Currently, an approximation of `StreamingIterator` can be defined like this:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:424
+msgid ""
+"You can then bound types as `T: for<'a> StreamingIterator<'a>` to avoid the "
+"lifetime parameter infecting everything `StreamingIterator` appears."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:427
+msgid ""
+"However, this only partially prevents the infectiveness of "
+"`StreamingIterator`, only allows for some of the types that associated type "
+"constructors can express, and is in generally a hacky attempt to work around "
+"the limitation rather than an equivalent alternative."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:432
+msgid "Impose restrictions on ATCs"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:434
+msgid ""
+"What is often called \"full higher kinded polymorphism\" is allowing the use "
+"of type constructors as input parameters to other type constructors - higher "
+"order type constructors, in other words. Without any restrictions, "
+"multiparameter higher order type constructors present serious problems for "
+"type inference."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:439
+msgid ""
+"For example, if you are attempting to infer types, and you know you have a "
+"constructor of the form `type, type -> Result<(), io::Error>`, without any "
+"restrictions it is difficult to determine if this constructor is `(), io::"
+"Error -> Result<(), io::Error>` or `io::Error, () -> Result<(), io::Error>`."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:444
+msgid ""
+"Because of this, languages with first class higher kinded polymorphism tend "
+"to impose restrictions on these higher kinded terms, such as Haskell's "
+"currying rules."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:448
+msgid ""
+"If Rust were to adopt higher order type constructors, it would need to "
+"impose similar restrictions on the kinds of type constructors they can "
+"receive. But associated type constructors, being a kind of alias, inherently "
+"mask the actual structure of the concrete type constructor. In other words, "
+"if we want to be able to use ATCs as arguments to higher order type "
+"constructors, we would need to impose those restrictions on _all_ ATCs."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:455
+msgid ""
+"We have a list of restrictions we believe are necessary and sufficient; more "
+"background can be found in [this blog post](http://smallcultfollowing.com/"
+"babysteps/blog/2016/11/09/associated-type-constructors-part-4-unifying-atc-"
+"and-hkt/) by nmatsakis:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:459
+msgid "Each argument to the ATC must be applied"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:460
+msgid "They must be applied in the same order they appear in the ATC"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:461
+msgid "They must be applied exactly once"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:462
+msgid "They must be the left-most arguments of the constructor"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:464
+msgid ""
+"These restrictions are quite constrictive; there are several applications of "
+"ATCs that we already know about that would be frustrated by this, such as "
+"the definition of `Iterable` for `HashMap` (for which the item `(&'a K, &'a "
+"V)`, applying the lifetime twice)."
+msgstr ""
+
+#: src/1598-generic_associated_types.md:469
+msgid ""
+"For this reason we have decided **not** to apply these restrictions to all "
+"ATCs. This will mean that if higher order type constructors are ever added "
+"to the language, they will not be able to take an abstract ATC as an "
+"argument. However, this can be maneuvered around using newtypes which do "
+"meet the restrictions, for example:"
+msgstr ""
+
+#: src/1598-generic_associated_types.md:479
+msgid "Unresolved questions"
+msgstr ""

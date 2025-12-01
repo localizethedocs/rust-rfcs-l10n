@@ -1,0 +1,200 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2992-cfg-target-abi.md:1
+msgid "Feature Name: `cfg-target-abi`"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:2
+msgid "Start Date: 2020-09-27"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2992](https://github.com/rust-lang/rfcs/pull/2992)"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#80970](https://github.com/rust-lang/rust/"
+"issues/80970)"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:9
+msgid ""
+"This proposes a new `cfg`: `target_abi`, which specifies certain aspects of "
+"the target's [Application Binary Interface (ABI)](https://en.wikipedia.org/"
+"wiki/Application_binary_interface). This also adds a `CARGO_CFG_TARGET_ABI` "
+"environment variable for parity with other `CARGO_CFG_TARGET_*` variables."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:17
+msgid ""
+"Certain targets are only differentiated by their ABI. For example: the `ios` "
+"OS in combination with the `macabi` ABI denotes targeting Mac Catalyst (iOS "
+"on macOS). The non-`macabi` `x86_64-apple-ios` target is not for Mac "
+"Catalyst and instead is for the iOS simulator, which is a very different "
+"environment."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:22
+msgid ""
+"It is not currently possible to `#[cfg]` against a certain target ABI "
+"without a `build.rs` script to emit a custom `cfg` based on the `TARGET` "
+"environment variable. This is not ideal because:"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:26 src/2992-cfg-target-abi.md:86
+msgid ""
+"Adding a build script increases compile time and makes a crate incompatible "
+"with certain build systems."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:29 src/2992-cfg-target-abi.md:89
+msgid ""
+"Checking `TARGET` is error prone, mainly because the ABI often follows "
+"`target_env` without separation."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:32
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:35
+msgid ""
+"This would act like [existing `target_*` configurations](https://doc.rust-"
+"lang.org/reference/conditional-compilation.html#set-configuration-options)."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:37
+msgid ""
+"For example: if one had a module with bindings to [Apple's AppKit](https://"
+"developer.apple.com/documentation/appkit), this feature could be used to "
+"ensure the module is available when targeting regular macOS and Mac Catalyst."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:44
+msgid "\"macos\""
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:46
+msgid "\"ios\""
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:47
+msgid "\"macabi\""
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:53
+msgid ""
+"This configuration option would also be usable as `#[cfg_attr(target_abi = "
+"\"...\", attr)]`."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:56
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:59
+msgid ""
+"`target_abi` is a key-value option set once with the target's ABI. The value "
+"is similar to the fourth element of the platform's target triple. It often "
+"comes after the `target_env` value. Embedded ABIs such as `gnueabihf` will "
+"define `target_env` as `\"gnu\"` and `target_abi` as `\"eabihf\"`."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:64
+msgid "Example values:"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:66
+msgid "`\"\"`"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:67
+msgid "`\"abi64\"`"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:68
+msgid "`\"eabi\"`"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:69
+msgid "`\"eabihf\"`"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:70
+msgid "`\"macabi\"`"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:72
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:75
+msgid "Additional metadata for the compiler to keep track of."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:77
+msgid ""
+"Like other `cfg`s, this can be manipulated at build time to be a value that "
+"mismatches the actual target."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:80
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:83
+msgid ""
+"We can keep the existing work-around of checking the `TARGET` environment "
+"variable in a `build.rs` script. However, this is not ideal because:"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:92
+msgid "Prior art"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:95
+msgid ""
+"[Target component configurations](https://doc.rust-lang.org/reference/"
+"conditional-compilation.html#set-configuration-options): `target_arch`, "
+"`target_vendor`, `target_os`, and `target_env`."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:98
+msgid ""
+"`CARGO_CFG_TARGET_*` [environment variables for `build.rs`](https://doc.rust-"
+"lang.org/cargo/reference/environment-variables.html#environment-variables-"
+"cargo-sets-for-build-scripts)."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:101
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:104 src/2992-cfg-target-abi.md:109
+msgid "None."
+msgstr ""
+
+#: src/2992-cfg-target-abi.md:106
+msgid "Future possibilities"
+msgstr ""
