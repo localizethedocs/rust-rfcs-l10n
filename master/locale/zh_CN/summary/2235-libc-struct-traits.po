@@ -1,0 +1,282 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2235-libc-struct-traits.md:1
+msgid "Feature Name: `libc_struct_traits`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:2
+msgid "Start Date: 2017-12-05"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2235](https://github.com/rust-lang/rfcs/pull/2235)"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#57715](https://github.com/rust-lang/rust/"
+"issues/57715)"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:9
+msgid ""
+"Expand the traits implemented by structs `libc` crate to include `Debug`, "
+"`Eq`, `Hash`, and `PartialEq`."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:14
+msgid ""
+"This will allow downstream crates to easily support similar operations with "
+"any types they provide that contain `libc` structs. Additionally [The Rust "
+"API Guidelines](https://rust-lang-nursery.github.io/api-guidelines/checklist."
+"html) specify that it is considered useful to expose as many traits as "
+"possible from the standard library. In order to facilitate the following of "
+"these guidelines, official Rust libraries should lead by example."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:19
+msgid ""
+"For many of these traits, it is trivial for downstream crates to implement "
+"them for these types by using newtype wrappers. As a specific example, the "
+"`nix` crate offers the `TimeSpec` wrapper type around the `timespec` struct. "
+"This wrapper could easily implement `Eq` through comparing both fields in "
+"the struct."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:23
+msgid ""
+"Unfortunately there are a great many structs that are large and vary widely "
+"between platforms. Some of these in use by `nix` are `dqblk`, `utsname`, and "
+"`statvfs`. These structs have fields and field types that vary across "
+"platforms. As `nix` aims to support as many platforms as `libc` does, this "
+"variation makes implementing these traits manually on wrapper types time "
+"consuming and error prone."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:28
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:31
+msgid ""
+"Add an `extra_traits` feature to the `libc` library that enables `Debug`, "
+"`Eq`, `Hash`, and `PartialEq` implementations for all structs."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:33
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:36
+msgid ""
+"The `Debug`, `Eq`/`PartialEq`, and `Hash` traits will be added as automatic "
+"derives within the `s!` macro in `src/macros.rs` if the corresponding "
+"feature flag is enabled. This won't work for some types because auto-derive "
+"doesn't work for arrays larger than 32 elements, so for these they'll be "
+"implemented manually. For `libc` as of "
+"`bbda50d20937e570df5ec857eea0e2a098e76b2d` on `x86_64-unknown-linux-gnu` "
+"these many structs will need manual implementations:"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:40
+msgid "`Debug` - 17"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:41
+msgid "`Eq`/`PartialEq` - 46"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:42
+msgid "`Hash` - 17"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:44
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:47
+msgid ""
+"While most structs will be able to derive these implementations "
+"automatically, some will not (for example arrays larger than 32 elements). "
+"This will make it harder to add some structs to `libc`."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:50
+msgid "This extra trait will increase the testing requirements for `libc`."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:52
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:55
+msgid ""
+"Adding these trait implementations behind a singular feature flag has the "
+"best combination of utility and ergonomics out of the possible alternatives "
+"listed below:"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:57
+msgid "Always enabled with no feature flags"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:59
+msgid ""
+"This was regarded as unsuitable because it increases compilation times by "
+"100-200%. Compilation times of `libc` was tested at commit "
+"`bbda50d20937e570df5ec857eea0e2a098e76b2d` with modifications to add derives "
+"for the traits discussed here under the `extra_traits` feature (with no "
+"other features). Some types failed to have these traits derived because of "
+"specific fields, so these were removed from the struct declaration. The "
+"table below shows the compilation times:"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:63
+msgid "Build arguments"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:63
+msgid "Time"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:65
+msgid "`cargo clean && cargo build --no-default-features`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:65
+msgid "0.84s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:66
+msgid ""
+"`cargo clean && cargo build --no-default-features --features extra_traits`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:66
+msgid "2.17s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:67
+msgid "`cargo clean && cargo build --no-default-features --release`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:67
+msgid "0.64s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:68
+msgid ""
+"`cargo clean && cargo build --no-default-features --release --features "
+"extra_traits`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:68
+msgid "1.80s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:69
+msgid "`cargo clean && cargo build --no-default-features --features use_std`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:69
+msgid "1.14s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:70
+msgid ""
+"`cargo clean && cargo build --no-default-features --features use_std,"
+"extra_traits`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:70
+msgid "2.34s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:71
+msgid ""
+"`cargo clean && cargo build --no-default-features --release --features "
+"use_std`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:71
+msgid "0.66s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:72
+msgid ""
+"`cargo clean && cargo build --no-default-features --release --features "
+"use_std,extra_traits`"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:72
+msgid "1.94s"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:74
+msgid "Default-on feature"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:76
+msgid ""
+"For crates that are more than one level above `libc` in the dependency chain "
+"it will be impossible for them to opt out. This could also happen with a "
+"default-off feature flag, but it's more likely the library authors will "
+"expose it as a flag as well."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:79
+msgid "Multiple feature flags"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:81
+msgid ""
+"Instead of having a single `extra_traits` feature, have it and feature flags "
+"for each trait individually like:"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:83
+msgid "`trait_debug` - Enables `Debug` for all structs"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:84
+msgid "`trait_eg` - Enables `Eq` and `PartialEq` for all structs"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:85
+msgid "`trait_hash` - Enables `Hash` for all structs"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:86
+msgid "`extra_traits` - Enables all of the above through dependent features"
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:88
+msgid ""
+"This change should reduce compilation times when not all traits are desired. "
+"The downsides are that it complicates CI. It can be added in a backwards-"
+"compatible manner later should compilation times or consumer demand changes."
+msgstr ""
+
+#: src/2235-libc-struct-traits.md:91
+msgid "Unresolved questions"
+msgstr ""

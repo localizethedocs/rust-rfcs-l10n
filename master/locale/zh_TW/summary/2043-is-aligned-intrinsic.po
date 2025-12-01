@@ -1,0 +1,345 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2043-is-aligned-intrinsic.md:1
+msgid "Feature Name: align_to_intrinsic"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:2
+msgid "Start Date: 2017-06-20"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2043](https://github.com/rust-lang/rfcs/pull/2043)"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44488](https://github.com/rust-lang/rust/"
+"issues/44488)"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:9
+msgid ""
+"Add an intrinsic (`fn align_offset(ptr: *const (), align: usize) -> usize`) "
+"which returns the number of bytes that need to be skipped in order to "
+"correctly align the pointer `ptr` to `align`."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:13
+msgid "The intrinsic is reexported as a method on `*const T` and `*mut T`."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:15
+msgid ""
+"Also add an `unsafe fn align_to<U>(&self) -> (&[T], &[U], &[T])` method to "
+"`[T]`. The method simplifies the common use case, returning the unaligned "
+"prefix, the aligned center part and the unaligned trailing elements. The "
+"function is unsafe because it produces a `&U` to the memory location of a "
+"`T`, which might expose padding bytes or violate invariants of `T` or `U`."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:21
+msgid "Motivation"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:24
+msgid "The standard library (and most likely many crates) use code like"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:32
+msgid ""
+"to check whether a pointer is aligned in order to perform optimizations like "
+"reading multiple bytes at once. Not only is this code which is easy to get "
+"wrong, and which is hard to read (and thus increasing the chance of future "
+"breakage) but it also makes it impossible for `miri` to evaluate such "
+"statements. This means that `miri` cannot do utf8-checking, since that code "
+"contains such optimizations. Without utf8-checking, Rustc's future const "
+"evaluation would not be able to convert a `[u8]` into a `str`."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:40
+msgid "Detailed design"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:43
+msgid "supporting intrinsic"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:45
+msgid "Add a new intrinsic"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:51
+msgid ""
+"which takes an arbitrary pointer it never reads from and a desired alignment "
+"and returns the number of bytes that the pointer needs to be offset in order "
+"to make it aligned to the desired alignment. It is perfectly valid for an "
+"implementation to always yield `usize::max_value()` to signal that the "
+"pointer cannot be aligned. Since the caller needs to check whether the "
+"returned offset would be in-bounds of the allocation that the pointer points "
+"into, returning `usize::max_value()` will never be in-bounds of the "
+"allocation and therefor the caller cannot act upon the returned offset."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:60
+msgid ""
+"It might be expected that the maximum offset returned is `align - 1`, but as "
+"the motivation of the rfc states, `miri` cannot guarantee that a pointer can "
+"be aligned irrelevant of the operations done on it."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:64
+msgid "Most implementations will expand this intrinsic to"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:77
+msgid ""
+"The `align` parameter must be a power of two and smaller than `2^32`. "
+"Usually one should pass in the result of an `align_of` call."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:80
+msgid "standard library functions"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:82
+msgid ""
+"Add a new method `align_offset` to `*const T` and `*mut T`, which forwards "
+"to the `align_offset` intrinsic."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:85
+msgid "Add two new methods `align_to` and `align_to_mut` to the slice type."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:89
+msgid "/* ... other methods ... */"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:90 src/2043-is-aligned-intrinsic.md:91
+msgid "/**/"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:95
+msgid "`align_to` can be implemented as"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:100
+msgid "\"don't use `align_to` with zsts\""
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:105
+msgid ""
+"// number of bytes that need to be skipped until the pointer is aligned\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:107
+msgid ""
+"// if `align_of::<U>() <= align_of::<T>()`, or if pointer is accidentally "
+"aligned, then `offset == 0`\n"
+"        //\n"
+"        // due to `size_of::<U>() % size_of::<T>() == 0`,\n"
+"        // the fact that `size_of::<T>() > align_of::<T>()`,\n"
+"        // and the fact that `align_of::<U>() > align_of::<T>()` if `offset !"
+"= 0` we know\n"
+"        // that `offset % source_size == 0`\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:116
+msgid "// might be zero if not enough elements\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:122
+msgid ""
+"// can't properly fit a U into a sequence of `T`\n"
+"        // FIXME: use GCD(size_of::<U>(), size_of::<T>()) as minimum `mid` "
+"size\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:129
+msgid "on all current platforms. `align_to_mut` is expanded accordingly."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:131
+msgid ""
+"Users of the functions must process all the returned slices and cannot rely "
+"on any behaviour except that the `&[U]`'s elements are correctly aligned and "
+"that all bytes of the original slice are present in the resulting three "
+"slices."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:136
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:139
+msgid "By example"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:141
+msgid ""
+"On most platforms alignment is a well known concept independent of Rust. "
+"Currently unsafe Rust code doing alignment checks needs to reproduce the "
+"known patterns from C, which are hard to read and prone to errors when "
+"modified later."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:145
+msgid ""
+"Thus, whenever pointers need to be manually aligned, the developer is given "
+"a choice:"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:148
+msgid ""
+"In the case where processing the initial unaligned bits might abort the "
+"entire process, use `align_offset`"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:150
+msgid ""
+"If it is likely that all bytes are going to get processed, use `align_to`"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:151
+msgid ""
+"`align_to` has a slight overhead for creating the slices in case not all "
+"slices are used"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:154
+msgid "Example 1 (pointers)"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:156
+msgid ""
+"The standard library uses an alignment optimization for quickly skipping "
+"over ascii code during utf8 checking a byte slice. The current code looks as "
+"follows:"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:161
+msgid ""
+"// Ascii case, try to skip forward quickly.\n"
+"// When the pointer is aligned, read 2 words of data per iteration\n"
+"// until we find a word containing a non-ascii byte.\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:169
+msgid "With the `align_offset` method the code can be changed to"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:174
+msgid "// the offset is safe, because `index` is guaranteed inbounds\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:179
+msgid "Example 2 (slices)"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:181
+msgid ""
+"The `memchr` impl in the standard library explicitly uses the three phases "
+"of the `align_to` functions:"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:185 src/2043-is-aligned-intrinsic.md:233
+msgid ""
+"// Split `text` in three parts\n"
+"// - unaligned initial part, before the first word aligned address in text\n"
+"// - body, scan by 2 words at a time\n"
+"// - the last remaining part, < 2 word size\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:192 src/2043-is-aligned-intrinsic.md:241
+msgid "// search up to an aligned boundary\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:204 src/2043-is-aligned-intrinsic.md:246
+msgid "// search the body of the text\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:214 src/2043-is-aligned-intrinsic.md:251
+msgid "// break if there is a matching byte\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:224
+msgid "// find the byte after the point the body loop stopped\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:229
+msgid "With the `align_to` function this could be written as"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:261
+msgid "// find the byte in the trailing unaligned part\n"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:266
+msgid "Documentation"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:268
+msgid ""
+"A lint could be added to `clippy` which detects hand-written alignment "
+"checks and suggests to use the `align_to` function instead."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:271
+msgid ""
+"The `std::mem::align` function's documentation should point to `[T]::"
+"align_to` in order to increase the visibility of the function. The "
+"documentation of `std::mem::align` should note that it is unidiomatic to "
+"manually align pointers, since that might not be supported on all platforms "
+"and is prone to implementation errors."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:277
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:280
+msgid "None known to the author."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:282
+msgid "Alternatives"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:285
+msgid "Duplicate functions without optimizations for miri"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:287
+msgid ""
+"Miri could intercept calls to functions known to do alignment checks on "
+"pointers and roll its own implementation for them. This doesn't scale well "
+"and is prone to errors due to code duplication."
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:291
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2043-is-aligned-intrinsic.md:294
+msgid ""
+"produce a lint in case `sizeof<T>() % sizeof<U>() != 0` and in case the "
+"expansion is not part of a monomorphisation, since in that case `align_to` "
+"is statically known to never be effective"
+msgstr ""

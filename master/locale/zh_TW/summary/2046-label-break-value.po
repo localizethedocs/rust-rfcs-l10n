@@ -1,0 +1,189 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2046-label-break-value.md:1
+msgid "Feature Name: label_break_value"
+msgstr ""
+
+#: src/2046-label-break-value.md:2
+msgid "Start Date: 2017-06-26"
+msgstr ""
+
+#: src/2046-label-break-value.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2046](https://github.com/rust-lang/rfcs/pull/2046)"
+msgstr ""
+
+#: src/2046-label-break-value.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#48594](https://github.com/rust-lang/rust/"
+"issues/48594)"
+msgstr ""
+
+#: src/2046-label-break-value.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/2046-label-break-value.md:10
+msgid ""
+"Allow a `break` of labelled blocks with no loop, which can carry a value."
+msgstr ""
+
+#: src/2046-label-break-value.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2046-label-break-value.md:15
+msgid ""
+"In its simplest form, this allows you to terminate a block early, the same "
+"way that `return` allows you to terminate a function early."
+msgstr ""
+
+#: src/2046-label-break-value.md:30
+msgid ""
+"In the same manner as `return` and the labelled loop breaks in [RFC 1624]"
+"(https://github.com/rust-lang/rfcs/blob/master/text/1624-loop-break-value."
+"md), this `break` can carry a value:"
+msgstr ""
+
+#: src/2046-label-break-value.md:38
+msgid ""
+"RFC 1624 opted not to allow options to be returned from `for` or `while` "
+"loops, since no good option could be found for the syntax, and it was hard "
+"to do it in a natural way. This proposal gives us a natural way to handle "
+"such loops with no changes to their syntax:"
+msgstr ""
+
+#: src/2046-label-break-value.md:47
+msgid ""
+"This extension handles searches more complex than loops in the same way:"
+msgstr ""
+
+#: src/2046-label-break-value.md:59
+msgid "Implementing this without a labelled break is much less clear:"
+msgstr ""
+
+#: src/2046-label-break-value.md:79
+msgid "Detailed design"
+msgstr ""
+
+#: src/2046-label-break-value.md:84
+msgid "would simply be syntactic sugar for"
+msgstr ""
+
+#: src/2046-label-break-value.md:88
+msgid ""
+"except that unlabelled `break`s or `continue`s which would bind to the "
+"implicit `loop` are forbidden inside the _EXPR_."
+msgstr ""
+
+#: src/2046-label-break-value.md:90
+msgid ""
+"This is perhaps not a conceptually simpler thing, but it has the advantage "
+"that all of the wrinkles are already well understood as a result of the work "
+"that went into RFC 1624. If _EXPR_ contains explicit `break` statements as "
+"well as the implicit one, the compiler must be able to infer a single "
+"concrete type from the expressions in all of these `break` statements, "
+"including the whole of _EXPR_; this concrete type will be the type of the "
+"expression that the labelled block represents."
+msgstr ""
+
+#: src/2046-label-break-value.md:92
+msgid ""
+"Because the target of the `break` is ambiguous, code like the following will "
+"produce an error at compile time:"
+msgstr ""
+
+#: src/2046-label-break-value.md:102
+msgid ""
+"If the intended target of the `break` is the surrounding loop, it may not be "
+"clear to the user how to express that. Where there is a surrounding loop, "
+"the error message should explicitly suggest labelling the loop so that the "
+"`break` can target it."
+msgstr ""
+
+#: src/2046-label-break-value.md:113
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2046-label-break-value.md:116
+msgid "This can be taught alongside loop-based examples of labelled breaks."
+msgstr ""
+
+#: src/2046-label-break-value.md:118
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2046-label-break-value.md:121
+msgid ""
+"The proposal adds new syntax to blocks, requiring updates to parsers and "
+"possibly syntax highlighters."
+msgstr ""
+
+#: src/2046-label-break-value.md:123
+msgid "Alternatives"
+msgstr ""
+
+#: src/2046-label-break-value.md:126
+msgid ""
+"Everything that can be done with this feature can be done without it. "
+"However in my own code, I often find myself breaking something out into a "
+"function simply in order to return early, and the accompanying verbosity of "
+"passing parameters and return values with full type signatures is a real "
+"cost."
+msgstr ""
+
+#: src/2046-label-break-value.md:128
+msgid ""
+"Another alternative would be to revisit one of the proposals to add syntax "
+"to `for` and `while`."
+msgstr ""
+
+#: src/2046-label-break-value.md:130
+msgid ""
+"We have three options for handling an unlabelled `break` or `continue` "
+"inside a labelled block:"
+msgstr ""
+
+#: src/2046-label-break-value.md:132
+msgid "compile error on both `break` and `continue`"
+msgstr ""
+
+#: src/2046-label-break-value.md:133
+msgid "bind `break` to the labelled block, compile error on `continue`"
+msgstr ""
+
+#: src/2046-label-break-value.md:134
+msgid ""
+"bind `break` and `continue` through the labelled block to a containing "
+"`loop`/`while`/`for`"
+msgstr ""
+
+#: src/2046-label-break-value.md:136
+msgid ""
+"This RFC chooses the first option since it's the most conservative, in that "
+"it would be possible to switch to a different behaviour later without "
+"breaking working programs. The second is the simplest, but makes a large "
+"difference between labelled and unlabelled blocks, and means that a program "
+"might label a block without ever explicitly referring to that label just for "
+"this change in behavior. The third is consistent with unlabelled blocks and "
+"with Java, but seems like a rich potential source of confusion."
+msgstr ""
+
+#: src/2046-label-break-value.md:138
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2046-label-break-value.md:141
+msgid "None outstanding that I know about."
+msgstr ""

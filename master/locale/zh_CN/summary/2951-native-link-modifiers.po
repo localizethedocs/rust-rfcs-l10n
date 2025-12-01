@@ -1,0 +1,503 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2951-native-link-modifiers.md:1
+msgid "Feature Name: `native_link_modifiers`"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:2
+msgid "Start Date: 2020-06-12"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2951](https://github.com/rust-lang/rfcs/pull/2951)"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#81490](https://github.com/rust-lang/rust/"
+"issues/81490)"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:9
+msgid ""
+"Provide an extensible mechanism for tweaking linking behavior of native "
+"libraries both in `#[link]` attributes (`#[link(modifiers = \"+foo,-"
+"bar\")]`) and on command line (`-l static:+foo,-bar=mylib`)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:16
+msgid ""
+"Occasionally some tweaks to linking behavior of native libraries are "
+"necessary, and currently there's no way to apply them."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:19
+msgid ""
+"For example, some static libraries may need to be linked as a whole archive "
+"without throwing any object files away because some symbols in them appear "
+"to be unused while actually having some effect.   \n"
+"This RFC introduces modifier `whole-archive` to address this."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:24
+msgid ""
+"In other cases we need to link to a library located at some specific path or "
+"not matching the default naming conventions.   \n"
+"This RFC introduces modifier `verbatim` to pass such libraries to the linker."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:28
+msgid ""
+"This RFC also reformulates the `static-nobundle` linking kind as a modifier "
+"`bundle` thus providing an opportunity to change the static linking default "
+"to non-bundling on some future edition boundary, and hopefully unblocking "
+"its stabilization."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:32
+msgid ""
+"The generic syntax provides a way to add more such modifiers in the future "
+"without introducing new linking kinds."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:35
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:38
+msgid ""
+"This is an advanced feature not expected to be used commonly, see the "
+"reference-level explanation if you know that you need some of these "
+"modifiers."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:41
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:44
+msgid "Existing syntax of linking attributes and options"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:46
+msgid ""
+"Attributes: `#[link(name = \"string\", kind = \"string\", cfg(predicate))]` "
+"(some components are optional.)"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:48
+msgid ""
+"Command line options: `-l kind=name:rename` (some components are optional)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:50
+msgid "Proposed extensions to the syntax"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:52
+msgid "Attributes: `#[link(/* same */, modifiers = \"+foo,-bar\")]`."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:53
+msgid "Command line options: `-l kind:+foo,-bar=name:rename`."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:55
+msgid ""
+"The modifiers are boolean and applied only to the single library specified "
+"with `name`.   \n"
+"`+` means enable, `-` means disable, multiple options can be separated by "
+"commas, the last boolean value specified for the given modifier wins.   \n"
+"The notation is borrowed from [target features](https://doc.rust-lang.org/"
+"rustc/codegen-options/index.html#target-feature) in general and should have "
+"the same semantics."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:62
+msgid ""
+"If the `:rename` component is specified on the command line, then in "
+"addition to the name and linking kind the modifiers will be updated as well "
+"(using concatenation)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:65
+msgid "Specific modifiers"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:67
+msgid "`bundle`"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:69 src/2951-native-link-modifiers.md:107
+msgid "Only compatible with the `static` linking kind."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:71
+msgid ""
+"`+bundle` means objects from the static library are bundled into the "
+"produced crate (a rlib, for example) and are used from this crate later "
+"during linking of the final binary."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:74
+msgid ""
+"`-bundle` means the static library is included into the produced rlib \"by "
+"name\" and object files from it are included only during linking of the "
+"final binary, the file search by that name is also performed during final "
+"linking."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:78
+msgid ""
+"This modifier is supposed to supersede the `static-nobundle` linking kind "
+"defined by [RFC 1717](https://github.com/rust-lang/rfcs/pull/1717)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:81
+msgid ""
+"The default for this modifier is currently `+bundle`, but it could be "
+"changed later on some future edition boundary."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:84
+msgid "`verbatim`"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:86
+msgid ""
+"`+verbatim` means that `rustc` itself won't add any target-specified library "
+"prefixes or suffixes (like `lib` or `.a`) to the library name, and will try "
+"its best to ask for the same thing from the linker."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:90
+msgid ""
+"For `ld`\\-like linkers `rustc` will use the `-l:filename` syntax (note the "
+"colon) when passing the library, so the linker won't add any prefixes or "
+"suffixes as well.   \n"
+"See [`-l namespec`](https://sourceware.org/binutils/docs/ld/Options.html) in "
+"`ld` documentation for more details.   \n"
+"For linkers not supporting any verbatim modifiers (e.g. `link.exe` or "
+"`ld64`) the library name will be passed as is."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:97
+msgid "The default for this modifier is `-verbatim`."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:99
+msgid ""
+"This RFC changes the behavior of `raw-dylib` linking kind specified by [RFC "
+"2627](https://github.com/rust-lang/rfcs/pull/2627). The `.dll` suffix (or "
+"other target-specified suffixes for other targets) is now added "
+"automatically.   \n"
+"If your DLL doesn't have the `.dll` suffix, it can be specified with "
+"`+verbatim`."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:105
+msgid "`whole-archive`"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:109
+msgid ""
+"`+whole-archive` means that the static library is linked as a whole archive "
+"without throwing any object files away."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:112
+msgid ""
+"This modifier translates to `--whole-archive` for `ld`\\-like linkers, to `/"
+"WHOLEARCHIVE` for `link.exe`, and to `-force_load` for `ld64`.   \n"
+"The modifier does nothing for linkers that don't support it."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:116
+msgid "The default for this modifier is `-whole-archive`."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:118
+msgid ""
+"A motivating example for this modifier can be found in [issue #56306]"
+"(https://github.com/rust-lang/rust/issues/56306)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:121
+msgid "`as-needed`"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:123
+msgid "Only compatible with the `dynamic` and `framework` linking kinds."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:125
+msgid ""
+"`+as-needed` means that the library will be actually linked only if it "
+"satisfies some undefined symbols at the point at which it is specified on "
+"the command line, making it similar to static libraries in this regard."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:129
+msgid ""
+"This modifier translates to `--as-needed` for `ld`\\-like linkers, and to `-"
+"dead_strip_dylibs` / `-needed_library` / `-needed_framework` for `ld64`.   \n"
+"The modifier does nothing for linkers that don't support it (e.g. `link."
+"exe`)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:133
+msgid ""
+"The default for this modifier is unclear, some targets currently specify it "
+"as `+as-needed`, some do not. We may want to try making `+as-needed` a "
+"default for all targets."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:136
+msgid ""
+"A motivating example for this modifier can be found in [issue #57837]"
+"(https://github.com/rust-lang/rust/issues/57837)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:139
+msgid "Stability story"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:141
+msgid ""
+"The modifier syntax can be stabilized independently from any specific "
+"modifiers."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:143
+msgid ""
+"All the specific modifiers start unstable and can be stabilized "
+"independently from each other given enough demand."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:146
+msgid "Relative order of `-l` and `-Clink-arg(s)` options"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:148
+msgid ""
+"This RFC also proposes to guarantee that the relative order of `-l` and `-"
+"Clink-arg(s)` command line options of `rustc` is preserved when passing them "
+"to linker.   \n"
+"(Currently they are passed independently and the order is not guaranteed.)"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:152
+msgid ""
+"This provides ability to tweak linking of individual libraries on the "
+"command line by using raw linker options.   \n"
+"An equivalent of order-preserving `-Clink-arg`, but in an attribute form, is "
+"not provided at this time."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:157
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:160
+msgid ""
+"Some extra complexity in parsing the modifiers and converting them into a "
+"form suitable for the linker."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:163
+msgid ""
+"Not all modifiers are applicable to all targets and linkers, but that's true "
+"for many existing `-C` options as well."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:166
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:170
+msgid "Alternative: rely on raw linker options"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:172
+msgid ""
+"The primary alternative for the (relatively cross-platform) `whole-archive` "
+"and `as-needed` modifiers is to rely on more target-specific raw linker "
+"options more."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:175
+msgid ""
+"(Note, that raw linker options don't cover the `bundle` and `verbatim` "
+"modifiers that are `rustc`\\-specific.)"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:178
+msgid ""
+"The modifier support is removed from the command line options, the desired "
+"effect is achieved by something like this."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:181
+msgid "-Wl,--whole-archive"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:184
+msgid ""
+"Note the `-Wl,` that is needed when using `gcc` as a linker, but not when "
+"using an `ld`\\-like linker directly. So this solution is not only more "
+"target-specific, but also more linker specific as well."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:188
+msgid ""
+"The `-Wl,` part can potentially be added automatically though, there's some "
+"prior art from CMake regarding this, see the `LINKER:` modifier for "
+"[`target_link_options`](https://cmake.org/cmake/help/git-stage/command/"
+"target_link_options.html)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:192
+msgid ""
+"Relying on raw linker options while linking with attributes will requires "
+"introducing a new attribute, see the paragraph about `#[link(arg = "
+"\"string\")]` in \"Future possibilities\"."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:195
+msgid "Alternative: merge modifiers into kind in attributes"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:197
+msgid ""
+"`#[link(kind = \"static\", modifiers = \"+foo,-bar\")]` -> `#[link(kind = "
+"\"static:+foo,-bar\")]`."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:199
+msgid ""
+"This make attributes closer to command line, but it's unclear whether it's a "
+"goal we want to pursue. For example, we already write `kind=name` on command "
+"line, but `kind = \"...\", name = \"...\"` in attributes."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:203
+msgid "Prior art"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:206
+msgid ""
+"`gcc` provides the `-Wl,foo` command line syntax (and some other similar "
+"options) for passing arbitrary options directly to the linker."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:209
+msgid ""
+"The relative order of `-Wl` options and `-l` options linking the libraries "
+"is preserved."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:211
+msgid ""
+"`cl.exe` provides `/link link-opts` for passing options directly to the "
+"linker, but the options supported by `link.exe` are generally order-"
+"independent, so it is not as relevant to modifying behavior of specific "
+"libraries as with `ld`\\-like linkers."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:215
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:218
+msgid "None currently."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:220
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:223
+msgid "New modifiers"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:225
+msgid "`dedup`"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:227
+msgid ""
+"`rustc` doesn't currently deduplicate linked libraries [in general](https://"
+"github.com/rust-lang/rust/issues/73319)."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:230
+msgid ""
+"The reason is that _sometimes_ the linked libraries need to be duplicated on "
+"the command line."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:232
+msgid ""
+"However, such cases are rare and we may want to deduplicate the libraries by "
+"default, but provide the `-dedup` modifier as an opt-out for these rare "
+"cases."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:235
+msgid ""
+"Introducing the `dedup` modifier with the current `-dedup` default doesn't "
+"make much sense."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:237
+msgid "Support `#[link(arg = \"string\")]` in addition to the modifiers"
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:239
+msgid ""
+"`ld` supports some other niche per-library options, for example `--copy-dt-"
+"needed-entries`."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:241
+msgid ""
+"`ld` also supports order-dependent options like `--start-group`/`--end-"
+"group` applying to groups of libraries."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:244
+msgid ""
+"We may want to avoid new modifiers for all possible cases like this and "
+"provide an order-preserving analogue of `-C link-arg`, but in the attribute "
+"form.   \n"
+"It may also resolve issues with the existing unstable attribute "
+"[`#[link_args]`](https://github.com/rust-lang/rust/issues/29596) and serve "
+"as its replacement."
+msgstr ""
+
+#: src/2951-native-link-modifiers.md:250
+msgid ""
+"Some analogue of [CMake's `LINKER:`](https://cmake.org/cmake/help/git-stage/"
+"command/target_link_options.html) mentioned above can improve portability "
+"here."
+msgstr ""

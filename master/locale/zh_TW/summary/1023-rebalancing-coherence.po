@@ -1,0 +1,399 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1023-rebalancing-coherence.md:1
+msgid "Feature Name: `fundamental_attribute`"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:2
+msgid "Start Date: 2015-03-27"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1023](https://github.com/rust-lang/rfcs/pull/1023)"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#23086](https://github.com/rust-lang/rust/"
+"issues/23086)"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:8
+msgid "This RFC proposes two rule changes:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:10
+msgid ""
+"Modify the orphan rules so that impls of remote traits require a local type "
+"that is either a struct/enum/trait defined in the current crate `LT = "
+"LocalTypeConstructor<...>` or a reference to a local type `LT = ... | &LT | "
+"&mut LT`."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:14
+msgid "Restrict negative reasoning so it too obeys the orphan rules."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:15
+msgid ""
+"Introduce an unstable `#[fundamental]` attribute that can be used to extend "
+"the above rules in select cases (details below)."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:20
+msgid ""
+"The current orphan rules are oriented around allowing as many remote traits "
+"as possible. As so often happens, giving power to one party (in this case, "
+"downstream crates) turns out to be taking power away from another (in this "
+"case, upstream crates). The problem is that due to coherence, the ability to "
+"define impls is a zero-sum game: every impl that is legal to add in a child "
+"crate is also an impl that a parent crate cannot add without fear of "
+"breaking downstream crates. A detailed look at these problems is [presented "
+"here](https://gist.github.com/nikomatsakis/bbe6821b9e79dd3eb477); this RFC "
+"doesn't go over the problems in detail, but will reproduce some of the "
+"examples found in that document."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:32
+msgid ""
+"This RFC proposes a shift that attempts to strike a balance between the "
+"needs of downstream and upstream crates. In particular, we wish to preserve "
+"the ability of upstream crates to add impls to traits that they define, "
+"while still allowing downstream creates to define the sorts of impls they "
+"need."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:38
+msgid ""
+"While exploring the problem, we found that in practice remote impls almost "
+"always are tied to a local type or a reference to a local type. For example, "
+"here are some impls from the definition of `Vec`:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:43
+msgid "// tied to Vec<T>\n"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:46
+msgid "// tied to &Vec<T>\n"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:51
+msgid ""
+"On this basis, we propose that we limit remote impls to require that they "
+"include a type either defined in the current crate or a reference to a type "
+"defined in the current crate. This is more restrictive than the current "
+"definition, which merely requires a local type appear _somewhere_. So, for "
+"example, under this definition `MyType` and `&MyType` would be considered "
+"local, but `Box<MyType>`, `Option<MyType>`, and `(MyType, i32)` would not."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:59
+msgid ""
+"Furthermore, we limit the use of _negative reasoning_ to obey the orphan "
+"rules. That is, just as a crate cannot define an impl `Type: Trait` unless "
+"`Type` or `Trait` is local, it cannot rely that `Type: !Trait` holds unless "
+"`Type` or `Trait` is local."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:64
+msgid ""
+"Together, these two changes cause very little code breakage while retaining "
+"a lot of freedom to add impls in a backwards compatible fashion. However, "
+"they are not quite sufficient to compile all the most popular cargo crates "
+"(though they almost succeed). Therefore, we propose an simple, unstable "
+"attribute `#[fundamental]` (described below) that can be used to extend the "
+"system to accommodate some additional patterns and types. This attribute is "
+"unstable because it is not clear whether it will prove to be adequate or "
+"need to be generalized; this part of the design can be considered somewhat "
+"incomplete, and we expect to finalize it based on what we observe after the "
+"1.0 release."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:76
+msgid "Practical effect"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:78
+msgid "Effect on parent crates"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:80
+msgid ""
+"When you first define a trait, you must also decide whether that trait "
+"should have (a) a blanket impls for all `T` and (b) any blanket impls over "
+"references. These blanket impls cannot be added later without a major "
+"version bump, for fear of breaking downstream clients."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:85
+msgid ""
+"Here are some examples of the kinds of blanket impls that must be added "
+"right away:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:93
+msgid "Effect on child crates"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:95
+msgid ""
+"Under the base rules, child crates are limited to impls that use local types "
+"or references to local types. They are also prevented from relying on the "
+"fact that `Type: !Trait` unless either `Type` or `Trait` is local. This "
+"turns out to be have very little impact."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:100
+msgid ""
+"In compiling the libstd facade and librustc, exactly two impls were found to "
+"be illegal, both of which followed the same pattern:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:123
+msgid ""
+"The problem here is that `Option<&LinkedListEntry>` is no longer considered "
+"a local type. A similar restriction would be that one cannot define an impl "
+"over `Box<LinkedListEntry>`; but this was not observed in practice."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:128
+msgid ""
+"Both of these restrictions can be overcome by using a new type.  For "
+"example, the code above could be changed so that instead of writing the impl "
+"for `Option<&LinkedListEntry>`, we define a type `LinkedList` that wraps the "
+"option and implement on that:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:157
+msgid "Errors from cargo and the fundamental attribute"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:159
+msgid ""
+"We also applied our prototype to all the \"Most Downloaded\" cargo crates as "
+"well as the `iron` crate. That exercise uncovered a few patterns that the "
+"simple rules presented thus far can't handle."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:163
+msgid ""
+"The first is that it is common to implement traits over boxed trait objects. "
+"For example, the `error` crate defines an impl:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:166
+msgid "`impl<E: Error> FromError<E> for Box<Error>`"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:168
+msgid ""
+"Here, `Error` is a local trait defined in `error`, but `FromError` is the "
+"trait from `libstd`. This impl would be illegal because `Box<Error>` is not "
+"considered local as `Box` is not local."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:172
+msgid ""
+"The second is that it is common to use `FnMut` in blanket impls, similar to "
+"how the `Pattern` trait in `libstd` works. The `regex` crate in particular "
+"has the following impls:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:176
+msgid "`impl<'t> Replacer for &'t str`"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:177
+msgid "`impl<F> Replacer for F where F: FnMut(&Captures) -> String`"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:178
+msgid ""
+"these are in conflict because this requires that `&str: !FnMut`, and neither "
+"`&str` nor `FnMut` are local to `regex`"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:181
+msgid ""
+"Given that overloading over closures is likely to be a common request, and "
+"that the `Fn` traits are well-known, core traits tied to the call operator, "
+"it seems reasonable to say that implementing a `Fn` trait is itself a "
+"breaking change. (This is not to suggest that there is something "
+"_fundamental_ about the `Fn` traits that distinguish them from all other "
+"traits; just that if the goal is to have rules that users can easily "
+"remember, saying that implementing a core operator trait is a breaking "
+"change may be a reasonable rule, and it enables useful patterns to boot -- "
+"patterns that are baked into the libstd APIs.)"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:192
+msgid ""
+"To accommodate these cases (and future cases we will no doubt encounter), "
+"this RFC proposes an unstable attribute `#[fundamental]`. `#[fundamental]` "
+"can be applied to types and traits with the following meaning:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:197
+msgid ""
+"A `#[fundamental]` type `Foo` is one where implementing a blanket impl over "
+"`Foo` is a breaking change. As described, `&` and `&mut` are fundamental. "
+"This attribute would be applied to `Box`, making `Box` behave the same as "
+"`&` and `&mut` with respect to coherence."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:201
+msgid ""
+"A `#[fundamental]` trait `Foo` is one where adding an impl of `Foo` for an "
+"existing type is a breaking change. For now, the `Fn` traits and `Sized` "
+"would be marked fundamental, though we may want to extend this set to all "
+"operators or some other more-easily-remembered set."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:207
+msgid ""
+"The `#[fundamental]` attribute is intended to be a kind of \"minimal "
+"commitment\" that still permits the most important impl patterns we see in "
+"the wild. Because it is unstable, it can only be used within libstd for now. "
+"We are eventually committed to finding some way to accommodate the patterns "
+"above -- which could be as simple as stabilizing `#[fundamental]` (or, "
+"indeed, reverting this RFC altogether). It could also be a more general "
+"mechanism that lets users specify more precisely what kind of impls are "
+"reserved for future expansion and which are not."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:217
+msgid "Detailed Design"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:219
+msgid "Proposed orphan rules"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:221
+msgid ""
+"Given an impl `impl<P1...Pn> Trait<T1...Tn> for T0`, either `Trait` must be "
+"local to the current crate, or:"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:224
+msgid ""
+"At least one type must meet the `LT` pattern defined above. Let `Ti` be the "
+"first such type."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:226
+msgid ""
+"No type parameters `P1...Pn` may appear in the type parameters that precede "
+"`Ti` (that is, `Tj` where `j < i`)."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:229
+msgid "Type locality and negative reasoning"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:231
+msgid ""
+"Currently the overlap check employs negative reasoning to segregate blanket "
+"impls from other impls. For example, the following pair of impls would be "
+"legal only if `MyType<U>: !Copy` for all `U` (the notation `Type: !Trait` is "
+"borrowed from [RFC 586](https://github.com/rust-lang/rfcs/pull/586)):"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:243
+msgid ""
+"This proposal places limits on negative reasoning based on the orphan rules. "
+"Specifically, we cannot conclude that a proposition like `T0: !Trait<T1.."
+"Tn>` holds unless `T0: Trait<T1..Tn>` meets the orphan rules as defined in "
+"the previous section."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:248
+msgid ""
+"In practice this means that, by default, you can only assume negative things "
+"about traits and types defined in your current crate, since those are under "
+"your direct control. This permits parent crates to add any impls except for "
+"blanket impls over `T`, `&T`, or `&mut T`, as discussed before."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:254
+msgid "Effect on ABI compatibility and semver"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:256
+msgid ""
+"We have not yet proposed a comprehensive semver RFC (it's coming). However, "
+"this RFC has some effect on what that RFC would say. As discussed above, it "
+"is a breaking change for to add a blanket impl for a `#[fundamental]` type. "
+"It is also a breaking change to add an impl of a `#[fundamental]` trait to "
+"an existing type."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:262
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:264
+msgid ""
+"The primary drawback is that downstream crates cannot write an impl over "
+"types other than references, such as `Option<LocalType>`. This can be "
+"overcome by defining wrapper structs (new types), but that can be annoying."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:269
+msgid "Alternatives"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:271
+msgid ""
+"**Status quo.** In the status quo, the balance of power is heavily tilted "
+"towards child crates. Parent crates basically cannot add any impl for an "
+"existing trait to an existing type without potentially breaking child crates."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:276
+msgid ""
+"**Take a hard line.** We could forego the `#[fundamental]` attribute, but it "
+"would force people to forego `Box<Trait>` impls as well as the useful "
+"closure-overloading pattern. This seems unfortunate. Moreover, it seems "
+"likely we will encounter further examples of \"reasonable cases\" that "
+"`#[fundamental]` can easily accommodate."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:283
+msgid ""
+"**Specializations, negative impls, and contracts.** The gist referenced "
+"earlier includes [a section](https://gist.github.com/nikomatsakis/"
+"bbe6821b9e79dd3eb477#file-c-md) covering various alternatives that I "
+"explored which came up short. These include specialization, explicit "
+"negative impls, and explicit contracts between the trait definer and the "
+"trait consumer."
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:289
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1023-rebalancing-coherence.md:291
+msgid "None."
+msgstr ""

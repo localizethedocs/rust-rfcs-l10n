@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1184-stabilize-no_std.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:2
+msgid "Start Date: 2015-06-26"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1184](https://github.com/rust-lang/rfcs/pull/1184)"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#27394](https://github.com/rust-lang/rust/"
+"issues/27394)"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:8
+msgid ""
+"Tweak the `#![no_std]` attribute, add a new `#![no_core]` attribute, and "
+"pave the way for stabilizing the libcore library."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:13
+msgid ""
+"Currently all stable Rust programs must link to the standard library "
+"(libstd), and it is impossible to opt out of this. The standard library is "
+"not appropriate for use cases such as kernels, embedded development, or some "
+"various niche cases in userspace. For these applications Rust itself is "
+"appropriate, but the compiler does not provide a stable interface compiling "
+"in this mode."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:19
+msgid ""
+"The standard distribution provides a library, libcore, which is \"the "
+"essence of Rust\" as it provides many language features such as iterators, "
+"slice methods, string methods, etc. The defining feature of libcore is that "
+"it has 0 dependencies, unlike the standard library which depends on many I/O "
+"APIs, for example. The purpose of this RFC is to provide a stable method to "
+"access libcore."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:26
+msgid ""
+"Applications which do not want to use libstd still want to use libcore 99% "
+"of the time, but unfortunately the current `#![no_std]` attribute does not "
+"do a great job in facilitating this. When moving into the realm of not using "
+"the standard library, the compiler should make the use case as ergonomic as "
+"possible, so this RFC proposes different behavior than today's `#![no_std]`."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:32
+msgid ""
+"Finally, the standard library defines a number of language items which must "
+"be defined when libstd is not used. These language items are:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:35 src/1184-stabilize-no_std.md:90
+msgid "`panic_fmt`"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:36 src/1184-stabilize-no_std.md:92
+msgid "`eh_personality`"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:37 src/1184-stabilize-no_std.md:91
+msgid "`stack_exhausted`"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:39
+msgid ""
+"To be able to usefully leverage `#![no_std]` in stable Rust these lang items "
+"must be available in a stable fashion."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:42
+msgid "Detailed Design"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:44
+msgid "This RFC proposes a number of changes:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:46
+msgid "Tweak the `#![no_std]` attribute slightly."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:47
+msgid "Introduce a `#![no_core]` attribute."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:48
+msgid "Pave the way to stabilize the `core` module."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:50
+msgid "`no_std`"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:52
+msgid ""
+"The `#![no_std]` attribute currently provides two pieces of functionality:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:54
+msgid ""
+"The compiler no longer injects `extern crate std` at the top of a crate."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:55
+msgid ""
+"The prelude (`use std::prelude::v1::*`) is no longer injected at the top of "
+"every module."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:58
+msgid ""
+"This RFC proposes adding the following behavior to the `#![no_std]` "
+"attribute:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:60
+msgid "The compiler will inject `extern crate core` at the top of a crate."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:61
+msgid "The libcore prelude will be injected at the top of every module."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:63
+msgid ""
+"Most uses of `#![no_std]` already want behavior along these lines as they "
+"want to use libcore, just not the standard library."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:66
+msgid "`no_core`"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:68
+msgid ""
+"A new attribute will be added to the compiler, `#![no_core]`, which serves "
+"two purposes:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:71
+msgid ""
+"This attribute implies the `#![no_std]` attribute (no std prelude/crate "
+"injection)."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:73
+msgid "This attribute will prevent core prelude/crate injection."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:75
+msgid ""
+"Users of `#![no_std]` today who do _not_ use libcore would migrate to moving "
+"this attribute instead of `#![no_std]`."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:78
+msgid "Stabilization of libcore"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:80
+msgid ""
+"This RFC does not yet propose a stabilization path for the contents of "
+"libcore, but it proposes readying to stabilize the name `core` for libcore, "
+"paving the way for the rest of the library to be stabilized. The exact "
+"method of stabilizing its contents will be determined with a future RFC or "
+"pull requests."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:85
+msgid "Stabilizing lang items"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:87
+msgid ""
+"As mentioned above, there are three separate lang items which are required "
+"by the libcore library to link correctly. These items are:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:94
+msgid ""
+"This RFC does **not** attempt to stabilize these lang items for a number of "
+"reasons:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:97
+msgid ""
+"The exact set of these lang items is somewhat nebulous and may change over "
+"time."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:99
+msgid ""
+"The signatures of each of these lang items can either be platform-specific "
+"or it's just \"too weird\" to stabilize."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:101
+msgid ""
+"These items are pretty obscure and it's not very widely known what they do "
+"or how they should be implemented."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:104
+msgid ""
+"Stabilization of these lang items (in any form) will be considered in a "
+"future RFC."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:107
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:109
+msgid ""
+"The current distribution provides precisely one library, the standard "
+"library, for general consumption of Rust programs. Adding a new one "
+"(libcore) is adding more surface area to the distribution (in addition to "
+"adding a new `#![no_core]` attribute). This surface area is greatly desired, "
+"however."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:114
+msgid ""
+"When using `#![no_std]` the experience of Rust programs isn't always the "
+"best as there are some pitfalls that can be run into easily. For example, "
+"macros and plugins sometimes hardcode `::std` paths, but most ones in the "
+"standard distribution have been updated to use `::core` in the case that `#!"
+"[no_std]` is present. Another example is that common utilities like vectors, "
+"pointers, and owned strings are not available without liballoc, which will "
+"remain an unstable library. This means that users of `#![no_std]` will have "
+"to reimplement all of this functionality themselves."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:123
+msgid ""
+"This RFC does not yet pave a way forward for using `#![no_std]` and "
+"producing an executable because the `#[start]` item is required, but remains "
+"feature gated. This RFC just enables creation of Rust static or dynamic "
+"libraries which don't depend on the standard library in addition to Rust "
+"libraries (rlibs) which do not depend on the standard library."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:129
+msgid ""
+"In stabilizing the `#![no_std]` attribute it's likely that a whole ecosystem "
+"of crates will arise which work with `#![no_std]`, but in theory all of "
+"these crates should also interoperate with the rest of the ecosystem using "
+"`std`. Unfortunately, however, there are known cases where this is not "
+"possible. For example if a macro is exported from a `#![no_std]` crate which "
+"references items from `core` it won't work by default with a `std` library."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:136
+msgid "Alternatives"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:138
+msgid ""
+"Most of the strategies taken in this RFC have some minor variations on what "
+"can happen:"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:141
+msgid ""
+"The `#![no_std]` attribute could be stabilized as-is without adding a `#!"
+"[no_core]` attribute, requiring users to write `extern crate core` and "
+"import the core prelude manually. The burden of adding `#![no_core]` to the "
+"compiler, however, is seen as not-too-bad compared to the increase in "
+"ergonomics of using `#![no_std]`."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:146
+msgid ""
+"Another stable crate could be provided by the distribution which provides "
+"definitions of these lang items which are all wired to abort. This has the "
+"downside of selecting a name for this crate, however, and also inflating the "
+"crates in our distribution again."
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:151
+msgid "Unresolved Questions"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:153
+msgid ""
+"How important/common are `#![no_std]` executables? Should this RFC attempt "
+"to stabilize that as well?"
+msgstr ""
+
+#: src/1184-stabilize-no_std.md:155
+msgid ""
+"When a staticlib is emitted should the compiler _guarantee_ that a `#!"
+"[no_std]` one will link by default? This precludes us from ever adding "
+"future require language items for features like unwinding or stack "
+"exhaustion by default. For example if a new security feature is added to "
+"LLVM and we'd like to enable it by default, it may require that a symbol or "
+"two is defined somewhere in the compilation."
+msgstr ""

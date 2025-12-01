@@ -1,0 +1,2575 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2497-if-let-chains.md:1
+msgid "Feature Name: `let_chains_2`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:2
+msgid "Start Date: 2018-07-13"
+msgstr ""
+
+#: src/2497-if-let-chains.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2497](https://github.com/rust-lang/rfcs/pull/2497)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#53667](https://github.com/rust-lang/rust/"
+"issues/53667)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:5
+msgid ""
+"Rust Issue: [rust-lang/rust#53668](https://github.com/rust-lang/rust/"
+"issues/53668)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/2497-if-let-chains.md:10
+msgid ""
+"Extends `if let` and `while let`\\-expressions with chaining, allowing you "
+"to combine multiple `let`s and `bool`\\-typed conditions together naturally. "
+"After implementing this RFC, you'll be able to write, among other things:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:29
+msgid "and with side effects:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:33
+msgid "\"Alan Turing\""
+msgstr ""
+
+#: src/2497-if-let-chains.md:36
+msgid "\"Hacking Enigma\""
+msgstr ""
+
+#: src/2497-if-let-chains.md:37
+msgid "\"Yep, It's you.\""
+msgstr ""
+
+#: src/2497-if-let-chains.md:40
+msgid "\"You can't be Alan! \""
+msgstr ""
+
+#: src/2497-if-let-chains.md:47
+msgid ""
+"The main aim of this RFC is to decide that this is a problem worth solving "
+"as well as discussing a few available options. **Most importantly, we want "
+"to make `if let PAT = EXPR && ..` a possible option for Rust 2018.**"
+msgstr ""
+
+#: src/2497-if-let-chains.md:51
+msgid "Motivation"
+msgstr ""
+
+#: src/2497-if-let-chains.md:54
+msgid ""
+"The main motivation for this RFC is improving readability, ergonomics, and "
+"reducing paper cuts."
+msgstr ""
+
+#: src/2497-if-let-chains.md:57
+msgid "Right-ward drift"
+msgstr ""
+
+#: src/2497-if-let-chains.md:59
+msgid ""
+"Today, each `if let` needs a brace, which means that you usually, to keep "
+"the code readable, indent once to the right each time. Thus, matching "
+"multiple things quickly leads to way too much indent that overflows the "
+"typical text editor or IDE horizontally. This is in particular bad for "
+"readers that can only fit around 80-100 characters per line in their editor. "
+"Keeping in mind that code is read more than written, it is important to "
+"improve readability where possible."
+msgstr ""
+
+#: src/2497-if-let-chains.md:67
+msgid "Other solution: Tuples"
+msgstr ""
+
+#: src/2497-if-let-chains.md:69
+msgid ""
+"One solution is matching a tuple, but that is a poor solution when there are "
+"side effects or expensive computations involved, and doesn't necessarily "
+"work as _DSTs_ and _lvalues_ can't go in tuples."
+msgstr ""
+
+#: src/2497-if-let-chains.md:73
+msgid "Other solution: `break ...`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:75
+msgid ""
+"Another solution to avoid right-ward drift is to create a new function for "
+"part of the indentation. When the inner scopes depend on a lot of variables "
+"and state from outer scopes, all of these variables have to be passed on to "
+"the newly created function, which may not even be a natural unit to abstract "
+"into a function. Creating a new function, especially one that feels "
+"artificial, can also inhibit local reasoning. A new level of function (or "
+"[IIFE](https://en.wikipedia.org/wiki/Immediately-"
+"invoked_function_expression)) also changes the behaviour of `return`, "
+"`break`, `?`, and friends."
+msgstr ""
+
+#: src/2497-if-let-chains.md:85
+msgid ""
+"A third solution involves using the expression form `break '<label>`. You "
+"may then rewrite the snippet from the [summary](#summary) as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:123
+msgid ""
+"while right-ward drift has been reduced, a significant amount of line noise "
+"has been introduced. The user is also forced to track the label `'stop`. All "
+"in all, this alternative significantly reduces readability wherefore we "
+"discourage from this way of writing."
+msgstr ""
+
+#: src/2497-if-let-chains.md:128
+msgid "Boiler-plate reduction using macros"
+msgstr ""
+
+#: src/2497-if-let-chains.md:130
+msgid ""
+"One way to reduce the noise from the above alternative solution is to "
+"refactor some commonalities into a macro. However, refactoring into a macro "
+"means that you need to understand the macro. In comparison, chained `if "
+"let`s constitute something simpler that all Rust programmers will "
+"understand, as opposed to a specialized macro."
+msgstr ""
+
+#: src/2497-if-let-chains.md:136
+msgid "Mixing conditions and pattern matching"
+msgstr ""
+
+#: src/2497-if-let-chains.md:138
+msgid ""
+"A `match` expression can have `if` guards, but `if let` currently requires "
+"another level of conditionals.  This is particularly troublesome for cases "
+"that can't be matched, like `x.fract() == 0`, or error `enum`s that disallow "
+"matching, like `std::io::ErrorKind`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:143
+msgid "Duplicating code in `else` clauses"
+msgstr ""
+
+#: src/2497-if-let-chains.md:145
+msgid "In some cases, you may have written something like:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:159
+msgid ""
+"In this example `foo()` and `bar(x)` have side effects, but more crucially, "
+"there is a dependency between matching on the result of `foo()` to execute "
+"`bar(x)`. Therefore, matching on `(foo(), bar(x))` is not possible in this "
+"case because there's no `x` in scope. So you have no choice but to write it "
+"in this way (or use `break 'label..`)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:165
+msgid ""
+"However, now `some_long_expression` is repeated, and if more `let` bindings "
+"are added, more repetition ensues. To avoid repeating the long expression, "
+"you might encapsulate this in a new function, but that new function may feel "
+"like an artificial abstraction as discussed above."
+msgstr ""
+
+#: src/2497-if-let-chains.md:170
+msgid ""
+"This is problematic even with a macro to simplify, as it results in more "
+"code emitted that LLVM commonly cannot simplify."
+msgstr ""
+
+#: src/2497-if-let-chains.md:173
+msgid "Bringing the language closer to the mental model"
+msgstr ""
+
+#: src/2497-if-let-chains.md:175
+msgid ""
+"The readability of programs is often about the degree to which the code "
+"corresponds to the mental model the reader has of said program. Therefore, "
+"we should aim to bring the language closer to the mental model of the "
+"reader. With respect to `if let`\\-expressions, rather than saying (out "
+"loud):"
+msgstr ""
+
+#: src/2497-if-let-chains.md:180
+msgid "if A matches, and"
+msgstr ""
+
+#: src/2497-if-let-chains.md:181
+msgid "if x holds and"
+msgstr ""
+
+#: src/2497-if-let-chains.md:182
+msgid "if B matches"
+msgstr ""
+
+#: src/2497-if-let-chains.md:183
+msgid "do X, Y, and Z"
+msgstr ""
+
+#: src/2497-if-let-chains.md:185
+msgid "..it is more common to say:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:187
+msgid "If A matches, x holds, and B matches, do X, Y, and Z"
+msgstr ""
+
+#: src/2497-if-let-chains.md:189
+msgid ""
+"This RFC is more in line with the latter formulation and thus brings the "
+"language closer to the readers mental model."
+msgstr ""
+
+#: src/2497-if-let-chains.md:192
+msgid "Instead of macros"
+msgstr ""
+
+#: src/2497-if-let-chains.md:194
+msgid ""
+"As we've previously touched upon, we may define and use a macro to reduce "
+"boilerplate. A macro like [`if_chain!`](https://crates.io/crates/if_chain) "
+"as a solution however has the problem of not being part of the language "
+"specification. Thus, it is not part of the common syntax that experienced "
+"Rust programmers are familiar with and is instead local to the project "
+"itself. The non-universality of syntax therefore hurts readability."
+msgstr ""
+
+#: src/2497-if-let-chains.md:203
+msgid "Plenty of Real-world use cases"
+msgstr ""
+
+#: src/2497-if-let-chains.md:209
+msgid ""
+"We have already seen a real world example from the compiler in the [summary]"
+"(#summary). By taking a look at the [reverse dependencies](https://crates.io/"
+"crates/if_chain/reverse_dependencies) of [`if_chain!`](https://crates.io/"
+"crates/if_chain) we can find more real-world use cases that this RFC "
+"facilitates."
+msgstr ""
+
+#: src/2497-if-let-chains.md:213
+msgid ""
+"As an example, `clippy` [defines a function](https://github.com/rust-lang-"
+"nursery/rust-clippy/blob/ed589761e62735ebb803510e01bfd8b278527fb9/"
+"clippy_lints/src/print.rs#L207-L219):"
+msgstr ""
+
+#: src/2497-if-let-chains.md:216 src/2497-if-let-chains.md:235
+msgid ""
+"/// Returns the slice of format string parts in an `Arguments::new_v1` "
+"call.\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:219 src/2497-if-let-chains.md:237
+msgid "// &[\"…\", \"…\", …]\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:232
+msgid ""
+"with this RFC, this would be written, without any external dependencies, as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:250
+msgid ""
+"This kind of deep pattern matching is common for parsers and when dealing "
+"with ASTs. One place which deals with ASTs is the compiler itself as seen "
+"above. Thus, with this RFC, some compiler internals may be simplified. "
+"Another common place is when authoring with custom derive macros using the "
+"`syn` crate."
+msgstr ""
+
+#: src/2497-if-let-chains.md:256
+msgid "An expected feature"
+msgstr ""
+
+#: src/2497-if-let-chains.md:259
+msgid ""
+"As demonstrated in [Appendix B](#appendix-b), the syntax proposed in this "
+"RFC is already expected to be allowed in Rust by users today. Indeed, the "
+"author of this RFC made this assumption at some point."
+msgstr ""
+
+#: src/2497-if-let-chains.md:263
+msgid "_Unification_"
+msgstr ""
+
+#: src/2497-if-let-chains.md:265
+msgid ""
+"In today's Rust, there is both a grammatical and conceptual distinction "
+"between `if` and `if let` as well as `while` and `while let`. This RFC aims "
+"to erase the divide and unify concepts. Henceforth, there is just `if` and "
+"`while`. Thus `if let` is no longer the unit."
+msgstr ""
+
+#: src/2497-if-let-chains.md:270
+msgid "\"Why now?\""
+msgstr ""
+
+#: src/2497-if-let-chains.md:272
+msgid "A legitimate question to ask is:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:273
+msgid "Why implement this now?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:275
+msgid "In this case, the answer is simple: We can't wait."
+msgstr ""
+
+#: src/2497-if-let-chains.md:277
+msgid ""
+"Because Rust takes stability seriously, we would like to avoid any breakage "
+"in-between editions even if the breakage is exceedingly (as in the case of "
+"this RFC) unlikely. Instead, we want to deal with the vanishingly tiny "
+"degree of breakage, as explained in the [reference-level-explanation]"
+"(#reference-level-explanation), introduced by this RFC with the edition "
+"mechanism."
+msgstr ""
+
+#: src/2497-if-let-chains.md:283
+msgid ""
+"As it happens, a new edition \"Rust 2018\" is in the works at the moment (as "
+"of 2018-07-12). This is an excellent opportunity to take advantage of, and "
+"that is precisely what we aim to do here."
+msgstr ""
+
+#: src/2497-if-let-chains.md:287
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2497-if-let-chains.md:290
+msgid "This section examines the features proposed by this RFC."
+msgstr ""
+
+#: src/2497-if-let-chains.md:292
+msgid "`if let`\\-chains"
+msgstr ""
+
+#: src/2497-if-let-chains.md:294
+msgid ""
+"An _`if let` chain_, refers to a chain of multiple `let` bindings, which may "
+"mixed with conditionals in an `if` expression."
+msgstr ""
+
+#: src/2497-if-let-chains.md:297
+msgid "An example of such a chain is:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:307
+msgid ""
+"It is important to note that this is _not_ generally equivalent to the "
+"following expression:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:316
+msgid ""
+"Unlike the first example, there is no short circuiting logic in the example "
+"using tuples. Assuming that there are no panics, which is usually the case, "
+"both functions are always executed in the latter example."
+msgstr ""
+
+#: src/2497-if-let-chains.md:320
+msgid "If we desugar the first example, we can clearly see the difference:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:330
+msgid ""
+"What is the practical difference, and why is short circuiting behaviour an "
+"important distinction? The call to `bar()` may be an expensive one. Avoiding "
+"useless work is beneficial to performance. There is however a more "
+"fundamental reason. Assuming that `bar()` has side effects, the meaning of "
+"the tuple example is different from the nested `if let` expressions because "
+"in the case of the former, the side effect of `bar()` always happens while "
+"it will not if `let A(x) = foo()` does not match."
+msgstr ""
+
+#: src/2497-if-let-chains.md:338
+msgid ""
+"The difference between the tuple example and `if let`\\-chains become even "
+"greater if we also consider a dependence between `foo()` and `bar(..)` as in "
+"the following example:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:350
+msgid ""
+"Calling `bar(x)` is now dependent on having an `x` that is only available to "
+"us by first pattern matching on `foo()`. Therefore, there is no tuple-based "
+"equivalent to the above example. With this RFC implemented, you can more "
+"ergonomically write the same expression as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:363
+msgid ""
+"The new expression form introduced by this RFC is also not limited to simple "
+"`if let` expressions, you may of course also add `else` branches as seen in "
+"the example below."
+msgstr ""
+
+#: src/2497-if-let-chains.md:377
+msgid ""
+"While the below snippet is not what the compiler would desugar the above one "
+"to, you can think of the former as semantically equivalent to it. The "
+"compiler is free to not actually emit two calls to "
+"`alternative_computation()` in your compiled binary. For details, please see "
+"the [reference-level-explanation](#reference-level-explanation)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:394
+msgid ""
+"As briefly explained above, the `if let`\\-chain expression form is also not "
+"limited to pattern matching. You can also mix in any number of conditionals "
+"in any place you like, as done in the example below:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:408
+msgid "The above example example is semantically equivalent to:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:422
+msgid ""
+"Naturally, inside an `if-let`\\-chain expression, a `let` binding must come "
+"before it is referred to. As such, the following snippet would be ill-formed "
+"since we haven't implemented time-travel (yet):"
+msgstr ""
+
+#: src/2497-if-let-chains.md:427
+msgid "// <-- y used before bound.\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:428
+msgid "// <-- x used before bound.\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:435
+msgid "`while let`\\-chains"
+msgstr ""
+
+#: src/2497-if-let-chains.md:437
+msgid ""
+"A **`while let`\\-chain** is similar to an `if let`\\-chain but instead "
+"applies to `while let` expressions."
+msgstr ""
+
+#: src/2497-if-let-chains.md:440
+msgid ""
+"Since we've already introduced the basic idea previously with _`if let`\\-"
+"chains_, we will jump straight into a more complex example."
+msgstr ""
+
+#: src/2497-if-let-chains.md:443
+msgid ""
+"The popular [`itertools`](https://docs.rs/itertools/0.7.8/itertools/macro."
+"izip.html) crate has an `izip` macro that allows you to _\"Create an "
+"iterator running multiple iterators in lockstep\"_. An example of this, "
+"taken from the documentation of `izip` is:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:451
+msgid "// iterate over three sequences side-by-side\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:463
+msgid "With this RFC, we can write this, admittedly not as succinctly, as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:483
+msgid "The loop in the above snippet is equivalent to:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:498
+msgid ""
+"Notice in particular here that just as we could rewrite `while let` in terms "
+"of `loop` + `if let`, so too can we rewrite `while let`\\-chains with `loop` "
+"+ `if let`\\-chains."
+msgstr ""
+
+#: src/2497-if-let-chains.md:502
+msgid ""
+"While these two first snippets are equivalent in this example, this does not "
+"generally hold. If `i_iter.next()` has side effects, then those will not "
+"happen when `Some(index)` does not match. This is important to keep in mind. "
+"Short-circuiting still applies to `while let`\\-chains as with `if let`\\-"
+"chains."
+msgstr ""
+
+#: src/2497-if-let-chains.md:507
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2497-if-let-chains.md:512
+msgid ""
+"This RFC introduces `if let`\\-chains and `while let`\\-chains in _Rust "
+"2018_ and makes some enabling preparation for such chains in Rust 2015."
+msgstr ""
+
+#: src/2497-if-let-chains.md:515
+msgid "Grammar"
+msgstr ""
+
+#: src/2497-if-let-chains.md:517
+msgid "We replace the following productions:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:519
+msgid ""
+"```bnf\n"
+"block_expr\n"
+": expr_match\n"
+"| expr_if\n"
+"| expr_if_let\n"
+"| expr_while\n"
+"| expr_while_let\n"
+"| expr_loop\n"
+"| expr_for\n"
+"| UNSAFE block\n"
+"| path_expr \"!\" maybe_ident braces_delimited_token_trees\n"
+";\n"
+"\n"
+"expr_if\n"
+": IF expr_nostruct block\n"
+"| IF expr_nostruct block ELSE block_or_if\n"
+";\n"
+"\n"
+"expr_if_let\n"
+": IF LET pat \"=\" expr_nostruct block\n"
+"| IF LET pat \"=\" expr_nostruct block ELSE block_or_if\n"
+";\n"
+"\n"
+"block_or_if : block | expr_if | expr_if_let ;\n"
+"\n"
+"expr_while : maybe_label WHILE expr_nostruct block ;\n"
+"expr_while_let : maybe_label WHILE LET pat \"=\" expr_nostruct block ;\n"
+"```"
+msgstr ""
+
+#: src/2497-if-let-chains.md:548
+msgid "with:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:550
+msgid ""
+"```bnf\n"
+"block_expr\n"
+": expr_match\n"
+"| expr_if\n"
+"| expr_while\n"
+"| expr_loop\n"
+"| expr_for\n"
+"| UNSAFE block\n"
+"| path_expr \"!\" maybe_ident braces_delimited_token_trees\n"
+";\n"
+"\n"
+"expr_if\n"
+": IF in_if_list block\n"
+"| IF in_if_list block ELSE block_or_if\n"
+";\n"
+"\n"
+"block_or_if : block | expr_if ;\n"
+"\n"
+"expr_while : maybe_label WHILE in_if_list block ;\n"
+"\n"
+"in_if\n"
+": \"let\" pat \"=\" expr_nostruct\n"
+"| expr_nostruct\n"
+"| \"(\" in_if \")\"\n"
+";\n"
+"\n"
+"in_if_list : in_if [ ANDAND in_if ]*\n"
+"```"
+msgstr ""
+
+#: src/2497-if-let-chains.md:579
+msgid "Dealing with ambiguity"
+msgstr ""
+
+#: src/2497-if-let-chains.md:581
+msgid "There exists an ambiguity in this new grammar in how to parse:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:587
+msgid "It can either be parsed as (1):"
+msgstr ""
+
+#: src/2497-if-let-chains.md:593
+msgid "or instead as (2):"
+msgstr ""
+
+#: src/2497-if-let-chains.md:599
+msgid ""
+"In the interest of succinctness, we do not encode a grammar here that "
+"resolves this ambiguity. Nonetheless, interpretation (2) is _always_ chosen."
+msgstr ""
+
+#: src/2497-if-let-chains.md:605
+msgid ""
+"As specified in the reference in the section on [expression operator "
+"precedence](https://github.com/rust-lang-nursery/reference/blob/master/src/"
+"expressions.md#expression-precedence), the following operators all have a "
+"lower precedence than `&&`:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:608
+msgid "`||`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:609
+msgid "`..` and `..=`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:610
+msgid "`=`, `+=`, `-=`, `*=`, `/=`, `%=`, `&=`, `|=`, `^=`, `<<=`, `>>=`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:611
+msgid "`return`, `break`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:613
+msgid ""
+"To be precise, the changes in this RFC entail that `||` has the lowest "
+"precedence at the top level of `if STUFF { .. }`. The operator `&&` has then "
+"the 2nd lowest precedence and binds more tightly than `||`. If the user "
+"wants to disambiguate, they can write `(EXPR && EXPR)` or `{ EXPR && EXPR }` "
+"explicitly. The same applies to `while` expressions."
+msgstr ""
+
+#: src/2497-if-let-chains.md:619
+msgid "A few more examples"
+msgstr ""
+
+#: src/2497-if-let-chains.md:621
+msgid "Given:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:633
+msgid "it is currently interpreted as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:645
+msgid "but will be interpreted as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:657
+msgid "Rollout Plan and Transitioning to Rust 2018"
+msgstr ""
+
+#: src/2497-if-let-chains.md:659
+msgid "Everything in this section also applies to `while let` expressions."
+msgstr ""
+
+#: src/2497-if-let-chains.md:661
+msgid ""
+"To enable the second interpretation in the previous section a warning must "
+"be emitted in Rust 2015 informing the user that:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:670
+msgid ""
+"will both become _hard errors_, in the first version of Rust where the 2018 "
+"edition is stable, without the `let_chains` features having been stabilized."
+msgstr ""
+
+#: src/2497-if-let-chains.md:673
+msgid ""
+"Note that this applies when there's at least one `&&` or `||` operator at "
+"the top level of the RHS. This means that it does _not_ apply in, among "
+"others, the following cases:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:687
+msgid "since the user has disambiguated the intent explicitly."
+msgstr ""
+
+#: src/2497-if-let-chains.md:689
+msgid ""
+"Pending the stabilization of the features in this RFC, to opt into the new "
+"semantics, users will need to use a nightly compiler and add the usual "
+"feature gate opt-in."
+msgstr ""
+
+#: src/2497-if-let-chains.md:693
+msgid "Facilitating for macro authors"
+msgstr ""
+
+#: src/2497-if-let-chains.md:695
+msgid "To facilitate for macro authors, we permit the following:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:701
+msgid "`let PAT = EXPR` is _not_ an expression"
+msgstr ""
+
+#: src/2497-if-let-chains.md:703
+msgid ""
+"Note that `let PAT = EXPR` does _not_ become an expression (typed at `bool`) "
+"with this RFC. Thus, you may not write:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:713
+msgid "Semantics of `if let`\\-chains"
+msgstr ""
+
+#: src/2497-if-let-chains.md:715
+msgid ""
+"The semantics of `if let`\\-chains can be understood by an in-surface-"
+"language desugaring using only [RFC 2046](https://github.com/rust-lang/rfcs/"
+"pull/2046) and `if let`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:718
+msgid "The following:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:733
+msgid "desugars into:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:751
+msgid ""
+"This avoids any code duplication and requires no new semantics. The rules "
+"for borrowing and scoping are just those that result directly from the "
+"desugar."
+msgstr ""
+
+#: src/2497-if-let-chains.md:754
+msgid "The `else if` branches:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:770
+msgid "are defined by their desugaring to:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:790
+msgid ""
+"Having an `else` branch is optional. The following example without an `else` "
+"branch:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:801
+msgid "is simply desugared into:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:811
+msgid ""
+"If we have an `else if` branch but no `else` branch, such as in this example:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:825
+msgid "the semantics are defined by the following desugaring:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:843
+msgid "Semantics of `while let`\\-chains"
+msgstr ""
+
+#: src/2497-if-let-chains.md:845
+msgid ""
+"The semantics of `while let`\\-chains can be understood by an in-surface-"
+"language desugaring using only [RFC 2046](https://github.com/rust-lang/rfcs/"
+"pull/2046), `loop` and `if let`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:848
+msgid "For example:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:860
+msgid "is defined by desugaring into:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:876
+msgid ""
+"This desugaring relies on the previously discussed desugaring for `if let`\\-"
+"chains."
+msgstr ""
+
+#: src/2497-if-let-chains.md:878
+msgid "More generally, we may desugar:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:886
+msgid "into:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:898
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2497-if-let-chains.md:901
+msgid ""
+"This RFC mandates additions to the grammar as well as adding syntax lowering "
+"passes. These are small additions, but nonetheless the language "
+"specification is possibly made more complex by it. While this complexity "
+"will be used by some and therefore, the RFC argues, motivates the added "
+"complexity, it will not be used all users of the language. However, as "
+"discussed in the [motivation](#motivation), by unifying constructs in the "
+"language conceptually and grammatically, we may also say that complexity is "
+"_reduced_."
+msgstr ""
+
+#: src/2497-if-let-chains.md:909
+msgid ""
+"When it comes to `if let`\\-chains, the feature is already supported by the "
+"macro `if_chain!`. Some may feel that this is enough."
+msgstr ""
+
+#: src/2497-if-let-chains.md:912
+msgid ""
+"It should also be taken into account that some breakage will occur as a "
+"result of this RFC. Sergio Benitez has however done some review of the "
+"crates.io ecosystem and found zero cases of actual breakage. At any rate, "
+"writing `let PAT = EXPR && ..` as a user is a bad thing to do."
+msgstr ""
+
+#: src/2497-if-let-chains.md:919
+msgid ""
+"Finally, some may argue, [as done by @petrochenkov](https://github.com/rust-"
+"lang/rfcs/pull/2260#issuecomment-353780537), that this is _\"a lot of ad-hoc "
+"syntax to deprecate when the proper solution solving all the listed problems "
+"is implemented\"_."
+msgstr ""
+
+#: src/2497-if-let-chains.md:923
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2497-if-let-chains.md:926
+msgid ""
+"We will now discuss how and why this RFC came about in its current form."
+msgstr ""
+
+#: src/2497-if-let-chains.md:928
+msgid "The impact of not doing this"
+msgstr ""
+
+#: src/2497-if-let-chains.md:930
+msgid "There are at least two sides to power in language expressivity:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:932
+msgid "The ability to express something in a language at all."
+msgstr ""
+
+#: src/2497-if-let-chains.md:934
+msgid "The ability to express something with ease."
+msgstr ""
+
+#: src/2497-if-let-chains.md:936
+msgid ""
+"Nothing proposed in this RFC adds to point 1. While this is the case, it is "
+"not sufficient. The second point is important to make the language "
+"pleasurable to use and this is what this RFC is about. Not including the "
+"changes proposed here would keep some paper cuts around."
+msgstr ""
+
+#: src/2497-if-let-chains.md:941
+msgid "Design considerations"
+msgstr ""
+
+#: src/2497-if-let-chains.md:944
+msgid "There are some design considerations on this feature. These are:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:946
+msgid "the syntax mixes well with normal `bool`ean conditionals."
+msgstr ""
+
+#: src/2497-if-let-chains.md:948
+msgid ""
+"the additions be simple conceptually and build on what language  \n"
+"users already know."
+msgstr ""
+
+#: src/2497-if-let-chains.md:951
+msgid "as little of the complexity budget as possible is used."
+msgstr ""
+
+#: src/2497-if-let-chains.md:953
+msgid "the bindings bound in the pattern have a clear and consistent scope."
+msgstr ""
+
+#: src/2497-if-let-chains.md:956
+msgid "the short-circuiting nature is clear."
+msgstr ""
+
+#: src/2497-if-let-chains.md:958
+msgid "instead of a heap of special cases, the grammar should be simple."
+msgstr ""
+
+#: src/2497-if-let-chains.md:960
+msgid "With these considerations in mind, the RFC was developed."
+msgstr ""
+
+#: src/2497-if-let-chains.md:962
+msgid ""
+"Note that these are considerations and have different levels of importance. "
+"Note also that it is likely impossible to meet all of them, but we'd like to "
+"tick as many boxers as possible."
+msgstr ""
+
+#: src/2497-if-let-chains.md:966
+msgid "Keeping the door open for `if-let-or`\\-expressions"
+msgstr ""
+
+#: src/2497-if-let-chains.md:968
+msgid "Should a user be able to write something like the following snippet?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:979
+msgid ""
+"What does this expression even mean? It means that if one of the patterns "
+"match, then the first one of those will bind a value to `x` and the "
+"expression evaluates to `do_stuff_with(x)`. If no patterns match, the "
+"expression instead evaluates to `do_other_stuff()`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:984
+msgid ""
+"This RFC does not propose such a facility, but does not foreclose such a "
+"possibility, making the feature future proof and allowing discussion on such "
+"a facility in the future to continue. Alternatives should similarly try to "
+"retain this ability."
+msgstr ""
+
+#: src/2497-if-let-chains.md:989
+msgid ""
+"Alternative: [RFC 2046](https://github.com/rust-lang/rfcs/pull/2046), label "
+"break value"
+msgstr ""
+
+#: src/2497-if-let-chains.md:995
+msgid ""
+"[RFC 2046](https://github.com/rust-lang/rfcs/pull/2046), which has been "
+"merged but not stabilized, is a more general _control flow graph_ ([CFG]"
+"(https://en.wikipedia.org/wiki/Control_flow_graph)) control feature. While "
+"it doesn't as straightforwardly solve the rightward drift or ergonomic "
+"issues as this RFC does, it allows [the macros to be improved](https://"
+"github.com/rust-lang/rfcs/pull/2046#issuecomment-320483246) by removing "
+"duplication of `else` blocks. The closest syntax today for that is `loop-"
+"break`, but that doesn't work as `continue` is intentionally non-hygienic."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1002
+msgid ""
+"RFC 2046 is also a bit orthogonal in the sense that it's fully compatible "
+"with this RFC. The general label break is useful and powerful, as seen in "
+"the [reference-level-explanation](#reference-level-explanation) of this RFC "
+"and of `catch`'s, but is verbose and unfamiliar. Having a substantially more "
+"ergonomic feature for this particularly common case is valuable regardless. "
+"As such, we argue that this RFC is mostly complementary wrt. RFC 2046."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1009
+msgid ""
+"Furthermore, as we've noted in the [motivation](#motivation), a macro based "
+"approach is not a construct that is universal among Rust programmers, which "
+"is an important property for control flow in particular to improve the "
+"legibility of programs."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1013
+msgid "The main alternatives"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1015
+msgid ""
+"There are some alternatives to consider. Let's go through some of the main "
+"ones."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1018
+msgid ""
+"First, there's the choice of a separator to use in-between `let`s and `bool` "
+"typed condition expressions. We consider 3 different separators:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1021
+msgid "logical and (`&&`)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1022
+msgid "comma (`,`)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1023
+msgid "`if`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1025
+msgid "We also consider two different ways to bind inside `if`:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1027
+msgid "`let PAT = EXPR`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1028
+msgid "`EXPR is PAT`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1030
+msgid ""
+"Additionally, instead of the keyword `is`, we consider `match`. In total, we "
+"have 6 (or 9 if we count `match`) variants to pick from. These 6 "
+"alternatives are:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1034
+msgid "In this RFC, we propose the combination of `&&` and `let PAT = EXPR`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1036
+msgid "A survey - Method"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1038
+msgid ""
+"To gain some data on what users of Rust think about the 6 different "
+"variants, a multi-answer survey was done using Google Forms. The survey ran "
+"from 2017-12-31 06:25 to ~2018-01-06 ~14:00 and received 373 answers. "
+"Participants were also able to provide free-form motivation (\"comments\") "
+"to their answers if they so wished."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1044
+msgid ""
+"To decrease the risk of bias in favour of a particular alternative, the "
+"order of the answers as presented to survey participants were randomized. "
+"Furthermore, to make the survey more fair, all alternatives were syntax "
+"highlighted as a normal IDE would do."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1049
+msgid "The survey answers had the following distribution in origin:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1051
+msgid "Reddit, 68.4%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1052
+msgid "internals.rust-lang.org, 16.6%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1053
+msgid "users.rust-lang.org, 7.5%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1054
+msgid "IRC, 5.1%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1055
+msgid "The RFC, 2.4%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1057
+msgid "A survey - Data"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1059
+msgid ""
+"For those interested in reading the survey answers you can do so by reading:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1060
+msgid ""
+"[A summary of the survey](https://docs.google.com/forms/d/"
+"e/1FAIpQLScwG0Y3ynA9aJZ-iprOey_GyCNeFMO9MSDJR1kiskpjsjL1Mw/viewanalytics)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1061
+msgid ""
+"[A CVS file of the survey](https://drive.google.com/file/"
+"d/1awyvryblSHFH9J77TPutW5BrRlKr0EKZ/view?usp=sharing)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1062
+msgid ""
+"[A PDF for the survey](https://drive.google.com/file/"
+"d/14ofF5on_Z_XLvhPr1I4dVgCfcybQO2GY/view?usp=sharing)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1064
+msgid "The breakdown of preferences were:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1066
+msgid "Using `&&` and `let PAT = EXPR` - liked: 66.2%, disliked: 16.9%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1077
+msgid "Using `&&` and `EXPR is PAT` - liked: 24.9%, disliked: 48.5%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1087
+msgid "Using `,` and `let PAT = EXPR` - liked: 16.9%, disliked: 56.3%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1097
+msgid "Using `if` and `let PAT = EXPR` - liked: 12.3%, disliked: 66%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1107
+msgid "Using `,` and `EXPR is PAT` - liked: 4.3%, disliked: 74.5%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1117
+msgid "Using `if` and `EXPR is PAT` - liked: 2.4%, disliked: 80.4%"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1127
+msgid "Finally, 9.7% liked none of the options and 1.9% liked all of them."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1129
+msgid "A survey - Analysis of Comments"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1131
+msgid ""
+"There are too many answers to include here, instead, we select some of the "
+"most interesting ones and highlight them."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1134
+msgid "Tried before"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1136
+msgid ""
+"One participant, among 6 (see [Appendix B.1](#appendix-b1)) others who all "
+"positively inclined, explicitly commented that they had tried the syntax "
+"proposed in this RFC before."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1139 src/2497-if-let-chains.md:1672
+msgid ""
+"The \"`if let .. && let .. && ..`\" feels like the intuitive way to do it if "
+"you don't think about the language syntax too much. It's definitely the way "
+"I tried doing it when I thought it was possible at the start of my Rust path."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1143
+msgid ""
+"This substantiates the claim made in the [motivation](#an-expected-feature)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1145
+msgid "Consistency"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1147
+msgid ""
+"An even greater number of people (48, see [Appendix B.2](#appendix-b2)) "
+"commented that they thought that the proposed syntax was the _consistent_ "
+"alternative. This was by far the most frequent comment made in the survey."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1151 src/2497-if-let-chains.md:1744
+msgid ""
+"So I like that using `&&` is how we currently use it in the language, and "
+"everyone is already used to using `let A(x) = foo()`. Honestly, the one I "
+"chose feels the most consistent with the language."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1155
+msgid "Intuitiveness"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1157
+msgid ""
+"A lesser number (8, see [Appendix B.3](#appendix-b3)) of participants said "
+"did not explicitly say that the proposed syntax was _consistent_, but that "
+"they found it _intuitive_ nonetheless."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1161 src/2497-if-let-chains.md:1867
+msgid ""
+"`&&` makes the logic relationship clearer, and using `let` for binding is "
+"the same. Conjunction is more readable with `&&`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1164
+msgid ""
+"This, and in particular the consistency, goes a long way to satisfy points "
+"2-3 in the [design considerations](#design-considerations)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1167
+msgid "Expectation that `(let PAT = EXPR) : bool`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1169
+msgid ""
+"A few participants (3, see [Appendix B.4](#appendix-b4)) hinted at that "
+"using `&&` together with `let PAT = EXPR` set up the expectation that the "
+"latter is a `bool` typed expression."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1173 src/2497-if-let-chains.md:1885
+msgid ""
+"Using `&&` for conjunction with `let PATTERN = EXPR` feels consistent with "
+"the existing `if let` syntax, however it causes potentially some confusion "
+"about data types and its existing function as a `boolean` operator, so that "
+"leads me to considering `,` as the conjunction instead. However, if \"`let "
+"PATTERN = EXPR`\" is an expression returning a boolean as well as setting up "
+"the pattern bindings then there's no issue with `&&` at all, and it's then "
+"preferable to me provided it's available where you'd expect expressions to "
+"be available and not treated particularly specially."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1182
+msgid "If that were the case you'd be able to write:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1186
+msgid "However, this is not the case in this proposal."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1188
+msgid ""
+"We expect that this will be one of the most frequent misconceptions in "
+"relation to the proposed syntax. However, such misconceptions can be put to "
+"bed simply when the user tries to write a snippet like the one above. They "
+"will then get an error message that clears up that misconception. It should "
+"also be noted that `if let`, which exists in the language today, also "
+"suffers from this problem. That is, given `if let PAT = EXPR { .. }`, a user "
+"may get the impression that it is the composition of `if EXPR { .. }` and "
+"`let PAT = EXPR` while it is _not_. While the syntax changes in this RFC "
+"does enhance the risk of misconception somewhat, ultimately we do not feel "
+"that it poses a critical problem."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1198
+msgid "Commas and `if` as separators - conjunction?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1200
+msgid ""
+"There were many people (19, see [Appendix B.5](#appendix-b5)) who felt that "
+"using `,` or `if` as the separator did not clearly enough signal conjunction "
+"and thought that the symbols may be mistaken for disjunction."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1204 src/2497-if-let-chains.md:1918
+msgid ""
+"Commas just aren't clear enough: on their own, to many people, they could "
+"easily be interpreted as logical ORs or logical ANDs."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1207
+msgid ""
+"In most cases, these comments were directed towards `,`, but there were also "
+"some who thought this about `if`:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1210 src/2497-if-let-chains.md:1943
+msgid "`if` after `if` with no logical operator? is this AND? is this OR?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1212
+msgid ""
+"On the other hand, it could be argued that Rust already uses `if` for "
+"conjunction since you can use `PAT if EXPR => ..` inside `match` "
+"expressions. Indeed, a few people hinted at this:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1216
+msgid ""
+"Clear and unambiguous, and similar to existing guards in match statements, "
+"so it does not introduce completely new syntax."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1219
+msgid "This is already basically how match arms work."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1221
+msgid ""
+"Our conclusion is that this at least presents a serious enough of a problem "
+"for `,` as the separator for conjunction to rule it out while also being "
+"problematic for `if`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1225
+msgid "Commas and short-circuiting"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1227
+msgid ""
+"A number of participants (5, see [Appendix B.6](#appendix-b6)) noted that "
+"using `,` as the separator was not clearly enough indicating short-"
+"circuiting behaviour."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1230 src/2497-if-let-chains.md:1971
+msgid ""
+"On the other hand the comma'd version felt the least clear in meaning and "
+"execution order. I'm more used to things-separated-by-commas being roughly "
+"equivalent instead of being something that ends up short circuiting the "
+"evaluation."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1235
+msgid ""
+"This is a further blow to `,` in terms of our [design considerations]"
+"(#design-considerations)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1237
+msgid "`if` as separator is noisy"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1239
+msgid ""
+"Some people argued that `if` as a separator felt noisy or that it felt like "
+"there were missing braces. One also noted that multiple `if`s on one line "
+"wouldn't work well on a single line. However, one respondent said that the "
+"\"eliding of braces\"-interpretation was a _good_ thing."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1244
+msgid ""
+"As an aside, we would like to note here that `if` as a separator would need "
+"to be matched with `while` as a separator as well. This makes the separator "
+"too context dependent in our view."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1248
+msgid "Patterns unexpectedly on the RHS"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1250
+msgid ""
+"Some people (10, see [Appendix B.8](#appendix-b8)) thought that bindings "
+"introduced on the RHS as in `EXPR is PAT` as opposed to `let PAT = EXPR` was "
+"backwards and weird."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1253 src/2497-if-let-chains.md:2013
+msgid ""
+"`expr is pat` reverses the directionality for pattern bindings seen "
+"everywhere else in Rust;"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1256
+msgid ""
+"One could argue that bindings introduced in the arms of `match` expressions "
+"are to the right if one formats such expressions as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1261
+msgid "// LHS // RHS\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1264
+msgid ""
+"However, this is not the typical formatting of `match` expressions as they "
+"tend to include more than one arm. When using the normal formatting of such "
+"expressions, the match arms, and therefore the bindings, are introduced on "
+"the LHS."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1269
+msgid ""
+"This inconsistency does not have to be an insurmountable problem as we "
+"believe that `EXPR is PAT` generally reads well. However, having the pattern "
+"consistently on LHS everywhere makes introductions of bindings more readily "
+"scannable, which is a valuable property when reading code quickly."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1274
+msgid "The `is` operator introduces bindings"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1276
+msgid ""
+"However, a more serious problem that some survey participants (15, see "
+"[Appendix B.9](#appendix-b9)) identified was that `EXPR is PAT`, according "
+"to the respondents, confusingly introduces a binding and that it could be "
+"misconstrued as an equality test of some sort."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1281 src/2497-if-let-chains.md:2078
+msgid ""
+"`is` doesn't make any sense since we already have `if let PATTERN` and `is` "
+"in other languages is typically a reference equality check (e.g. Dart and "
+"Python)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1285 src/2497-if-let-chains.md:2049
+msgid ""
+"I dislike the `EXPR is PATTERN` syntax because while the word `let` "
+"indicates that there is some binding going on, I read the word `is` as "
+"passively checking whether the expression fits a pattern without binding. I "
+"also dislike `is` because it is new syntax that does the same thing as "
+"existing syntax."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1291
+msgid ""
+"We believe this problem to be more serious. As an alternative to `EXPR is "
+"PAT`, some have proposed using the existing keyword `match` instead. You "
+"would then instead write the example in the [motivation](#motivation) as:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1310
+msgid ""
+"As previously noted, using `is` is less scannable. This also applies to "
+"`match`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1312
+msgid ""
+"As an aside, one survey participant confused `is` for `as`; This does seem "
+"like a mistake that is likely to happen due to the similarity of these two "
+"words."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1315
+msgid "Conclusion"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1317
+msgid ""
+"We believe that the case for `&&` and `let PAT = EXPR` is strong. As "
+"demonstrated by the survey, which we believe is statistically significant, "
+"it is both consistent and intuitive for most users. The syntax also "
+"satisfies most of the points in the [design considerations](#design-"
+"considerations)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1322
+msgid ""
+"The only main drawbacks to this proposal is some tiny bit of breakage as "
+"well as an increase in implementation complexity. The breakage is considered "
+"OK, because writing `let true = p && q` is at any rate a terrible style and "
+"because it is so infrequent. As for the increased grammar complexity, we "
+"believe this is less important in this case than making control flow more "
+"ergonomic and readable for users."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1331
+msgid ""
+"Some may view the fact that `let PAT = EXPR` is not an expression typed at "
+"`bool` as an ad-hoc solution. However, we believe that we should live within "
+"our means wrt. the complexity budget and spend it on more important things. "
+"Furthermore, as evidenced in [RFC 2260](https://github.com/rust-lang/rfcs/"
+"pull/2260), making `EXPR is PAT`, which has other problems we've previously "
+"noted, an expression is also tricky due to the non-obvious scoping rules for "
+"bindings it entails. Mainly because of this, support for `EXPR is PAT` has "
+"been slow to develop."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1339
+msgid ""
+"For the use case of having some pattern matching construct that is typed at "
+"`bool`, we could later introduce the form `EXPR is PAT` but prohibit  `PAT` "
+"from introducing bindings."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1343
+msgid "Prior art"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1346
+msgid "Swift"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1350
+msgid ""
+"The expression form `if let PAT = EXPR { .. }` was introduced to Rust by "
+"accepting [RFC 160](https://github.com/rust-lang/rfcs/pull/160). That RFC "
+"noted that:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1353
+msgid ""
+"The if let construct is based on the precedent set by Swift, which "
+"introduced its own if let statement. In Swift, `if let var = expr { ... }` "
+"is directly tied to the notion of optional values, and unwraps the optional "
+"value that `expr` evaluates to. In this proposal, the equivalent is `if let "
+"Some(var) = expr { ... }`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1359
+msgid ""
+"As the construct `if let` was inspired by Swift, it therefore makes sense to "
+"consult Swift to see how the language deals with multiple `let`s in `if`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1363
+msgid "It turns out that you can by writing:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1372
+msgid "which with the syntax proposed in this RFC would be equivalent to:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1385
+msgid "You can also use `case let` for more general pattern matching:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1393
+msgid "Previously in Swift, you would instead write:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1403
+msgid ""
+"but this was changed in favour of omitting `where` in [SE-0099](https://"
+"github.com/apple/swift-evolution/blob/master/proposals/0099-conditionclauses."
+"md)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1405
+msgid ""
+"Interestingly, the separator token that Swift uses for conjunctive chaining "
+"in `if` is `,` (comma). [RFC 2260](https://github.com/rust-lang/rfcs/"
+"pull/2260) proposed this, but this turned out not to be as intuitive for "
+"many users as `&&` is (see [alternatives](#rationale-and-alternatives) for a "
+"discussion)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1409
+msgid "Kotlin"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1411
+msgid ""
+"In [RFC 2260](https://github.com/rust-lang/rfcs/pull/2260) [@matklad]"
+"(https://github.com/matklad) said that:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1413
+msgid ""
+"It's interesting to compare it with Kotlin, which also uses is operator for "
+"the similar purpose: https://kotlinlang.org/docs/reference/typecasts."
+"html#smart-casts."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1415
+msgid ""
+"The differences is that instead of destructing, Kotlin's is supplies a flow-"
+"sensitive type information. The compiler indeed uses pretty smart control-"
+"flow analysis to check if every use of a variable is dominated by the is "
+"check."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1417
+msgid ""
+"However, as long as the compiler does all the inference work for you, "
+"actually using this feature is easy: you don't have to replay the analysis "
+"in your head when reading or writing code, because the compiler catches all "
+"errors."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1419
+msgid "[RFC 160](https://github.com/rust-lang/rfcs/pull/160)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1421
+msgid ""
+"Interestingly, the `EXPR is PAT` idea was floated in the original RFC 160 "
+"that introduced `if let` expressions in the first place. There, the notion "
+"that an operator named `is`, which introduces bindings, is confusing was "
+"brought up."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1430
+msgid ""
+"It was also mentioned by [@lilyball](https://github.com/rust-lang/rfcs/"
+"pull/160#issuecomment-48515260) that it would be appropriate if, and only "
+"if, it was limited to pattern matching, but not introducing any bindings. We "
+"make the same argument in this RFC. The issue of unintuitive scopes was also "
+"mentioned [by @lilyball](https://github.com/rust-lang/rfcs/"
+"pull/160#issuecomment-48551196) there."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1435
+msgid ""
+"Even the idea of `if EXPR match PAT` was floated by [@liigo](https://github."
+"com/rust-lang/rfcs/pull/160#issuecomment-49234092) at the time but that idea "
+"was ultimately also rejected. [@lilyball](https://github.com/rust-lang/rfcs/"
+"pull/160#issuecomment-49242255) opined that using `match` as a binary "
+"operator would be _\"very confusing\"_ but did not elaborate further at the "
+"time."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1440
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1443
+msgid "The final syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1445
+msgid "The main goal of this RFC is threefold:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1447
+msgid "Decide that this is a problem that needs to be solved _somehow_."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1449
+msgid ""
+"Make the proposed syntax in the RFC an option that is available in Rust 2018."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1451
+msgid "Adopt the proposed syntax in the RFC."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1453
+msgid ""
+"Of these points, the 1st and the 2nd are the most important for the time "
+"being. The 3rd point is not unimportant, but it is not as time sensitive. "
+"Thus, one path ahead of least resistance is to adopt the syntax in the RFC "
+"and make it available in Rust 2018 while leaving the final syntax "
+"unresolved. We can then debate alternatives, in particular using `EXPR match "
+"PAT`, more rigorously post shipping Rust 2018. Finalizing the syntax and can "
+"then be decided in a tracking issue or another RFC."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1461
+msgid "Irrefutable let bindings after the first refutable binding"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1463
+msgid ""
+"Should temporary and irrefutable `let`s without patterns be allowed as in "
+"the following example?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1468
+msgid "// <-- Irrefutable\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1478
+msgid ""
+"With normal `if let` expressions, this is an error as seen with the "
+"following example:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1487
+msgid "Compiling the above ill-formed program results in:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1495
+msgid ""
+"However, with the implementation of [RFC 2086](https://github.com/rust-lang/"
+"rfcs/pull/2086), this error will instead become a warning.  This is "
+"understandable - while the program could have perfectly well defined "
+"semantics, where the value of the expression is always 2, allowing the form "
+"would invite some developers to write in a non-obvious way. A warning is "
+"however a good middle ground."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1501
+msgid ""
+"However, when let bindings in the middle are irrefutable, there is some "
+"value in not warning against the construct. In the case of the initial "
+"example in this subsection, it would be written as follows without "
+"irrefutable let bindings:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1520
+msgid ""
+"However, now we have introduced rightward drift and duplication again, which "
+"we wanted to avoid."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1523
+msgid ""
+"On the other hand, allowing irrefutable patterns in the middle without a "
+"warning may give the impression that the irrefutable pattern is refutable, "
+"or cast doubt on it making semantics possibly harder to grasp quickly."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1527
+msgid ""
+"This is a tricky question, which we leave open for consideration during the "
+"stabilization period or even after stabilization."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1530
+msgid "Chained `if let`s inside `match` arms"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1532
+msgid "Would the following be accepted by a Rust compiler?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1543
+msgid ""
+"The combination of the accepted, but yet to be stabilized, [RFC 2294]"
+"(https://github.com/rust-lang/rfcs/pull/2294), and this RFC would entail "
+"that it would be accepted. However, at this point, and in the interest of "
+"time, we leave this for a future RFC or for pre-stabilization."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1547
+msgid "Appendix A - Style considerations"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1549
+msgid ""
+"How should the features introduced in this RFC be formatted? This is not a "
+"make or break question but rather a style question for `rustfmt`. What you "
+"read here should not be taken as prescriptive but rather as discussion "
+"material and to generate ideas. Any eventual decision on style will be made "
+"by a separate style RFC."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1555
+msgid ""
+"Here are a few variants on indentation to consider for `rustfmt` while may "
+"or may not be mutually compatible:"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1558
+msgid "1. `&&` on a new line and indented + Open-brace after newline"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1570
+msgid ""
+"This style is maximally consistent with how conditions in `if` expressions "
+"are currently formatted."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1573
+msgid ""
+"Moving the open brace down a line may help emphasize the split between a "
+"lengthy condition and the block body."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1576
+msgid "2. `&&` after bindings"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1587
+msgid ""
+"This style is consistent with how separators, such as `,`, are currently "
+"formatted in Rust."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1590
+msgid "3. `&&` at the start of lines"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1601
+msgid ""
+"This style of leading separators is inconsistent with current formatting."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1603
+msgid "4. Aligning the equals sign together"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1616
+msgid ""
+"While this might look visually pleasing, visual indent like this is against "
+"the [rustfmt guidelines](https://github.com/rust-lang-nursery/fmt-rfcs/blob/"
+"master/guide/principles.md#overarching-guidelines)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1619
+msgid "5. Newline after `else if`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1627
+msgid "// <-- Notice newline.\n"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1634
+msgid ""
+"In this version we look at whether or not a newline should be inserted after "
+"an `else if` branch. The benefit of inserting a newline is that it aligns "
+"well with the `let` bindings in the `if` branch."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1639
+msgid "6. No indent at all, just a list of conditions"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1650
+msgid ""
+"In this version, we do not indent the `let`s and the boolean side-"
+"conditions. But we do place the `&&` on the end of lines. One benefit here "
+"is that the body of the `if` expression more clearly stands out. However, a "
+"drawback is that the `if` token stands less out."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1655
+msgid ""
+"There are of course more versions one can contemplate and the various "
+"combination of them, but in the interest of brevity, we keep to this list "
+"here."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1658
+msgid "Appendix B"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1661
+msgid ""
+"This appendix groups some survey answers together for the purposes of "
+"analysis. Please note that this appendix is by no means complete and is only "
+"offered on a best-effort basis. The comments cited below have also been "
+"cleaned up to fix obvious spelling mistakes, etc."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1666
+msgid "Appendix B.1"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1669
+msgid ""
+"Here are a number of participants in the survey commenting that they "
+"expected the proposed syntax in this RFC to work."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1674
+msgid "I tried to write this one and then realized it's not supported."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1676
+msgid "I've already tried to do this before and find it didn't work."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1678
+msgid ""
+"I was surprised to find that this syntax wasn't already supported.  "
+"Principle of least surprise for the win."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1680
+msgid ""
+"I would expect \"Using `&&` for conjunction and `let PATTERN = EXPR`\" to "
+"work already today"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1682
+msgid "I tried to used this specific syntax and I expected it to work already."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1684
+msgid ""
+"`let …` matches the current `if let`, and the `&&` matches the way I would "
+"write it. I've tried to write `if let Some(x) = foo && x.bar() { … }` before."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1686
+msgid "Appendix B.2"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1689
+msgid ""
+"Many participants in the survey opined that the proposed syntax was "
+"consistent with current Rust. They thought that this was positive."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1692
+msgid ""
+"It is the _only_ option consistent with what we have today and expect once "
+"we learn about `let PATTERN = EXPR`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1694
+msgid "Close to current Rust syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1696
+msgid "Most similar to existing syntaxes, which increases orthogonality."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1698
+msgid "This seems most consistent with existing Rust syntax."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1700
+msgid "consistency with current Rust"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1702
+msgid "consistency with current syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1704
+msgid "Consistency with current syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1706
+msgid "It's the least surprising syntax. It's obvious."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1708
+msgid ""
+"Should be consistent and similar to how match patterns/existing `let A(x) = "
+"b` works."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1711
+msgid "Seems to most closely match existing syntax and style"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1713
+msgid "Seems consistent with existing syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1715
+msgid "Consistent with current Rust syntax."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1717
+msgid "Consistency with the syntax we already have."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1719
+msgid "compatibility with current syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1721
+msgid "It's feels consistent with the rest of the language."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1723
+msgid ""
+"Consistency with existing Rust constructs and familiarity with C and Swift "
+"syntax."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1726
+msgid "consistent with already existing `if` and `let` patterns. intuitive"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1728
+msgid ""
+"close to current rust syntax (same assign syntax as in `match` and `if let`)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1730
+msgid ""
+"I chose \"Using `&&` for conjunction and `let PATTERN = EXPR`\" because it "
+"seems like the only choice that is consistent with Rust syntax as it is "
+"today. The rest are... strange."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1734
+msgid ""
+"we already have while `let A(x) = foo()` and `&&` in `if` statements, I "
+"don't see how any other syntax makes sense"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1737
+msgid ""
+"Using `&&` unambiguously means conjunction and is, IMO, easier to read. `let "
+"PATTERN = EXPR` does not introduce a new form of pattern matching to the "
+"language."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1741
+msgid ""
+"The \"`let(x) = expr`\" is consistent with the current syntax, the \"`&&`\" "
+"makes it clear it's an AND (and in most languages it's short-circuited)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1748
+msgid ""
+"double `&` is standard for logical AND, \"`if let foo(x) = bar`\" is just as "
+"good as the other syntax but is already standard in rust, so might as well "
+"keep it"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1752
+msgid ""
+"using `&&` and `let PATTERN = EXPR` is more intuitive because you're "
+"checking a condition _and_ whether a pattern matches."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1755
+msgid "follows standard \"`&&`\" pattern and \"`if-let`\" pattern as well"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1757
+msgid "uses existing syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1759
+msgid "It's what I already know in Rust"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1761
+msgid "this is the most similar to rust's current `if let` syntax"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1763
+msgid ""
+"Uses already established keywords and operators in a semantically similar "
+"way."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1765
+msgid ""
+"It just looks like normal rust we're all used to (`if let` destructuring "
+"syntactic sugar)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1768
+msgid ""
+"The most natural extension of `let` expressions and `boolean` conditions"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1770
+msgid ""
+"The `&&` operator and \"`if let`\" are already in the language. No reason to "
+"pick something totally different. More on that on the next page."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1774
+msgid ""
+"I don't really like any of them. I prefer `;` for conjunction because that's "
+"more similar to how Go does it, though `&&` for conjunction and `let PATTERN "
+"= ...` is okay because it's intuitive given other language features in Rust."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1779
+msgid ""
+"Using `&&` for conjunction is consistent with other languages I know, using "
+"`let` for pattern matching is explicit about introducing new names."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1782
+msgid ""
+"Seems the most natural. If I knew `if let x = y` could be combined with "
+"other conditions, my first thought would be `&& z == z1`"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1785
+msgid ""
+"Smallest delta from current syntax. `&&` already exists, `let PATTERN = "
+"EXPR` exists, just allowing the two in composition."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1788
+msgid ""
+"The option I chose (`if expr && let pat = expr && let pat = expr && expr "
+"{ body }`) is the most consistent with existing Rust syntax. It's a fairly "
+"natural extension of the `if let` syntax since it uses `let pat = expr` in a "
+"place where you could otherwise use `expr`. Using `&&` as a conjunction most "
+"clearly expresses the intention IMO, and it also clearly follows short-"
+"circuit evaluation."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1795
+msgid ""
+"`EXPR is PATTERN` is introducing new alternative syntax which is useless "
+"when we already have the `let PATTERN = EXPR` syntax. `&&` is also clearly "
+"the best choice for joining conditions because that is what it is already "
+"used for!"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1800
+msgid ""
+"\"`if let`\" is already a well-known thing in Rust, so keep it. Conjunction "
+"is already a well-known thing in Rust, so keep it. In short, make minimal "
+"changes to the language that make the example work."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1804
+msgid ""
+"Using `&&` for conjunction along with the existing syntax for `let` bindings "
+"is the most intuitive and feels the least like it's special-casing. I think "
+"this is less likely to confuse beginners, and makes it feel more cohesive."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1808
+msgid ""
+"Follows the standards of current syntax relatively closely without "
+"introducing new symbols, and builds on the existing understanding of `let`\\-"
+"deconstruction while clearing showing (through the use of `let`) that we "
+"have assigned `x` and `y`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1813
+msgid "This is the syntax that I would expect without reading the manual."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1815
+msgid ""
+"I feel that including `let` is important to make it clear that the pattern "
+"is exposing the variables `x` and `y` for use in the block body and `&&` is "
+"by far the most intuitive way to AND together test conditions. In fact, "
+"presenting alternatives to Rust's existing `&&` syntax for ANDing together "
+"terms made even the use of `&&` confusing because the claim that they were "
+"all equivalent meant that it \"couldn't possibly be\" the existing meaning "
+"of `&&`. I didn't know what was going on until I realized I'd glossed over "
+"tiny (ie. unimportant) text which actually explained the meaning in plain "
+"English... at which point, I realized that the syntaxes other than `&&` had "
+"set up a mistaken assumption that ruled out the actual proper interpretation."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1827
+msgid ""
+"I like Using `&&` for conjunction and `let PATTERN = EXPR`  because it, for "
+"me, has the least surprises syntactically. `&&` indicates conjunction of the "
+"predicate, and including `x` and `y` in subsequent scopes is something I "
+"wish existed, but if we're not clear about it, it could get messy."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1832
+msgid "it does not introduce anything fancy new stuff"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1834
+msgid ""
+"I like the \"`let`\" syntax better than the `EXPR is PATTERN` syntax, since "
+"it's used in other places already."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1837
+msgid "`&&` is already a familiar concept for working with boolean expressions"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1838
+msgid "`if let` is how we already achieve conditional binding"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1840
+msgid ""
+"The combination of \"`is`\" and `&&` is the only other choice I could "
+"consider, albeit begrudgingly. I'm kind of uncomfortable with giving up "
+"keyword real estate and having another way of doing `if let`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1844
+msgid ""
+"Other than that, I feel like the other choices alienate both new and old "
+"Rust programmers alike. We should be focusing on keeping things as simple "
+"and familiar as possible."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1848
+msgid "Appendix B.3"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1851
+msgid ""
+"Some survey participants did not explicitly say that the RFC's proposed "
+"syntax was _consistent_, but they did say, in some way, that it was "
+"_intuitive_."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1854
+msgid ""
+"`&&` is the logical conjunction operator and `let A(x) = foo` clearly "
+"destructures for pattern matching"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1857
+msgid "The most intuitive"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1859
+msgid "It is not surprising"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1861
+msgid ""
+"Looks like straightforward boolean logic, the rest seem like arcane syntax."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1863
+msgid "Reminiscent of boolean algebra"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1865
+msgid "It fits with my mental model of how patterns and Boolean logic work"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1870
+msgid ""
+"We already have “`if let`” elsewhere. Don’t introduce a new “`is`” syntax "
+"here, it’s not any more intuitive."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1873
+msgid "Appendix B.4"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1876
+msgid ""
+"Some survey participants felt that the proposed syntax set up the "
+"expectation of `let PAT = EXPR` being an expression typed at `bool` as "
+"opposed to a statement which is currently the case."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1880
+msgid "`&&` as separator would require boolean expressions."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1882
+msgid ""
+"`&&` is for boolean expressions, and won't work right in generic usage. "
+"`let` would have to return a boolean which is weird and probably a breaking "
+"change."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1894
+msgid "Appendix B.5"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1897
+msgid ""
+"Another group of people opined that `,` and `if` did not clearly imply "
+"conjunction and that it could be construed as disjunction instead. The "
+"majority of these comments were directed towards `,` as opposed to `if`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1901
+msgid "Commas do not feel like natural `and` separators."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1903
+msgid ""
+"`,` is bad because it already means \"separate things\", and now it suddenly "
+"means \"join things\"."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1906
+msgid "`,` does not mean and to me"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1908
+msgid "Comma is not `&&`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1910
+msgid "\"`,`\" doesn't seem like a conjunction (usually means tuple)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1912
+msgid "`,` as conjunction is ambiguous (could just as well be disjunction)"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1914
+msgid "using a comma to mean conjunction is _very_ unclear."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1916
+msgid "I find the comma ambiguous (is it AND or OR?)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1921
+msgid ""
+"Although really the only reasonable interpretation of `,` is conjunction, "
+"it's still not immediately obvious that that is the case."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1924
+msgid ""
+"The tower of `if`s is quite ugly (although it seems less ambiguous than "
+"using commas, which to some people might be construed as disjunction)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1926
+msgid "Ambiguous, are they 'or' or 'and'?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1928
+msgid "note: this refers to `,` and not `if` as a separator."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1930
+msgid ""
+"Commas don't imply conjunction to me and chained ifs just feel a bit "
+"unnatural too"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1933
+msgid ""
+"Using `,` is a bad idea because, with Rust already having a perfectly good "
+"`&&`, adding `,` is likely to evoke _\"OK, I know `&&`, so `.` must be OR\"_ "
+"or _\"I know `&&` and `||`, so what the heck is `,`? I'm so confused.\"_ ..."
+"not to mention that it runs against the Rust design philosophy to needlessly "
+"introduce alternative syntax and I can't see any practical reason it would "
+"be necessary to distinguish between tests and pattern matches in this "
+"context which can't be handled by putting `let` before the matches."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1941
+msgid ""
+"these syntaxes don't make it clear that there is an ‘and’ relationship "
+"between the conditions"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1945
+msgid ""
+"They either imply 'or' or remind me of a switch fall through in other "
+"languages (and thus also 'or')"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1948
+msgid ""
+"Stacking repeated uses of \"`if`\" at the top level feels very confusing to "
+"visually scan; it doesn't distinguish a conjunction very well."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1951
+msgid "`if` for conjunction is confusing"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1953
+msgid "Appendix B.6"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1956
+msgid ""
+"Does `,` entail short-circuiting behaviour or not? Some survey participants "
+"did not think this was clear."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1959
+msgid ""
+"I would also expect the comma options to not follow short-circuit evaluation."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1961
+msgid ""
+"For users coming from other languages, comma is unclear about whether short-"
+"circuiting will take place."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1964
+msgid ""
+"Syntax does not fit in with other usages of '`,`' in rust (especially "
+"tuples). It's non-obvious what the order of execution of sub-expressions are."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1967
+msgid ""
+"The commas are out of left field: they bear no relation to anything "
+"currently in Rust or any other language. The conditional looks like some "
+"sort of tupling expression."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1976
+msgid "Appendix B.7"
+msgstr ""
+
+#: src/2497-if-let-chains.md:1979
+msgid ""
+"A number of survey participants noted that separating with `if` is noisy and "
+"looks as if braces are missing."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1982
+msgid ""
+"Using multiple `if`s feels very weird (it looks like there are some missing "
+"braces and the indentation is wrong)."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1985
+msgid ""
+"Chaining `if` statements is unclear since in most languages you can leaves "
+"off the curly braces for an `if` with a single statement body."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1988
+msgid ""
+"chaining \"if\" keywords without braces or separators doesn't convey the "
+"meaning of the statement well and seems out of place in rusts present "
+"syntax, even more so if contracted to a single line."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1992
+msgid ""
+"Using a bunch of `if` in a column within the same `if` statement should "
+"stoke uncertainty about the intended meaning in anyone who remembers that "
+"Rust is very forgiving about where you put your whitespace."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1996
+msgid "Too many `if`s making it noisy."
+msgstr ""
+
+#: src/2497-if-let-chains.md:1998
+msgid "Appendix B.8"
+msgstr ""
+
+#: src/2497-if-let-chains.md:2001
+msgid ""
+"A number of survey participants noted that bindings introduced in `EXPR is "
+"PAT` were unexpectedly on the RHS while they were used to it being on the "
+"LHS."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2004
+msgid "Don't like '`is`' since it puts variable binding on the right."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2006
+msgid "`is` seems backwards."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2008
+msgid ""
+"The '`is`' operator creates new variables, but the pattern is on the right, "
+"where variables are usually read from."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2011
+msgid "`foo() is A(x)` is backwards to binding in most other places."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2016
+msgid "Very unreadable, swapped order of unpacking confusing"
+msgstr ""
+
+#: src/2497-if-let-chains.md:2018
+msgid "The \"`is`\" formulation is backwards from current `if let`."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2020
+msgid ""
+"I really do no like how the `is` syntax has the left and right sides "
+"reversed from the `if let ... = ...` syntax. It seems very odd to have that "
+"sort of pattern matching written in opposite directions depending on the "
+"syntax you choose."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2025
+msgid ""
+"The \"`is`\"-destructuring/pattern matching looks really weird because "
+"normally names have to be located on the left side of a statement to be "
+"bound to a value. The right side is there to retrieve the value."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2029
+msgid ""
+"extracting with a pattern match is confusing when the pattern match is to "
+"the right of the variable being matched. it looks like a statement of fact, "
+"not the introduction of a new identifier."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2033
+msgid "Appendix B.9"
+msgstr ""
+
+#: src/2497-if-let-chains.md:2036
+msgid ""
+"Some survey participants opined that they found it surprising that an "
+"operator named `is` introduces bindings. Another group found that `is` could "
+"easily be confused for some sort of equality test (as in the operator `==`) "
+"as in Python."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2041
+msgid "using `is` to introduce new bindings is very surprising."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2043
+msgid "`is` is weird because it can bind variables."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2045
+msgid ""
+"The \"`is`\" syntax is confusing, since it does an implicit pattern binding. "
+"I think folks would get it wrong by trying to pass a bound variable there "
+"and being surprised to find that it's a pattern instead."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2055
+msgid ""
+"Without `let` it isn't clear that we are declaring a new variable via `is`. "
+"Now we could introduce new keywords, but `is` still isn't clear about what "
+"it's doing. It seems odd to introduce `is` when `if let` does the same thing."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2059
+msgid ""
+"The 'is' keyword suggests a boolean operation but silently behaves like a "
+"'`let`'."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2061
+msgid ""
+"If `expr is pattern` doesn't actually bind, and just pattern matches, then I "
+"like it. This should have been a language feature imo."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2064
+msgid "I don't like `is` because it doesn't look like a binding operator"
+msgstr ""
+
+#: src/2497-if-let-chains.md:2066
+msgid ""
+"The \"`is A(x)`\" syntax looked nice on first sight, but it's backwards, as "
+"in this case it's an assignment (to `x` and `y`) and not just a comparison. "
+"Maybe it's ok as \"`if foo() is A`\" (like for \"`if foo().is_some()`\" but "
+"more generic) but not in this case."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2071
+msgid ""
+"I don't like using \"`is`\" for assignment. It sounds like equality (`==`), "
+"but with an assignment as a side effect. \"`if let`\" is the established way "
+"of doing equality and assignment together, and I think we should stick with "
+"one way of doing it. I also think \"`if let`\" better highlights that both "
+"equality and assignment happens, even when it is nested inside the "
+"expression as here."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2082
+msgid ""
+"`is` operator can be confusing (is the same as `==` or something else "
+"entirely?);"
+msgstr ""
+
+#: src/2497-if-let-chains.md:2084
+msgid ""
+"`is` I don't like because it looks too much like subclass testing and/or "
+"identity testing from other languages. `let` I like for uniformity with `if "
+"let` and `while let`, but it needs _something_ to make clear that the `&&` "
+"isn't part of the thing being bound; maybe parens around the whole thing? "
+"Require parens around the whole RHS if there's an `&&` anywhere in there? I "
+"don't know how to resolve the ambiguity... use `match`, instead?"
+msgstr ""
+
+#: src/2497-if-let-chains.md:2091
+msgid ""
+"The \"`is`\" keyword is not in Rust yet (afaik) but if we wanted to use it, "
+"we should ponder that it means \"reference equality\" to Python people. I "
+"would thus be hesitant about using it for pattern matching expressions, "
+"especially given that we already have \"`let`\" for pattern matching. If "
+"possible, I would prefer making `let`\\-bindings an expression."
+msgstr ""
+
+#: src/2497-if-let-chains.md:2097
+msgid ""
+"Rust already has meanings for `&&` and `let` which can be applied here. "
+"Replacing `let ...` with `... is ...` is too different from existing pattern "
+"syntax and too similar to Python's identity testing operator."
+msgstr ""

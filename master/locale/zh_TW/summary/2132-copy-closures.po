@@ -1,0 +1,271 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2132-copy-closures.md:1
+msgid "Feature Name: `copy_closures`"
+msgstr ""
+
+#: src/2132-copy-closures.md:2
+msgid "Start Date: 2017-08-27"
+msgstr ""
+
+#: src/2132-copy-closures.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2132](https://github.com/rust-lang/rfcs/pull/2132)"
+msgstr ""
+
+#: src/2132-copy-closures.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44490](https://github.com/rust-lang/rust/"
+"issues/44490)"
+msgstr ""
+
+#: src/2132-copy-closures.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2132-copy-closures.md:9
+msgid "Implement `Clone` and `Copy` for closures where possible:"
+msgstr ""
+
+#: src/2132-copy-closures.md:12
+msgid "// Many closures can now be passed by-value to multiple functions:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:14
+msgid "\"Hello, world!\""
+msgstr ""
+
+#: src/2132-copy-closures.md:17
+msgid "// Many `Iterator` combinators are now `Copy`/`Clone`:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:20
+msgid "// moves `x` by `Copy`ing\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:21
+msgid "// moves `x` again\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:22
+msgid "// `.cycle()` is only possible when `Self: Clone`\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:23
+msgid "// Closures which reference data mutably are not `Copy`/`Clone`:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:28
+msgid "// ERROR: `incr_x` moved in the call above.\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:29
+msgid ""
+"// `move` closures implement `Clone`/`Copy` if the values they capture\n"
+"// implement `Clone`/`Copy`:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:33 src/2132-copy-closures.md:75
+#: src/2132-copy-closures.md:106 src/2132-copy-closures.md:110
+#: src/2132-copy-closures.md:117
+msgid "\"{}\""
+msgstr ""
+
+#: src/2132-copy-closures.md:41 src/2132-copy-closures.md:42
+msgid "// prints \"0\", \"1\", \"2\"\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:45
+msgid "Motivation"
+msgstr ""
+
+#: src/2132-copy-closures.md:48
+msgid ""
+"Idiomatic Rust often includes liberal use of closures. Many APIs have "
+"combinator functions which wrap closures to provide additional functionality "
+"(e.g. methods in the [`Iterator`](https://doc.rust-lang.org/std/iter/trait."
+"Iterator.html) and [`Future`](https://docs.rs/futures/*/futures/future/trait."
+"Future.html) traits)."
+msgstr ""
+
+#: src/2132-copy-closures.md:52
+msgid ""
+"However, closures are unique, unnameable types which do not implement `Copy` "
+"or `Clone`. This makes using closures unergonomic and limits their "
+"usability. Functions which take closures, `Iterator` or `Future` "
+"combinators, or other closure-based types by-value are impossible to call "
+"multiple times."
+msgstr ""
+
+#: src/2132-copy-closures.md:57
+msgid ""
+"One current workaround is to use the coercion from non-capturing closures to "
+"`fn` pointers, but this introduces unnecessary dynamic dispatch and prevents "
+"closures from capturing values, even zero-sized ones."
+msgstr ""
+
+#: src/2132-copy-closures.md:61
+msgid ""
+"This RFC solves this issue by implementing the `Copy` and `Clone` traits on "
+"closures where possible."
+msgstr ""
+
+#: src/2132-copy-closures.md:67
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2132-copy-closures.md:70
+msgid ""
+"If a non-`move` closure doesn't mutate captured variables, then it is `Copy` "
+"and `Clone`:"
+msgstr ""
+
+#: src/2132-copy-closures.md:75
+msgid "// `print_x` is `Copy + Clone`.\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:76
+msgid "// No-op helper function which moves a value\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:79
+msgid ""
+"// Because `print_x` is `Copy`, we can pass it by-value multiple times:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:85
+msgid ""
+"Non-`move` closures which mutate captured variables are neither `Copy` nor "
+"`Clone`:"
+msgstr ""
+
+#: src/2132-copy-closures.md:90
+msgid ""
+"// `incr` mutates `x` and isn't a `move` closure,\n"
+"// so it's neither `Copy` nor `Clone`\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:96
+msgid "// ERROR: `print_incr` moved in the call above\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:99
+msgid ""
+"`move` closures are only `Copy` or `Clone` if the values they capture are "
+"`Copy` or `Clone`:"
+msgstr ""
+
+#: src/2132-copy-closures.md:104
+msgid "// `x` is `Copy + Clone`, so `print_x` is `Copy + Clone`:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:108
+msgid "\"foo\""
+msgstr ""
+
+#: src/2132-copy-closures.md:108
+msgid ""
+"// `foo` is `Clone` but not `Copy`, so `print_foo` is `Clone` but not "
+"`Copy`:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:111
+msgid ""
+"// Even closures which mutate variables are `Clone + Copy`\n"
+"// if their captures are `Clone + Copy`:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:115
+msgid "// `x` is `Clone + Copy`, so `print_incr` is `Clone + Copy`:\n"
+msgstr ""
+
+#: src/2132-copy-closures.md:123
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2132-copy-closures.md:126
+msgid ""
+"Closures are internally represented as structs which contain either values "
+"or references to the values of captured variables (`move` or non-`move` "
+"closures). A closure type implements `Clone` or `Copy` if and only if the "
+"all values in the closure's internal representation implement `Clone` or "
+"`Copy`:"
+msgstr ""
+
+#: src/2132-copy-closures.md:132
+msgid ""
+"Non-mutating non-`move` closures only contain immutable references (which "
+"are `Copy + Clone`), so these closures are `Copy + Clone`."
+msgstr ""
+
+#: src/2132-copy-closures.md:135
+msgid ""
+"Mutating non-`move` closures contain mutable references, which are neither "
+"`Copy` nor `Clone`, so these closures are neither `Copy` nor `Clone`."
+msgstr ""
+
+#: src/2132-copy-closures.md:138
+msgid ""
+"`move` closures contain values moved out of the enclosing scope, so these "
+"closures are `Clone` or `Copy` if and only if all of the values they capture "
+"are `Clone` or `Copy`."
+msgstr ""
+
+#: src/2132-copy-closures.md:142
+msgid ""
+"The internal implementation of `Clone` for non-`Copy` closures will resemble "
+"the basic implementation generated by `derive`, but the order in which "
+"values are `Clone`d will remain unspecified."
+msgstr ""
+
+#: src/2132-copy-closures.md:146
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2132-copy-closures.md:149
+msgid ""
+"This feature increases the complexity of the language, as it will force "
+"users to reason about which variables are being captured in order to "
+"understand whether or not a closure is `Copy` or `Clone`."
+msgstr ""
+
+#: src/2132-copy-closures.md:153
+msgid ""
+"However, this can be mitigated through error messages which point to the "
+"specific captured variables that prevent a closure from satisfying `Copy` or "
+"`Clone` bounds."
+msgstr ""
+
+#: src/2132-copy-closures.md:157
+msgid "Rationale and Alternatives"
+msgstr ""
+
+#: src/2132-copy-closures.md:160
+msgid ""
+"It would be possible to implement `Clone` or `Copy` for a more minimal set "
+"of closures, such as only non-`move` closures, or non-mutating closures. "
+"This could make it easier to reason about exactly which closures implement "
+"`Copy` or `Clone`, but this would come at the cost of greatly decreased "
+"functionality."
+msgstr ""
+
+#: src/2132-copy-closures.md:166
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2132-copy-closures.md:169
+msgid ""
+"How can we provide high-quality, tailored error messages to indicate why a "
+"closure isn't `Copy` or `Clone`?"
+msgstr ""

@@ -1,0 +1,267 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1270-deprecation.md:1
+msgid "Feature Name: Public Stability"
+msgstr ""
+
+#: src/1270-deprecation.md:2
+msgid "Start Date: 2015-09-03"
+msgstr ""
+
+#: src/1270-deprecation.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1270](https://github.com/rust-lang/rfcs/pull/1270)"
+msgstr ""
+
+#: src/1270-deprecation.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#29935](https://github.com/rust-lang/rust/"
+"issues/29935)"
+msgstr ""
+
+#: src/1270-deprecation.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1270-deprecation.md:8
+msgid ""
+"This RFC proposes to allow library authors to use a `#[deprecated]` "
+"attribute, with optional `since = \"`_version_`\"` and `note = \"`_free "
+"text_`\"`fields. The compiler can then warn on deprecated items, while "
+"`rustdoc` can document their deprecation accordingly."
+msgstr ""
+
+#: src/1270-deprecation.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/1270-deprecation.md:15
+msgid ""
+"Library authors want a way to evolve their APIs; which also involves "
+"deprecating items. To do this cleanly, they need to document their "
+"intentions and give their users enough time to react."
+msgstr ""
+
+#: src/1270-deprecation.md:19
+msgid ""
+"Currently there is no support from the language for this oft-wanted feature "
+"(despite a similar feature existing for the sole purpose of evolving the "
+"Rust standard library). This RFC aims to rectify that, while giving a "
+"pleasant interface to use while maximizing usefulness of the metadata "
+"introduced."
+msgstr ""
+
+#: src/1270-deprecation.md:24
+msgid "Detailed design"
+msgstr ""
+
+#: src/1270-deprecation.md:26
+msgid ""
+"Public API items (both plain `fn`s, methods, trait- and inherent "
+"`impl`ementations as well as `const` definitions, type definitions, struct "
+"fields and enum variants) can be given a `#[deprecated]` attribute. All "
+"possible fields are optional:"
+msgstr ""
+
+#: src/1270-deprecation.md:31
+msgid ""
+"`since` is defined to contain the version of the crate at the time of "
+"deprecating the item, following the semver scheme. Rustc does not know about "
+"versions, thus the content of this field is not checked (but will be by "
+"external lints, e.g. [rust-clippy](https://github.com/Manishearth/rust-"
+"clippy)."
+msgstr ""
+
+#: src/1270-deprecation.md:35
+msgid ""
+"`note` should contain a human-readable string outlining the reason for "
+"deprecating the item and/or what to use instead. While this field is not "
+"required, library authors are strongly advised to make use of it. The string "
+"is interpreted as plain unformatted text (for now) so that rustdoc can "
+"include it in the item's documentation without messing up the formatting."
+msgstr ""
+
+#: src/1270-deprecation.md:41
+msgid ""
+"On use of a _deprecated_ item, `rustc` will `warn` of the deprecation. Note "
+"that during Cargo builds, warnings on dependencies get silenced. While this "
+"has the upside of keeping things tidy, it has a downside when it comes to "
+"deprecation:"
+msgstr ""
+
+#: src/1270-deprecation.md:46
+msgid ""
+"Let's say I have my `llogiq` crate that depends on `foobar` which uses a "
+"deprecated item of `serde`. I will never get the warning about this unless I "
+"try to build `foobar` directly. We may want to create a service like "
+"`crater` to warn on use of deprecated items in library crates, however this "
+"is outside the scope of this RFC."
+msgstr ""
+
+#: src/1270-deprecation.md:52
+msgid ""
+"`rustdoc` will show deprecation on items, with a `[deprecated]` box that may "
+"optionally show the version and note where available."
+msgstr ""
+
+#: src/1270-deprecation.md:55
+msgid ""
+"The language reference will be extended to describe this feature as outlined "
+"in this RFC. Authors shall be advised to leave their users enough time to "
+"react before _removing_ a deprecated item."
+msgstr ""
+
+#: src/1270-deprecation.md:59
+msgid ""
+"The internally used feature can either be subsumed by this or possibly "
+"renamed to avoid a name clash."
+msgstr ""
+
+#: src/1270-deprecation.md:62
+msgid "Intended Use"
+msgstr ""
+
+#: src/1270-deprecation.md:64
+msgid ""
+"Crate author Anna wants to evolve her crate's API. She has found that one "
+"type, `Foo`, has a better implementation in the `rust-foo` crate. Also she "
+"has written a `frob(Foo)` function to replace the earlier `Foo::"
+"frobnicate(self)` method."
+msgstr ""
+
+#: src/1270-deprecation.md:69
+msgid ""
+"So Anna first bumps the version of her crate (because deprecation is always "
+"done on a version change) from `0.1.1` to `0.2.1`. She also adds the "
+"following prefix to the `Foo` type:"
+msgstr ""
+
+#: src/1270-deprecation.md:73
+msgid ""
+"```\n"
+"extern crate rust_foo;\n"
+"\n"
+"#[deprecated(since = \"0.2.1\",\n"
+"    note=\"The rust_foo version is more advanced, and this crate's will "
+"likely be discontinued\")]\n"
+"struct Foo { .. }\n"
+"```"
+msgstr ""
+
+#: src/1270-deprecation.md:81
+msgid ""
+"Users of her crate will see the following once they `cargo update` and "
+"`build`:"
+msgstr ""
+
+#: src/1270-deprecation.md:88
+msgid "Rust-clippy will likely gain more sophisticated checks for deprecation:"
+msgstr ""
+
+#: src/1270-deprecation.md:90
+msgid ""
+"`future_deprecation` will warn on items marked as deprecated, but with a "
+"version lower than their crates', while `current_deprecation` will warn only "
+"on those items marked as deprecated where the version is equal or lower to "
+"the crates' one."
+msgstr ""
+
+#: src/1270-deprecation.md:94
+msgid ""
+"`deprecation_syntax` will check that the `since` field really contains a "
+"semver number and not some random string."
+msgstr ""
+
+#: src/1270-deprecation.md:97
+msgid ""
+"Clippy users can then activate the clippy checks and deactivate the standard "
+"deprecation checks."
+msgstr ""
+
+#: src/1270-deprecation.md:100
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1270-deprecation.md:102
+msgid "Once the feature is public, we can no longer change its design"
+msgstr ""
+
+#: src/1270-deprecation.md:104
+msgid "Alternatives"
+msgstr ""
+
+#: src/1270-deprecation.md:106
+msgid "Do nothing"
+msgstr ""
+
+#: src/1270-deprecation.md:107
+msgid "make the `since` field required and check that it's a single version"
+msgstr ""
+
+#: src/1270-deprecation.md:108
+msgid "require either `reason` or `use` be present"
+msgstr ""
+
+#: src/1270-deprecation.md:109
+msgid "`reason` could include markdown formatting"
+msgstr ""
+
+#: src/1270-deprecation.md:110
+msgid ""
+"rename the `reason` field to `note` to clarify its broader usage. (**done!**)"
+msgstr ""
+
+#: src/1270-deprecation.md:111
+msgid ""
+"add a `note` field and make `reason` a field with specific meaning, perhaps "
+"even predefine a number of valid reason strings, as JEP277 currently does"
+msgstr ""
+
+#: src/1270-deprecation.md:113
+msgid "Add a `use` field containing a plain text of what to use instead"
+msgstr ""
+
+#: src/1270-deprecation.md:114
+msgid ""
+"Add a `use` field containing a path to some function, type, etc. to replace "
+"the current feature. Currently with the rustc-private feature, people are "
+"describing a replacement in the `reason` field, which is clearly not the "
+"original intention of the field"
+msgstr ""
+
+#: src/1270-deprecation.md:118
+msgid ""
+"Optionally, `cargo` could offer a new dependency category: \"doc-"
+"dependencies\" which are used to pull in other crates' documentations to "
+"link them (this is obviously not only relevant to deprecation)"
+msgstr ""
+
+#: src/1270-deprecation.md:122
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1270-deprecation.md:124
+msgid ""
+"What other restrictions should we introduce now to avoid being bound to a "
+"possibly flawed design?"
+msgstr ""
+
+#: src/1270-deprecation.md:126
+msgid ""
+"Can / Should the `std` library make use of the `#[deprecated]` extensions?"
+msgstr ""
+
+#: src/1270-deprecation.md:127
+msgid "Bikeshedding: Are the names good enough?"
+msgstr ""

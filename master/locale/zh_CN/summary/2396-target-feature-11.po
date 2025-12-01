@@ -1,0 +1,440 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2396-target-feature-1.1.md:1
+msgid "Feature Name: `#[target_feature]` 1.1"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:2
+msgid "Start Date: 2018-04-06"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2396](https://github.com/rust-lang/rfcs/pull/2396)"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#69098](https://github.com/rust-lang/rust/"
+"issues/69098)"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:9
+msgid ""
+"This RFC attempts to resolve some of the unresolved questions in [RFC 2045 "
+"(`target_feature`)](https://github.com/rust-lang/rfcs/pull/2045). In "
+"particular, it allows:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:12
+msgid ""
+"specifying `#[target_feature]` functions without making them `unsafe fn`"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:13
+msgid ""
+"calling `#[target_feature]` functions in some contexts without `unsafe { }` "
+"blocks"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:15
+msgid ""
+"It achieves this by proposing three incremental steps that we can "
+"sequentially make to improve the ergonomics and the safety of target-"
+"specific functionality without adding run-time overhead."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:21
+msgid "Motivation"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:24
+msgid ""
+"This is a brief recap of [RFC 2045 (`target_feature`)](https://github.com/"
+"rust-lang/rfcs/pull/2045)."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:26
+msgid ""
+"The `#[target_feature]` attribute allows Rust to generate machine code for a "
+"function under the assumption that the hardware where the function will be "
+"executed on supports some specific \"features\"."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:30
+msgid ""
+"If the hardware does not support the features, the machine code was "
+"generated under assumptions that do not hold, and the behavior of executing "
+"the function is undefined."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:34
+msgid ""
+"[RFC 2045 (`target_feature`)](https://github.com/rust-lang/rfcs/pull/2045) "
+"guarantees safety by requiring all `#[target_feature]` functions to be "
+"`unsafe fn`, thus preventing them from being called from safe code. That is, "
+"users have to open an `unsafe { }` block to call these functions, and they "
+"have to manually ensure that their pre-conditions hold - for example, that "
+"they will only be executed on the appropriate hardware by doing run-time "
+"feature detection, or using conditional compilation."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:41
+msgid ""
+"And that's it. That's all [RFC 2045 (`target_feature`)](https://github.com/"
+"rust-lang/rfcs/pull/2045) had to say about this. Back then, there were many "
+"other problems that needed to be solved for all of this to be minimally "
+"useful, and [RFC 2045 (`target_feature`)](https://github.com/rust-lang/rfcs/"
+"pull/2045) dealt with those."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:45
+msgid ""
+"However, the consensus back then was that this is far from ideal for many "
+"reasons:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:48
+msgid ""
+"when calling `#[target_feature]` functions from other `#[target_feature]` "
+"functions with the same features, the calls are currently still `unsafe` but "
+"they are actually safe to call."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:51
+msgid ""
+"making all `#[target_feature]` functions `unsafe fn`s and requiring `unsafe "
+"{}` to call them everywhere hides other potential sources of `unsafe` within "
+"these functions. Users get used to upholding `#[target_feature]`\\-related "
+"pre-conditions, and other types of pre-conditions get glossed by."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:55
+msgid ""
+"`#[target_feature]` functions are not inlined across mismatching contexts, "
+"which can have disastrous performance implications. Currently calling "
+"`#[target_feature]` function from all contexts looks identical which makes "
+"it easy for users to make these mistakes (which get reported often)."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:60
+msgid "The solution proposed in this RFC solves these problems."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:62
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:65
+msgid ""
+"Currently, we require that `#[target_feature]` functions be declared as "
+"`unsafe fn`. This RFC relaxes this restriction:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:68
+msgid ""
+"safe `#[target_feature]` functions can be called _without_ an `unsafe {}` "
+"block _only_ from functions that have at least the exact same set of "
+"`#[target_feature]`s. Calling them from other contexts (other functions, "
+"static variable initializers, etc.) requires opening an `unsafe {}` even "
+"though they are not marked as `unsafe`:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:75
+msgid "// Example 1:\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:76 src/2396-target-feature-1.1.md:77
+#: src/2396-target-feature-1.1.md:87 src/2396-target-feature-1.1.md:139
+#: src/2396-target-feature-1.1.md:148
+msgid "\"sse2\""
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:76
+msgid "// RFC2045\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:77
+msgid "// NEW\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:78
+msgid "// This function does not have the \"sse2\" target feature:\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:81 src/2396-target-feature-1.1.md:97
+msgid "// ERROR (unsafe block required)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:82 src/2396-target-feature-1.1.md:84
+#: src/2396-target-feature-1.1.md:90 src/2396-target-feature-1.1.md:98
+#: src/2396-target-feature-1.1.md:162 src/2396-target-feature-1.1.md:221
+msgid "// OK\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:83
+msgid "// ERROR (meow is not sse2)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:89
+msgid "// ERROR (foo is unsafe: unsafe block required)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:91
+msgid "// OK (bark is sse2 and bar is safe)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:92
+msgid "// OK (as well - warning: unnecessary unsafe block)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:95 src/2396-target-feature-1.1.md:157
+msgid "\"avx\""
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:95
+msgid "// avx != sse2\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:99
+msgid "// ERROR (moo is not sse2 but bar requires it)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:100 src/2396-target-feature-1.1.md:225
+msgid "// OK \n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:104
+msgid ""
+"Note: while it is safe to call an SSE2 function from _some_ AVX functions, "
+"this would require specifying how features relate to each other in "
+"hierarchies. It is unclear whether those hierarchies actually exist, but "
+"adding them to this RFC would unnecessarily complicate it and can be done "
+"later or in parallel to this one, once we agree on the fundamentals."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:110
+msgid ""
+"First, this is still sound. The caller has a super-set of "
+"`#[target_features]` of the callee. That is, the `#[target_feature]`\\-"
+"related pre-conditions of the callee are uphold by the caller, therefore "
+"calling the callee is safe."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:114
+msgid ""
+"This change already solves all three issues mentioned in the motivation:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:116
+msgid ""
+"When calling `#[target_feature]` functions from other `#[target_feature]` "
+"functions with the same features, we don't need `unsafe` code anymore."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:118
+msgid ""
+"Since `#[target_feature]` functions do not need to be `unsafe` anymore, "
+"`#[target_feature]` functions that are marked with `unsafe` become more "
+"visible, making it harder for users to oversee that there are other pre-"
+"conditions that must be uphold."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:122
+msgid ""
+"`#[target_feature]` function calls across mismatching contexts require "
+"`unsafe`, making them more visible. This makes it easier to identify calls-"
+"sites across which they cannot be inlined while making call-sites across "
+"which they can be inlined more ergonomic to write."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:127
+msgid ""
+"The `#[target_feature]` attribute continues to be allowed on inherent "
+"methods - this RFC does not change that."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:130
+msgid ""
+"The `#[target_feature]` attribute continues to not be allowed on safe trait "
+"method implementations because that would require an `unsafe` trait method "
+"declaration:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:135
+msgid "// Example 2:\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:140
+msgid ""
+"// ^ ERROR: #[target_feature] on trait method impl requires \n"
+"    // unsafe fn but Foo::foo is safe\n"
+"    // (this is already an error per RFC2045)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:148
+msgid "// OK (RFC2045)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:152 src/2396-target-feature-1.1.md:176
+msgid ""
+"safe `#[target_feature]` functions are not assignable to safe `fn` pointers."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:156
+msgid "// Example 3\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:159
+msgid ""
+"// ^ ERROR: meow can only be assigned to unsafe fn pointers due to \n"
+"// #[target_feature] but function pointer x with type fn()->() is safe.\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:165
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:168
+msgid ""
+"This RFC proposes to changes to the language with respect to [RFC 2045 "
+"(`target_feature`)](https://github.com/rust-lang/rfcs/pull/2045):"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:170
+msgid ""
+"safe `#[target_feature]` functions can be called _without_ an `unsafe {}` "
+"block _only_ from functions that have at least the exact same set of "
+"`#[target_feature]`s. Calling them from other contexts (other functions, "
+"static variable initializers, etc.) requires opening an `unsafe {}` even "
+"though they are not marked as `unsafe`"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:178
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:181
+msgid ""
+"This RFC extends the typing rules for `#[target_feature]`, which might "
+"unnecessarily complicate future language features like an effect system."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:184
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:187
+msgid ""
+"Since `#[target_feature]` are effects or restrictions (depending on whether "
+"we `enable` or `disable` them), the alternative would be to integrate them "
+"with an effect system."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:191
+msgid "Prior art"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:194
+msgid ""
+"[RFC2212 target feature unsafe](https://github.com/rust-lang/rfcs/pull/2212) "
+"attempted to solve this problem. This RFC builds on the discussion that was "
+"produced by that RFC and by many discussions in the `stdsimd` repo."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:198
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:201
+msgid "None."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:203
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:206
+msgid "Negative features"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:208
+msgid ""
+"[RFC 2045 (`target_feature`)](https://github.com/rust-lang/rfcs/pull/2045) "
+"introduced the `#[target_feature(enable = \"x\")]` syntax to allow "
+"introducing negative features in future RFCs in the form of "
+"`#[target_feature(disable = \"y\")]`. Since these have not been introduced "
+"yet we can only speculate about how they would interact with the extensions "
+"proposed in this RFC but we probably can make the following work in some "
+"form:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:215
+msgid "// #[target_feature(enable = \"sse\")]\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:218
+msgid "\"sse\""
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:220
+msgid "// ERROR: (bar is not sse)\n"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:229
+msgid "Effect system"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:231
+msgid ""
+"It is unclear how `#[target_feature]` would interact with an effect system "
+"for Rust like the one being tracked [here](https://github.com/Centril/rfc-"
+"effects/issues) and discussed in [RFC2237](https://github.com/rust-lang/rfcs/"
+"pull/2237)."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:236
+msgid ""
+"In particular, it is unclear how the typing rules being proposed here would "
+"be covered by such an effect system, and whether such system would support "
+"attributes in effect/restriction position."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:240
+msgid ""
+"Such an effect-system might need to introduce first-class target-features "
+"into the language (beyond just a simple attribute) which could lead to the "
+"deprecation of the `#[target_feature]` attribute."
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:244
+msgid ""
+"It is also unclear how any of this interacts with effect-polymorphism at "
+"this point, but we could _maybe_ support something like `impl const Trait` "
+"and `T: const Trait`:"
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:250
+msgid "\"...\""
+msgstr ""
+
+#: src/2396-target-feature-1.1.md:253
+msgid ""
+"if all trait methods are `unsafe`; otherwise they can't have the "
+"`#[target_feature]` attribute."
+msgstr ""

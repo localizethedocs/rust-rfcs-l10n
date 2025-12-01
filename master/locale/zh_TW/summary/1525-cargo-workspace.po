@@ -1,0 +1,523 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1525-cargo-workspace.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:2
+msgid "Start Date: 2015-09-15"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1525](https://github.com/rust-lang/rfcs/pull/1525)"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:4
+msgid ""
+"Rust Issue: [rust-lang/cargo#2122](https://github.com/rust-lang/cargo/"
+"issues/2122)"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:8
+msgid ""
+"Improve Cargo's story around multi-crate single-repo project management by "
+"introducing the concept of workspaces. All packages in a workspace will "
+"share `Cargo.lock` and an output directory for artifacts."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:14
+msgid ""
+"A common method to organize a multi-crate project is to have one repository "
+"which contains all of the crates. Each crate has a corresponding "
+"subdirectory along with a `Cargo.toml` describing how to build it. There are "
+"a number of downsides to this approach, however:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:19
+msgid ""
+"Each sub-crate will have its own `Cargo.lock`, so it's difficult to ensure "
+"that the entire project is using the same version of all dependencies. This "
+"is desired as the main crate (often a binary) is often the one that has the "
+"`Cargo.lock` \"which counts\", but it needs to be kept in sync with all "
+"dependencies."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:25
+msgid ""
+"When building or testing sub-crates, all dependencies will be recompiled as "
+"the target directory will be changing as you move around the source tree. "
+"This can be overridden with `build.target-dir` or `CARGO_TARGET_DIR`, but "
+"this isn't always convenient to set."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:30
+msgid ""
+"Solving these two problems should help ease the development of large Rust "
+"projects by ensuring that all dependencies remain in sync and builds by "
+"default use already-built artifacts if available."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:34
+msgid "Detailed design"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:36
+msgid ""
+"Cargo will grow the concept of a **workspace** for managing repositories of "
+"multiple crates. Workspaces will then have the properties:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:39
+msgid ""
+"A workspace can contain multiple local crates: one 'root crate', and any "
+"number of 'member crate'."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:41
+msgid ""
+"The root crate of a workspace has a `Cargo.toml` file containing "
+"`[workspace]` key, which we call it as 'root `Cargo.toml`'."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:43
+msgid ""
+"Whenever any crate in the workspace is compiled, output will be placed in "
+"the `target` directory next to the root `Cargo.toml`."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:45
+msgid ""
+"One `Cargo.lock` file for the entire workspace will reside next to the root "
+"`Cargo.toml` and encompass the dependencies (and dev-dependencies) for all "
+"crates in the workspace."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:49
+msgid ""
+"With workspaces, Cargo can now solve the problems set forth in the "
+"motivation section. Next, however, workspaces need to be defined. In the "
+"spirit of much of the rest of Cargo's configuration today this will largely "
+"be automatic for conventional project layouts but will have explicit "
+"controls for configuration."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:54
+msgid "New manifest keys"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:56
+msgid ""
+"First, let's look at the new manifest keys which will be added to `Cargo."
+"toml`:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:58
+msgid ""
+"```toml\n"
+"[workspace]\n"
+"members = [\"relative/path/to/child1\", \"../child2\"]\n"
+"\n"
+"# or ...\n"
+"\n"
+"[package]\n"
+"workspace = \"../foo\"\n"
+"```"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:68
+msgid ""
+"The root `Cargo.toml` of a workspace, indicated by the presence of "
+"`[workspace]`, is responsible for defining the entire workspace (listing all "
+"members). This example here means that two extra crates will be members of "
+"the workspace (which also includes the root)."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:73
+msgid ""
+"The `package.workspace` key is used to point at a workspace's root crate. "
+"For example this Cargo.toml indicates that the Cargo.toml in `../foo` is the "
+"root Cargo.toml of root crate, that this package is a member of."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:77
+msgid ""
+"These keys are mutually exclusive when applied in `Cargo.toml`. A crate may "
+"_either_ specify `package.workspace` or specify `[workspace]`. That is, a "
+"crate cannot both be a root crate in a workspace (contain `[workspace]`) and "
+"also be a member crate of another workspace (contain `package.workspace`)."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:82
+msgid "\"Virtual\" `Cargo.toml`"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:84
+msgid ""
+"A good number of projects do not necessarily have a \"root `Cargo.toml`\" "
+"which is an appropriate root for a workspace. To accommodate these projects "
+"and allow for the output of a workspace to be configured regardless of where "
+"crates are located, Cargo will now allow for \"virtual manifest\" files. "
+"These manifests will currently **only** contains the `[workspace]` table and "
+"will notably be lacking a `[project]` or `[package]` top level key."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:91
+msgid ""
+"Cargo will for the time being disallow many commands against a virtual "
+"manifest, for example `cargo build` will be rejected. Arguments that take a "
+"package, however, such as `cargo test -p foo` will be allowed. Workspaces "
+"can eventually get extended with `--all` flags so in a workspace root you "
+"could execute `cargo build --all` to compile all crates."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:97
+msgid "Validating a workspace"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:99
+msgid "A workspace is valid if these two properties hold:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:101
+msgid ""
+"A workspace has only one root crate (that with `[workspace]` in `Cargo."
+"toml`)."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:103
+msgid ""
+"All workspace crates defined in `workspace.members` point back to the "
+"workspace root with `package.workspace`."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:106
+msgid ""
+"While the restriction of one-root-per workspace may make sense, the "
+"restriction of crates pointing back to the root may not. If, however, this "
+"restriction were not in place then the set of crates in a workspace may "
+"differ depending on which crate it was viewed from. For example if workspace "
+"root A includes B then it will think B is in A's workspace. If, however, B "
+"does not point back to A, then B would not think that A was in its "
+"workspace. This would in turn cause the set of crates in each workspace to "
+"be different, further causing `Cargo.lock` to get out of sync if it were "
+"allowed. By ensuring that all crates have edges to each other in a workspace "
+"Cargo can prevent this situation and guarantee robust builds no matter where "
+"they're executed in the workspace."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:117
+msgid ""
+"To alleviate misconfiguration Cargo will emit an error if the two properties "
+"above do not hold for any crate attempting to be part of a workspace. For "
+"example, if the `package.workspace` key is specified, but the crate is not a "
+"workspace root or doesn't point back to the original crate an error is "
+"emitted."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:122
+msgid "Implicit relations"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:124
+msgid ""
+"The combination of the `package.workspace` key and `[workspace]` table is "
+"enough to specify any workspace in Cargo. Having to annotate all crates with "
+"a `package.workspace` parent or a `workspace.members` list can get quite "
+"tedious, however! To alleviate this configuration burden Cargo will allow "
+"these keys to be implicitly defined in some situations."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:130
+msgid ""
+"The `package.workspace` can be omitted if it would only contain `../` (or "
+"some repetition of it). That is, if the root of a workspace is "
+"hierarchically the first `Cargo.toml` with `[workspace]` above a crate in "
+"the filesystem, then that crate can omit the `package.workspace` key."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:135
+msgid ""
+"Next, a crate which specifies `[workspace]` **without a `members` key** will "
+"transitively crawl `path` dependencies to fill in this key. This way all "
+"`path` dependencies (and recursively their own `path` dependencies) will "
+"inherently become the default value for `workspace.members`."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:140
+msgid ""
+"Note that these implicit relations will be subject to the same validations "
+"mentioned above for all of the explicit configuration as well."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:143
+msgid "Workspaces in practice"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:145
+msgid ""
+"Many Rust projects today already have `Cargo.toml` at the root of a "
+"repository, and with the small addition of `[workspace]` in the root `Cargo."
+"toml`, a workspace will be ready for all crates in that repository. For "
+"example:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:149
+msgid "An FFI crate with a sub-crate for FFI bindings"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:159
+msgid "A crate with multiple in-tree dependencies"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:172
+msgid ""
+"Some examples of layouts that will require extra configuration, along with "
+"the configuration necessary, are:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:175
+msgid "Trees without any root crate"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:189
+msgid ""
+"these crates can all join the same workspace via a `Cargo.toml` file at the "
+"root looking like:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:192
+msgid ""
+"```toml\n"
+"[workspace]\n"
+"members = [\"crate1\", \"crate2\", \"crate3\"]\n"
+"```"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:197
+msgid "Trees with multiple workspaces"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:215
+msgid ""
+"The two workspaces here can be configured by placing the following in the "
+"manifests:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:218
+msgid ""
+"```toml\n"
+"# ws1/Cargo.toml\n"
+"[workspace]\n"
+"members = [\"crate1\", \"crate2\"]\n"
+"```"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:229
+msgid "Trees with non-hierarchical workspaces"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:244
+msgid ""
+"The workspace here can be configured by placing the following in the "
+"manifests:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:247
+msgid ""
+"```toml\n"
+"# root/Cargo.toml\n"
+"#\n"
+"# Note that `members` aren't necessary if these are otherwise path\n"
+"# dependencies.\n"
+"[workspace]\n"
+"members = [\"../crates/crate1\", \"../crates/crate2\"]\n"
+"```"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:256
+msgid ""
+"```toml\n"
+"# crates/crate1/Cargo.toml\n"
+"[package]\n"
+"workspace = \"../../root\"\n"
+"```"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:262
+msgid ""
+"```toml\n"
+"# crates/crate2/Cargo.toml\n"
+"[package]\n"
+"workspace = \"../../root\"\n"
+"```"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:268
+msgid ""
+"Projects like the compiler will likely need exhaustively explicit "
+"configuration. The `rust` repo conceptually has two workspaces, the standard "
+"library and the compiler, and these would need to be manually configured "
+"with `workspace.members` and `package.workspace` keys amongst all crates."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:273
+msgid "Lockfile and override interactions"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:275
+msgid ""
+"One of the main features of a workspace is that only one `Cargo.lock` is "
+"generated for the entire workspace. This lock file can be affected, however, "
+"with both [`[replace]` overrides](https://github.com/rust-lang/cargo/"
+"pull/2385) as well as `paths` overrides."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:281
+msgid ""
+"Primarily, the `Cargo.lock` generate will not simply be the concatenation of "
+"the lock files from each project. Instead the entire workspace will be "
+"resolved together all at once, minimizing versions of crates used and "
+"sharing dependencies as much as possible. For example one `path` dependency "
+"will always have the same set of dependencies no matter which crate is being "
+"compiled."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:287
+msgid ""
+"When interacting with overrides, workspaces will be modified to only allow "
+"`[replace]` to exist in the workspace root. This Cargo.toml will affect lock "
+"file generation, but no other workspace members will be allowed to have a "
+"`[replace]` directive (with an informative error message being produced)."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:292
+msgid ""
+"Finally, the `paths` overrides will be applied as usual, and they'll "
+"continue to be applied relative to whatever crate is being compiled (not the "
+"workspace root). These are intended for much more local testing, so no "
+"restriction of \"must be in the root\" should be necessary."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:297
+msgid ""
+"Note that this change to the lockfile format is technically incompatible "
+"with older versions of Cargo.lock, but the entire workspaces feature is also "
+"incompatible with older versions of Cargo. This will require projects that "
+"wish to work with workspaces and multiple versions of Cargo to check in "
+"multiple `Cargo.lock` files, but if projects avoid workspaces then Cargo "
+"will remain forwards and backwards compatible."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:304
+msgid "Future Extensions"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:306
+msgid ""
+"Once Cargo understands a workspace of crates, we could easily extend various "
+"subcommands with a `--all` flag to perform tasks such as:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:309
+msgid "Test all crates within a workspace (run all unit tests, doc tests, etc)"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:310
+msgid "Build all binaries for a set of crates within a workspace"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:311
+msgid "Publish all crates in a workspace if necessary to crates.io"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:313
+msgid ""
+"Furthermore, workspaces could start to deduplicate metadata among crates "
+"like version numbers, URL information, authorship, etc."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:316
+msgid ""
+"This support isn't proposed to be added in this RFC specifically, but simply "
+"to show that workspaces can be used to solve other existing issues in Cargo."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:319
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:321
+msgid ""
+"As proposed there is no method to disable implicit actions taken by Cargo. "
+"It's unclear what the use case for this is, but it could in theory arise."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:324
+msgid ""
+"No crate will implicitly benefit from workspaces after this is implemented. "
+"Existing crates must opt-in with a `[workspace]` key somewhere at least."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:327
+msgid "Alternatives"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:329
+msgid ""
+"The `workspace.members` key could support globs to define a number of "
+"directories at once. For example one could imagine:"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:332
+msgid ""
+"```toml\n"
+"[workspace]\n"
+"members = [\"crates/*\"]\n"
+"```"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:337
+msgid ""
+"as an ergonomic method of slurping up all sub-folders in the `crates` folder "
+"as crates."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:340
+msgid ""
+"Cargo could attempt to perform more inference of workspace members by simply "
+"walking the entire directory tree starting at `Cargo.toml`. All children "
+"found could implicitly be members of the workspace. Walking entire trees, "
+"unfortunately, isn't always efficient to do and it would be unfortunate to "
+"have to unconditionally do this."
+msgstr ""
+
+#: src/1525-cargo-workspace.md:346
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1525-cargo-workspace.md:348
+msgid ""
+"Does this approach scale well to repositories with a large number of crates? "
+"For example does the winapi-rs repository experience a slowdown on standard "
+"`cargo build` as a result?"
+msgstr ""

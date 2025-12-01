@@ -1,0 +1,1136 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1211-mir.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1211-mir.md:2
+msgid "Start Date: 2015-07-14"
+msgstr ""
+
+#: src/1211-mir.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1211](https://github.com/rust-lang/rfcs/pull/1211)"
+msgstr ""
+
+#: src/1211-mir.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#27840](https://github.com/rust-lang/rust/"
+"issues/27840)"
+msgstr ""
+
+#: src/1211-mir.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1211-mir.md:8
+msgid ""
+"Introduce a \"mid-level IR\" (MIR) into the compiler. The MIR desugars most "
+"of Rust's surface representation, leaving a simpler form that is well-suited "
+"to type-checking and translation."
+msgstr ""
+
+#: src/1211-mir.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1211-mir.md:14
+msgid ""
+"The current compiler uses a single AST from the initial parse all the way to "
+"the final generation of bitcode. While this has some advantages, there are "
+"also a number of distinct downsides."
+msgstr ""
+
+#: src/1211-mir.md:18
+msgid ""
+"The complexity of the compiler is increased because all passes must be "
+"written against the full Rust language, rather than being able to consider a "
+"reduced subset. The MIR proposed here is _radically_ simpler than the "
+"surface Rust syntax -- for example, it contains no \"match\" statements, and "
+"converts both `ref` bindings and `&` expressions into a single form."
+msgstr ""
+
+#: src/1211-mir.md:25
+msgid ""
+"a. There are numerous examples of \"desugaring\" in Rust. In principle, "
+"desugaring one language feature into another should make the compiler "
+"_simpler_, but in our current implementation, it tends to make things more "
+"complex, because every phase must simulate the desugaring anew. The most "
+"prominent example are closure expressions (`|| ...`), which desugar to a "
+"fresh struct instance, but other examples abound: `for` loops, `if let` and "
+"`while let`, `box` expressions, overloaded operators (which desugar to "
+"method calls), method calls (which desugar to UFCS notation)."
+msgstr ""
+
+#: src/1211-mir.md:36
+msgid ""
+"b. There are a number of features which are almost infeasible to implement "
+"today but which should be much easier given a MIR representation. Examples "
+"include box patterns and non-lexical lifetimes."
+msgstr ""
+
+#: src/1211-mir.md:41
+msgid ""
+"Reasoning about fine-grained control-flow in an AST is rather difficult.  "
+"The right tool for this job is a control-flow graph (CFG). We currently "
+"construct a CFG that lives \"on top\" of the AST, which allows the borrow "
+"checking code to be flow sensitive, but it is awkward to work with. Worse, "
+"because this CFG is not used by trans, it is not necessarily the case that "
+"the control-flow as seen by the analyses corresponds to the code that will "
+"be generated. The MIR is based on a CFG, resolving this situation."
+msgstr ""
+
+#: src/1211-mir.md:50
+msgid ""
+"The reliability of safety analyses is reduced because the gap between what "
+"is being analyzed (the AST) and what is being executed (bitcode) is very "
+"wide. The MIR is very low-level and hence the translation to bitcode should "
+"be straightforward."
+msgstr ""
+
+#: src/1211-mir.md:55
+msgid ""
+"The reliability of safety proofs, when we have some, would be reduced "
+"because the formal language we are modeling is so far from the full compiler "
+"AST. The MIR is simple enough that it should be possible to (eventually) "
+"make safety proofs based on the MIR itself."
+msgstr ""
+
+#: src/1211-mir.md:61
+msgid ""
+"Rust-specific optimizations, and optimizing `trans` output, are very "
+"challenging. There are numerous cases where it would be nice to be able to "
+"do optimizations _before_ translating to bitcode, or to take advantage of "
+"Rust-specific knowledge of which a backend may be unaware. Currently, we are "
+"forced to do these optimizations as part of lowering to bitcode, which can "
+"get quite complex. Having an intermediate form improves the situation "
+"because:"
+msgstr ""
+
+#: src/1211-mir.md:69
+msgid ""
+"a. In some cases, we can do the optimizations in the MIR itself before "
+"translation."
+msgstr ""
+
+#: src/1211-mir.md:71
+msgid ""
+"b. In other cases, we can do analyses on the MIR to easily determine when "
+"the optimization would be safe."
+msgstr ""
+
+#: src/1211-mir.md:74
+msgid ""
+"c. In all cases, whatever we can do on the MIR will be helpful for other "
+"targets beyond existing backends (see next bullet)."
+msgstr ""
+
+#: src/1211-mir.md:77
+msgid ""
+"Migrating away from LLVM is nearly impossible. Since so much of the "
+"semantics of Rust itself are embedded in the `trans` step which converts to "
+"LLVM IR. Under the MIR design, those semantics are instead described in the "
+"translation from AST to MIR, and the LLVM step itself simply applies "
+"optimizations."
+msgstr ""
+
+#: src/1211-mir.md:83
+msgid ""
+"Given the numerous benefits of a MIR, you may wonder why we have not taken "
+"steps in this direction earlier. In fact, we have a number of structures in "
+"the compiler that simulate the effect of a MIR:"
+msgstr ""
+
+#: src/1211-mir.md:87
+msgid ""
+"Adjustments. Every expression can have various adjustments, like autoderefs "
+"and so forth. These are computed by the type-checker and then read by later "
+"analyses. This is a form of MIR, but not a particularly convenient one."
+msgstr ""
+
+#: src/1211-mir.md:91
+msgid ""
+"The CFG. The CFG tries to model the flow of execution as a graph rather than "
+"a tree, to help analyses in dealing with complex control-flow formed by "
+"things like loops, `break`, `continue`, etc. This CFG is however inferior to "
+"the MIR in that it is only an approximation of control-flow and does not "
+"include all the information one would need to actually execute the program "
+"(for example, for an `if` expression, the CFG would indicate that two "
+"branches are possible, but would not contain enough information to decide "
+"which branch to take)."
+msgstr ""
+
+#: src/1211-mir.md:100
+msgid ""
+"`ExprUseVisitor`. The `ExprUseVisitor` is designed to work in conjunction "
+"with the CFG. It walks the AST and highlights actions of interest to later "
+"analyses, such as borrows or moves. For each such action, the analysis gets "
+"a callback indicating the point in the CFG where the action occurred along "
+"with what happened. Overloaded operators, method calls, and so forth are "
+"\"desugared\" into their more primitive operations. This is effectively a "
+"kind of MIR, but it is not complete enough to do translation, since it "
+"focuses purely on borrows, moves, and other things of interest to the safety "
+"checker."
+msgstr ""
+
+#: src/1211-mir.md:111
+msgid ""
+"Each of these things were added in order to try and cope with the complexity "
+"of working directly on the AST. The CFG for example consolidates knowledge "
+"about control-flow into one piece of code, producing a data structure that "
+"can be easily interpreted. Similarly, the `ExprUseVisitor` consolidates "
+"knowledge of how to walk and interpret the current compiler representation."
+msgstr ""
+
+#: src/1211-mir.md:118
+msgid "Goals"
+msgstr ""
+
+#: src/1211-mir.md:120
+msgid ""
+"It is useful to think about what \"knowledge\" the MIR should encapsulate. "
+"Here is a listing of the kinds of things that should be explicit in the MIR "
+"and thus that downstream code won't have to re-encode in the form of "
+"repeated logic:"
+msgstr ""
+
+#: src/1211-mir.md:125
+msgid ""
+"**Precise ordering of control-flow.** The CFG makes this very explicit, and "
+"the individual statements and nodes in the MIR are very small and detailed "
+"and hence nothing \"interesting\" happens in the middle of an individual "
+"node with respect to control-flow."
+msgstr ""
+
+#: src/1211-mir.md:129
+msgid ""
+"**What needs to be dropped and when.** The set of data that needs to be "
+"dropped and when is a fairly complex thing to calculate: you have to know "
+"what's in scope, including temporary values and so forth. In the MIR, all "
+"drops are explicit, including those that result from panics and unwinding."
+msgstr ""
+
+#: src/1211-mir.md:134
+msgid ""
+"**How matches are desugared.** Reasoning about matches has been a "
+"traditional source of complexity. Matches combine traversing types with "
+"borrows, moves, and all sorts of other things, depending on the precise "
+"patterns in use. This is all vastly simplified and explicit in MIR."
+msgstr ""
+
+#: src/1211-mir.md:140
+msgid ""
+"One thing the current MIR does not make as explicit as it could is when "
+"something is _moved_. For by-value uses of a value, the code must still "
+"consult the type of the value to decide if that is a move or not. This could "
+"be made more explicit in the IR."
+msgstr ""
+
+#: src/1211-mir.md:145
+msgid "Which analyses are well-suited to the MIR?"
+msgstr ""
+
+#: src/1211-mir.md:147
+msgid ""
+"Some analyses are better suited to the AST than to a MIR. The following is a "
+"list of work the compiler does that would benefit from using a MIR:"
+msgstr ""
+
+#: src/1211-mir.md:151
+msgid ""
+"**liveness checking**: this is used to issue warnings about unused "
+"assignments and the like. The MIR is perfect for this sort of data-flow "
+"analysis."
+msgstr ""
+
+#: src/1211-mir.md:153
+msgid ""
+"**borrow and move checking**: the borrow checker already uses a combination "
+"of the CFG and `ExprUseVisitor` to try and achieve a similarly low-level of "
+"detail."
+msgstr ""
+
+#: src/1211-mir.md:156
+msgid ""
+"**translation to IR**: the MIR is much closer than the AST to the desired "
+"bitcode end-product."
+msgstr ""
+
+#: src/1211-mir.md:159
+msgid ""
+"Some other passes would probably work equally well on the MIR or an AST, but "
+"they will likely find the MIR somewhat easier to work with than the current "
+"AST simply because it is, well, simpler:"
+msgstr ""
+
+#: src/1211-mir.md:163
+msgid ""
+"**rvalue checking**, which checks that things are `Sized` which need to be."
+msgstr ""
+
+#: src/1211-mir.md:164
+msgid "**reachability** and **death checking**."
+msgstr ""
+
+#: src/1211-mir.md:166
+msgid "These items are likely ill-suited to the MIR as designed:"
+msgstr ""
+
+#: src/1211-mir.md:168
+msgid ""
+"**privacy checking**, since it relies on explicit knowledge of paths that is "
+"not necessarily present in the MIR."
+msgstr ""
+
+#: src/1211-mir.md:170
+msgid ""
+"**lint checking**, since it is often dependent on the sort of surface "
+"details we are seeking to obscure."
+msgstr ""
+
+#: src/1211-mir.md:173
+msgid ""
+"For some passes, the impact is not entirely clear. In particular, **match "
+"exhaustiveness checking** could easily be subsumed by the MIR construction "
+"process, which must do a similar analysis during the lowering process. "
+"However, once the MIR is built, the match is completely desugared into more "
+"primitive switches and so forth, so we will need to leave some markers in "
+"order to know where to check for exhaustiveness and to reconstruct counter "
+"examples."
+msgstr ""
+
+#: src/1211-mir.md:181
+msgid "Detailed design"
+msgstr ""
+
+#: src/1211-mir.md:183
+msgid "What is _really_ being proposed here?"
+msgstr ""
+
+#: src/1211-mir.md:185
+msgid ""
+"The rest of this section goes into detail on a particular MIR design. "
+"However, the true purpose of this RFC is not to nail down every detail of "
+"the MIR -- which are expected to evolve and change over time anyway \\-- but "
+"rather to establish some high-level principles which drive the rest of the "
+"design:"
+msgstr ""
+
+#: src/1211-mir.md:191
+msgid ""
+"We should indeed lower the representation from an AST to something else that "
+"will drive later analyses, and this representation should be based on a CFG, "
+"not a tree."
+msgstr ""
+
+#: src/1211-mir.md:194
+msgid ""
+"This representation should be explicitly minimal and not attempt to retain "
+"the original syntactic structure, though it should be possible to recover "
+"enough of it to make quality error messages."
+msgstr ""
+
+#: src/1211-mir.md:197
+msgid ""
+"This representation should encode drops, panics, and other scope-dependent "
+"items explicitly."
+msgstr ""
+
+#: src/1211-mir.md:199
+msgid ""
+"This representation does not have to be well-typed Rust, though it should be "
+"possible to type-check it using a tweaked variant on the Rust type system."
+msgstr ""
+
+#: src/1211-mir.md:203
+msgid "Prototype"
+msgstr ""
+
+#: src/1211-mir.md:205
+msgid ""
+"The MIR design being described can be found [here](https://github.com/rust-"
+"lang/rust/tree/2532ad7d0b2edac1909ef0ef346230331200790b/src/librustc/mir). "
+"In particular, [this module](https://github.com/rust-lang/rust/"
+"blob/2532ad7d0b2edac1909ef0ef346230331200790b/src/librustc/mir/mod.rs) "
+"defines the MIR representation, and [this `build` module](https://github.com/"
+"rust-lang/rust/tree/fc04eaacc5bd5760e98cd3aa390dcc3ae795d12f/src/"
+"librustc_mir/build) contains the code to create a MIR representation from an "
+"AST-like form."
+msgstr ""
+
+#: src/1211-mir.md:210
+msgid ""
+"For increased flexibility, as well as to make the code simpler, the "
+"prototype is not coded directly against the compiler's AST, but rather "
+"against an idealized representation defined by [the `HAIR` trait](https://"
+"github.com/rust-lang/rust/tree/fc04eaacc5bd5760e98cd3aa390dcc3ae795d12f/src/"
+"librustc_mir/hair). Note that this HAIR trait is entirely independent from "
+"the HIR discussed by nrc in [RFC 1191](https://github.com/rust-lang/rfcs/"
+"pull/1191) -- you can think of it as an abstract trait that any high-level "
+"Rust IR could implement, including our current AST. Moreover, it's just an "
+"implementation detail and not part of the MIR being proposed here per se. "
+"Still, if you want to read the code, you have to understand its design."
+msgstr ""
+
+#: src/1211-mir.md:220
+msgid ""
+"The `HAIR` trait contains a number of opaque associated types for the "
+"various aspects of the compiler. For example, the type `H::Expr` represents "
+"an expression. In order to find out what kind of expression it is, the "
+"`mirror` method is called, which converts an `H::Expr` into an `Expr<H>` "
+"mirror. This mirror then contains embedded `ExprRef<H>` nodes to refer to "
+"further subexpressions; these may either be mirrors themselves, or else they "
+"may be additional `H::Expr` nodes. This allows the tree that is exported to "
+"differ in small ways from the actual tree within the compiler; the primary "
+"intention is to use this to model \"adjustments\" like autoderef. The code "
+"to convert from our current AST to the HAIR is not yet complete, but it can "
+"be found [here](https://github.com/rust-lang/rust/"
+"blob/21c61336bb9e327b90f4cb8e87a948be40eeafe5/src/librustc_mir/hair/mod.rs)."
+msgstr ""
+
+#: src/1211-mir.md:233
+msgid ""
+"Note that the HAIR mirroring system is an experiment and not really part of "
+"the MIR itself. It does however present an interesting option for "
+"(eventually) stabilizing access to the compiler's internals."
+msgstr ""
+
+#: src/1211-mir.md:244
+msgid "Overview of the MIR"
+msgstr ""
+
+#: src/1211-mir.md:246
+msgid ""
+"The proposed MIR always describes the execution of a single fn.  At the "
+"highest level it consists of a series of declarations regarding the stack "
+"storage that will be required and then a set of basic blocks:"
+msgstr ""
+
+#: src/1211-mir.md:251
+msgid ""
+"    MIR = fn({TYPE}) -> TYPE {\n"
+"        {let [mut] B: TYPE;}  // user-declared bindings and their types\n"
+"        {let TEMP: TYPE;}     // compiler-introduced temporary\n"
+"        {BASIC_BLOCK}         // control-flow graph\n"
+"    };\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:257
+msgid ""
+"The storage declarations are broken into two categories. User-declared "
+"bindings have a 1-to-1 relationship with the variables specified in the "
+"program. Temporaries are introduced by the compiler in various cases. For "
+"example, borrowing an lvalue (e.g., `&foo()`) will introduce a temporary to "
+"store the result of `foo()`. Similarly, discarding a value `foo();` is "
+"translated to something like `let tmp = foo(); drop(tmp);`).  Temporaries "
+"are single-assignment, but because they can be borrowed they may be mutated "
+"after this assignment and hence they differ somewhat from variables in a "
+"pure SSA representation."
+msgstr ""
+
+#: src/1211-mir.md:268
+msgid ""
+"The proposed MIR takes the form of a graph where each node is a _basic "
+"block_. A basic block is a standard compiler term for a continuous sequence "
+"of instructions with a single entry point.  All interesting control-flow "
+"happens between basic blocks. Each basic block has an id `BB` and consists "
+"of a sequence of statements and a terminator:"
+msgstr ""
+
+#: src/1211-mir.md:276
+msgid "A `STATEMENT` can have one of three forms:"
+msgstr ""
+
+#: src/1211-mir.md:278
+msgid ""
+"    STATEMENT = LVALUE \"=\" RVALUE        // assign rvalue into lvalue\n"
+"              | Drop(DROP_KIND, LVALUE)  // drop value if needed\n"
+"    DROP_KIND = SHALLOW                  // (see discussion below)\n"
+"              | DEEP\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:283
+msgid ""
+"The following sections dives into these various kinds of statements in more "
+"detail."
+msgstr ""
+
+#: src/1211-mir.md:286
+msgid ""
+"The `TERMINATOR` for a basic block describes how it connects to subsequent "
+"blocks:"
+msgstr ""
+
+#: src/1211-mir.md:289
+msgid ""
+"    TERMINATOR = GOTO(BB)              // normal control-flow\n"
+"               | PANIC(BB)             // initiate unwinding, branching to "
+"BB for cleanup\n"
+"               | IF(LVALUE, BB0, BB1)  // test LVALUE and branch to BB0 if "
+"true, else BB1\n"
+"               | SWITCH(LVALUE, BB...) // load discriminant from LVALUE "
+"(which must be an enum),\n"
+"                                       // and branch to BB... depending on "
+"which variant it is\n"
+"               | CALL(LVALUE0 = LVALUE1(LVALUE2...), BB0, BB1)\n"
+"                                       // call LVALUE1 with LVALUE2... as "
+"arguments. Write\n"
+"                                       // result into LVALUE0. Branch to BB0 "
+"if it returns\n"
+"                                       // normally, BB1 if it is unwinding.\n"
+"               | DIVERGE               // return to caller, unwinding\n"
+"               | RETURN                // return to caller normally\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:301
+msgid ""
+"Most of the terminators should be fairly obvious. The most interesting part "
+"is the handling of unwinding. This aligns fairly close with how LLVM works: "
+"there is one terminator, PANIC, that initiates unwinding. It immediately "
+"branches to a handler (BB) which will perform cleanup and (eventually) reach "
+"a block that has a DIVERGE terminator. DIVERGE causes unwinding to continue "
+"up the stack."
+msgstr ""
+
+#: src/1211-mir.md:308
+msgid ""
+"Because calls to other functions can always (or almost always) panic, calls "
+"are themselves a kind of terminator. If we can determine that some function "
+"we are calling cannot unwind, we can always modify the IR to make the second "
+"basic block optional. (We could also add an `RVALUE` to represent calls, but "
+"it's probably easiest to keep the call as a terminator unless the memory "
+"savings of consolidating basic blocks are found to be worthwhile.)"
+msgstr ""
+
+#: src/1211-mir.md:316
+msgid ""
+"It's worth pointing out that basic blocks are just a kind of compile-time "
+"and memory-use optimization; there is no semantic difference between a "
+"single block and two blocks joined by a GOTO terminator."
+msgstr ""
+
+#: src/1211-mir.md:321
+msgid "Assignments, values, and rvalues"
+msgstr ""
+
+#: src/1211-mir.md:323
+msgid "The primary kind of statement is an assignment:"
+msgstr ""
+
+#: src/1211-mir.md:325
+msgid ""
+"    LVALUE \"=\" RVALUE\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:327
+msgid ""
+"The semantics of this operation are to first evaluate the RVALUE and then "
+"store it into the LVALUE (which must represent a memory location of suitable "
+"type)."
+msgstr ""
+
+#: src/1211-mir.md:331
+msgid ""
+"An `LVALUE` represents a path to a memory location. This is the basic "
+"\"unit\" analyzed by the borrow checker. It is always possible to evaluate "
+"an `LVALUE` without triggering any side-effects (modulo dereferences of "
+"unsafe pointers, which naturally can trigger arbitrary behavior if the "
+"pointer is not valid)."
+msgstr ""
+
+#: src/1211-mir.md:337
+msgid ""
+"    LVALUE = B                   // reference to a user-declared binding\n"
+"           | TEMP                // a temporary introduced by the compiler\n"
+"           | ARG                 // a formal argument of the fn\n"
+"           | STATIC              // a reference to a static or static mut\n"
+"           | RETURN              // the return pointer of the fn\n"
+"           | LVALUE.f            // project a field or tuple field, like x.f "
+"or x.0\n"
+"           | *LVALUE             // dereference a pointer\n"
+"           | LVALUE[LVALUE]      // index into an array (see disc. below "
+"about bounds checks)\n"
+"           | (LVALUE as VARIANT) // downcast to a specific variant of an "
+"enum,\n"
+"                                 // see the section on desugaring matches "
+"below\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:348
+msgid ""
+"An `RVALUE` represents a computation that yields a result. This result must "
+"be stored in memory somewhere to be accessible. The MIR does not contain any "
+"kind of nested expressions: everything is flattened out, going through "
+"lvalues as intermediaries."
+msgstr ""
+
+#: src/1211-mir.md:353
+msgid ""
+"    RVALUE = Use(LVALUE)                // just read an lvalue\n"
+"           | [LVALUE; LVALUE]\n"
+"           | &'REGION LVALUE\n"
+"           | &'REGION mut LVALUE\n"
+"           | LVALUE as TYPE\n"
+"           | LVALUE <BINOP> LVALUE\n"
+"           | <UNOP> LVALUE\n"
+"           | Struct { f: LVALUE0, ... } // aggregates, see section below\n"
+"           | (LVALUE...LVALUE)\n"
+"           | [LVALUE...LVALUE]\n"
+"           | CONSTANT\n"
+"           | LEN(LVALUE)                // load length from a slice, see "
+"section below\n"
+"           | BOX                        // malloc for builtin box, see "
+"section below\n"
+"    BINOP = + | - | * | / | ...         // excluding && and ||\n"
+"    UNOP = ! | -                        // note: no `*`, as that is part of "
+"LVALUE\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:369
+msgid ""
+"One thing worth pointing out is that the binary and unary operators are only "
+"the _builtin_ form, operating on scalar values. Overloaded operators will be "
+"desugared to trait calls. Moreover, all method calls are desugared into "
+"normal calls via UFCS form."
+msgstr ""
+
+#: src/1211-mir.md:374
+msgid "Constants"
+msgstr ""
+
+#: src/1211-mir.md:376
+msgid ""
+"Constants are a subset of rvalues that can be evaluated at compilation time:"
+msgstr ""
+
+#: src/1211-mir.md:379
+msgid ""
+"    CONSTANT = INT\n"
+"             | UINT\n"
+"             | FLOAT\n"
+"             | BOOL\n"
+"             | BYTES\n"
+"             | STATIC_STRING\n"
+"             | ITEM<SUBSTS>                 // reference to an item or "
+"constant etc\n"
+"             | <P0 as TRAIT<P1...Pn>>       // projection\n"
+"             | CONSTANT(CONSTANT...)        // \n"
+"             | CAST(CONSTANT, TY)           // foo as bar\n"
+"             | Struct { (f: CONSTANT)... }  // aggregates...\n"
+"             | (CONSTANT...)                //\n"
+"             | [CONSTANT...]                //\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:393
+msgid "Aggregates and further lowering"
+msgstr ""
+
+#: src/1211-mir.md:395
+msgid ""
+"The set of rvalues includes \"aggregate\" expressions like `(x, y)` or `Foo "
+"{ f: x, g: y }`. This is a place where the MIR (somewhat) departs from what "
+"will be generated compilation time, since (often) an expression like `f = "
+"(x, y, z)` will wind up desugared into a series of piecewise assignments "
+"like:"
+msgstr ""
+
+#: src/1211-mir.md:405
+msgid ""
+"However, there are good reasons to include aggregates as first-class "
+"rvalues. For one thing, if we break down each aggregate into the specific "
+"assignments that would be used to construct the value, then zero-sized types "
+"are _never_ assigned, since there is no data to actually move around at "
+"runtime. This means that the compiler couldn't distinguish uninitialized "
+"variables from initialized ones. That is, code like this:"
+msgstr ""
+
+#: src/1211-mir.md:414
+msgid "// note: never initialized\n"
+msgstr ""
+
+#: src/1211-mir.md:418
+msgid "and this:"
+msgstr ""
+
+#: src/1211-mir.md:425
+msgid ""
+"would desugar to the same MIR. That is a problem, particularly with respect "
+"to destructors: imagine that instead of the type `()`, we used a type like "
+"`struct Foo;` where `Foo` implements `Drop`."
+msgstr ""
+
+#: src/1211-mir.md:429
+msgid ""
+"Another advantage is that building aggregates in a two-step way assures the "
+"proper execution order when unwinding occurs before the complete value is "
+"constructed. In particular, we want to drop the intermediate results in the "
+"order that they appear in the source, not in the order in which the fields "
+"are specified in the struct definition."
+msgstr ""
+
+#: src/1211-mir.md:436
+msgid ""
+"A final reason to include aggregates is that, at runtime, the representation "
+"of an aggregate may indeed fit within a single word, in which case making a "
+"temporary and writing the fields piecemeal may in fact not be the correct "
+"representation."
+msgstr ""
+
+#: src/1211-mir.md:441
+msgid ""
+"In any case, after the move and correctness checking is done, it is easy "
+"enough to remove these aggregate rvalues and replace them with assignments. "
+"This could potentially be done during lowering, or as a pre-pass that "
+"transforms MIR statements like:"
+msgstr ""
+
+#: src/1211-mir.md:451
+msgid "to:"
+msgstr ""
+
+#: src/1211-mir.md:460
+msgid ""
+"combined with another pass that removes temporaries that are only used "
+"within a single assignment (and nowhere else):"
+msgstr ""
+
+#: src/1211-mir.md:467
+msgid ""
+"Going further, once type-checking is done, it is plausible to do further "
+"lowering within the MIR purely for optimization purposes. For example, we "
+"could introduce intermediate references to cache the results of common "
+"lvalue computations and so forth."
+msgstr ""
+
+#: src/1211-mir.md:472
+msgid "Bounds checking"
+msgstr ""
+
+#: src/1211-mir.md:474
+msgid ""
+"Because bounds checks are fallible, it's important to encode them in the MIR "
+"whenever we do indexing. Otherwise the `trans` code would have to figure out "
+"on its own how to do unwinding at that point. Because the MIR doesn't "
+"\"desugar\" fat pointers, we include a special rvalue `LEN` that extracts "
+"the length from an array value whose type matches `[T]` or `[T;n]` (in the "
+"latter case, it yields a constant). Using this, we desugar an array "
+"reference like `y = arr[x]` as follows:"
+msgstr ""
+
+#: src/1211-mir.md:502
+msgid ""
+"The key point here is that we create a temporary (`idx`) capturing the value "
+"that we bounds checked and we ensure that there is a comparison against the "
+"length."
+msgstr ""
+
+#: src/1211-mir.md:506
+msgid "Overflow checking"
+msgstr ""
+
+#: src/1211-mir.md:508
+msgid ""
+"Similarly, since overflow checks can trigger a panic, they ought to be "
+"exposed in the MIR as well. This is handled by having distinct binary "
+"operators for \"add with overflow\" and so forth, analogous to the LLVM "
+"intrinsics. These operators yield a tuple of (result, overflow), so `result "
+"= left + right` might be translated like:"
+msgstr ""
+
+#: src/1211-mir.md:530
+msgid "Matches"
+msgstr ""
+
+#: src/1211-mir.md:532
+msgid ""
+"One of the goals of the MIR is to desugar matches into something much more "
+"primitive, so that we are freed from reasoning about their complexity. This "
+"is primarily achieved through a combination of SWITCH terminators and "
+"downcasts. To get the idea, consider this simple match statement:"
+msgstr ""
+
+#: src/1211-mir.md:545
+msgid ""
+"This would be converted into MIR as follows (leaving out the unwinding "
+"support):"
+msgstr ""
+
+#: src/1211-mir.md:547
+msgid ""
+"    BB0 {\n"
+"        call(tmp = foo(), BB1, ...);\n"
+"    }\n"
+"    \n"
+"    BB1 {\n"
+"        switch(tmp, BB2, BB3) // two branches, corresponding to the Some and "
+"None variants resp.\n"
+"    }\n"
+"    \n"
+"    BB2 {\n"
+"        v = &(tmp as Option::Some).0;\n"
+"        ...0\n"
+"    }\n"
+"    \n"
+"    BB3 {\n"
+"        ...1\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:564
+msgid ""
+"There are some interesting cases that arise from matches that are worth "
+"examining."
+msgstr ""
+
+#: src/1211-mir.md:567
+msgid ""
+"**Vector patterns.** Currently, (unstable) Rust supports vector patterns "
+"which permit borrows that would not otherwise be legal:"
+msgstr ""
+
+#: src/1211-mir.md:577
+msgid ""
+"If this code were written using `p = &mut vec[0], q = &mut vec[1]`, the "
+"borrow checker would complain. This is because it does not attempt to reason "
+"about indices being disjoint, even if they are constant (this is a "
+"limitation we may wish to consider lifting at some point in the future, "
+"however)."
+msgstr ""
+
+#: src/1211-mir.md:583
+msgid ""
+"To accommodate these, we plan to desugar such matches into lvalues using the "
+"special \"constant index\" form. The borrow checker would be able to reason "
+"that two constant indices are disjoint but it could consider \"variable "
+"indices\" to be (potentially) overlapping with all constant indices. This is "
+"a fairly straightforward thing to do (and in fact the borrow checker already "
+"includes similar logic, since the `ExprUseVisitor` encounters a similar "
+"dilemma trying to resolve borrows)."
+msgstr ""
+
+#: src/1211-mir.md:592
+msgid "Drops"
+msgstr ""
+
+#: src/1211-mir.md:594
+msgid ""
+"The `Drop(DROP_KIND, LVALUE)` instruction is intended to represent "
+"\"automatic\" compiler-inserted drops. The semantics of a `Drop` is that it "
+"drops \"if needed\". This means that the compiler can insert it everywhere "
+"that a `Drop` would make sense (due to scoping), and assume that "
+"instrumentation will be done as needed to prevent double drops. Currently, "
+"this signaling is done by zeroing out memory at runtime, but we are in the "
+"process of introducing stack flags for this purpose: the MIR offers the "
+"opportunity to reify those flags if we wanted, and rewrite drops to be more "
+"narrow."
+msgstr ""
+
+#: src/1211-mir.md:604
+msgid ""
+"To illustrate how drop works, let's work through a simple example. Imagine "
+"that we have a snippet of code like:"
+msgstr ""
+
+#: src/1211-mir.md:614
+msgid ""
+"The compiler would generate a drop for `x` at the end of the block, but the "
+"value `x` would also be moved as part of the call to `send`. A later "
+"analysis could easily strip out this `Drop` since it is evident that the "
+"value is always used on all paths that lead to `Drop`."
+msgstr ""
+
+#: src/1211-mir.md:619
+msgid "Shallow drops and Box"
+msgstr ""
+
+#: src/1211-mir.md:621
+msgid ""
+"The MIR includes the distinction between \"shallow\" and \"deep\" drop. Deep "
+"drop is the normal thing, but shallow drop is used when partially "
+"initializing boxes. This is tied to the `box` keyword. For example, an "
+"assignment like the following:"
+msgstr ""
+
+#: src/1211-mir.md:628
+msgid "would be translated to something like the following:"
+msgstr ""
+
+#: src/1211-mir.md:630
+msgid ""
+"    let tmp: Box<Foo>;\n"
+"    \n"
+"    B0: {\n"
+"      tmp = BOX;\n"
+"      f = Foo::new; // constant reference\n"
+"      call(*tmp, f, B1, B2);\n"
+"    } \n"
+"    \n"
+"    B1: { // successful return of the call\n"
+"      x = use(tmp); // move of tmp\n"
+"      ...\n"
+"    }\n"
+"    \n"
+"    B2: { // calling Foo::new() panic'd\n"
+"      drop(Shallow, tmp);\n"
+"      diverge;\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/1211-mir.md:648
+msgid ""
+"The interesting part here is the block B2, which indicates the case that "
+"`Foo::new()` invoked unwinding. In that case, we have to free the box that "
+"we allocated, but we only want to free the box itself, not its contents (it "
+"is not yet initialized)."
+msgstr ""
+
+#: src/1211-mir.md:653
+msgid ""
+"Note that having this kind of builtin box code is a legacy thing. The more "
+"generalized protocol that [RFC 809](https://github.com/rust-lang/rfcs/blob/"
+"master/text/0809-box-and-in-for-stdlib.md) specifies works in more-or-less "
+"exactly the same way: when that is adopted uniformly, the need for shallow "
+"drop and the Box rvalue will go away."
+msgstr ""
+
+#: src/1211-mir.md:660
+msgid "Phasing"
+msgstr ""
+
+#: src/1211-mir.md:662
+msgid ""
+"Ideally, the translation to MIR would be done during type checking, but "
+"before \"region checking\". This is because we would like to implement non-"
+"lexical lifetimes eventually, and doing that well would requires access to a "
+"control-flow graph. Given that we do very limited reasoning about regions at "
+"present, this should not be a problem."
+msgstr ""
+
+#: src/1211-mir.md:668
+msgid "Representing scopes"
+msgstr ""
+
+#: src/1211-mir.md:670
+msgid ""
+"Lexical scopes in Rust play a large role in terms of when destructors run "
+"and how the reasoning about lifetimes works. However, they are completely "
+"erased by the graph format. For the most part, this is not an issue, since "
+"drops are encoded explicitly into the control-flow where needed. However, "
+"one place that we still need to reason about scopes (at least in the short "
+"term) is in region checking, because currently regions are encoded in terms "
+"of scopes, and we have to be able to map that to a region in the graph. The "
+"MIR therefore includes extra information mapping every scope to a SEME "
+"region (single-entry, multiple-exit). If/when we move to non-lexical "
+"lifetimes, regions would be defined in terms of the graph itself, and the "
+"need to retain scoping information should go away."
+msgstr ""
+
+#: src/1211-mir.md:683
+msgid "Monomorphization"
+msgstr ""
+
+#: src/1211-mir.md:685
+msgid ""
+"Currently, we do monomorphization at translation time. If we ever chose to "
+"do it at a MIR level, that would be fine, but one thing to be careful of is "
+"that we may be able to elide `Drop` nodes based on the specific types."
+msgstr ""
+
+#: src/1211-mir.md:690
+msgid "Unchecked assertions"
+msgstr ""
+
+#: src/1211-mir.md:692
+msgid ""
+"There are various bits of the MIR that are not trivially type-checked. In "
+"general, these are properties which are assured in Rust by construction in "
+"the high-level syntax, and thus we must be careful not to do any "
+"transformation that would endanger them after the fact."
+msgstr ""
+
+#: src/1211-mir.md:697
+msgid ""
+"**Bounds-checking.** We introduce explicit bounds checks into the IR that "
+"guard all indexing lvalues, but there is no explicit connection between this "
+"check and the later accesses."
+msgstr ""
+
+#: src/1211-mir.md:700
+msgid ""
+"**Downcasts to a specific variant.** We test variants with a SWITCH opcode "
+"but there is no explicit connection between this test and later downcasts."
+msgstr ""
+
+#: src/1211-mir.md:704
+msgid ""
+"This need for unchecked operations results form trying to lower and simplify "
+"the representation as much as possible, as well as trying to represent all "
+"panics explicitly. We believe the tradeoff to be worthwhile, particularly "
+"since:"
+msgstr ""
+
+#: src/1211-mir.md:709
+msgid ""
+"the existing analyses can continue to generally assume that these properties "
+"hold (e.g., that all indices are in bounds and all downcasts are safe); and,"
+msgstr ""
+
+#: src/1211-mir.md:712
+msgid ""
+"it would be trivial to implement a static dataflow analysis checking that "
+"bounds and downcasts only occur downstream of a relevant check."
+msgstr ""
+
+#: src/1211-mir.md:716
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1211-mir.md:718
+msgid ""
+"**Converting from AST to a MIR will take some compilation time.** "
+"Expectations are that constructing the MIR will be quite fast, and that "
+"follow-on code (such as `trans` and `borrowck`) will execute faster, because "
+"they will operate over a simpler and more compact representation. However, "
+"this needs to be measured."
+msgstr ""
+
+#: src/1211-mir.md:724
+msgid ""
+"**More effort is required to make quality error messages.** Because the "
+"representation the compiler is working with is now quite different from what "
+"the user typed, we have to put in extra effort to make sure that we bridge "
+"this gap when reporting errors. We have some precedent for dealing with "
+"this, however. For example, the `ExprUseVisitor` (and `mem_categorization`) "
+"includes extra annotations and hints to tell the borrow checker when a "
+"reference was introduced as part of a closure versus being explicit in the "
+"source code. The current prototype doesn't have much in this direction, but "
+"it should be relatively straightforward to add. Hints like those, in "
+"addition to spans, should be enough to bridge the error message gap."
+msgstr ""
+
+#: src/1211-mir.md:736
+msgid "Alternatives"
+msgstr ""
+
+#: src/1211-mir.md:738
+msgid ""
+"**Use SSA.** In the proposed MIR, temporaries are single-assignment but can "
+"be borrowed, making them more analogous to allocas than SSA values. This is "
+"helpful to analyses like the borrow checker, because it means that the "
+"program operates directly on paths through memory, versus having the stack "
+"modeled as allocas. The current model is also helpful for generating "
+"debuginfo."
+msgstr ""
+
+#: src/1211-mir.md:745
+msgid ""
+"SSA representation can be helpful for more sophisticated backend "
+"optimizations. However, it makes more sense to have the MIR be based on "
+"lvalues. There are some cases where it might make sense to do analyses on "
+"the MIR that would benefit from SSA, such as bounds check elision. In those "
+"cases, we could either quickly identify those temporaries that are not "
+"mutably borrowed (and which therefore act like SSA variables); or, further "
+"lower into a LIR, (which would be an SSA form); or else simply perform the "
+"analyses on the MIR using standard techniques like def-use chains. (CSE and "
+"so forth are straightforward both with and without SSA, honestly.)"
+msgstr ""
+
+#: src/1211-mir.md:756
+msgid ""
+"**Exclude unwinding.** Excluding unwinding from the MIR would allow us to "
+"elide annoying details like bounds and overflow checking. These are not "
+"particularly interesting to `borrowck`, so that is somewhat appealing. But "
+"that would mean that consumers of MIR would have to reconstruct the order of "
+"drops and so forth on unwinding paths, which would require them reasoning "
+"about scopes and other rather complex bits of information. Moreover, having "
+"all drops fully exposed in the MIR is likely helpful for better handling of "
+"dynamic drop and also for the rules collectively known as dropck, though all "
+"details there have not been worked out."
+msgstr ""
+
+#: src/1211-mir.md:767
+msgid ""
+"**Expand the set of operands.** The proposed MIR forces all rvalue operands "
+"to be lvalues. This means that integer constants and other \"simple\" things "
+"will wind up introducing a temporary. For example, translating `x = 2+2` "
+"will generate code like:"
+msgstr ""
+
+#: src/1211-mir.md:776
+msgid ""
+"A more common case will be calls to statically known functions like `x = "
+"foo(3)`, which desugars to a temporary and a constant reference:"
+msgstr ""
+
+#: src/1211-mir.md:783
+msgid ""
+"There is no particular _harm_ in such constants: it would be very easy to "
+"optimize them away when reducing to bitcode, and if we do not do so, a "
+"backend may do it. However, we could also expand the scope of operands to "
+"include both lvalues and some simple rvalues like constants. The main "
+"advantage of this is that it would reduce the total number of statements and "
+"hence might help with memory consumption."
+msgstr ""
+
+#: src/1211-mir.md:791
+msgid ""
+"**Totally safe MIR.** This MIR includes operations whose safety is not "
+"trivially type-checked (see the section on _unchecked assertions_ above). We "
+"might design a higher-level MIR where those properties held by construction, "
+"or modify the MIR to thread \"evidence\" of some form that makes it easier "
+"to check that the properties hold. The former would make downstream code "
+"accommodate more complexity. The latter remains an option in the future but "
+"doesn't seem to offer much practical advantage."
+msgstr ""
+
+#: src/1211-mir.md:800
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1211-mir.md:802
+msgid ""
+"**What additional info is needed to provide for good error messages?** "
+"Currently the implementation only has spans on statements, not lvalues or "
+"rvalues. We'll have to experiment here. I expect we will probably wind up "
+"placing \"debug info\" on all lvalues, which includes not only a span but "
+"also a \"translation\" into terms the user understands. For example, in a "
+"closure, a reference to an by-reference upvar `foo` will be translated to "
+"something like `*self.foo`, and we would like that to be displayed to the "
+"user as just `foo`."
+msgstr ""
+
+#: src/1211-mir.md:811
+msgid ""
+"**What additional info is needed for debuginfo?** It may be that to generate "
+"good debuginfo we want to include additional information about control-flow "
+"or scoping."
+msgstr ""
+
+#: src/1211-mir.md:815
+msgid ""
+"**Unsafe blocks.** Should we layer unsafe in the MIR so that effect checking "
+"can be done on the CFG? It's not the most natural way to do it, _but_ it "
+"would make it fairly easy to support (e.g.) autoderef on unsafe pointers, "
+"since all the implicit operations are made explicit in the MIR. My hunch is "
+"that we can improve our HIR instead."
+msgstr ""

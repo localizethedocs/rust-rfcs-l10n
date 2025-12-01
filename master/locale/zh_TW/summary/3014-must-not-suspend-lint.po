@@ -1,0 +1,334 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3014-must-not-suspend-lint.md:1
+msgid "Feature Name: `must_not_suspend_lint`"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:2
+msgid "Start Date: 2020-11-09"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3014](https://github.com/rust-lang/rfcs/pull/3014)"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#83310](https://github.com/rust-lang/rust/"
+"issues/83310)"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:9
+msgid ""
+"Introduce a `#[must_not_suspend]` lint in the compiler that will warn the "
+"user when they are incorrectly holding a struct across an await boundary."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:14
+msgid ""
+"Enable users to fearlessly write concurrent async code without the need to "
+"understand the internals of runtimes and how their code will be affected. "
+"The goal is to provide a best effort warning that will let the user know of "
+"a possible side effect that is not visible by reading the code right away."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:16
+msgid ""
+"One example of these side effects is holding a `MutexGuard` across an await "
+"bound. This opens up the possibility of causing a deadlock since the future "
+"holding onto the lock did not relinquish it back before it yielded control. "
+"This is a problem for futures that run on single-threaded runtimes (`!Send`) "
+"where holding a lock after a yield will result in a deadlock. Even on multi-"
+"threaded runtimes, it would be nice to provide a custom error message that "
+"explains why the user doesn't want to do this instead of only a generic "
+"message about their future not being `Send`. Any other kind of RAII guard "
+"which depends on behavior similar to that of a `MutexGuard` will have the "
+"same issue."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:18
+msgid ""
+"The big reason for including a lint like this is because under the hood the "
+"compiler will automatically transform async fn into a state machine which "
+"can store locals. This process is invisible to users and will produce code "
+"that is different than what is in the actual rust file. Due to this it is "
+"important to inform users that their code may not do what they expect."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:20
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:23
+msgid ""
+"Provide a lint that can be attached to structs to let the compiler know that "
+"this struct can not be held across an await boundary."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:26 src/3014-must-not-suspend-lint.md:74
+msgid "\"Your error message here\""
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:30
+msgid ""
+"This struct if held across an await boundary would cause a warn-by-default "
+"warning:"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:36 src/3014-must-not-suspend-lint.md:80
+#: src/3014-must-not-suspend-lint.md:100
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:40
+msgid "The compiler might output something along the lines of:"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:46
+msgid "Example use cases for this lint:"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:48
+msgid ""
+"`MutexGuard` holding this across a yield boundary in a single threaded "
+"executor could cause deadlocks. In a multi-threaded runtime the resulting "
+"future would become `!Send` which will stop the user from spawning this "
+"future and causing issues. But in a single threaded runtime which accepts `!"
+"Send` futures deadlocks could happen."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:50
+msgid ""
+"The same applies to other such synchronization primitives such as locks from "
+"`parking-lot`."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:52
+msgid ""
+"`tracing::Span` has the ability to enter the span via the `tracing::span::"
+"Entered` guard. While entering a span is totally normal, during an async fn "
+"the span only needs to be entered once before the `.await` call, which might "
+"potentially yield the execution."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:54
+msgid ""
+"Any RAII guard might possibly create unintended behavior if held across an "
+"await boundary."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:56
+msgid ""
+"This lint will enable the compiler to warn the user that the code could "
+"produce unforeseen side effects. Some examples of this are:"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:58
+msgid ""
+"[`std::sync::MutexGuard`](https://doc.rust-lang.org/std/sync/struct."
+"MutexGuard.html)"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:59
+msgid ""
+"[`tracing::span::Entered`](https://docs.rs/tracing/0.1.15/tracing/span/"
+"struct.Entered.html)"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:61
+msgid ""
+"This will be a best effort lint to signal the user about unintended side-"
+"effects of using certain types across an await boundary."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:63
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:66
+msgid ""
+"The `must_not_suspend` attribute is used to issue a diagnostic warning when "
+"a value is not \"used\". It can be applied to user-defined composite types "
+"(structs, enums and unions), traits."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:68
+msgid ""
+"The `must_not_suspend` attribute may include a message by using the "
+"[`MetaNameValueStr`](https://doc.rust-lang.org/reference/attributes."
+"html#meta-item-attribute-syntax) syntax such as `#[must_not_suspend = "
+"\"example message\"]`.  The message will be given alongside the warning."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:70
+msgid ""
+"When used on a user-defined composite type, if a value exists across an "
+"await point, then this lint is violated."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:84
+msgid ""
+"When used on a [trait declaration](https://doc.rust-lang.org/reference/items/"
+"traits.html), if the value implementing that trait is held across an await "
+"point, the lint is violated."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:97
+msgid "// violates the #[must_not_suspend] lint\n"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:104
+msgid ""
+"When used on a function in a trait implementation, the attribute does "
+"nothing."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:109
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:112
+msgid ""
+"There is a possibility it can produce a false positive warning and it could "
+"get noisy. But using the `allow` attribute would work similar to other "
+"[`warn-by-default`](https://doc.rust-lang.org/rustc/lints/listing/warn-by-"
+"default.html) lints. One thing to note, unlike the `#[must_use]` lint, users "
+"cannot silence this warning by using `let _ = bar()` where `bar()` returns a "
+"type which has a `#[must_use]` attribute. The `#[allow]` attribute will be "
+"the only way to silence the warning."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:116
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:119
+msgid ""
+"Going through the prior art we see two systems currently which provide "
+"similar/semantically similar behavior:"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:121
+msgid "Clippy `await_holding_lock` lint"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:122
+msgid ""
+"This lint goes through all types in `generator_interior_types` looking for "
+"`MutexGuard`, `RwLockReadGuard` and `RwLockWriteGuard`. While this is a "
+"first great step, we think that this can be further extended to handle not "
+"only the hardcoded lock guards, but any type which is should not be held "
+"across an await point. By marking a type as `#[must_not_suspend]` we can "
+"warn when any arbitrary type is being held across an await boundary. An "
+"additional benefit to this approach is that this behaviour can be extended "
+"to any type which holds a `#[must_not_suspend]` type inside of it."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:124
+msgid "`#[must_use]` attribute"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:125
+msgid ""
+"The `#[must_use]` attribute ensures that if a type or the result of a "
+"function is not used, a warning is displayed. This ensures that the user is "
+"notified about the importance of said value. Currently the attribute does "
+"not automatically get applied to any type which contains a type declared as "
+"`#[must_use]`, but the implementation for both `#[must_not_suspend]` and "
+"`#[must_use]` should be similar in their behavior."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:127
+msgid "Auto trait vs attribute"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:128
+msgid ""
+"`#[must_use]` is implemented as an attribute, and from prior art and [other "
+"literature](https://gankra.github.io/blah/linear-rust/), we can gather that "
+"the decision was made due to the complexity of implementing true linear "
+"types in Rust. [`std::panic::UnwindSafe`](https://doc.rust-lang.org/std/"
+"panic/trait.UnwindSafe.html) on the other hand is implemented as a marker "
+"trait with structural composition."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:133
+msgid "Prior art"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:136
+msgid ""
+"[Clippy lint for holding locks across await points](https://github.com/rust-"
+"lang/rust-clippy/pull/5439)"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:137
+msgid ""
+"[Must use for functions](https://github.com/iopq/rfcs/blob/"
+"f4b68532206f0a3e0664877841b407ab1302c79a/text/1940-must-use-functions.md)"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:138
+msgid ""
+"Reference link on how mir transforms async fn https://tmandry.gitlab.io/blog/"
+"posts/optimizing-await-2/"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:139
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:143
+msgid "Common behavior with `#[must_use]` lint"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:145
+msgid ""
+"Both `#[must_use]` and `#[must_not_suspend]` are [`warn-by-default`](https://"
+"doc.rust-lang.org/rustc/lints/listing/warn-by-default.html) lints, and are "
+"applied to types decorated with the attribute. Currently the `#[must_use]` "
+"lint does not automatically propagate the lint in nested structures/enums "
+"due to the additional complexity that it adds on top of the possible "
+"breaking changes introduced in the wider ecosystem"
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:147
+msgid ""
+"Automatically propagating the lint for types containing a type marked by one "
+"of these attributes would make for a more ergonomic user experience, and "
+"would reduce syntactic noise."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:149
+msgid ""
+"While tradeoffs exist for both approaches, in either case, both lints should "
+"exhibit the same behavior."
+msgstr ""
+
+#: src/3014-must-not-suspend-lint.md:151
+msgid ""
+"The `#[must_use]` lint is being used in stable rust for a long time now(The "
+"earliest reference I could find was in the release notes for [1.27](https://"
+"github.com/rust-lang/rust/blob/master/RELEASES.md#version-1270-2018-06-21)) "
+"with existing behavior."
+msgstr ""

@@ -1,0 +1,342 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0089-loadable-lints.md:1
+msgid "Start Date: 2014-05-23"
+msgstr ""
+
+#: src/0089-loadable-lints.md:2
+msgid "RFC PR: [rust-lang/rfcs#89](https://github.com/rust-lang/rfcs/pull/89)"
+msgstr ""
+
+#: src/0089-loadable-lints.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#14067](https://github.com/rust-lang/rust/"
+"issues/14067)"
+msgstr ""
+
+#: src/0089-loadable-lints.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0089-loadable-lints.md:7
+msgid ""
+"Allow users to load custom lints into `rustc`, similar to loadable syntax "
+"extensions."
+msgstr ""
+
+#: src/0089-loadable-lints.md:9
+msgid "Motivation"
+msgstr ""
+
+#: src/0089-loadable-lints.md:11
+msgid "There are many possibilities for user-defined static checking:"
+msgstr ""
+
+#: src/0089-loadable-lints.md:13
+msgid ""
+"Enforcing correct usage of Servo's [JS-managed pointers](https://github.com/"
+"mozilla/servo/blob/master/src/components/script/dom/bindings/js.rs)"
+msgstr ""
+
+#: src/0089-loadable-lints.md:14
+msgid ""
+"lilyball's use case: checking that `rust-lua` functions which call `longjmp` "
+"never have destructors on stack variables"
+msgstr ""
+
+#: src/0089-loadable-lints.md:15
+msgid "Enforcing a company or project style guide"
+msgstr ""
+
+#: src/0089-loadable-lints.md:16
+msgid ""
+"Detecting common misuses of a library, e.g. expensive or non-idiomatic "
+"constructs"
+msgstr ""
+
+#: src/0089-loadable-lints.md:17
+msgid ""
+"In cryptographic code, annotating which variables contain secrets and then "
+"forbidding their use in variable-time operations or memory addressing"
+msgstr ""
+
+#: src/0089-loadable-lints.md:19
+msgid "Existing project-specific static checkers include:"
+msgstr ""
+
+#: src/0089-loadable-lints.md:21
+msgid ""
+"A [Clang plugin](https://tecnocode.co.uk/2013/12/09/clang-plugin-for-glib-"
+"and-gnome/) that detects misuse of GLib and GObject"
+msgstr ""
+
+#: src/0089-loadable-lints.md:22
+msgid ""
+"A [GCC plugin](https://gcc-python-plugin.readthedocs.org/en/latest/"
+"cpychecker.html) (written in Python!) that detects misuse of the CPython "
+"extension API"
+msgstr ""
+
+#: src/0089-loadable-lints.md:23
+msgid ""
+"[Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page), which checks "
+"Linux kernel code for issues such as mixing up userspace and kernel pointers "
+"(often exploitable for privilege escalation)"
+msgstr ""
+
+#: src/0089-loadable-lints.md:25
+msgid ""
+"We should make it easy to build such tools and integrate them with an "
+"existing Rust project."
+msgstr ""
+
+#: src/0089-loadable-lints.md:27
+msgid "Detailed design"
+msgstr ""
+
+#: src/0089-loadable-lints.md:29
+msgid "In `rustc::lint` (which today is `rustc::middle::lint`):"
+msgstr ""
+
+#: src/0089-loadable-lints.md:31
+msgid ""
+"```.rs\n"
+"pub struct Lint {\n"
+"    /// An identifier for the lint, written with underscores,\n"
+"    /// e.g. \"unused_imports\".\n"
+"    pub name: &'static str,\n"
+"\n"
+"    /// Default level for the lint.\n"
+"    pub default_level: Level,\n"
+"\n"
+"    /// Description of the lint or the issue it detects,\n"
+"    /// e.g. \"imports that are never used\"\n"
+"    pub desc: &'static str,\n"
+"}\n"
+"\n"
+"#[macro_export]\n"
+"macro_rules! declare_lint ( ($name:ident, $level:ident, $desc:expr) => (\n"
+"    static $name: &'static ::rustc::lint::Lint\n"
+"        = &::rustc::lint::Lint {\n"
+"            name: stringify!($name),\n"
+"            default_level: ::rustc::lint::$level,\n"
+"            desc: $desc,\n"
+"        };\n"
+"))\n"
+"\n"
+"pub type LintArray = &'static [&'static Lint];\n"
+"\n"
+"#[macro_export]\n"
+"macro_rules! lint_array ( ($( $lint:expr ),*) => (\n"
+"    {\n"
+"        static array: LintArray = &[ $( $lint ),* ];\n"
+"        array\n"
+"    }\n"
+"))\n"
+"\n"
+"pub trait LintPass {\n"
+"    fn get_lints(&self) -> LintArray;\n"
+"\n"
+"    fn check_item(&mut self, cx: &Context, it: &ast::Item) { }\n"
+"    fn check_expr(&mut self, cx: &Context, e: &ast::Expr) { }\n"
+"    ...\n"
+"}\n"
+"\n"
+"pub type LintPassObject = Box<LintPass: 'static>;\n"
+"```"
+msgstr ""
+
+#: src/0089-loadable-lints.md:76
+msgid "To define a lint:"
+msgstr ""
+
+#: src/0089-loadable-lints.md:78
+msgid ""
+"```.rs\n"
+"#![crate_id=\"lipogram\"]\n"
+"#![crate_type=\"dylib\"]\n"
+"#![feature(phase, plugin_registrar)]\n"
+"\n"
+"extern crate syntax;\n"
+"\n"
+"// Load rustc as a plugin to get macros\n"
+"#[phase(plugin, link)]\n"
+"extern crate rustc;\n"
+"\n"
+"use syntax::ast;\n"
+"use syntax::parse::token;\n"
+"use rustc::lint::{Context, LintPass, LintPassObject, LintArray};\n"
+"use rustc::plugin::Registry;\n"
+"\n"
+"declare_lint!(letter_e, Warn, \"forbid use of the letter 'e'\")\n"
+"\n"
+"struct Lipogram;\n"
+"\n"
+"impl LintPass for Lipogram {\n"
+"    fn get_lints(&self) -> LintArray {\n"
+"        lint_array!(letter_e)\n"
+"    }\n"
+"\n"
+"    fn check_item(&mut self, cx: &Context, it: &ast::Item) {\n"
+"        let name = token::get_ident(it.ident);\n"
+"        if name.get().contains_char('e') || name.get().contains_char('E') {\n"
+"            cx.span_lint(letter_e, it.span, \"item name contains the letter "
+"'e'\");\n"
+"        }\n"
+"    }\n"
+"}\n"
+"\n"
+"#[plugin_registrar]\n"
+"pub fn plugin_registrar(reg: &mut Registry) {\n"
+"    reg.register_lint_pass(box Lipogram as LintPassObject);\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0089-loadable-lints.md:117
+msgid ""
+"A pass which defines multiple lints will have e.g. `lint_array!(deprecated, "
+"experimental, unstable)`."
+msgstr ""
+
+#: src/0089-loadable-lints.md:119
+msgid "To use a lint when compiling another crate:"
+msgstr ""
+
+#: src/0089-loadable-lints.md:132
+msgid "And you will get"
+msgstr ""
+
+#: src/0089-loadable-lints.md:140
+msgid ""
+"Internally, lints are identified by the address of a static `Lint`.  This "
+"has a number of benefits:"
+msgstr ""
+
+#: src/0089-loadable-lints.md:142
+msgid ""
+"The linker takes care of assigning unique IDs, even with dynamically loaded "
+"plugins."
+msgstr ""
+
+#: src/0089-loadable-lints.md:143
+msgid ""
+"A typo writing a lint ID is usually a compiler error, unlike with string IDs."
+msgstr ""
+
+#: src/0089-loadable-lints.md:144
+msgid ""
+"The ability to output a given lint is controlled by the usual visibility "
+"mechanism.  Lints defined within `rustc` use the same infrastructure and "
+"will simply export their `Lint`s if other parts of the compiler need to "
+"output those lints."
+msgstr ""
+
+#: src/0089-loadable-lints.md:145
+msgid "IDs are small and easy to hash."
+msgstr ""
+
+#: src/0089-loadable-lints.md:146
+msgid "It's easy to go from an ID to name, description, etc."
+msgstr ""
+
+#: src/0089-loadable-lints.md:148
+msgid ""
+"User-defined lints are controlled through the usual mechanism of attributes "
+"and the `-A -W -D -F` flags to `rustc`.  User-defined lints will show up in "
+"`-W help` if a crate filename is also provided; otherwise we append a "
+"message suggesting to re-run with a crate filename."
+msgstr ""
+
+#: src/0089-loadable-lints.md:150
+msgid ""
+"See also the [full demo](https://gist.github.com/"
+"kmcallister/3409ece44ead6d280b8e)."
+msgstr ""
+
+#: src/0089-loadable-lints.md:152
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0089-loadable-lints.md:154
+msgid ""
+"This increases the amount of code in `rustc` to implement lints, although it "
+"makes each individual lint much easier to understand in isolation."
+msgstr ""
+
+#: src/0089-loadable-lints.md:156
+msgid ""
+"Loadable lints produce more coupling of user code to `rustc` internals (with "
+"no official stability guarantee, of course)."
+msgstr ""
+
+#: src/0089-loadable-lints.md:158
+msgid ""
+"There's no scoping / namespacing of the lint name strings used by attributes "
+"and compiler flags.  Attempting to register a lint with a duplicate name is "
+"an error at registration time."
+msgstr ""
+
+#: src/0089-loadable-lints.md:160
+msgid ""
+"The use of `&'static` means that lint plugins can't dynamically generate the "
+"set of lints based on some external resource."
+msgstr ""
+
+#: src/0089-loadable-lints.md:162
+msgid "Alternatives"
+msgstr ""
+
+#: src/0089-loadable-lints.md:164
+msgid ""
+"We could provide a more generic mechanism for user-defined AST visitors.  "
+"This could support other use cases like code transformation.  But it would "
+"be harder to use, and harder to integrate with the lint infrastructure."
+msgstr ""
+
+#: src/0089-loadable-lints.md:166
+msgid ""
+"It would be nice to magically find all static `Lint`s in a crate, so we "
+"don't need `get_lints`.  Is this worth adding another attribute and another "
+"crate metadata type?  The `plugin::Registry` mechanism was meant to avoid "
+"such a proliferation of metadata types, but it's not as declarative as I "
+"would like."
+msgstr ""
+
+#: src/0089-loadable-lints.md:168
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0089-loadable-lints.md:170
+msgid ""
+"Do we provide guarantees about visit order for a lint, or the order of "
+"multiple lints defined in the same crate?  Some lints may require multiple "
+"passes."
+msgstr ""
+
+#: src/0089-loadable-lints.md:172
+msgid ""
+"Should we enforce (while running lints) that each lint printed with "
+"`span_lint` was registered by the corresponding `LintPass`?  Users who "
+"particularly care can already wrap lints in modules and use visibility to "
+"enforce this statically."
+msgstr ""
+
+#: src/0089-loadable-lints.md:174
+msgid ""
+"Should we separate registering a lint pass from initializing / constructing "
+"the value implementing `LintPass`?  This would support a future where a "
+"single `rustc` invocation can compile multiple crates and needs to reset "
+"lint state."
+msgstr ""

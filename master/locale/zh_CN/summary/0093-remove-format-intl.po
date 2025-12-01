@@ -1,0 +1,173 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0093-remove-format-intl.md:1
+msgid "Start Date: 2014-06-10"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:2
+msgid "RFC PR: [rust-lang/rfcs#93](https://github.com/rust-lang/rfcs/pull/93)"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#14812](https://github.com/rust-lang/rust/"
+"issues/14812)"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:7
+msgid ""
+"Remove localization features from format!, and change the set of escapes "
+"accepted by format strings. The `plural` and `select` methods would be "
+"removed, `#` would no longer need to be escaped, and `{{`/`}}` would become "
+"escapes for `{` and `}`, respectively."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:14
+msgid ""
+"Localization is difficult to implement correctly, and doing so will likely "
+"not be done in the standard library, but rather in an external library. "
+"After talking with others much more familiar with localization, it has come "
+"to light that our ad-hoc \"localization support\" in our format strings are "
+"woefully inadequate for most real use cases of support for localization."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:21
+msgid ""
+"Instead of having a half-baked unused system adding complexity to the "
+"compiler and libraries, the support for this functionality would be removed "
+"from format strings."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:25
+msgid "Detailed design"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:27
+msgid ""
+"The primary localization features that `format!` supports today are the "
+"`plural` and `select` methods inside of format strings. These methods are "
+"choices made at format-time based on the input arguments of how to format a "
+"string. This functionality would be removed from the compiler entirely."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:32
+msgid ""
+"As fallout of this change, the `#` special character, a back reference to "
+"the argument being formatted, would no longer be necessary. In that case, "
+"this character no longer needs an escape sequence."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:36
+msgid "The new grammar for format strings would be as follows:"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:54
+msgid ""
+"The current syntax can be found at http://doc.rust-lang.org/std/fmt/#syntax "
+"to see the diff between the two"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:57
+msgid "Choosing a new escape sequence"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:59
+msgid ""
+"Upon landing, there was a significant amount of discussion about the escape "
+"sequence that would be used in format strings. Some context can be found on "
+"some [old pull requests](https://github.com/mozilla/rust/pull/9161), and the "
+"current escape mechanism has been the source of [much confusion](https://"
+"github.com/mozilla/rust/issues/12814). With the removal of localization "
+"methods, and namely nested format directives, it is possible to reconsider "
+"the choices of escaping again."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:69
+msgid ""
+"The only two characters that need escaping in format strings are `{` and `}"
+"`. One of the more appealing syntaxes for escaping was to double the "
+"character to represent the character itself. This would mean that `{{` is an "
+"escape for a `{` character, while `}}` would be an escape for a `}` "
+"character."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:74
+msgid ""
+"Adopting this scheme would avoid clashing with Rust's string literal "
+"escapes. There would be no \"double escape\" problem. More details on this "
+"can be found in the comments of an [old PR](https://github.com/mozilla/rust/"
+"pull/9161)."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:78
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:80
+msgid ""
+"The localization methods of select/plural are genuinely used for "
+"applications that do not involve localization. For example, the compiler and "
+"rustdoc often use plural to easily create plural messages. Removing this "
+"functionality from format strings would impose a burden of likely "
+"dynamically allocating a string at runtime or defining two separate format "
+"strings."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:86
+msgid ""
+"Additionally, changing the syntax of format strings is quite an invasive "
+"change. Raw string literals serve as a good use case for format strings that "
+"must escape the `{` and `}` characters. The current system is arguably good "
+"enough to pass with for today."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:91
+msgid "Alternatives"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:93
+msgid ""
+"The major localization approach explored has been l20n, which has shown "
+"itself to be fairly incompatible with the way format strings work today. "
+"Different localization systems, however, have not been explored. Systems "
+"such as gettext would be able to leverage format strings quite well, but it "
+"was claimed that gettext for localization is inadequate for modern use-cases."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:100
+msgid ""
+"It is also an unexplored possibility whether the current format string "
+"syntax could be leveraged by l20n. It is unlikely that time will be "
+"allocated to polish off an localization library before 1.0, and it is "
+"currently seen as undesirable to have a half-baked system in the libraries "
+"rather than a first-class well designed system."
+msgstr ""
+
+#: src/0093-remove-format-intl.md:106
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0093-remove-format-intl.md:108
+msgid ""
+"Should localization support be left in `std::fmt` as a \"poor man's\" "
+"implementation for those to use as they see fit?"
+msgstr ""

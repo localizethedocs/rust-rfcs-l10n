@@ -1,0 +1,224 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0079-undefined-struct-layout.md:1
+msgid "Start Date: 2014-05-17"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:2
+msgid "RFC PR: [rust-lang/rfcs#79](https://github.com/rust-lang/rfcs/pull/79)"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#14309](https://github.com/rust-lang/rust/"
+"issues/14309)"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:7
+msgid ""
+"Leave structs with unspecified layout by default like enums, for "
+"optimisation purposes. Use something like `#[repr(C)]` to expose C "
+"compatible layout."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:13
+msgid ""
+"The members of a struct are always laid in memory in the order in which they "
+"were specified, e.g."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:25
+msgid ""
+"will put the `u8` first in memory, then the `u64`, the `i8` and lastly the "
+"`i64`. Due to the alignment requirements of various types padding is often "
+"required to ensure the members start at an appropriately aligned byte. Hence "
+"the above struct is not `1 + 8 + 1 + 8 == 18` bytes, but rather `1 + 7 + 8 + "
+"1 + 7 + 8 == 32` bytes, since it is laid out like"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:33
+msgid "// no automatically inserted padding\n"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:44
+msgid "If the fields were reordered to"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:56
+msgid ""
+"then the struct is (strictly) only 18 bytes (but the alignment requirements "
+"of `u64` forces it to take up 24)."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:59
+msgid ""
+"Having an undefined layout does allow for possible security improvements, "
+"like randomising struct fields, but this can trivially be done with a syntax "
+"extension that can be attached to a struct to reorder the fields in the AST "
+"itself. That said, there may be benefits from being able to randomise all "
+"structs in a program automatically/for testing, effectively fuzzing code "
+"(especially `unsafe` code)."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:67
+msgid ""
+"Notably, Rust's `enum`s already have undefined layout, and provide the "
+"`#[repr]` attribute to control layout more precisely (specifically, "
+"selecting the size of the discriminant)."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:71
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:73
+msgid ""
+"Forgetting to add `#[repr(C)]` for a struct intended for FFI use can cause "
+"surprising bugs and crashes. There is already a lint for FFI use of `enum`s "
+"without a `#[repr(...)]` attribute, so this can be extended to include "
+"structs."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:78
+msgid ""
+"Having an unspecified (or otherwise non-C-compatible) layout by default "
+"makes interfacing with C slightly harder. A particularly bad case is passing "
+"to C a struct from an upstream library that doesn't have a `repr(C)` "
+"attribute. This situation seems relatively similar to one where an upstream "
+"library type is missing an implementation of a core trait e.g. `Hash` if one "
+"wishes to use it as a hashmap key."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:85
+msgid ""
+"It is slightly better if structs had a specified-but-C-incompatible layout, "
+"_and_ one has control over the C interface, because then one can manually "
+"arrange the fields in the C definition to match the Rust order."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:90
+msgid "That said, this scenario requires:"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:92
+msgid ""
+"Needing to pass a Rust struct into C/FFI code, where that FFI code actually "
+"needs to use things from the struct, rather than just pass it through, e.g., "
+"back into a Rust callback."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:95
+msgid ""
+"The Rust struct is defined upstream & out of your control, and not intended "
+"for use with C code."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:97
+msgid ""
+"The C/FFI code is designed by someone other than that vendor, or otherwise "
+"not designed for use with the Rust struct (or else it is a bug in the "
+"vendor's library that the Rust struct can't be sanely passed to C)."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:103
+msgid "Detailed design"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:105
+msgid "A struct declaration like"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:115
+msgid ""
+"has no fixed layout, that is, a compiler can choose whichever order of "
+"fields it prefers."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:118
+msgid "A fixed layout can be selected with the `#[repr]` attribute"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:129
+msgid ""
+"This will force a struct to be laid out like the equivalent definition in C."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:132
+msgid ""
+"There would be a lint for the use of non-`repr(C)` structs in related FFI "
+"definitions, for example:"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:137
+#: src/0079-undefined-struct-layout.md:142
+msgid "// ...\n"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:147
+msgid "// warning: use of non-FFI-safe struct in extern declaration\n"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:149
+msgid "// no warning\n"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:152
+msgid "\"C\""
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:152
+msgid "// warning: use of non-FFI-safe struct in function with C abi.\n"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:156
+msgid "Alternatives"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:158
+msgid ""
+"Have non-C layouts opt-in, via `#[repr(smallest)]` and `#[repr(random)]` (or "
+"similar)."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:160
+msgid ""
+"Have layout defined, but not declaration order (like Java(?)), for example, "
+"from largest field to smallest, so `u8` fields get placed last, and `[u8, .. "
+"1000000]` fields get placed first. The `#[repr]` attributes would still "
+"allow for selecting declaration-order layout."
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:165
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:167
+msgid "How does this interact with binary compatibility of dynamic libraries?"
+msgstr ""
+
+#: src/0079-undefined-struct-layout.md:168
+msgid ""
+"How does this interact with DST, where some fields have to be at the end of "
+"a struct? (Just always lay-out unsized fields last? (i.e. after "
+"monomorphisation if a field was originally marked `Sized?` then it needs to "
+"be last).)"
+msgstr ""

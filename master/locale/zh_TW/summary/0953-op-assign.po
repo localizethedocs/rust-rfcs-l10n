@@ -1,0 +1,166 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0953-op-assign.md:1
+msgid "Feature Name: op_assign"
+msgstr ""
+
+#: src/0953-op-assign.md:2
+msgid "Start Date: 2015-03-08"
+msgstr ""
+
+#: src/0953-op-assign.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#953](https://github.com/rust-lang/rfcs/pull/953)"
+msgstr ""
+
+#: src/0953-op-assign.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#28235](https://github.com/rust-lang/rust/"
+"issues/28235)"
+msgstr ""
+
+#: src/0953-op-assign.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/0953-op-assign.md:8
+msgid ""
+"Add the family of `[Op]Assign` traits to allow overloading assignment "
+"operations like `a += b`."
+msgstr ""
+
+#: src/0953-op-assign.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/0953-op-assign.md:13
+msgid ""
+"We already let users overload the binary operations, letting them overload "
+"the assignment version is the next logical step. Plus, this sugar is "
+"important to make mathematical libraries more palatable."
+msgstr ""
+
+#: src/0953-op-assign.md:17
+msgid "Detailed design"
+msgstr ""
+
+#: src/0953-op-assign.md:19
+msgid ""
+"Add the following **unstable** traits to libcore and reexported them in "
+"libstd:"
+msgstr ""
+
+#: src/0953-op-assign.md:21
+msgid ""
+"```\n"
+"// `+=`\n"
+"#[lang = \"add_assign\"]\n"
+"trait AddAssign<Rhs=Self> {\n"
+"    fn add_assign(&mut self, Rhs);\n"
+"}\n"
+"\n"
+"// the remaining traits have the same signature\n"
+"// (lang items have been omitted for brevity)\n"
+"trait BitAndAssign { .. }  // `&=`\n"
+"trait BitOrAssign { .. }   // `|=`\n"
+"trait BitXorAssign { .. }  // `^=`\n"
+"trait DivAssign { .. }     // `/=`\n"
+"trait MulAssign { .. }     // `*=`\n"
+"trait RemAssign { .. }     // `%=`\n"
+"trait ShlAssign { .. }     // `<<=`\n"
+"trait ShrAssign { .. }     // `>>=`\n"
+"trait SubAssign { .. }     // `-=`\n"
+"```"
+msgstr ""
+
+#: src/0953-op-assign.md:41
+msgid ""
+"Implement these traits for the primitive numeric types _without_ "
+"overloading, i.e. only `impl AddAssign<i32> for i32 { .. }`."
+msgstr ""
+
+#: src/0953-op-assign.md:44
+msgid ""
+"Add an `op_assign` feature gate. When the feature gate is enabled, the "
+"compiler will consider these traits when typechecking `a += b`. Without the "
+"feature gate the compiler will enforce that `a` and `b` must be primitives "
+"of the same type/category as it does today."
+msgstr ""
+
+#: src/0953-op-assign.md:49
+msgid ""
+"Once we feel comfortable with the implementation we'll remove the feature "
+"gate and mark the traits as stable. This can be done after 1.0 as this "
+"change is backwards compatible."
+msgstr ""
+
+#: src/0953-op-assign.md:53
+msgid "RHS: By value vs by ref"
+msgstr ""
+
+#: src/0953-op-assign.md:55
+msgid ""
+"Taking the RHS by value is more flexible. The implementations allowed with a "
+"by value RHS are a superset of the implementations allowed with a by ref "
+"RHS. An example where taking the RHS by value is necessary would be operator "
+"sugar for extending a collection with an iterator \\[1\\]: `vec ++= iter` "
+"where `vec: Vec<T>` and `iter impls Iterator<T>`. This can't be implemented "
+"with the by ref version as the iterator couldn't be advanced in that case."
+msgstr ""
+
+#: src/0953-op-assign.md:62
+msgid ""
+"\\[1\\] Where `++` is the \"combine\" operator that has been proposed "
+"[elsewhere](https://github.com/rust-lang/rfcs/pull/203). Note that this RFC "
+"doesn't propose adding that particular operator or adding similar overloaded "
+"operations (`vec += iter`) to stdlib's collections, but it leaves the door "
+"open to the possibility of adding them in the future (if desired)."
+msgstr ""
+
+#: src/0953-op-assign.md:70
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0953-op-assign.md:72
+msgid "None that I can think of."
+msgstr ""
+
+#: src/0953-op-assign.md:74
+msgid "Alternatives"
+msgstr ""
+
+#: src/0953-op-assign.md:76
+msgid ""
+"Take the RHS by ref. This is less flexible than taking the RHS by value but, "
+"in some instances, it can save writing `&rhs` when the RHS is owned and the "
+"implementation demands a reference. However, this last point will be moot if "
+"we implement auto-referencing for binary operators, as `lhs += rhs` would "
+"actually call `add_assign(&mut lhs, &rhs)` if `Lhs impls AddAssign<&Rhs>`."
+msgstr ""
+
+#: src/0953-op-assign.md:82
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0953-op-assign.md:84
+msgid ""
+"Should we overload `ShlAssign` and `ShrAssign`, e.g. `impl ShlAssign<u8> for "
+"i32`, since we have already overloaded the `Shl` and `Shr` traits?"
+msgstr ""
+
+#: src/0953-op-assign.md:88
+msgid ""
+"Should we overload all the traits for references, e.g. `impl<'a> "
+"AddAssign<&'a i32> for i32` to allow `x += &0;`?"
+msgstr ""

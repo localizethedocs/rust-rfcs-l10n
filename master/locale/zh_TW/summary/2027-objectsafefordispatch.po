@@ -1,0 +1,235 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2027-object_safe_for_dispatch.md:1
+msgid "Feature Name: object_safe_for_dispatch"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:2
+msgid "Start Date: 2017-06-10"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2027](https://github.com/rust-lang/rfcs/pull/2027)"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#43561](https://github.com/rust-lang/rust/"
+"issues/43561)"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:9
+msgid ""
+"Tweak the object safety rules to allow using trait object types for static "
+"dispatch, even when the trait would not be safe to instantiate as an object."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:15
+msgid ""
+"Because Rust features a very expressive type system, users often use the "
+"type system to express high level constraints which can be resolved at "
+"compile time, even when the types involved are never actually instantiated "
+"with values."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:19
+msgid ""
+"One common example of this is the use of \"zero-sized types,\" or types "
+"which contain no data. By statically dispatching over zero sized types, "
+"different kinds of conditional or polymorphic behavior can be implemented "
+"purely at compile time."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:24
+msgid ""
+"Another interesting case is the use of implementations on the dynamically "
+"dispatched trait object types. Sometimes, it can be sensible to statically "
+"dispatch different behaviors based on the name of a trait; this can be done "
+"today by implementing traits (with only static methods) on the trait object "
+"type:"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:36
+msgid "// Implemented for the trait object type\n"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:41
+msgid "// Never actually instantiate a trait object:\n"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:46
+msgid ""
+"However, this can only be implemented if the trait being used as the "
+"receiver is object safe. Because this behavior is entirely dispatched "
+"statically, and a trait object is never instantiated, this restriction is "
+"not necessary. Object safety only matters when you actually create a "
+"dynamically dispatched trait object at runtime."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:52
+msgid ""
+"This RFC proposes to lift that restriction, allowing trait object types to "
+"be used for static dispatch even when the trait is not object safe."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:55
+msgid "Detailed design"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:58
+msgid "Today, the rules for object safey work like this:"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:60
+msgid "If the trait (e.g. `Foo`) **is** object safe:"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:61
+msgid "The object type for the trait is a valid type."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:62
+msgid "The object type for the trait implements the trait; `Foo: Foo` holds."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:63
+msgid ""
+"Implementations of the trait can be cast to the object type; `T as Foo` is "
+"valid."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:65
+#: src/2027-object_safe_for_dispatch.md:71
+msgid "If the trait (e.g. `Foo`) **is not** object safe:"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:66
+msgid "Any attempt to use the object type for the trait is considered invalid"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:68
+msgid ""
+"After this RFC, we will change the non-object-safe case to directly mirror "
+"the object-safe case. The new rules will be:"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:72
+msgid ""
+"The object type for the trait **does not** implement the trait; `Foo: Foo` "
+"does not hold."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:74
+msgid ""
+"Implementations of the trait **cannot** be cast to the object type, `T as "
+"Foo` is not valid"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:76
+msgid ""
+"**However**, the object type is still a valid type. It just does not meet "
+"the self-trait bound, and it cannot be instantiated in safe Rust."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:79
+msgid ""
+"This change to the rules will allow trait object types to be used for static "
+"dispatch."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:82
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:85
+msgid ""
+"This is just a slight tweak to how object safety is implemented. We will "
+"need to make sure that the official documentation is accurate to the rules, "
+"especially the reference."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:89
+msgid ""
+"However, this does not need to be **highlighted** to users per se in the "
+"explanation of object safety. This tweak will only impact advanced uses of "
+"the trait system."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:93
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:96
+msgid ""
+"This is a change to an existing system, its always possible it could cause "
+"regressions, though the RFC authors are unaware of any."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:99
+msgid ""
+"Arguably, the rules become more nuanced (though they also become a more "
+"direct mirror)."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:102
+msgid ""
+"This would allow instantiating object types for non-object safe traits in "
+"unsafe code, by transmuting from `std::raw::TraitObject`. This would be "
+"extremely unsafe and users almost certainly should not do this. In the "
+"status quo, they just can't."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:107
+msgid "Alternatives"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:110
+msgid ""
+"We could instead make it possible for every trait to be object safe, by "
+"allowing `where Self: Sized` bounds on every single item. For example:"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:114
+msgid ""
+"// Object safe because all of these non-object safe items are constrained\n"
+"// `Self: Sized.`\n"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:124
+msgid ""
+"However, this puts the burden on users to add all of these additional bounds."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:126
+msgid ""
+"Possibly we should add bounds like this in addition to this RFC, since they "
+"are already valid on functions, just not types and consts."
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:129
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2027-object_safe_for_dispatch.md:132
+msgid "How does this impact the implementation in rustc?"
+msgstr ""

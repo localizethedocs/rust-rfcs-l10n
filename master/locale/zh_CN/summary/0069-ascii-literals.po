@@ -1,0 +1,210 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0069-ascii-literals.md:1
+msgid "Start Date: 2014-05-05"
+msgstr ""
+
+#: src/0069-ascii-literals.md:2
+msgid "RFC PR: [rust-lang/rfcs#69](https://github.com/rust-lang/rfcs/pull/69)"
+msgstr ""
+
+#: src/0069-ascii-literals.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#14646](https://github.com/rust-lang/rust/"
+"issues/14646)"
+msgstr ""
+
+#: src/0069-ascii-literals.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0069-ascii-literals.md:7
+msgid ""
+"Add ASCII byte literals and ASCII byte string literals to the language, "
+"similar to the existing (Unicode) character and string literals. Before the "
+"RFC process was in place, this was discussed in [\\#4334](https://github.com/"
+"mozilla/rust/issues/4334)."
+msgstr ""
+
+#: src/0069-ascii-literals.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/0069-ascii-literals.md:15
+msgid ""
+"Programs dealing with text usually should use Unicode, represented in Rust "
+"by the `str` and `char` types. In some cases however, a program may be "
+"dealing with bytes that can not be interpreted as Unicode as a whole, but "
+"still contain ASCII compatible bits."
+msgstr ""
+
+#: src/0069-ascii-literals.md:21
+msgid ""
+"For example, the HTTP protocol was originally defined as Latin-1, but in "
+"practice different pieces of the same request or response can use different "
+"encodings. The PDF file format is mostly ASCII, but can contain UTF-16 "
+"strings and raw binary data."
+msgstr ""
+
+#: src/0069-ascii-literals.md:27
+msgid ""
+"There is a precedent at least in Python, which has both Unicode and byte "
+"strings."
+msgstr ""
+
+#: src/0069-ascii-literals.md:30
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0069-ascii-literals.md:32
+msgid ""
+"The language becomes slightly more complex, although that complexity should "
+"be limited to the parser."
+msgstr ""
+
+#: src/0069-ascii-literals.md:36
+msgid "Detailed design"
+msgstr ""
+
+#: src/0069-ascii-literals.md:38
+msgid ""
+"Using terminology from [the Reference Manual](http://static.rust-lang.org/"
+"doc/master/rust.html#character-and-string-literals):"
+msgstr ""
+
+#: src/0069-ascii-literals.md:40
+msgid ""
+"Extend the syntax of expressions and patterns to add byte literals of type "
+"`u8` and byte string literals of type `&'static [u8]` (or `[u8]`, post-DST). "
+"They are identical to the existing character and string literals, except "
+"that:"
+msgstr ""
+
+#: src/0069-ascii-literals.md:45
+msgid ""
+"They are prefixed with a `b` (for \"binary\"), to distinguish them. This is "
+"similar to the `r` prefix for raw strings."
+msgstr ""
+
+#: src/0069-ascii-literals.md:47
+msgid ""
+"Unescaped code points in the body must be in the ASCII range: U+0000 to "
+"U+007F."
+msgstr ""
+
+#: src/0069-ascii-literals.md:48
+msgid ""
+"`'\\x5c' 'u' hex_digit 4` and `'\\x5c' 'U' hex_digit 8` escapes are not "
+"allowed."
+msgstr ""
+
+#: src/0069-ascii-literals.md:49
+msgid ""
+"`'\\x5c' 'x' hex_digit 2` escapes represent a single byte rather than a code "
+"point. (They are the only way to express a non-ASCII byte.)"
+msgstr ""
+
+#: src/0069-ascii-literals.md:52
+msgid ""
+"Examples: `b'A' == 65u8`, `b'\\t' == 9u8`, `b'\\xFF' == 0xFFu8`, "
+"`b\"A\\t\\xFF\" == [65u8, 9, 0xFF]`"
+msgstr ""
+
+#: src/0069-ascii-literals.md:55
+msgid "Assuming `buffer` of type `&[u8]`"
+msgstr ""
+
+#: src/0069-ascii-literals.md:58
+msgid "b'a'"
+msgstr ""
+
+#: src/0069-ascii-literals.md:58
+msgid "b'z'"
+msgstr ""
+
+#: src/0069-ascii-literals.md:58 src/0069-ascii-literals.md:59
+#: src/0069-ascii-literals.md:71 src/0069-ascii-literals.md:72
+#: src/0069-ascii-literals.md:76 src/0069-ascii-literals.md:77
+#: src/0069-ascii-literals.md:87 src/0069-ascii-literals.md:88
+msgid "/* ... */"
+msgstr ""
+
+#: src/0069-ascii-literals.md:64
+msgid "Alternatives"
+msgstr ""
+
+#: src/0069-ascii-literals.md:66
+msgid ""
+"Status quo: patterns must use numeric literals for ASCII values, or (for a "
+"single byte, not a byte string) cast to char"
+msgstr ""
+
+#: src/0069-ascii-literals.md:75
+msgid "// `c` is of the wrong type!\n"
+msgstr ""
+
+#: src/0069-ascii-literals.md:76 src/0069-ascii-literals.md:87
+msgid "'a'"
+msgstr ""
+
+#: src/0069-ascii-literals.md:76 src/0069-ascii-literals.md:87
+msgid "'z'"
+msgstr ""
+
+#: src/0069-ascii-literals.md:81
+msgid ""
+"Another option is to change the syntax so that macros such as [`bytes!()`]"
+"(http://static.rust-lang.org/doc/master/std/macros/builtin/macro.bytes.html) "
+"can be used in patterns, and add a `byte!()` macro:"
+msgstr ""
+
+#: src/0069-ascii-literals.md:92
+msgid ""
+"This RFC was written to align the syntax with Python, but there could be "
+"many variations such as using a different prefix (maybe `a` for ASCII), or "
+"using a suffix instead (maybe `u8`, as in integer literals)."
+msgstr ""
+
+#: src/0069-ascii-literals.md:96
+msgid ""
+"The code points from syntax could be encoded as UTF-8 rather than being "
+"mapped to bytes of the same value, but assuming UTF-8 is not always "
+"appropriate when working with bytes."
+msgstr ""
+
+#: src/0069-ascii-literals.md:100
+msgid ""
+"See also previous discussion in [\\#4334](https://github.com/mozilla/rust/"
+"issues/4334)."
+msgstr ""
+
+#: src/0069-ascii-literals.md:103
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0069-ascii-literals.md:105
+msgid ""
+"Should there be \"raw byte string\" literals? E.g. `pdf_file.write(rb\"<< /"
+"Title (FizzBuzz \\(Part one\\)) >>\")`"
+msgstr ""
+
+#: src/0069-ascii-literals.md:108
+msgid ""
+"Should control characters (U+0000 to U+001F) be disallowed in syntax? This "
+"should be consistent across all kinds of literals."
+msgstr ""
+
+#: src/0069-ascii-literals.md:111
+msgid "Should the `bytes!()` macro be removed in favor of this?"
+msgstr ""

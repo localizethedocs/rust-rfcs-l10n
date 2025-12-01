@@ -1,0 +1,1370 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3424-cargo-script.md:1
+msgid "Feature Name: cargo-script"
+msgstr ""
+
+#: src/3424-cargo-script.md:2
+msgid "Start Date: 2023-04-26"
+msgstr ""
+
+#: src/3424-cargo-script.md:3
+msgid ""
+"Pre-RFC: [internals](https://internals.rust-lang.org/t/pre-rfc-cargo-script-"
+"for-everyone/18639)"
+msgstr ""
+
+#: src/3424-cargo-script.md:4
+msgid ""
+"eRFC PR: [rust-lang/rfcs#3424](https://github.com/rust-lang/rfcs/pull/3424)"
+msgstr ""
+
+#: src/3424-cargo-script.md:5
+msgid ""
+"Tracking Issue: [rust-lang/cargo#12207](https://github.com/rust-lang/cargo/"
+"issues/12207)"
+msgstr ""
+
+#: src/3424-cargo-script.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/3424-cargo-script.md:10
+msgid ""
+"This _experimental RFC_ adds unstable support for single-file packages in "
+"cargo so we can explore the design and resolve questions with an "
+"implementation to collect feedback on."
+msgstr ""
+
+#: src/3424-cargo-script.md:14
+msgid ""
+"Single-file packages are `.rs` files with an embedded manifest.  These will "
+"be accepted with just like `Cargo.toml` files with `--manifest-path`.  "
+"`cargo` will be modified to accept `cargo <file>.rs` as a shortcut to `cargo "
+"run --manifest-path <file>.rs`.  This allows placing `cargo` in a `#!` line "
+"for directly running these files."
+msgstr ""
+
+#: src/3424-cargo-script.md:20
+msgid "Example:"
+msgstr ""
+
+#: src/3424-cargo-script.md:23
+msgid ""
+"//! ```cargo\n"
+"//! [dependencies]\n"
+"//! clap = { version = \"4.2\", features = [\"derive\"] }\n"
+"//! ```\n"
+msgstr ""
+
+#: src/3424-cargo-script.md:40
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/3424-cargo-script.md:43
+msgid ""
+"```console\n"
+"$ ./prog --config file.toml\n"
+"Args { config: Some(\"file.toml\") }\n"
+"```"
+msgstr ""
+
+#: src/3424-cargo-script.md:48
+msgid ""
+"See [`cargo-script-mvs`](https://crates.io/crates/cargo-script-mvs) for a "
+"demo."
+msgstr ""
+
+#: src/3424-cargo-script.md:50
+msgid "Motivation"
+msgstr ""
+
+#: src/3424-cargo-script.md:53
+msgid "**Collaboration:**"
+msgstr ""
+
+#: src/3424-cargo-script.md:55
+msgid ""
+"When sharing reproduction cases, it is much easier when everything exists in "
+"a single code snippet to copy/paste.  Alternatively, people will either "
+"leave off the manifest or underspecify the details of it."
+msgstr ""
+
+#: src/3424-cargo-script.md:59
+msgid ""
+"This similarly makes it easier to share code samples with coworkers or in "
+"books / blogs when teaching."
+msgstr ""
+
+#: src/3424-cargo-script.md:62
+msgid "**Interoperability:**"
+msgstr ""
+
+#: src/3424-cargo-script.md:64
+msgid ""
+"One angle to look at proposals is if there is a single obvious solution.  "
+"While this isn't the case for single-file packages, there is enough of a "
+"subset of one. By standardizing that subset, we allow greater "
+"interoperability between solutions (e.g. [playground could gain support]"
+"(https://users.rust-lang.org/t/call-for-contributors-to-the-rust-playground-"
+"for-upcoming-features/87110/14?u=epage) ).  This would make it easier to "
+"collaborate.."
+msgstr ""
+
+#: src/3424-cargo-script.md:71
+msgid "**Prototyping:**"
+msgstr ""
+
+#: src/3424-cargo-script.md:73
+msgid ""
+"Currently to prototype or try experiment with APIs or the language, you need "
+"to either"
+msgstr ""
+
+#: src/3424-cargo-script.md:74
+msgid "Use the playground"
+msgstr ""
+
+#: src/3424-cargo-script.md:75
+msgid "Can't access local resources"
+msgstr ""
+
+#: src/3424-cargo-script.md:76
+msgid "Limited in the crates supported"
+msgstr ""
+
+#: src/3424-cargo-script.md:77
+msgid ""
+"_Note:_ there are alternatives to the playground that might have fewer "
+"restrictions but are either less well known or have additional complexities."
+msgstr ""
+
+#: src/3424-cargo-script.md:80
+msgid ""
+"Find a place to do `cargo new`, edit `Cargo.toml` and `main.rs` as "
+"necessary, and `cargo run` it, then delete it"
+msgstr ""
+
+#: src/3424-cargo-script.md:81
+msgid ""
+"This is a lot of extra steps, increasing the friction to trying things out"
+msgstr ""
+
+#: src/3424-cargo-script.md:82
+msgid ""
+"This will fail if you create in a place that `cargo` will think it should be "
+"a workspace member"
+msgstr ""
+
+#: src/3424-cargo-script.md:84
+msgid "By having a single-file package,"
+msgstr ""
+
+#: src/3424-cargo-script.md:85
+msgid ""
+"It is easier to setup and tear down these experiments, making it more likely "
+"to happen"
+msgstr ""
+
+#: src/3424-cargo-script.md:86
+msgid "All crates will be available"
+msgstr ""
+
+#: src/3424-cargo-script.md:87
+msgid "Local resources are available"
+msgstr ""
+
+#: src/3424-cargo-script.md:89
+msgid "**One-Off Utilities:**"
+msgstr ""
+
+#: src/3424-cargo-script.md:91
+msgid ""
+"It is fairly trivial to create a bunch of single-file bash or python scripts "
+"into a directory and add it to the path.  Compare this to rust where"
+msgstr ""
+
+#: src/3424-cargo-script.md:93
+msgid "`cargo new` each of the \"scripts\" into individual directories"
+msgstr ""
+
+#: src/3424-cargo-script.md:94
+msgid ""
+"Create wrappers for each so you can access it in your path, passing `--"
+"manifest-path` to `cargo run`"
+msgstr ""
+
+#: src/3424-cargo-script.md:96
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3424-cargo-script.md:99
+msgid ""
+"As an eRFC, this is meant to convey what we are looking to accomplish.  Many "
+"of the details may change before stablization."
+msgstr ""
+
+#: src/3424-cargo-script.md:103
+msgid "Creating a New Package"
+msgstr ""
+
+#: src/3424-cargo-script.md:105
+msgid ""
+"_(Adapted from [the cargo book](https://doc.rust-lang.org/cargo/guide/"
+"creating-a-new-project.html))_"
+msgstr ""
+
+#: src/3424-cargo-script.md:107
+msgid ""
+"To start a new [package](https://doc.rust-lang.org/cargo/guide/../appendix/"
+"glossary.html#package \"\\\"package\\\" (glossary entry)\") with Cargo, "
+"create a file named `hello_world.rs`:"
+msgstr ""
+
+#: src/3424-cargo-script.md:112
+msgid "\"Hello, world!\""
+msgstr ""
+
+#: src/3424-cargo-script.md:116
+msgid "Let's run it"
+msgstr ""
+
+#: src/3424-cargo-script.md:123
+msgid "Dependencies"
+msgstr ""
+
+#: src/3424-cargo-script.md:125
+msgid ""
+"_(Adapted from [the cargo book](https://doc.rust-lang.org/cargo/guide/"
+"dependencies.html))_"
+msgstr ""
+
+#: src/3424-cargo-script.md:127
+msgid ""
+"[crates.io](https://crates.io/) is the Rust community's central [_package "
+"registry_](https://doc.rust-lang.org/cargo/guide/../appendix/glossary."
+"html#package-registry \"\\\"package-registry\\\" (glossary entry)\") that "
+"serves as a location to discover and download [packages](https://doc.rust-"
+"lang.org/cargo/guide/../appendix/glossary.html#package \"\\\"package\\"
+"\" (glossary entry)\"). `cargo` is configured to use it by default to find "
+"requested packages."
+msgstr ""
+
+#: src/3424-cargo-script.md:132
+msgid "Adding a dependency"
+msgstr ""
+
+#: src/3424-cargo-script.md:134
+msgid ""
+"To depend on a library hosted on [crates.io](https://crates.io/), you modify "
+"`hello_world.rs`:"
+msgstr ""
+
+#: src/3424-cargo-script.md:137
+msgid ""
+"//! ```cargo\n"
+"//! [dependencies]\n"
+"//! regex = \"1.8.0\"\n"
+"//! ```\n"
+msgstr ""
+
+#: src/3424-cargo-script.md:144
+msgid "r\"^\\d{4}-\\d{2}-\\d{2}$\""
+msgstr ""
+
+#: src/3424-cargo-script.md:145
+msgid "\"Did our date match? {}\""
+msgstr ""
+
+#: src/3424-cargo-script.md:145
+msgid "\"2014-01-01\""
+msgstr ""
+
+#: src/3424-cargo-script.md:149
+msgid ""
+"The `cargo` section in the doc-comment (any module inner doc-comment style "
+"is supported) is called a [_**manifest**_](https://doc.rust-lang.org/cargo/"
+"guide/../appendix/glossary.html#manifest \"\\\"manifest\\\" (glossary "
+"entry)\"), and it contains all of the metadata that Cargo needs to compile "
+"your package. This is written in the [TOML](https://toml.io/) format "
+"(pronounced /tɑməl/)."
+msgstr ""
+
+#: src/3424-cargo-script.md:154
+msgid ""
+"`regex = \"1.8.0\"` is the name of the [crate](https://doc.rust-lang.org/"
+"cargo/guide/../appendix/glossary.html#crate \"\\\"crate\\\" (glossary "
+"entry)\") and a [SemVer](https://semver.org) version requirement. The "
+"[specifying dependencies](https://doc.rust-lang.org/cargo/guide/../reference/"
+"specifying-dependencies.html) docs have more information about the options "
+"you have here."
+msgstr ""
+
+#: src/3424-cargo-script.md:159
+msgid ""
+"You can then re-run this and Cargo will fetch the new dependencies and all "
+"of their dependencies.  You can see this by passing in `--verbose`:"
+msgstr ""
+
+#: src/3424-cargo-script.md:161
+msgid ""
+"```console\n"
+"$ cargo --verbose ./hello_world.rs\n"
+"      Updating crates.io index\n"
+"   Downloading memchr v0.1.5\n"
+"   Downloading libc v0.1.10\n"
+"   Downloading regex-syntax v0.2.1\n"
+"   Downloading memchr v0.1.5\n"
+"   Downloading aho-corasick v0.3.0\n"
+"   Downloading regex v0.1.41\n"
+"     Compiling memchr v0.1.5\n"
+"     Compiling libc v0.1.10\n"
+"     Compiling regex-syntax v0.2.1\n"
+"     Compiling memchr v0.1.5\n"
+"     Compiling aho-corasick v0.3.0\n"
+"     Compiling regex v0.1.41\n"
+"     Compiling hello_world v0.1.0 (file:///path/to/package/hello_world)\n"
+"Did our date match? true\n"
+"```"
+msgstr ""
+
+#: src/3424-cargo-script.md:180
+msgid ""
+"Cargo will cache the exact information (in a location referred to as "
+"`CARGO_HOME`) about which revision of all of these dependencies we used."
+msgstr ""
+
+#: src/3424-cargo-script.md:183
+msgid ""
+"Now, if `regex` gets updated, we will still build with the same revision "
+"until we choose to `cargo update --manifest-path hello_world.rs`."
+msgstr ""
+
+#: src/3424-cargo-script.md:186
+msgid "Package Layout"
+msgstr ""
+
+#: src/3424-cargo-script.md:188
+msgid ""
+"_(Adapted from [the cargo book](https://doc.rust-lang.org/cargo/guide/"
+"project-layout.html))_"
+msgstr ""
+
+#: src/3424-cargo-script.md:190
+msgid ""
+"When a single file is not enough, you can separately define a `Cargo.toml` "
+"file along with the `src/main.rs` file.  Run"
+msgstr ""
+
+#: src/3424-cargo-script.md:195
+msgid ""
+"We’re passing `--bin` because we’re making a binary program: if we were "
+"making a library, we’d pass `--lib`. This also initializes a new `git` "
+"repository by default. If you don't want it to do that, pass `--vcs none`."
+msgstr ""
+
+#: src/3424-cargo-script.md:199
+msgid "Let’s check out what Cargo has generated for us:"
+msgstr ""
+
+#: src/3424-cargo-script.md:210
+msgid ""
+"Unlike the `hello_world.rs`, a little more context is needed in `Cargo.toml`:"
+msgstr ""
+
+#: src/3424-cargo-script.md:211
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2021\"\n"
+"\n"
+"[dependencies]\n"
+"\n"
+"```"
+msgstr ""
+
+#: src/3424-cargo-script.md:221
+msgid ""
+"Cargo uses conventions for file placement to make it easy to dive into a new "
+"Cargo [package](https://doc.rust-lang.org/cargo/guide/../appendix/glossary."
+"html#package \"\\\"package\\\" (glossary entry)\"):"
+msgstr ""
+
+#: src/3424-cargo-script.md:254
+msgid ""
+"`Cargo.toml` and `Cargo.lock` are stored in the root of your package "
+"(_package root_)."
+msgstr ""
+
+#: src/3424-cargo-script.md:256
+msgid "Source code goes in the `src` directory."
+msgstr ""
+
+#: src/3424-cargo-script.md:257
+msgid "The default library file is `src/lib.rs`."
+msgstr ""
+
+#: src/3424-cargo-script.md:258
+msgid "The default executable file is `src/main.rs`."
+msgstr ""
+
+#: src/3424-cargo-script.md:259
+msgid "Other executables can be placed in `src/bin/`."
+msgstr ""
+
+#: src/3424-cargo-script.md:260
+msgid "Benchmarks go in the `benches` directory."
+msgstr ""
+
+#: src/3424-cargo-script.md:261
+msgid "Examples go in the `examples` directory."
+msgstr ""
+
+#: src/3424-cargo-script.md:262
+msgid "Integration tests go in the `tests` directory."
+msgstr ""
+
+#: src/3424-cargo-script.md:264
+msgid ""
+"If a binary, example, bench, or integration test consists of multiple source "
+"files, place a `main.rs` file along with the extra \\[_modules_\\]\\[def-"
+"module\\] within a subdirectory of the `src/bin`, `examples`, `benches`, or "
+"`tests` directory. The name of the executable will be the directory name."
+msgstr ""
+
+#: src/3424-cargo-script.md:269
+msgid ""
+"You can learn more about Rust's module system in [the book](https://doc.rust-"
+"lang.org/cargo/guide/../../book/ch07-00-managing-growing-projects-with-"
+"packages-crates-and-modules.html)."
+msgstr ""
+
+#: src/3424-cargo-script.md:271
+msgid ""
+"See [Configuring a target](https://doc.rust-lang.org/cargo/guide/../"
+"reference/cargo-targets.html#configuring-a-target) for more details on "
+"manually configuring targets. See [Target auto-discovery](https://doc.rust-"
+"lang.org/cargo/guide/../reference/cargo-targets.html#target-auto-discovery) "
+"for more information on controlling how Cargo automatically infers target "
+"names."
+msgstr ""
+
+#: src/3424-cargo-script.md:287
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3424-cargo-script.md:290
+msgid "The details will be deferred to the implementation."
+msgstr ""
+
+#: src/3424-cargo-script.md:292
+msgid "Initial guidelines for evaluating decisions:"
+msgstr ""
+
+#: src/3424-cargo-script.md:293
+msgid "Single-file packages should have a first-class experience"
+msgstr ""
+
+#: src/3424-cargo-script.md:294 src/3424-cargo-script.md:314
+msgid ""
+"Provides a higher quality of experience (doesn't feel like a hack or tacked "
+"on)"
+msgstr ""
+
+#: src/3424-cargo-script.md:295
+msgid "Transferable knowledge, whether experience, stackoverflow answers, etc"
+msgstr ""
+
+#: src/3424-cargo-script.md:296
+msgid "Easier unassisted migration between single-file and multi-file packages"
+msgstr ""
+
+#: src/3424-cargo-script.md:297
+msgid ""
+"The more the workflows deviate, the higher the maintenance and support costs "
+"for the cargo team"
+msgstr ""
+
+#: src/3424-cargo-script.md:298 src/3424-cargo-script.md:304
+#: src/3424-cargo-script.md:315
+msgid "Example implications:"
+msgstr ""
+
+#: src/3424-cargo-script.md:299
+msgid ""
+"Workflows, like running tests, should be the same as multi-file packages "
+"rather than being bifurcated"
+msgstr ""
+
+#: src/3424-cargo-script.md:300
+msgid ""
+"Manifest formats should be the same rather than using a specialized schema "
+"or data format"
+msgstr ""
+
+#: src/3424-cargo-script.md:301
+msgid "Friction for starting a new single-file package should be minimal"
+msgstr ""
+
+#: src/3424-cargo-script.md:302
+msgid ""
+"Easy to remember, minimal syntax so people are more likely to use it in one-"
+"off cases, experimental or prototyping use cases without tool assistance"
+msgstr ""
+
+#: src/3424-cargo-script.md:305
+msgid ""
+"Embedded manifest is optional which also means we can't require users "
+"specifying `edition`"
+msgstr ""
+
+#: src/3424-cargo-script.md:306
+msgid "See also the implications for first-class experience"
+msgstr ""
+
+#: src/3424-cargo-script.md:307
+msgid ""
+"Workspaces for single-file packages should not be auto-discovered as that "
+"will break unless the workspaces also owns the single-file package which "
+"will break workflows for just creating a file anywhere to try out an idea."
+msgstr ""
+
+#: src/3424-cargo-script.md:311
+msgid ""
+"Cargo/rustc diagnostics and messages (including `cargo metadata`) should be "
+"in terms of single-file packages and not any temporary files"
+msgstr ""
+
+#: src/3424-cargo-script.md:313
+msgid "Easier to understand the messages"
+msgstr ""
+
+#: src/3424-cargo-script.md:316
+msgid ""
+"Most likely, we'll need single-file packages to be understood directly by "
+"rustc so cargo doesn't have to split out the `.rs` content into a temp file "
+"that gets passed to cargo which will cause errors to point to the wrong file"
+msgstr ""
+
+#: src/3424-cargo-script.md:320
+msgid ""
+"Most likely, we'll want to muck with the errors returned by `toml_edit` so "
+"we render manifest errors based on the original source code which will "
+"require accurate span information."
+msgstr ""
+
+#: src/3424-cargo-script.md:323
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3424-cargo-script.md:326
+msgid ""
+"This will likely permeate cargo's code base.  While we are fairly positive "
+"this has a path to stablization and it won't extend out for too long, we "
+"will be paying for that cost with little benefit until then."
+msgstr ""
+
+#: src/3424-cargo-script.md:331
+msgid ""
+"Then when this is stablized, this increases the surface area of cargo for "
+"the cargo team to maintain and support."
+msgstr ""
+
+#: src/3424-cargo-script.md:335
+msgid ""
+"We will not be reserving syntax for `build.rs`, `[lib]` support, proc-maros, "
+"or other functionality to be added later with the assumption that if these "
+"features are needed, a user should be using a multi-file package."
+msgstr ""
+
+#: src/3424-cargo-script.md:340
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3424-cargo-script.md:343
+msgid "Scope"
+msgstr ""
+
+#: src/3424-cargo-script.md:345
+msgid "The `cargo-script` family of tools has a single command"
+msgstr ""
+
+#: src/3424-cargo-script.md:346
+msgid "Run `.rs` files with embedded manifests"
+msgstr ""
+
+#: src/3424-cargo-script.md:347
+msgid "Evaluate command-line arguments (`--expr`, `--loop`)"
+msgstr ""
+
+#: src/3424-cargo-script.md:349
+msgid ""
+"This behavior (minus embedded manifests) mirrors what you might expect from "
+"a scripting environment, minus a REPL.  We could design this with the future "
+"possibility of a REPL."
+msgstr ""
+
+#: src/3424-cargo-script.md:352
+msgid "However"
+msgstr ""
+
+#: src/3424-cargo-script.md:353
+msgid ""
+"The needs of `.rs` files and REPL / CLI args are different, e.g. where they "
+"get their dependency definitions"
+msgstr ""
+
+#: src/3424-cargo-script.md:354
+msgid ""
+"A REPL is a lot larger of a problem, needing to pull in a lot of interactive "
+"behavior that is unrelated to `.rs` files"
+msgstr ""
+
+#: src/3424-cargo-script.md:355
+msgid ""
+"A REPL for Rust is a lot more nebulous of a future possibility, making it "
+"pre-mature to design for it in mind"
+msgstr ""
+
+#: src/3424-cargo-script.md:357
+msgid ""
+"Therefore, this eRFC is limited in scope to running single-file rust "
+"packages."
+msgstr ""
+
+#: src/3424-cargo-script.md:360
+msgid "First vs Third Party"
+msgstr ""
+
+#: src/3424-cargo-script.md:362
+msgid ""
+"As mentioned, a reason for being first-party is to standardize the "
+"convention for this which also allows greater interop."
+msgstr ""
+
+#: src/3424-cargo-script.md:365
+msgid ""
+"A default implementation ensures people will use it.  For example, `clap` "
+"received an issue with a reproduction case using a `cargo-play` script that "
+"went unused because it just wasn't worth installing yet another, unknown "
+"tool."
+msgstr ""
+
+#: src/3424-cargo-script.md:369
+msgid ""
+"This also improves the overall experience as you do not need the third-party "
+"command to replicate support for every potential feature including:"
+msgstr ""
+
+#: src/3424-cargo-script.md:371
+msgid "`cargo test` and other built-in cargo commands"
+msgstr ""
+
+#: src/3424-cargo-script.md:372
+msgid "`cargo expand` and other third-party cargo commands"
+msgstr ""
+
+#: src/3424-cargo-script.md:373
+msgid "`rust-analyzer` and other editor/IDE integration"
+msgstr ""
+
+#: src/3424-cargo-script.md:375
+msgid ""
+"While other third-party cargo commands might not immediately adopt single-"
+"file packages, first-party support for them will help encourage their "
+"adoption."
+msgstr ""
+
+#: src/3424-cargo-script.md:378
+msgid ""
+"This still leaves room for third-party implementations, either "
+"differentiating themselves or experimenting with"
+msgstr ""
+
+#: src/3424-cargo-script.md:379
+msgid "Alternative caching mechanisms for lower overhead"
+msgstr ""
+
+#: src/3424-cargo-script.md:380
+msgid "Support for implicit `main`, like doc-comment examples"
+msgstr ""
+
+#: src/3424-cargo-script.md:381
+msgid ""
+"Template support for implicit `main` for customizing `use`, `extern`, "
+"`#[feature]`, etc"
+msgstr ""
+
+#: src/3424-cargo-script.md:382
+msgid "Short-hand dependency syntax (e.g. `//# serde_json = \"*\"`)"
+msgstr ""
+
+#: src/3424-cargo-script.md:383
+msgid "Prioritizing other workflows, like runtime performance"
+msgstr ""
+
+#: src/3424-cargo-script.md:385
+msgid "Prior art"
+msgstr ""
+
+#: src/3424-cargo-script.md:388
+msgid ""
+"See [Single-file scripts that download their dependencies](https://dbohdan."
+"com/scripts-with-dependencies) for a wide view of this space."
+msgstr ""
+
+#: src/3424-cargo-script.md:392
+msgid "Existing Rust solutions:"
+msgstr ""
+
+#: src/3424-cargo-script.md:393
+msgid "[`cargo-script`](https://github.com/DanielKeep/cargo-script)"
+msgstr ""
+
+#: src/3424-cargo-script.md:394
+msgid "Single-file (`.crs` extension) rust code"
+msgstr ""
+
+#: src/3424-cargo-script.md:395
+msgid ""
+"Partial manifests in a `cargo` doc comment code fence or dependencies in a "
+"comment directive"
+msgstr ""
+
+#: src/3424-cargo-script.md:396
+msgid ""
+"`run-cargo-script` for shebangs and setting up file associations on Windows"
+msgstr ""
+
+#: src/3424-cargo-script.md:397
+msgid "Performance: Shares a `CARGO_TARGET_DIR`, reusing dependency builds"
+msgstr ""
+
+#: src/3424-cargo-script.md:398
+msgid ""
+"`--expr <expr>` for expressions as args (wraps in a block and prints blocks "
+"value as `{:?}` )"
+msgstr ""
+
+#: src/3424-cargo-script.md:399
+msgid "`--dep` flags since directives don't work as easily"
+msgstr ""
+
+#: src/3424-cargo-script.md:400
+msgid "`--loop <expr>` for a closure to run on each line"
+msgstr ""
+
+#: src/3424-cargo-script.md:401
+msgid "`--test`, etc flags to make up for cargo not understanding thesefiles"
+msgstr ""
+
+#: src/3424-cargo-script.md:402
+msgid "`--force` to rebuild`and`\\--clear-cache\\`"
+msgstr ""
+
+#: src/3424-cargo-script.md:403
+msgid "Communicates through scripts through some env variables"
+msgstr ""
+
+#: src/3424-cargo-script.md:404
+msgid "[`cargo-scripter`](https://crates.io/crates/cargo-scripter)"
+msgstr ""
+
+#: src/3424-cargo-script.md:405
+msgid "See above with 8 more commits"
+msgstr ""
+
+#: src/3424-cargo-script.md:406
+msgid "[`cargo-eval`](https://crates.io/crates/cargo-eval)"
+msgstr ""
+
+#: src/3424-cargo-script.md:407
+msgid "See above with a couple more commits"
+msgstr ""
+
+#: src/3424-cargo-script.md:408
+msgid "[`rust-script`](https://crates.io/crates/rust-script)"
+msgstr ""
+
+#: src/3424-cargo-script.md:409
+msgid "See above"
+msgstr ""
+
+#: src/3424-cargo-script.md:410
+msgid "Changed extension to `.ers` / `.rs`"
+msgstr ""
+
+#: src/3424-cargo-script.md:411
+msgid "Single binary without subcommands in primary case for ease of running"
+msgstr ""
+
+#: src/3424-cargo-script.md:412
+msgid ""
+"Implicit main support, including `async main` (different implementation than "
+"rustdoc)"
+msgstr ""
+
+#: src/3424-cargo-script.md:413
+msgid "`--toolchain-version` flag"
+msgstr ""
+
+#: src/3424-cargo-script.md:414
+msgid "[`cargo-play`](https://crates.io/crates/cargo-play)"
+msgstr ""
+
+#: src/3424-cargo-script.md:415
+msgid "Allows multiple-file scripts, first specified is the `main`"
+msgstr ""
+
+#: src/3424-cargo-script.md:416
+msgid "Dependency syntax `//# serde_json = \"*\"`"
+msgstr ""
+
+#: src/3424-cargo-script.md:417
+msgid "Otherwise, seems like it has a subset of `cargo-script`s functionality"
+msgstr ""
+
+#: src/3424-cargo-script.md:418
+msgid "[`cargo-wop`](https://crates.io/crates/cargo-wop)"
+msgstr ""
+
+#: src/3424-cargo-script.md:419
+msgid ""
+"`cargo wop` is to single-file rust scripts as `cargo` is to multi-file rust "
+"projects"
+msgstr ""
+
+#: src/3424-cargo-script.md:420
+msgid "Dependency syntax is a doc comment code fence"
+msgstr ""
+
+#: src/3424-cargo-script.md:422
+msgid "Related Rust solutions:"
+msgstr ""
+
+#: src/3424-cargo-script.md:423
+msgid "[Playground](https://play.rust-lang.org/)"
+msgstr ""
+
+#: src/3424-cargo-script.md:424
+msgid "Includes top 100 crates"
+msgstr ""
+
+#: src/3424-cargo-script.md:425
+msgid ""
+"[Rust Explorer](https://users.rust-lang.org/t/rust-playground-with-the-"
+"top-10k-crates/75746)"
+msgstr ""
+
+#: src/3424-cargo-script.md:426
+msgid "Uses a comment syntax for specifying dependencies"
+msgstr ""
+
+#: src/3424-cargo-script.md:427
+msgid "[`runner`](https://github.com/stevedonovan/runner/)"
+msgstr ""
+
+#: src/3424-cargo-script.md:428
+msgid ""
+"Global `Cargo.toml` with dependencies added via `runner --add <dep>` and "
+"various commands  / args to interact with the shared crate"
+msgstr ""
+
+#: src/3424-cargo-script.md:429
+msgid "Global, editable prelude / template"
+msgstr ""
+
+#: src/3424-cargo-script.md:430
+msgid "`-e <expr>` support"
+msgstr ""
+
+#: src/3424-cargo-script.md:431
+msgid "`-i <expr>` support for consuming and printing iterator values"
+msgstr ""
+
+#: src/3424-cargo-script.md:432
+msgid "`-n <expr>` runs per line"
+msgstr ""
+
+#: src/3424-cargo-script.md:433
+msgid "[`evcxr`](https://github.com/google/evcxr)"
+msgstr ""
+
+#: src/3424-cargo-script.md:434
+msgid "Umbrella project which includes a REPL and Jupyter kernel"
+msgstr ""
+
+#: src/3424-cargo-script.md:435
+msgid "Requires opting in to not ending on panics"
+msgstr ""
+
+#: src/3424-cargo-script.md:436 src/3424-cargo-script.md:440
+msgid "Expressions starting with `:` are repl commands"
+msgstr ""
+
+#: src/3424-cargo-script.md:437
+msgid "Limitations on using references"
+msgstr ""
+
+#: src/3424-cargo-script.md:438
+msgid "[`irust`](https://github.com/sigmaSd/IRust)"
+msgstr ""
+
+#: src/3424-cargo-script.md:439
+msgid "Rust repl"
+msgstr ""
+
+#: src/3424-cargo-script.md:441
+msgid "Global, user-editable prelude crate"
+msgstr ""
+
+#: src/3424-cargo-script.md:442
+msgid "[papyrust](https://crates.io/crates/papyrust)"
+msgstr ""
+
+#: src/3424-cargo-script.md:443
+msgid "Not single file; just gives fast caching for a cargo package"
+msgstr ""
+
+#: src/3424-cargo-script.md:445
+msgid "D:"
+msgstr ""
+
+#: src/3424-cargo-script.md:446
+msgid "[dub](https://dub.pm/advanced_usage)"
+msgstr ""
+
+#: src/3424-cargo-script.md:447
+msgid "`dub hello.d` is shorthand for `dub run --single hello.d`"
+msgstr ""
+
+#: src/3424-cargo-script.md:448
+msgid ""
+"Regular nested block comment (not doc-comment) at top of file with `dub.sdl:"
+"` header"
+msgstr ""
+
+#: src/3424-cargo-script.md:450
+msgid "Java"
+msgstr ""
+
+#: src/3424-cargo-script.md:451
+msgid ""
+"[JEP 330: Launch Single-File Source-Code Programs](https://openjdk.org/"
+"jeps/330)"
+msgstr ""
+
+#: src/3424-cargo-script.md:452
+msgid "[jbang](https://www.jbang.dev/)"
+msgstr ""
+
+#: src/3424-cargo-script.md:453
+msgid "`jbang init` w/ templates"
+msgstr ""
+
+#: src/3424-cargo-script.md:454
+msgid "`jbang edit` support, setting up a recommended editor w/ environment"
+msgstr ""
+
+#: src/3424-cargo-script.md:455
+msgid ""
+"Discourages `#!` and instead encourages looking like shell code with `///usr/"
+"bin/env jbang \"$0\" \"$@\" ; exit $?`"
+msgstr ""
+
+#: src/3424-cargo-script.md:456
+msgid ""
+"Dependencies and compiler flags controlled via comment-directives, including"
+msgstr ""
+
+#: src/3424-cargo-script.md:457
+msgid "`//DEPS info.picocli:picocli:4.5.0` (gradle-style locators)"
+msgstr ""
+
+#: src/3424-cargo-script.md:458
+msgid ""
+"Can declare one dependency as the source of versions for other dependencies "
+"(bom-pom)"
+msgstr ""
+
+#: src/3424-cargo-script.md:459
+msgid "`//COMPILE_OPTIONS <flags>`"
+msgstr ""
+
+#: src/3424-cargo-script.md:460
+msgid "`//NATIVE_OPTIONS <flags>`"
+msgstr ""
+
+#: src/3424-cargo-script.md:461
+msgid "`//RUNTIME_OPTIONS <flags>`"
+msgstr ""
+
+#: src/3424-cargo-script.md:462
+msgid "Can run code blocks from markdown"
+msgstr ""
+
+#: src/3424-cargo-script.md:463
+msgid "`--code` flag to execute code on the command-line"
+msgstr ""
+
+#: src/3424-cargo-script.md:464
+msgid "Accepts scripts from `stdin`"
+msgstr ""
+
+#: src/3424-cargo-script.md:466
+msgid "Haskell"
+msgstr ""
+
+#: src/3424-cargo-script.md:467
+msgid ""
+"[`runghc` / `runhaskell`](https://downloads.haskell.org/ghc/latest/docs/"
+"users_guide/runghc.html)"
+msgstr ""
+
+#: src/3424-cargo-script.md:468
+msgid ""
+"Users can use the file stem (ie leave off the extension) when passing it in"
+msgstr ""
+
+#: src/3424-cargo-script.md:469
+msgid ""
+"[cabal's single-file haskel script](https://cabal.readthedocs.io/en/stable/"
+"getting-started.html#run-a-single-file-haskell-script)"
+msgstr ""
+
+#: src/3424-cargo-script.md:470
+msgid ""
+"Command is just `cabal`, which could run into weird situations if a file has "
+"the same name as a subcommand"
+msgstr ""
+
+#: src/3424-cargo-script.md:471
+msgid "Manifest is put in a multi-line comment that starts with `cabal:`"
+msgstr ""
+
+#: src/3424-cargo-script.md:472
+msgid "Scripts are run with `--quiet`, regardless of which invocation is used"
+msgstr ""
+
+#: src/3424-cargo-script.md:473
+msgid ""
+"Documented in their \"Getting Started\" and then documented further under "
+"`cabal run`."
+msgstr ""
+
+#: src/3424-cargo-script.md:474
+msgid ""
+"[`stack script`](https://www.wespiser.com/posts/2020-02-02-Command-Line-"
+"Haskell.html)"
+msgstr ""
+
+#: src/3424-cargo-script.md:475
+msgid "`stack` acts as a shortcut for use in `#!`"
+msgstr ""
+
+#: src/3424-cargo-script.md:476
+msgid "Delegates resolver information but can be extended on the command-line"
+msgstr ""
+
+#: src/3424-cargo-script.md:477
+msgid ""
+"Command-line flags may be specified in a multi-line comment starting with "
+"`stack script`"
+msgstr ""
+
+#: src/3424-cargo-script.md:479
+msgid "Cross-language"
+msgstr ""
+
+#: src/3424-cargo-script.md:480
+msgid "[`scriptisto`](https://github.com/igor-petruk/scriptisto)"
+msgstr ""
+
+#: src/3424-cargo-script.md:481
+msgid "Supports any compiled language"
+msgstr ""
+
+#: src/3424-cargo-script.md:482
+msgid "Comment-directives give build commands"
+msgstr ""
+
+#: src/3424-cargo-script.md:483
+msgid "[nix-script](https://github.com/BrianHicks/nix-script)"
+msgstr ""
+
+#: src/3424-cargo-script.md:484
+msgid "Nix version of scriptisto, letting you use any Nix dependency"
+msgstr ""
+
+#: src/3424-cargo-script.md:486
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3424-cargo-script.md:489
+msgid "Through the eRFC process, we particularly want to resolve:"
+msgstr ""
+
+#: src/3424-cargo-script.md:491
+msgid "What command should be used in `#!` lines?"
+msgstr ""
+
+#: src/3424-cargo-script.md:492
+msgid ""
+"If `cargo`, what precedence does it have compared to built-in commands, "
+"aliases, and external commands."
+msgstr ""
+
+#: src/3424-cargo-script.md:494
+msgid "If something else, what to name it?"
+msgstr ""
+
+#: src/3424-cargo-script.md:495
+msgid ""
+"If `cargo-<foo>` how to deal with diverging behavior between `cargo foo` and "
+"`cargo-foo` since `cargo foo` won't play nice in a `#!` line across platforms"
+msgstr ""
+
+#: src/3424-cargo-script.md:499
+msgid "How to keep build-times down for the best exploratory experience?"
+msgstr ""
+
+#: src/3424-cargo-script.md:500
+msgid "e.g. using a central `CARGO_TARGET_DIR`"
+msgstr ""
+
+#: src/3424-cargo-script.md:501
+msgid ""
+"e.g. locking to similar dependencies across scripts for reusing more of the "
+"cache in \\`CARGO_TARGET_DIR\\``"
+msgstr ""
+
+#: src/3424-cargo-script.md:503
+msgid ""
+"How the default `RUST_BACKTRACE` setting affects the use cases for single-"
+"file packages if working around it is worth it?"
+msgstr ""
+
+#: src/3424-cargo-script.md:506
+msgid ""
+"Whether single-file packages should be run within the environment (`.cargo/"
+"config.toml`, `rust-toolchain.toml`) of the current working directory (like "
+"`cargo run`) or a fixed location like their own directory (more like `cargo "
+"install`)"
+msgstr ""
+
+#: src/3424-cargo-script.md:511
+msgid "How to embed the manifest within the file?"
+msgstr ""
+
+#: src/3424-cargo-script.md:512
+msgid "How obvious it is for new users when they see it"
+msgstr ""
+
+#: src/3424-cargo-script.md:513
+msgid "How easy it is for newer users to remember it and type it out"
+msgstr ""
+
+#: src/3424-cargo-script.md:514
+msgid "How machine editable it is for `cargo add` and friends"
+msgstr ""
+
+#: src/3424-cargo-script.md:515
+msgid ""
+"Needs to be valid Rust code based on the earlier stated design guidelines"
+msgstr ""
+
+#: src/3424-cargo-script.md:516
+msgid "Lockfiles might also need to reuse how we attach metadata to the file"
+msgstr ""
+
+#: src/3424-cargo-script.md:518
+msgid ""
+"How do we handle the lockfile, balancing single-file package use case needs "
+"(single file, easy copy / paste, etc) with the expectations of Rust for "
+"reproducibility?"
+msgstr ""
+
+#: src/3424-cargo-script.md:521
+msgid "Sharing of single-file projects should be easy"
+msgstr ""
+
+#: src/3424-cargo-script.md:522
+msgid ""
+"In \"copy/paste\" scenarios, like reproduction cases in issues, how often "
+"have lockfiles been pertinent for reproduction?"
+msgstr ""
+
+#: src/3424-cargo-script.md:524
+msgid "There is an expectation of a reproducible Rust experience"
+msgstr ""
+
+#: src/3424-cargo-script.md:525
+msgid ""
+"Dropping of additional files might be frustrating for users to deal with (in "
+"addition to making it harder to share it all)"
+msgstr ""
+
+#: src/3424-cargo-script.md:527
+msgid ""
+"We would need a way to store the lockfile for `stdin` without conflicting "
+"with parallel runs"
+msgstr ""
+
+#: src/3424-cargo-script.md:529
+msgid ""
+"`cargo` already makes persisting of `Cargo.lock` optional for multi-file "
+"packages, encouraging not persisting it in some cases"
+msgstr ""
+
+#: src/3424-cargo-script.md:531
+msgid ""
+"Newer users should feel comfortable reading and writing single-file packages"
+msgstr ""
+
+#: src/3424-cargo-script.md:532
+msgid ""
+"A future possibility is allowing single-file packages to belong to a "
+"workspace at which point they would use the workspace's `Cargo.lock` file. "
+"This limits the scope of the conversation and allows an alternative to "
+"whatever is decided here."
+msgstr ""
+
+#: src/3424-cargo-script.md:536
+msgid ""
+"Read-only single-file packages (e.g. running `/usr/bin/package.rs` without "
+"root privileges)"
+msgstr ""
+
+#: src/3424-cargo-script.md:538
+msgid ""
+"How do we handle the `package.edition` field, balancing single-file package "
+"use case needs (no boilerplate, modern experience) with the expectations of "
+"Rust for reproducibility?"
+msgstr ""
+
+#: src/3424-cargo-script.md:541
+msgid "Matching the expectation of a reproducible Rust experience"
+msgstr ""
+
+#: src/3424-cargo-script.md:542
+msgid "Users wanting the latest experience, in general"
+msgstr ""
+
+#: src/3424-cargo-script.md:543
+msgid "Boilerplate runs counter to experimentation and prototyping"
+msgstr ""
+
+#: src/3424-cargo-script.md:544
+msgid "There might not be a backing file if we read from `stdin`"
+msgstr ""
+
+#: src/3424-cargo-script.md:546
+msgid "Smaller questions include:"
+msgstr ""
+
+#: src/3424-cargo-script.md:547
+msgid "Should we support explicit stdin with `-`?  Implicit stdin?"
+msgstr ""
+
+#: src/3424-cargo-script.md:548
+msgid "Should we support workspaces as part of the initial MVP?"
+msgstr ""
+
+#: src/3424-cargo-script.md:549
+msgid "Whether single-file packages need a distinct file extension or not?"
+msgstr ""
+
+#: src/3424-cargo-script.md:550
+msgid "What, if any, file associations should be registered on Windows?"
+msgstr ""
+
+#: src/3424-cargo-script.md:551
+msgid ""
+"As single-file packages aren't auto discovered (e.g. `cargo test` being "
+"short for `cargo test --manifest-path Cargo.toml`), is there a way we can "
+"make running cargo commands on single-file packages more convenient?"
+msgstr ""
+
+#: src/3424-cargo-script.md:555
+msgid ""
+"Potential answers to these questions were intentionally left out to help "
+"focus the conversation on the proposed experiment.  For a previous "
+"enumeration of potential answers to these questions, see the [Pre-RFC on "
+"Internals](https://internals.rust-lang.org/t/pre-rfc-cargo-script-for-"
+"everyone/18639)."
+msgstr ""
+
+#: src/3424-cargo-script.md:560
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3424-cargo-script.md:563
+msgid "Implicit `main` support"
+msgstr ""
+
+#: src/3424-cargo-script.md:565
+msgid "Like with doc-comment examples, we could support an implicit `main`."
+msgstr ""
+
+#: src/3424-cargo-script.md:567
+msgid "Ideally, this would be supported at the language level"
+msgstr ""
+
+#: src/3424-cargo-script.md:568
+msgid ""
+"Ensure a unified experience across the playground, `rustdoc`, and `cargo`"
+msgstr ""
+
+#: src/3424-cargo-script.md:569
+msgid ""
+"`cargo` can directly run files rather than writing to intermediate files"
+msgstr ""
+
+#: src/3424-cargo-script.md:570
+msgid ""
+"This gets brittle with top-level statements like `extern` (more historical) "
+"or bin-level attributes"
+msgstr ""
+
+#: src/3424-cargo-script.md:572
+msgid "Behavior can be controlled through editions"
+msgstr ""
+
+#: src/3424-cargo-script.md:574
+msgid "A REPL"
+msgstr ""
+
+#: src/3424-cargo-script.md:576
+msgid ""
+"See the [REPL exploration](https://github.com/epage/cargo-script-mvs/"
+"discussions/102)"
+msgstr ""
+
+#: src/3424-cargo-script.md:578
+msgid ""
+"In terms of the CLI side of this, we could name this `cargo shell` where it "
+"drops you into an interactive shell within your current package, loading the "
+"existing dependencies (including dev).  This would then be a natural fit to "
+"also have a `--eval <expr>` flag."
+msgstr ""
+
+#: src/3424-cargo-script.md:583
+msgid ""
+"Ideally, this repl would also allow the equivalent of `python -i <file>`, "
+"not to run existing code but to make a specific file's API items available "
+"for use to do interactive whitebox testing of private code within a larger "
+"project."
+msgstr ""

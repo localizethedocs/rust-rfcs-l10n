@@ -1,0 +1,373 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2495-min-rust-version.md:1
+msgid "Feature Name: `min_rust_version`"
+msgstr ""
+
+#: src/2495-min-rust-version.md:2
+msgid "Start Date: 2018-06-28"
+msgstr ""
+
+#: src/2495-min-rust-version.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2495](https://github.com/rust-lang/rfcs/pull/2495)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#65262](https://github.com/rust-lang/rust/"
+"issues/65262)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2495-min-rust-version.md:9
+msgid ""
+"Add `rust` field to the package section of `Cargo.toml` which will be used "
+"to specify crate's Minimum Supported Rust Version (MSRV):"
+msgstr ""
+
+#: src/2495-min-rust-version.md:11
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"foo\"\n"
+"version = \"0.1.0\"\n"
+"rust = \"1.30\"\n"
+"```"
+msgstr ""
+
+#: src/2495-min-rust-version.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/2495-min-rust-version.md:21
+msgid ""
+"Currently crates have no way to formally specify MSRV. As a result users "
+"can't check if crate can be built on their toolchain without building it. It "
+"also leads to the debate on how to handle crate version change on bumping "
+"MSRV, conservative approach is to consider such changes as breaking ones, "
+"which can hinder adoption of new features across ecosystem or result in "
+"version number inflation, which makes it harder to keep downstream crates up-"
+"to-date. More relaxed approach on another hand can result in broken crates "
+"for user of older compiler versions."
+msgstr ""
+
+#: src/2495-min-rust-version.md:30
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2495-min-rust-version.md:33
+msgid ""
+"If you target a specific MSRV add a `rust` field to the `[package]` section "
+"of your `Cargo.toml` with a value equal to the targeted Rust version. If you "
+"build a crate with a dependency which has MSRV higher than the current "
+"version of your toolchain, `cargo` will return a compilation error stating "
+"the dependency and its MSRV. This behavior can be disabled by using `--no-"
+"msrv-check` flag."
+msgstr ""
+
+#: src/2495-min-rust-version.md:39
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2495-min-rust-version.md:42
+msgid ""
+"During build process (including `run`, `test`, `benchmark`, `verify` and "
+"`publish` sub-commands) `cargo` will check MSRV requirements of all crates "
+"in a dependency tree scheduled to be built or checked. Crates which are part "
+"of the dependency tree, but will not be built are excluded from this check "
+"(e.g. target-dependent or optional crates)."
+msgstr ""
+
+#: src/2495-min-rust-version.md:48
+msgid "`rust` field should respect the following minimal requirements:"
+msgstr ""
+
+#: src/2495-min-rust-version.md:49
+msgid ""
+"Value should be a version in semver format **without** range operators. Note "
+"that \"1.50\" is a valid value and implies \"1.50.0\"."
+msgstr ""
+
+#: src/2495-min-rust-version.md:51
+msgid ""
+"Version can not be bigger than a current stable toolchain (it will be "
+"checked by crates.io during crate upload)."
+msgstr ""
+
+#: src/2495-min-rust-version.md:53
+msgid ""
+"Version can not be smaller than 1.27 (version in which  `package.rust` field "
+"became a warning instead of an error)."
+msgstr ""
+
+#: src/2495-min-rust-version.md:55
+msgid ""
+"Version can not be smaller than release version of a used edition, i.e. "
+"combination of `rust = \"1.27\"` and `edition = \"2018\"` is an invalid one."
+msgstr ""
+
+#: src/2495-min-rust-version.md:58
+msgid "Future work and extensions"
+msgstr ""
+
+#: src/2495-min-rust-version.md:61
+msgid "Influencing version resolution"
+msgstr ""
+
+#: src/2495-min-rust-version.md:63
+msgid ""
+"The value of `rust` field (explicit or automatically selected by `cargo`) "
+"will be used to select appropriate dependency versions."
+msgstr ""
+
+#: src/2495-min-rust-version.md:66
+msgid ""
+"For example, let's imagine that your crate depends on crate `foo` with 10 "
+"published versions from `0.1.0` to `0.1.9`, in versions from `0.1.0` to "
+"`0.1.5` `rust` field in the `Cargo.toml` sent to crates.io equals to "
+"\"1.30\" and for others to \"1.40\". Now if you'll build your project with e."
+"g. Rust 1.33, `cargo` will select `foo v0.1.5`. `foo v0.1.9` will be "
+"selected only if you'll build your project with Rust 1.40 or higher. But if "
+"you'll try to build your project with Rust 1.29 cargo will issue an error."
+msgstr ""
+
+#: src/2495-min-rust-version.md:74
+msgid ""
+"`rust` field value will be checked as well. During crate build `cargo` will "
+"check if all upstream dependencies can be built with the specified MSRV. (i."
+"e. it will check if there is exists solution for given crates and Rust "
+"versions constraints) Yanked crates will be ignored in this process."
+msgstr ""
+
+#: src/2495-min-rust-version.md:79
+msgid ""
+"Implementing this functionality hopefully will allow us to close the long-"
+"standing debate regarding whether MSRV bump is a breaking change or not and "
+"will allow crate authors to feel less restrictive about bumping their "
+"crate's MSRV. (though it may be a useful convention for post-1.0 crates to "
+"bump minor version on MSRV bump to allow publishing backports which fix "
+"serious issues using patch version)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:85
+msgid ""
+"Note that described MSRV constraints and checks for dependency versions "
+"resolution can be disabled with the `--no-msrv-check` option."
+msgstr ""
+
+#: src/2495-min-rust-version.md:88
+msgid "Checking MSRV during publishing"
+msgstr ""
+
+#: src/2495-min-rust-version.md:90
+msgid ""
+"`cargo publish` will check that upload is done with a toolchain version "
+"specified in the `rust` field. If toolchain version is different, `cargo` "
+"will refuse to upload the crate. It will be a failsafe to prevent uses of "
+"incorrect `rust` values due to unintended MSRV bumps. This check can be "
+"disabled by using the existing `--no-verify` option."
+msgstr ""
+
+#: src/2495-min-rust-version.md:96
+msgid "Making `rust` field mandatory"
+msgstr ""
+
+#: src/2495-min-rust-version.md:98
+msgid ""
+"In future (probably in a next edition) we could make `rust` field mandatory "
+"for a newly uploaded crates. MSRV for older crates will be determined by the "
+"`edition` field. In other words `edition = \"2018\"` will imply `rust = "
+"\"1.31\"` and `edition = \"2015\"` will imply `rust = \"1.0\"`."
+msgstr ""
+
+#: src/2495-min-rust-version.md:103
+msgid "`cargo init` would use the version of the toolchain used."
+msgstr ""
+
+#: src/2495-min-rust-version.md:105
+msgid "`cfg`\\-based MSRVs"
+msgstr ""
+
+#: src/2495-min-rust-version.md:107
+msgid ""
+"Some crates can have different MSRVs depending on target architecture or "
+"enabled features. In such cases it can be useful to describe how MSRV "
+"depends on them, e.g. in the following way:"
+msgstr ""
+
+#: src/2495-min-rust-version.md:110
+msgid ""
+"```toml\n"
+"[package]\n"
+"rust = \"1.30\"\n"
+"\n"
+"[target.x86_64-pc-windows-gnu.package]\n"
+"rust = \"1.35\"\n"
+"\n"
+"[target.'cfg(feature = \"foo\")'.package]\n"
+"rust = \"1.33\"\n"
+"```"
+msgstr ""
+
+#: src/2495-min-rust-version.md:121
+msgid ""
+"All `rust` values in the `target` sections should be equal or bigger to a "
+"`rust` value specified in the `package` section."
+msgstr ""
+
+#: src/2495-min-rust-version.md:124
+msgid ""
+"If target condition is true, then `cargo ` will use `rust` value from this "
+"section. If several target section conditions are true, then maximum value "
+"will be used."
+msgstr ""
+
+#: src/2495-min-rust-version.md:127
+msgid "Nightly and stable versions"
+msgstr ""
+
+#: src/2495-min-rust-version.md:129
+msgid ""
+"Some crates may prefer to target only the most recent stable or nightly "
+"toolchain. In addition to the versions we could allow `stable` and `nightly` "
+"values to declare that maintainers do not track MSRV for the crate."
+msgstr ""
+
+#: src/2495-min-rust-version.md:133
+msgid ""
+"For some bleeding-edge crates which experience frequent breaks on Nightly "
+"updates (e.g. `rocket`) it can be useful to specify exact Nightly version(s) "
+"on which crate can be built. One way to achieve this is by using the "
+"following syntax:"
+msgstr ""
+
+#: src/2495-min-rust-version.md:136
+msgid ""
+"auto-select: \"nightly\" This variant will behave in the same way as "
+"\"stable\", i.e. it will take a current nightly version and will use it in a "
+"\"more or equal\" constraint."
+msgstr ""
+
+#: src/2495-min-rust-version.md:138
+msgid "single version: \"nightly: 2018-01-01\" (the main variant)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:139
+msgid "enumeration: \"nightly: 2018-01-01, 2018-01-15\""
+msgstr ""
+
+#: src/2495-min-rust-version.md:140
+msgid ""
+"semver-like conditions: \"nightly: >=2018-01-01\", \"nightly: >=2018-01-01, "
+"\\<=2018-01-15\", \"nightly: >=2018-01-01, \\<=2018-01-15, 2018-01-20\". "
+"(the latter is interpreted as \"(version >= 2018-01-01 && version \\<= "
+"2018-01-20) || version == 2018-01-20\")"
+msgstr ""
+
+#: src/2495-min-rust-version.md:144
+msgid ""
+"Such restrictions can be quite severe, but hopefully this functionality will "
+"be used only by handful of crates."
+msgstr ""
+
+#: src/2495-min-rust-version.md:147
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2495-min-rust-version.md:150
+msgid ""
+"Declaration of MSRV, even with the checks, does not guarantee that crate "
+"will work correctly on the specified MSRV, only appropriate CI testing can "
+"do that."
+msgstr ""
+
+#: src/2495-min-rust-version.md:152
+msgid "More complex dependency versions resolution algorithm."
+msgstr ""
+
+#: src/2495-min-rust-version.md:153
+msgid ""
+"MSRV selected by `cargo publish` with `rust = \"stable\"` can be too "
+"conservative."
+msgstr ""
+
+#: src/2495-min-rust-version.md:156
+msgid "Alternatives"
+msgstr ""
+
+#: src/2495-min-rust-version.md:159
+msgid "Automatically calculate MSRV."
+msgstr ""
+
+#: src/2495-min-rust-version.md:160
+msgid ""
+"Do nothing and rely on [LTS releases](https://github.com/rust-lang/rfcs/"
+"pull/2483) for bumping crate MSRVs."
+msgstr ""
+
+#: src/2495-min-rust-version.md:162
+msgid ""
+"Allow version and path based `cfg` attributes as proposed in [RFC 2523]"
+"(https://github.com/rust-lang/rfcs/pull/2523)."
+msgstr ""
+
+#: src/2495-min-rust-version.md:164
+msgid "Prior art"
+msgstr ""
+
+#: src/2495-min-rust-version.md:167
+msgid "Previous proposals:"
+msgstr ""
+
+#: src/2495-min-rust-version.md:168
+msgid "[RFC 1707](https://github.com/rust-lang/rfcs/pull/1707)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:169
+msgid "[RFC 1709](https://github.com/rust-lang/rfcs/pull/1709)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:170
+msgid "[RFC 1953](https://github.com/rust-lang/rfcs/pull/1953)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:171
+msgid ""
+"[RFC 2182](https://github.com/rust-lang/rfcs/pull/2182) (arguably this one "
+"got off-track)"
+msgstr ""
+
+#: src/2495-min-rust-version.md:173
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2495-min-rust-version.md:176
+msgid "Name bike-shedding: `rust` vs `rustc` vs `min-rust-version`"
+msgstr ""
+
+#: src/2495-min-rust-version.md:177
+msgid "Additional checks?"
+msgstr ""
+
+#: src/2495-min-rust-version.md:178
+msgid "Better description of versions resolution algorithm."
+msgstr ""
+
+#: src/2495-min-rust-version.md:179
+msgid "How nightly versions will work with \"cfg based MSRV\"?"
+msgstr ""

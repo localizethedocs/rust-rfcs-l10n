@@ -1,0 +1,223 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2837-demote-apple-32bit.md:1
+msgid "Feature Name: `demote_apple_32bit`"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:2
+msgid "Start Date: 2019-12-10"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2837](https://github.com/rust-lang/rfcs/pull/2837)"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#67724](https://github.com/rust-lang/rust/"
+"issues/67724)"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:9
+msgid ""
+"This RFC proposes to demote the `i686-apple-darwin` rustc target from Tier 1 "
+"to Tier 3, and to demote the `armv7-apple-ios`, `armv7s-apple-ios` and `i386-"
+"apple-ios` rustc targets from Tier 2 to Tier 3."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:16
+msgid ""
+"Apple [publicly announced](https://support.apple.com/en-us/HT208436) that "
+"macOS 10.14 Mojave is the last OS supporting the execution of 32bit "
+"binaries, and macOS 10.15 (and later) prevents running them at all. It's "
+"been years since the last 32bit Apple hardware was sold, so providing 64bit "
+"binaries should cover most of the macOS userbase."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:22
+msgid ""
+"Apple [also announced](https://developer.apple.com/documentation/uikit/"
+"app_and_environment/updating_your_app_from_32-bit_to_64-bit_architecture) "
+"that iOS 10 is the last one supporting the execution of 32bit apps, and they "
+"won't work at all on iOS 11 and later. All iPhones after the iPhone 5 and "
+"the iPhone 5C support 64bit apps, which means all the supported ones can run "
+"them."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:27
+msgid ""
+"Along with the deprecation, Apple removed support for building 32bit "
+"binaries since Xcode 10, and that makes building rustc itself on the "
+"project's CI harder (as we're limited to providers still offering Xcode 9)."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:31
+msgid ""
+"It makes little sense for the Rust team to continue providing support for a "
+"platform the upstream vendor abandoned, especially when it requires extra "
+"effort from us infrastructure-wise."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:38
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:41
+msgid ""
+"The first release after this RFC is merged will be the last one with Tier 1 "
+"support for the `i686-apple-darwin` target and Tier 2 support for the `armv7-"
+"apple-ios`, `armv7s-apple-ios` and `i386-apple-ios` targets. The release "
+"after that will demote the targets to Tier 3, which means no official build "
+"will be available for them, and they will not be tested by CI."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:47
+msgid ""
+"Once this RFC is merged a blog post will be published on the main Rust Blog "
+"announcing the change, to alert the users of the target of the demotion. The "
+"demotion will also be mentioned in the release announcement for the last "
+"release with Tier 1 and Tier 2 support, as well as the first release with "
+"Tier 3 support."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:53
+msgid ""
+"This RFC does **not** propose removing the targets completely from the "
+"codebase: that will be decided either by another RFC just for those targets, "
+"or by an RFC defining a general policy for Tier 3 target removal."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:57
+msgid ""
+"Once the targets are demoted to Tier 3, users on other platforms with one of "
+"those targets' `rust-std` installed won't be able to update the toolchain "
+"until they remove that target. Users using an Apple 32bit compiler as their "
+"host platforms will instead be prevented from updating at all, as no new "
+"binary artifact will be available."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:63
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:66
+msgid ""
+"The `i686-apple-darwin`, `armv7-apple-ios`, `armv7s-apple-ios` and `i386-"
+"apple-ios` targets will be considered Tier 3 from the second release after "
+"this RFC is merged. The code supporting the target will not be removed from "
+"the compiler, even though we won't guarantee it will continue to work."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:71
+msgid "The following CI builders will be removed:"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:73
+msgid "`dist-i686-apple`"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:74
+msgid "`i686-apple`"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:76
+msgid ""
+"In addition, the `armv7-apple-ios`, `armv7s-apple-ios` and `i386-apple-ios` "
+"targets will be removed from the `dist-x86_64-apple` builder."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:79
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:82
+msgid ""
+"Users might depend on the target, and approving this RFC means they'll be "
+"stuck on an old compiler version forever, unless they build their own "
+"compiler and fix the regressions introduced in newer releases themselves."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:86
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:89
+msgid ""
+"Support for building 32bit binaries for Apple targets is shrinking as time "
+"goes by: the latest SDKs from Apple don't support building them at all, and "
+"CI providers are slowly starting to upgrade their minimum supported SDK "
+"versions:"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:93
+msgid ""
+"Azure Pipelines (the provider rustc currently use) doesn't have any public "
+"information on when Xcode 9 will be deprecated."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:95
+msgid "GitHub Actions doesn't support Xcode 9 at all."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:96
+msgid ""
+"Travis CI [deprecated Xcode older than 9.2](https://blog.travis-ci."
+"com/2018-07-19-xcode9-4-default-announce) in July 2018."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:99
+msgid ""
+"If this RFC is not accepted, we'll eventually reach a point when we'll have "
+"to make considerable investments both in terms of money and time to keep "
+"building on Apple 32bit."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:105
+msgid "Prior art"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:108
+msgid ""
+"There is no precedent inside the project for the deprecation of Tier 1 "
+"targets to Tier 3."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:111
+msgid ""
+"Go is taking a [similar approach to us](https://github.com/golang/go/"
+"issues/34749), documenting that the last release supporting Apple 32bit is "
+"going to be Go 1.14 (the next one), with support for the target being "
+"dropped in Go 1.15."
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:117
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:120 src/2837-demote-apple-32bit.md:125
+msgid "_Nothing here._"
+msgstr ""
+
+#: src/2837-demote-apple-32bit.md:122
+msgid "Future possibilities"
+msgstr ""

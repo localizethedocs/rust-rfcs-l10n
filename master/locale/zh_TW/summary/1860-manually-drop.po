@@ -1,0 +1,227 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1860-manually-drop.md:1
+msgid "Feature Name: `manually_drop`"
+msgstr ""
+
+#: src/1860-manually-drop.md:2
+msgid "Start Date: 2017-01-20"
+msgstr ""
+
+#: src/1860-manually-drop.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1860](https://github.com/rust-lang/rfcs/pull/1860)"
+msgstr ""
+
+#: src/1860-manually-drop.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#40673](https://github.com/rust-lang/rust/"
+"issues/40673)"
+msgstr ""
+
+#: src/1860-manually-drop.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1860-manually-drop.md:9
+msgid "Include the `ManuallyDrop` wrapper in `core::mem`."
+msgstr ""
+
+#: src/1860-manually-drop.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1860-manually-drop.md:14
+msgid ""
+"Currently Rust does not specify the order in which the destructors are run. "
+"Furthermore, this order differs depending on context. RFC issue [\\#744]"
+"(https://github.com/rust-lang/rfcs/issues/744) exposed the fact that the "
+"current, but unspecified behaviour is relied onto for code validity and that "
+"there’s at least a few instances of such code in the wild."
+msgstr ""
+
+#: src/1860-manually-drop.md:19
+msgid ""
+"While a move to stabilise and document the order of destructor evaluation "
+"would technically fix the problem described above, there’s another important "
+"aspect to consider here – implicitness. Consider such code:"
+msgstr ""
+
+#: src/1860-manually-drop.md:30
+msgid ""
+"Does this structure depend on `Peach`’s destructor being run before `Banana` "
+"for correctness? Perhaps its the other way around and it is `Banana`’s "
+"destructor that has to run first? In the common case structures do not have "
+"any such dependencies between fields, and therefore it is easy to overlook "
+"such a dependency while changing the code above to the snippet below (e.g. "
+"so the fields are sorted by name)."
+msgstr ""
+
+#: src/1860-manually-drop.md:43
+msgid ""
+"For structures with dependencies between fields it is worthwhile to have "
+"ability to explicitly annotate the dependencies somehow."
+msgstr ""
+
+#: src/1860-manually-drop.md:46
+msgid "Detailed design"
+msgstr ""
+
+#: src/1860-manually-drop.md:49
+msgid ""
+"This RFC proposes adding the following `struct` as a new lang item to the "
+"`core::mem` (and by extension the `std::mem`) module. `mem` module is a most "
+"suitable place for such type, as the module already a place for functions "
+"very similar in purpose: `drop` and `forget`."
+msgstr ""
+
+#: src/1860-manually-drop.md:54
+msgid "/// Inhibits compiler from automatically calling `T`’s destructor.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:55 src/1860-manually-drop.md:56
+#: src/1860-manually-drop.md:64 src/1860-manually-drop.md:70
+#: src/1860-manually-drop.md:82
+msgid "\"manually_drop\""
+msgstr ""
+
+#: src/1860-manually-drop.md:56 src/1860-manually-drop.md:64
+#: src/1860-manually-drop.md:70 src/1860-manually-drop.md:82
+msgid "\"recently added\""
+msgstr ""
+
+#: src/1860-manually-drop.md:56 src/1860-manually-drop.md:64
+#: src/1860-manually-drop.md:70 src/1860-manually-drop.md:82
+msgid "\"0\""
+msgstr ""
+
+#: src/1860-manually-drop.md:63
+msgid "/// Wraps a value to be manually dropped.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:69
+msgid "/// Extracts the value from the ManuallyDrop container.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:75
+msgid ""
+"/// Manually drops the contained value.\n"
+"    ///\n"
+"    /// # Unsafety\n"
+"    ///\n"
+"    /// This function runs the destructor of the contained value and thus "
+"makes any further action\n"
+"    /// with the value within invalid. The fact that this function does not "
+"consume the wrapper\n"
+"    /// does not statically prevent further reuse.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:90 src/1860-manually-drop.md:94
+msgid "// ...\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:98
+msgid ""
+"The lang item will be treated specially by the compiler to not emit any drop "
+"glue for this type."
+msgstr ""
+
+#: src/1860-manually-drop.md:101
+msgid ""
+"Let us apply `ManuallyDrop` to a somewhat expanded example from the "
+"motivation:"
+msgstr ""
+
+#: src/1860-manually-drop.md:105
+msgid ""
+"// Immediately clear there’s something non-trivial going on with these "
+"fields.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:107
+msgid "// Field that’s independent of the other two.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:114
+msgid ""
+"// Explicit ordering in which field destructors are run specified in the "
+"intuitive\n"
+"            // location – the destructor of the structure containing the "
+"fields.\n"
+"            // Moreover, one can now reorder fields within the struct "
+"however much they want.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:120
+msgid ""
+"// After destructor for `FruitBox` runs (this function), the destructor for "
+"Melon gets\n"
+"        // invoked in the usual manner, as it is not wrapped in "
+"`ManuallyDrop`.\n"
+msgstr ""
+
+#: src/1860-manually-drop.md:126
+msgid ""
+"It is proposed that this pattern would become idiomatic for structures where "
+"fields must be dropped in a particular order."
+msgstr ""
+
+#: src/1860-manually-drop.md:129
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1860-manually-drop.md:132
+msgid ""
+"It is expected that the functions and wrapper added as a result of this RFC "
+"would be seldom necessary."
+msgstr ""
+
+#: src/1860-manually-drop.md:135
+msgid ""
+"In addition to the usual API documentation, `ManuallyDrop` should be "
+"mentioned in reference/nomicon/elsewhere as the solution to the desire of "
+"explicit control of the order in which the structure fields gets dropped."
+msgstr ""
+
+#: src/1860-manually-drop.md:146
+msgid "Alternatives"
+msgstr ""
+
+#: src/1860-manually-drop.md:149
+msgid ""
+"Stabilise some sort of drop order and make people to write code that’s hard "
+"to figure out at a glance;"
+msgstr ""
+
+#: src/1860-manually-drop.md:151
+msgid "Bikeshed colour;"
+msgstr ""
+
+#: src/1860-manually-drop.md:152
+msgid "Stabilise union and let people implement this themselves:"
+msgstr ""
+
+#: src/1860-manually-drop.md:153
+msgid ""
+"Precludes (or makes it much harder) from recommending this pattern as the "
+"idiomatic way to implement destructors with dependencies."
+msgstr ""
+
+#: src/1860-manually-drop.md:156
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1860-manually-drop.md:159
+msgid "None known."
+msgstr ""

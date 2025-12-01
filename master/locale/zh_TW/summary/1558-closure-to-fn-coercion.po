@@ -1,0 +1,268 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1558-closure-to-fn-coercion.md:1
+msgid "Feature Name: closure_to_fn_coercion"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:2
+msgid "Start Date: 2016-03-25"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1558](https://github.com/rust-lang/rfcs/pull/1558)"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#39817](https://github.com/rust-lang/rust/"
+"issues/39817)"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:9
+msgid ""
+"A closure that does not move, borrow, or otherwise access (capture) local "
+"variables should be coercible to a function pointer (`fn`)."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:15
+msgid ""
+"Currently in Rust, it is impossible to bind anything but a pre-defined "
+"function as a function pointer. When dealing with closures, one must either "
+"rely upon Rust's type-inference capabilities, or use the `Fn` trait to "
+"abstract for any closure with a certain type signature."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:20
+msgid ""
+"It is not possible to define a function while at the same time binding it to "
+"a function pointer."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:23
+msgid ""
+"This is, admittedly, a convenience-motivated feature, but in certain "
+"situations the inability to bind code this way creates a significant amount "
+"of boilerplate. For example, when attempting to create an array of small, "
+"simple, but unique functions, it would be necessary to pre-define each and "
+"every function beforehand:"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:42
+msgid ""
+"This is a trivial example, and one that might not seem too consequential, "
+"but the code doubles with every new item added to the array. With a large "
+"amount of elements, the duplication begins to seem unwarranted."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:46
+msgid "A solution, of course, is to use an array of `Fn` instead of `fn`:"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:57
+msgid ""
+"And this seems to fix the problem. Unfortunately, however, because we use a "
+"reference to the `Fn` trait, an extra layer of indirection is added when "
+"attempting to run `foo[n](&mut bar)`."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:61
+msgid ""
+"Rust must use dynamic dispatch in this situation; a closure with captures is "
+"nothing but a struct containing references to captured variables. The code "
+"associated with a closure must be able to access those references stored in "
+"the struct."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:65
+msgid ""
+"In situations where this function pointer array is particularly hot code, "
+"any optimizations would be appreciated. More generally, it is always "
+"preferable to avoid unnecessary indirection. And, of course, it is "
+"impossible to use this syntax when dealing with FFI."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:70
+msgid ""
+"Aside from code-size nits, anonymous functions are legitimately useful for "
+"programmers. In the case of callback-heavy code, for example, it can be "
+"impractical to define functions out-of-line, with the requirement of "
+"producing confusing (and unnecessary) names for each. In the very first "
+"example given, `inc_X` names were used for the out-of-line functions, but "
+"more complicated behavior might not be so easily representable."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:76
+msgid ""
+"Finally, this sort of automatic coercion is simply intuitive to the "
+"programmer. In the `&Fn` example, no variables are captured by the closures, "
+"so the theory is that nothing stops the compiler from treating them as "
+"anonymous functions."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:80
+msgid "Detailed design"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:83
+msgid ""
+"In C++, non-capturing lambdas (the C++ equivalent of closures) \"decay\" "
+"into function pointers when they do not need to capture any variables. This "
+"is used, for example, to pass a lambda into a C function:"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:89 src/1558-closure-to-fn-coercion.md:100
+msgid "// impl\n"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:92 src/1558-closure-to-fn-coercion.md:103
+#: src/1558-closure-to-fn-coercion.md:180
+msgid "/* do something */"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:96
+msgid "With this proposal, rust users would be able to do the same:"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:107
+msgid ""
+"Using the examples within [\"Motivation\"](#motivation), the code array "
+"would be simplified to no performance detriment:"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:119
+msgid ""
+"Because there does not exist any item in the language that directly produces "
+"a `fn` type, even `fn` items must go through the process of reification. To "
+"perform the coercion, then, rustc must additionally allow the reification of "
+"unsized closures to `fn` types. The implementation of this is simplified by "
+"the fact that closures' capture information is recorded on the type-level."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:125
+msgid ""
+"_Note:_ once explicitly assigned to an `Fn` trait, the closure can no longer "
+"be coerced into `fn`, even if it has no captures."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:130
+msgid "// Can't re-coerce\n"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:133
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:136
+msgid ""
+"This proposal could potentially allow Rust users to accidentally constrain "
+"their APIs. In the case of a crate, a user returning `fn` instead of `Fn` "
+"may find that their code compiles at first, but breaks when the user later "
+"needs to capture variables:"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:141
+msgid "// The specific syntax is more convenient to use\n"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:151
+msgid ""
+"In the above example, the API author could start off with the specific "
+"version of the function, and by circumstance later need to capture a "
+"variable. The required change from `fn` to `Fn` could be a breaking change."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:155
+msgid ""
+"We do expect crate authors to measure their API's flexibility in other "
+"areas, however, as when determining whether to take `&self` or `&mut self`. "
+"Taking a similar situation to the above:"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:168
+msgid ""
+"This aspect is probably outweighed by convenience, simplicity, and the "
+"potential for optimization that comes with the proposed changes."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:171
+msgid "Alternatives"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:174
+msgid "Function literal syntax"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:176
+msgid ""
+"With this alternative, Rust users would be able to directly bind a function "
+"to a variable, without needing to give the function a name."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:193
+msgid ""
+"This isn't ideal, however, because it would require giving new semantics to "
+"`fn` syntax. Additionally, such syntax would either require explicit return "
+"types, or additional reasoning about the literal's return type."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:201
+msgid ""
+"The above function literal, at first glance, appears to return `()`. This "
+"could be potentially misleading, especially in situations where the literal "
+"is bound to a variable with `let`."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:205
+msgid ""
+"As with all new syntax, this alternative would carry with it a discovery "
+"barrier. Closure coercion may be preferred due to its intuitiveness."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:208
+msgid "Aggressive optimization"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:210
+msgid ""
+"This is possibly unrealistic, but an alternative would be to continue "
+"encouraging the use of closures with the `Fn` trait, but use static analysis "
+"to determine when the used closure is \"trivial\" and does not need "
+"indirection."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:214
+msgid ""
+"Of course, this would probably significantly complicate the optimization "
+"process, and would have the detriment of not being easily verifiable by the "
+"programmer without checking the disassembly of their program."
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:218
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1558-closure-to-fn-coercion.md:221
+msgid ""
+"Should we generalize this behavior in the future, so that any zero-sized "
+"type that implements `Fn` can be converted into a `fn` pointer?"
+msgstr ""

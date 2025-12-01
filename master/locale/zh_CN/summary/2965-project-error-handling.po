@@ -1,0 +1,431 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2965-project-error-handling.md:1
+msgid "Feature Name: error_handling_project_group"
+msgstr ""
+
+#: src/2965-project-error-handling.md:2
+msgid "Start Date: 2020-07-23"
+msgstr ""
+
+#: src/2965-project-error-handling.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2965](https://github.com/rust-lang/rfcs/pull/2965)"
+msgstr ""
+
+#: src/2965-project-error-handling.md:4
+msgid ""
+"Rust Issue: [rust-lang/libs-team#3](https://github.com/rust-lang/libs-team/"
+"issues/3)"
+msgstr ""
+
+#: src/2965-project-error-handling.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2965-project-error-handling.md:9
+msgid ""
+"This RFC establishes a new project group, under the libs team, to drive "
+"efforts to improve error handling in Rust."
+msgstr ""
+
+#: src/2965-project-error-handling.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/2965-project-error-handling.md:14
+msgid ""
+"The error handling project group aims to reduce confusion on how to "
+"structure error handling for users in the Rust community. This will be "
+"accomplished by creating learning resources and pushing effort to upstream "
+"widely used crates into the standard library. As a secondary goal, this "
+"project group will also try to resolve some known issues with the `Error` "
+"trait and reporting errors in panics/termination."
+msgstr ""
+
+#: src/2965-project-error-handling.md:16
+msgid "Charter"
+msgstr ""
+
+#: src/2965-project-error-handling.md:19
+msgid "Goals"
+msgstr ""
+
+#: src/2965-project-error-handling.md:21
+msgid "Agree on and define common error handling terminology"
+msgstr ""
+
+#: src/2965-project-error-handling.md:23
+msgid ""
+"Recoverable error: An error that can be reacted and recovered from when "
+"encountered e.g. a missing file."
+msgstr ""
+
+#: src/2965-project-error-handling.md:24
+msgid ""
+"Unrecoverable error: An error that cannot reasonably be reacted to or "
+"recovered from and which indicates a bug e.g. indexing out of bounds."
+msgstr ""
+
+#: src/2965-project-error-handling.md:25
+msgid ""
+"Error Type: A type that represents a recoverable error. Error types can "
+"optionally implement the `Error` trait so that it can be reported to the "
+"user or be converted into a trait object."
+msgstr ""
+
+#: src/2965-project-error-handling.md:26
+msgid ""
+"Reporting Type: A type that can store all recoverable errors an application "
+"may need to propagate and print them as error reports."
+msgstr ""
+
+#: src/2965-project-error-handling.md:27
+msgid ""
+"Reporting types can represent the recoverable errors either via concrete "
+"types, likely parameterized, or trait objects."
+msgstr ""
+
+#: src/2965-project-error-handling.md:28
+msgid ""
+"Reporting types often bundle context with errors when they are constructed, "
+"e.g. `Backtrace`."
+msgstr ""
+
+#: src/2965-project-error-handling.md:29
+msgid ""
+"Reporting types often provide helper functions for creating ad hoc errors "
+"whose only purpose is to be reported e.g. `anyhow::format_err!` or `eyre::"
+"WrapErr`."
+msgstr ""
+
+#: src/2965-project-error-handling.md:31
+msgid "Come to a consensus on current best practices"
+msgstr ""
+
+#: src/2965-project-error-handling.md:33
+msgid "Here is a tentative starting point, subject to change:"
+msgstr ""
+
+#: src/2965-project-error-handling.md:35
+msgid "Use `Result` and `Error` types for recoverable errors."
+msgstr ""
+
+#: src/2965-project-error-handling.md:36
+msgid "Use `panic` for unrecoverable errors."
+msgstr ""
+
+#: src/2965-project-error-handling.md:37
+msgid ""
+"Implement `Error` for error types that may need to be reported to a human or "
+"be composed with other errors."
+msgstr ""
+
+#: src/2965-project-error-handling.md:38
+msgid ""
+"Use enums for types representing multiple failure cases that may need to be "
+"handled."
+msgstr ""
+
+#: src/2965-project-error-handling.md:39
+msgid ""
+"For libraries, oftentimes you want to support both reporting and handling so "
+"you implement `Error` on a possibly non-exhaustive enum."
+msgstr ""
+
+#: src/2965-project-error-handling.md:40
+msgid ""
+"Error kind pattern for associating context with every enum variant without "
+"including the member in every enum variant."
+msgstr ""
+
+#: src/2965-project-error-handling.md:41
+msgid ""
+"Convert to a reporting type when the error is no longer expected to be "
+"handled beyond reporting e.g. `anyhow::Error` or `eyre::Report` or when "
+"trait object + downcast error handling is preferable."
+msgstr ""
+
+#: src/2965-project-error-handling.md:42
+msgid ""
+"Recommend `Box`ing concrete error types when stack size is an issue rather "
+"than `Box`ing and converting to `dyn Error`s."
+msgstr ""
+
+#: src/2965-project-error-handling.md:43
+msgid ""
+"What is the consensus on handling `dyn Error`s? Should it be encouraged or "
+"discouraged? Should we look into making `Box<dyn Error...>` implement "
+"`Error`?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:46
+msgid "Identify pain points in error handling today"
+msgstr ""
+
+#: src/2965-project-error-handling.md:48
+msgid ""
+"Backtrace capture is expensive, but without one it can be difficult to "
+"pinpoint the origin of errors"
+msgstr ""
+
+#: src/2965-project-error-handling.md:49
+msgid ""
+"unwrap on errors without first converting to a reporting type will often "
+"discard relevant information"
+msgstr ""
+
+#: src/2965-project-error-handling.md:50
+msgid ""
+"errors printing from main have to assume a prefixed `Error: `, sub par "
+"control of output format when printing during termination."
+msgstr ""
+
+#: src/2965-project-error-handling.md:51
+msgid ""
+"Error trait only exposes 3 forms of context, can only represent singly "
+"linked lists for chains of errors"
+msgstr ""
+
+#: src/2965-project-error-handling.md:53
+msgid "Communicate current best practices"
+msgstr ""
+
+#: src/2965-project-error-handling.md:55
+msgid "Document the consensus."
+msgstr ""
+
+#: src/2965-project-error-handling.md:56
+msgid ""
+"Communicate plan for future changes to error handling, and the libraries "
+"that future changes are being based off of."
+msgstr ""
+
+#: src/2965-project-error-handling.md:57
+msgid "Produce learning resources related to current best practices."
+msgstr ""
+
+#: src/2965-project-error-handling.md:58
+msgid "New chapters in the book?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:60
+msgid ""
+"Evaluate options for error reporting type a.k.a. better `Box<dyn Error>`"
+msgstr ""
+
+#: src/2965-project-error-handling.md:62
+msgid "Survey the current libraries in the ecosystem:"
+msgstr ""
+
+#: src/2965-project-error-handling.md:63
+msgid "`anyhow`"
+msgstr ""
+
+#: src/2965-project-error-handling.md:64
+msgid "`eyre`"
+msgstr ""
+
+#: src/2965-project-error-handling.md:65
+msgid "Evaluate value of features including:"
+msgstr ""
+
+#: src/2965-project-error-handling.md:66
+msgid "Single word width on stack"
+msgstr ""
+
+#: src/2965-project-error-handling.md:67
+msgid "Error wrapping with display types and with special downcast support."
+msgstr ""
+
+#: src/2965-project-error-handling.md:68
+msgid ""
+"Report hook and configurable `dyn ReportHandler` type for custom report "
+"formats and content, similar to panic handler but for errors."
+msgstr ""
+
+#: src/2965-project-error-handling.md:69
+msgid "libcore compatibility."
+msgstr ""
+
+#: src/2965-project-error-handling.md:71
+msgid "Consolidate ecosystem by merging best practice crates into std"
+msgstr ""
+
+#: src/2965-project-error-handling.md:73
+msgid "Provide a derive macro for `Error` in std."
+msgstr ""
+
+#: src/2965-project-error-handling.md:74
+msgid ""
+"Stabilize the `Backtrace` type but possibly not `fn backtrace` on the "
+"`Error` trait."
+msgstr ""
+
+#: src/2965-project-error-handling.md:75
+msgid ""
+"Provide necessary API on `Backtrace` to support crates like `color-"
+"backtrace`."
+msgstr ""
+
+#: src/2965-project-error-handling.md:76
+msgid "Move `Error` to core."
+msgstr ""
+
+#: src/2965-project-error-handling.md:77
+msgid "Depends on generic member access."
+msgstr ""
+
+#: src/2965-project-error-handling.md:78
+msgid ""
+"Requires resolving downcast dependency on `Box` and blocking the "
+"stabilization of `fn backtrace`."
+msgstr ""
+
+#: src/2965-project-error-handling.md:79
+msgid ""
+"Potentially stabilize an error reporting type based on `anyhow` and `eyre` "
+"now that they're close to having identical feature sets."
+msgstr ""
+
+#: src/2965-project-error-handling.md:81
+msgid "Add missing features"
+msgstr ""
+
+#: src/2965-project-error-handling.md:83
+msgid "Generic member access on the `Error` trait."
+msgstr ""
+
+#: src/2965-project-error-handling.md:84
+msgid "`Error` return traces:"
+msgstr ""
+
+#: src/2965-project-error-handling.md:85
+msgid "Depends on specialization and generic member access."
+msgstr ""
+
+#: src/2965-project-error-handling.md:86
+msgid "Fix rough corners around reporting errors and `Termination`."
+msgstr ""
+
+#: src/2965-project-error-handling.md:88
+msgid "Non Goals"
+msgstr ""
+
+#: src/2965-project-error-handling.md:90
+msgid ""
+"This group should not be involved in design discussions for the `Try` trait, "
+"`try` blocks, or `try` fns."
+msgstr ""
+
+#: src/2965-project-error-handling.md:92
+msgid "Membership Requirements"
+msgstr ""
+
+#: src/2965-project-error-handling.md:94
+msgid ""
+"Group membership is open, any interested party can participate in "
+"discussions, repeat contributors will be added to appropriate teams."
+msgstr ""
+
+#: src/2965-project-error-handling.md:96
+msgid "Additional Questions"
+msgstr ""
+
+#: src/2965-project-error-handling.md:98
+msgid ""
+"What support do you need, and separately want, from the Rust organization?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:100
+msgid "I'm not sure, my main concern is getting prompt feedback on RFCs."
+msgstr ""
+
+#: src/2965-project-error-handling.md:102
+msgid "Why should this be a project group over a community effort?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:104
+msgid ""
+"There isn't anything in this project group that can't be handled as a "
+"community effort, but centralizing work into a project group should help "
+"speed things. Error handling is a core aspect of the language and changes in "
+"error handling have large impacts on the ecosystem. Ensuring that efforts to "
+"refine error handling within Rust have sufficient resources and don't stall "
+"out is in the best interests of the community. By organizing efforts as a "
+"project group we will hopefully have an easier time recruiting new members, "
+"getting attention on RFCs from members of the libs team, and using the "
+"established resources and expertise of the rust organization for "
+"coordinating our efforts."
+msgstr ""
+
+#: src/2965-project-error-handling.md:115
+msgid "What do you expect the relationship to the team be?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:117
+msgid ""
+"The project group will create RFCs for various changes to the standard "
+"library and the team will review them via the standard RFC process."
+msgstr ""
+
+#: src/2965-project-error-handling.md:119
+msgid ""
+"Who are the initial shepherds/leaders? (This is preferably 2–3 individuals, "
+"but not required.)"
+msgstr ""
+
+#: src/2965-project-error-handling.md:121
+msgid ""
+"Jane Lusby(@yaahc\\_), Andrew Gallant(@BurntSushi), and Sean "
+"Chen(@seanchen1991)."
+msgstr ""
+
+#: src/2965-project-error-handling.md:123
+msgid "Is your group long-running or temporary?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:125
+msgid "Temporary."
+msgstr ""
+
+#: src/2965-project-error-handling.md:127
+msgid "If it is temporary, how long do you see it running for?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:129
+msgid ""
+"This depends pretty heavily on how quickly the RFCs move, anywhere between 6 "
+"months and 2 years I'd guess but don't quote me on this."
+msgstr ""
+
+#: src/2965-project-error-handling.md:131
+msgid ""
+"If applicable, which other groups or teams do you expect to have close "
+"contact with?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:133
+msgid ""
+"Primarily the libs team, but there may be some small interactions with the "
+"lang team, compiler team, and traits working group."
+msgstr ""
+
+#: src/2965-project-error-handling.md:135
+msgid "Where do you see your group needing help?"
+msgstr ""
+
+#: src/2965-project-error-handling.md:137
+msgid "Primarily in drafting RFCs, writing is not this author's strong suit."
+msgstr ""

@@ -1,0 +1,1013 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1868-portability-lint.md:1
+msgid "Feature Name: nonportable"
+msgstr ""
+
+#: src/1868-portability-lint.md:2
+msgid "Start Date: 2016-11-15"
+msgstr ""
+
+#: src/1868-portability-lint.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1868](https://github.com/rust-lang/rfcs/pull/1868)"
+msgstr ""
+
+#: src/1868-portability-lint.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#41619](https://github.com/rust-lang/rust/"
+"issues/41619)"
+msgstr ""
+
+#: src/1868-portability-lint.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1868-portability-lint.md:9
+msgid ""
+"There has long been a desire to expand the number of platform- and "
+"architecture-specific APIs in the standard library, and to offer subsets of "
+"the standard library for working in constrained environments. At the same "
+"time, we want to retain the property that Rust code is portable by default."
+msgstr ""
+
+#: src/1868-portability-lint.md:14
+msgid ""
+"This RFC proposes a new _portability lint_, which threads the needle between "
+"these two desires. The lint piggybacks on the existing `cfg` system, so that "
+"using APIs involving `cfg` will generate a warning unless there is explicit "
+"acknowledgment of the portability implications."
+msgstr ""
+
+#: src/1868-portability-lint.md:19
+msgid ""
+"The lint is intended to make the existing `std::os` module obsolete, to "
+"allow expansion (and subsetting) of the standard library, and to provide "
+"deeper checking for portability across the ecosystem."
+msgstr ""
+
+#: src/1868-portability-lint.md:23
+msgid "Motivation"
+msgstr ""
+
+#: src/1868-portability-lint.md:26
+msgid "Background: portability and the standard library"
+msgstr ""
+
+#: src/1868-portability-lint.md:28
+msgid ""
+"One of the goals of the standard library is to provide an interface to "
+"hardware and system services. In doing so, there were several competing "
+"principles that we wanted to embrace:"
+msgstr ""
+
+#: src/1868-portability-lint.md:32
+msgid "Rust should provide ergonomic and productive APIs for system services."
+msgstr ""
+
+#: src/1868-portability-lint.md:33
+msgid "Rust should encourage portability by default."
+msgstr ""
+
+#: src/1868-portability-lint.md:34
+msgid "Rust should provide zero-cost access to low-level system services."
+msgstr ""
+
+#: src/1868-portability-lint.md:35
+msgid ""
+"Rust should be usable in a wide range of contexts, including resource-"
+"constrained and kernel environments."
+msgstr ""
+
+#: src/1868-portability-lint.md:38
+msgid "The way we balanced these principles was roughly as follows:"
+msgstr ""
+
+#: src/1868-portability-lint.md:40
+msgid ""
+"We identified a set of \"mainstream\" platforms, consisting of 32- and 64-"
+"bit machines running Windows, Linux, or macOS. \"Portability by default\" "
+"thus more specifically means portability _to mainstream platforms_."
+msgstr ""
+
+#: src/1868-portability-lint.md:44
+msgid ""
+"We present an ergonomic, primary API surface which is portable across these "
+"mainstream platforms (see `std::{fs, net, env, process, sync}` etc.)."
+msgstr ""
+
+#: src/1868-portability-lint.md:47
+msgid ""
+"We _also_ provide separate access to low-level or OS-specific services via "
+"the `std::os` module. APIs in this module are largely traits that extend the "
+"cross-platform APIs, and in particular can expose their OS-level "
+"representation. The fact that these APIs require explicitly importing from "
+"`std::os` provided a small \"speed bump\" for venturing out of guaranteed "
+"mainstream platform portability."
+msgstr ""
+
+#: src/1868-portability-lint.md:54
+msgid ""
+"Finally, for working in low-level and embedded contexts, we stabilized "
+"`libcore`, a subset of `libstd` that excludes all OS services and "
+"allocation, but _still_ makes some hardware assumptions (e.g. about atomics "
+"and floating point support)."
+msgstr ""
+
+#: src/1868-portability-lint.md:59
+msgid "Problems with the status quo"
+msgstr ""
+
+#: src/1868-portability-lint.md:61
+msgid ""
+"The above strategy has served us fairly well in the first year since Rust "
+"1.0, but it's increasingly holding us back from enhancements we'd like to "
+"make. It's also suboptimal in a few ways, even for the needs it covers."
+msgstr ""
+
+#: src/1868-portability-lint.md:65
+msgid "**Problems with `std::os`**:"
+msgstr ""
+
+#: src/1868-portability-lint.md:67
+msgid ""
+"The `std::os` module has submodules that correspond to a hierarchy of OS "
+"types. For example, there is a `unix` submodule that applies to several "
+"operating systems, but there's also a `linux` submodule with Linux-specific "
+"extensions. There are a couple of problems with such an organization. Most "
+"importantly, it's not at all clear how to use the module hierarchy to "
+"organize features like [fixed-size atomic types](https://github.com/rust-"
+"lang/rfcs/pull/1543), where the types available vary in a fine-grained way "
+"based on the CPU family; [SIMD](https://github.com/rust-lang/rfcs/pull/1199) "
+"is even worse. But even just for operating systems, organizing into a "
+"hierarchy becomes difficult as we gain more and more APIs, some of which are "
+"only available on particular _versions_ of a given operating system."
+msgstr ""
+
+#: src/1868-portability-lint.md:78
+msgid ""
+"The \"speed bump\" for using `std::os` is minimal and easy to miss; it's "
+"just an import that looks the same as any other. Moreover, it doesn't "
+"provide any help with the ecosystem beyond `std`. There's no simple way to "
+"tell whether a crate you're relying on is portable to the same degree as "
+"`std` is, and the `os` submodule pattern has not really caught on in the "
+"wider ecosystem."
+msgstr ""
+
+#: src/1868-portability-lint.md:84
+msgid ""
+"Platform-specific APIs don't live in their \"natural location\". The "
+"majority of `std::os` works through extension traits to enhance the "
+"functionality of standard primitives. For example `std::os::unix::io::"
+"AsRawFd` is a trait with the `as_raw_fd` method (to extract a file "
+"descriptor). If you were to ignore Windows, however, one might expect this "
+"API instead to live as a method directly on types like `File`, `TcpStream`, "
+"etc. Forcing code to live in `std::os` thus comes at a mild cost for both "
+"ergonomics and discoverability. This problem is even worse for features like "
+"adding more atomic types or SIMD."
+msgstr ""
+
+#: src/1868-portability-lint.md:93
+msgid "**Problems with `libcore`/the facade**:"
+msgstr ""
+
+#: src/1868-portability-lint.md:95
+msgid ""
+"Embedded libraries typically wish to never use functions in the standard "
+"library that abort on allocation failure (e.g. `Vec::push`). We'd like to "
+"provide some way for these libraries to use and interoperate with the "
+"standard collection types, but only have access to an alternative API "
+"surface (e.g. a `try_push` method provided via an extension trait). It's not "
+"clear how to do that with the current [facade](https://github.com/rust-lang/"
+"rfcs/pull/40) setup."
+msgstr ""
+
+#: src/1868-portability-lint.md:102
+msgid ""
+"Kernels and embedded environments often want to [disable floating point]"
+"(https://github.com/rust-lang/rfcs/pull/1596), but the floating point types "
+"are currently treated as primitive and shipped in `libcore`."
+msgstr ""
+
+#: src/1868-portability-lint.md:106
+msgid ""
+"There are platforms like emscripten where much of the standard library "
+"exists for consumption, but APIs like `std::thread` are unimplementable.  "
+"Today these functions simply panic on use, but a compiler error would be "
+"better."
+msgstr ""
+
+#: src/1868-portability-lint.md:110
+msgid ""
+"We'd like to open the door to a growing number of subsets of `std` and "
+"`core`, dropping hardware features like atomics, or perhaps even supporting "
+"16-bit architectures. But again, it's not clear how to fit this into the "
+"[facade](https://github.com/rust-lang/rfcs/pull/40) model without "
+"introducing a sprawling, unwieldy collection of crates."
+msgstr ""
+
+#: src/1868-portability-lint.md:121
+msgid "What are our portability goals?"
+msgstr ""
+
+#: src/1868-portability-lint.md:123
+msgid ""
+"Taking a step back from the specific problems with the status quo, **it's "
+"worth thinking about what it means for Rust to be \"portable\", and what is "
+"realistic to achieve**. We should be asking this question not just for the "
+"standard library, but for the Rust library ecosystem in general."
+msgstr ""
+
+#: src/1868-portability-lint.md:128
+msgid ""
+"The premise of this RFC is that there are roughly three desired portability "
+"levels for a library. In order of increasing portability:"
+msgstr ""
+
+#: src/1868-portability-lint.md:131
+msgid ""
+"**Platform-specific**. These are libraries whose fundamental purpose depends "
+"on a given platform, for which portability doesn't make sense. Examples "
+"include the `libc` crate, the winapi crates, and crates designed for "
+"particular embedded devices."
+msgstr ""
+
+#: src/1868-portability-lint.md:136
+msgid ""
+"**Mainstream portability**. Most libraries take portability as a secondary "
+"concern, and in particular don't want to take a productivity hit just for "
+"the sake of maximizing portability. On the other hand, these libraries tend "
+"not to use obscure platform features, and it's usually not too much of a "
+"hardship to work across common platforms."
+msgstr ""
+
+#: src/1868-portability-lint.md:142
+msgid ""
+"**Maximal portability**. In some cases, a library author is motivated to "
+"push for a greater degree of portability, for example allowing their code to "
+"work in the `no_std` ecosystem. Depending on the library, this may entail a "
+"significant amount of work."
+msgstr ""
+
+#: src/1868-portability-lint.md:147
+msgid ""
+"There's a fundamental tradeoff here. On the one hand, we want Rust libraries "
+"to be as portable as possible. On the other hand, achieving _maximal_ "
+"portability can be a big burden for library authors.  Our approach so far "
+"has been to identify \"mainstream platform assumptions\", as mentioned "
+"above, and _guide_ code to work on all mainstream platforms by default; by "
+"convention, such portability is the default expectation of libraries on "
+"crates.io. This RFC formalizes that approach in a deeper way."
+msgstr ""
+
+#: src/1868-portability-lint.md:155
+msgid ""
+"An important point: while we can expect library authors who are striving for "
+"portability to test their code on a variety of target platforms, we can't "
+"make that assumption for the average library. In other words, **if we want "
+"to guide all Rust code toward at least mainstream portability, we will need "
+"to do so in a way that doesn't require actually compiling and testing for "
+"all mainstream scenarios**."
+msgstr ""
+
+#: src/1868-portability-lint.md:162
+msgid "Detailed design"
+msgstr ""
+
+#: src/1868-portability-lint.md:165
+msgid "The basic idea"
+msgstr ""
+
+#: src/1868-portability-lint.md:167
+msgid "The core problem we want to solve is:"
+msgstr ""
+
+#: src/1868-portability-lint.md:169
+msgid ""
+"We want to make non-mainstream APIs available in their natural location, e."
+"g. as inherent methods directly on standard library types."
+msgstr ""
+
+#: src/1868-portability-lint.md:172
+msgid ""
+"We want to have some kind of \"speed bump\" before using such APIs, so that "
+"users realize that they may be giving up mainstream portability."
+msgstr ""
+
+#: src/1868-portability-lint.md:175
+msgid ""
+"We want to do this _without_ requiring testing on platforms that lack the "
+"API."
+msgstr ""
+
+#: src/1868-portability-lint.md:177
+msgid ""
+"The core idea is that having to write `cfg` is a sufficient speedbump, as it "
+"makes explicit what platform assumptions a piece of code is making. But "
+"today, you don't have to be _within_ a `cfg` to call something labeled with "
+"`cfg`."
+msgstr ""
+
+#: src/1868-portability-lint.md:181
+msgid ""
+"Let's take a concrete example: the `as_raw_fd` method. We'd like to provide "
+"this API as an inherent method on things like files. But it's not a "
+"\"mainstream\" API; it only works on Unix. If you tried to use it and "
+"compiled your code on Windows, you would discover the problem right away, "
+"since the API would not be available due to `cfg`. But if you were only "
+"testing on Linux, you might never notice, since the API is available there."
+msgstr ""
+
+#: src/1868-portability-lint.md:188
+msgid ""
+"**The basic idea of this RFC is to provide an additional layer of checking "
+"on top of the existing `cfg` system, to avoid usage of an API _accidentally "
+"working_ because you happen to be compiling for a given target platform**. "
+"This checking is performed through a new **portability lint**, which warns "
+"when invoking APIs marked with `cfg` unless you've explicitly acknowledged "
+"the portability implications. We'll see how you do that in a moment."
+msgstr ""
+
+#: src/1868-portability-lint.md:195
+msgid "Going back to our example, we'd like to define methods on `File` like:"
+msgstr ""
+
+#: src/1868-portability-lint.md:207
+msgid ""
+"If you attempted to call `as_raw_fd`, when compiling on Unix you'd get a "
+"warning from the portability lint that you're calling an API not available "
+"on all mainstream platforms. There are basically three ways to react (all of "
+"which will make the warning go away):"
+msgstr ""
+
+#: src/1868-portability-lint.md:212
+msgid ""
+"Decide not to use the API, after discovering that it would reduce "
+"portability."
+msgstr ""
+
+#: src/1868-portability-lint.md:214
+msgid ""
+"Decide to use the API, putting the function using it within a `cfg(unix)` as "
+"well (which will flag that function as Unix-specific)."
+msgstr ""
+
+#: src/1868-portability-lint.md:217
+msgid ""
+"Decide to use the API _in a cross-platform way_, e.g. by providing a Windows "
+"version of the same functionality. In that case you `allow` the lint, "
+"explicitly acknowledging that your code may involve platform-specific APIs "
+"but claiming that all platforms of the current `cfg` are handled. (See the "
+"appendix at the end for a possible extension that does more checking)."
+msgstr ""
+
+#: src/1868-portability-lint.md:223
+msgid "In code, we'd have:"
+msgstr ""
+
+#: src/1868-portability-lint.md:226
+msgid ""
+"////////////////////////////////////////////////////////////////////////////////\n"
+"// The code we might have written initially:\n"
+"////////////////////////////////////////////////////////////////////////////////\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:231
+msgid ""
+"// Would generate a warning: calling a `unix`-only API while only\n"
+"    // assuming a mainstream platform\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:233 src/1868-portability-lint.md:243
+#: src/1868-portability-lint.md:249 src/1868-portability-lint.md:255
+msgid "\"foo.txt\""
+msgstr ""
+
+#: src/1868-portability-lint.md:235
+msgid ""
+"////////////////////////////////////////////////////////////////////////////////\n"
+"// Code that opts into platform-specificness:\n"
+"////////////////////////////////////////////////////////////////////////////////\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:242
+msgid "// No warning: we're within code that assumes `unix`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:248
+msgid "// No warning: we're within code that assumes `windows`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:254
+msgid ""
+"// No warning: we're within code that assumes `linux`, which implies `unix`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:257
+msgid ""
+"////////////////////////////////////////////////////////////////////////////////\n"
+"// Code that provides a cross-platform abstraction\n"
+"////////////////////////////////////////////////////////////////////////////////\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:261
+msgid ""
+"// No `cfg` label here; it's a cross-platform function, which we claim\n"
+"// via the `allow`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:266
+msgid "// invoke an item with a more restrictive `cfg`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:271
+msgid ""
+"As with many lints, the portability lint is _best effort_: it is not "
+"required to provide airtight guarantees about portability. However, the RFC "
+"sketches a plausible implementation route that should cover the vast "
+"majority of cases."
+msgstr ""
+
+#: src/1868-portability-lint.md:275
+msgid ""
+"Note that this lint will only check code that is actually compiled on the "
+"current platform, so the following code would not produce a warning when "
+"compiled on `unix`:"
+msgstr ""
+
+#: src/1868-portability-lint.md:280 src/1868-portability-lint.md:291
+msgid "// ...\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:285
+msgid "// this call should warn since it makes an additional assumption\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:289
+msgid "\"64\""
+msgstr ""
+
+#: src/1868-portability-lint.md:295
+msgid ""
+"However, any such \"missed portability issues\" are only possible when "
+"already using `cfg`, which means a \"speedbump\" has already been passed."
+msgstr ""
+
+#: src/1868-portability-lint.md:298
+msgid "With that overview in mind, let's dig into the details."
+msgstr ""
+
+#: src/1868-portability-lint.md:300
+msgid "The lint definition"
+msgstr ""
+
+#: src/1868-portability-lint.md:302
+msgid ""
+"The lint is structured somewhat akin to a type and effect system: roughly "
+"speaking, items that are labeled with a given `cfg` assumption can only be "
+"used within code making that same `cfg` assumption."
+msgstr ""
+
+#: src/1868-portability-lint.md:306
+msgid ""
+"More precisely, each item has a _portability_, consisting of all the "
+"lexically-nested uses of `cfg`. If there are multiple uses of `cfg`, the "
+"portability is taken to be their _conjunction_:"
+msgstr ""
+
+#: src/1868-portability-lint.md:313
+msgid "\"32\""
+msgstr ""
+
+#: src/1868-portability-lint.md:315
+msgid ""
+"// the portability of `bar` is `all(unix, target_pointer_width = \"32\")`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:320
+msgid ""
+"The portability only considers built-in `cfg` attributes (like `target_os`), "
+"_not_ Cargo features (which are treated as automatically true for the lint "
+"purposes)."
+msgstr ""
+
+#: src/1868-portability-lint.md:324
+msgid ""
+"The lint is then straightforward to define at a high level: it walks over "
+"item definitions and checks that the item's portability is _narrower_ than "
+"the portability of items it references or invokes. For example, `bar` in the "
+"above could invoke an item with portability `unix` and/or "
+"`target_pointer_width = \"32\"`, but not one with portability `linux`."
+msgstr ""
+
+#: src/1868-portability-lint.md:330
+msgid ""
+"To fully define the lint, though, we need to give more details about what "
+"\"narrower\" means, and how referenced item portability is determined."
+msgstr ""
+
+#: src/1868-portability-lint.md:333
+msgid "Comparing portabilities"
+msgstr ""
+
+#: src/1868-portability-lint.md:335
+msgid ""
+"**What does it mean for a portability to be narrower?** In general, "
+"portability is a logical expression, using the operators `all`, `any`, `not` "
+"on top of primitive expressions like `unix`. Portability `P` is narrower "
+"than portability `Q` if `P` _implies_ `Q` as a logic formula."
+msgstr ""
+
+#: src/1868-portability-lint.md:340
+msgid ""
+"In general, comparing two portabilities is equivalent to solving SAT, an NP-"
+"complete problem -- a frightening prospect for a lint! However, note that "
+"worst-case execution is exponential in _the number of variables_ (i.e., "
+"primitive `cfg` constraints), not the number/complexity of clauses, and most "
+"comparisons should involve a very small number of variables. We can likely "
+"get away with a naive SAT implementation, perhaps with a handful of "
+"optimiziations specific to our use-case. In the limit, there are also many "
+"well-known techniques for solving SAT efficiently even on very large "
+"examples that arise in real-world usage."
+msgstr ""
+
+#: src/1868-portability-lint.md:350
+msgid "Axioms"
+msgstr ""
+
+#: src/1868-portability-lint.md:352
+msgid ""
+"Another aspect of portability comparison is the relationship between things "
+"like `unix` and `linux`. In logical terms, we want to assume that `linux` "
+"implies `unix`, for example."
+msgstr ""
+
+#: src/1868-portability-lint.md:356
+msgid ""
+"The primitive portabilities we'll be comparing are all _built in_ (since we "
+"are not including Cargo features). The solver can thus build in a number of "
+"assumptions about these portabilities. The end result is that code like the "
+"following should pass the lint:"
+msgstr ""
+
+#: src/1868-portability-lint.md:367
+msgid "// permitted since `linux` implies `unix`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:372
+msgid ""
+"Of course, primitive portabilities in practice are key-value pairs (like "
+"`target_os = \"unix\"`). This RFC proposes to treat _all_ keys as multimaps, "
+"that is, to not introduce assumptions like `nand(target_os = \"unix\", "
+"target_os = \"windows\")` for simplicity's sake; uses of `cfg` in practice "
+"will not produce such nonsensical situations. However, the precise details "
+"of how these implications are specified---and what implications are "
+"desired---are left as implementation details that need to be worked out with "
+"real-world experience."
+msgstr ""
+
+#: src/1868-portability-lint.md:380
+msgid "Determining the portability of referenced items"
+msgstr ""
+
+#: src/1868-portability-lint.md:382
+msgid ""
+"**How is the portability of a referenced item determined?** The lint will "
+"resolve an item to its definition, and use the portability of that "
+"definition, which will be recorded in metadata. For the case of trait items, "
+"however, this will involve attempting to resolve the invocation to a "
+"particular impl, to look up the portability of that impl. We can set up "
+"trait selection to yield portability information with the selected impl, "
+"which will allow us to catch cases like the following:"
+msgstr ""
+
+#: src/1868-portability-lint.md:407
+msgid ""
+"// invokes a `cfg(unix)` item via a generic function, but we can catch it\n"
+"    // when checking that `MyType: Foo`, since selection will say that we "
+"need\n"
+"    // our context to imply `unix`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:414
+msgid "The story for `std`"
+msgstr ""
+
+#: src/1868-portability-lint.md:416
+msgid ""
+"With these basic mechanisms in hand, let's sketch out how we might apply "
+"them to the standard library to achieve our initial goals. This part of the "
+"RFC should not be considered normative; it's left to the implementation to "
+"make the final determination about how to set up the standard library."
+msgstr ""
+
+#: src/1868-portability-lint.md:421
+msgid "The mainstream platform"
+msgstr ""
+
+#: src/1868-portability-lint.md:423
+msgid ""
+"The \"mainstream platform\" will be expressed via a new primitive `cfg` "
+"pattern called `std`. This is the **default portability of all crates**, "
+"unless opted-out (see below on \"subsetting `std`\"). Likewise, most items "
+"in `std` will _initially_ be exported at `std` portability level (but see "
+"subsets below). These two facts together mean that existing uses of `std` "
+"will continue to work without issuing any warnings."
+msgstr ""
+
+#: src/1868-portability-lint.md:430
+msgid "Expanding `std`"
+msgstr ""
+
+#: src/1868-portability-lint.md:432
+msgid ""
+"With the above setup, handling extensions to `std` with APIs like "
+"`as_raw_fd` is straightforward. In particular, we can write:"
+msgstr ""
+
+#: src/1868-portability-lint.md:445
+msgid ""
+"and the portability of `as_raw_fd` will be `all(std, unix)`. Thus, any code "
+"using `as_raw_fd` will need to be in a `unix` context in particular."
+msgstr ""
+
+#: src/1868-portability-lint.md:448
+msgid ""
+"We can thus deprecate the `std::os` module in favor of these in-place APIs. "
+"Doing so leverages the fact that we're using a portability _lint_: these new "
+"inherent methods will shadow the existing ones in `std::os`, and may "
+"generate new warnings, but this is considered an acceptable change. After "
+"all, lints on dependencies are automatically capped, and the lint will not "
+"prevent code from compiling--and can be silenced."
+msgstr ""
+
+#: src/1868-portability-lint.md:455
+msgid ""
+"For hardware features like additional atomics or SIMD, we can use the "
+"`target_feature` cfg key to label the APIs -- which has to be done anyway, "
+"but will also do the right thing for the lint."
+msgstr ""
+
+#: src/1868-portability-lint.md:459
+msgid ""
+"In short, for expansions there's basically nothing to do. You just add the "
+"API in its natural location, with its natural `cfg`, and everything works "
+"out."
+msgstr ""
+
+#: src/1868-portability-lint.md:462
+msgid "Subsetting `std`"
+msgstr ""
+
+#: src/1868-portability-lint.md:464
+msgid "What about subsets of `std`?"
+msgstr ""
+
+#: src/1868-portability-lint.md:466
+msgid ""
+"**What use case do we want to address?** Going back to the Portability Goals "
+"discussed earlier, the goal of subsetting `std` is mostly about helping "
+"people who want _maximum portability_. For this use case, you should opt out "
+"of the mainstream platform, and then _whitelist_ the various features you "
+"need, thus giving you assistance in using the minimal set of assumptions "
+"needed."
+msgstr ""
+
+#: src/1868-portability-lint.md:472
+msgid ""
+"**Opting out of the mainstream platform**. To opt out of the `std` platform, "
+"you can just apply a `cfg` to your _crate_ definition. The assumptions of "
+"that `cfg` will form the baseline for the crate."
+msgstr ""
+
+#: src/1868-portability-lint.md:476
+msgid ""
+"**Carving up `std` into whitelistable features**. When we want to provide "
+"subsets of `std`, we can introduce a new set of target features, along the "
+"following lines:"
+msgstr ""
+
+#: src/1868-portability-lint.md:480
+msgid "each integer size"
+msgstr ""
+
+#: src/1868-portability-lint.md:481
+msgid "each float size"
+msgstr ""
+
+#: src/1868-portability-lint.md:482
+msgid "each atomics size"
+msgstr ""
+
+#: src/1868-portability-lint.md:483
+msgid "allocation"
+msgstr ""
+
+#: src/1868-portability-lint.md:484
+msgid "OS facilities"
+msgstr ""
+
+#: src/1868-portability-lint.md:485
+msgid "env"
+msgstr ""
+
+#: src/1868-portability-lint.md:486
+msgid "fs"
+msgstr ""
+
+#: src/1868-portability-lint.md:487
+msgid "net"
+msgstr ""
+
+#: src/1868-portability-lint.md:488
+msgid "process"
+msgstr ""
+
+#: src/1868-portability-lint.md:489
+msgid "thread"
+msgstr ""
+
+#: src/1868-portability-lint.md:490
+msgid "rng"
+msgstr ""
+
+#: src/1868-portability-lint.md:492
+msgid ""
+"**To introduce these features, we would change APIs in `std` from being "
+"marked as `#[cfg(std)]` to instead being labeled with the particular "
+"feature**, e.g.:"
+msgstr ""
+
+#: src/1868-portability-lint.md:496 src/1868-portability-lint.md:499
+msgid "// previously: #[cfg(std)]\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:497
+msgid "\"thread\""
+msgstr ""
+
+#: src/1868-portability-lint.md:501
+msgid "\"fs\""
+msgstr ""
+
+#: src/1868-portability-lint.md:505
+msgid ""
+"and so on. We can then set up axioms such that `std` _implies_ all of these "
+"features. That way existing code written at the default portability level "
+"will not produce warnings when using the standard library. And in general, "
+"we can carve out increasingly fine-grained subsets, setting up implications "
+"between the previous coarse-grained features and the new subsets."
+msgstr ""
+
+#: src/1868-portability-lint.md:511
+msgid ""
+"On the other side, library authors shooting for maximal portability should "
+"opt out of `cfg(std)`, and use `cfg` as little as possible, adding features "
+"to their whitelist only after deciding they're truly needed, or abstracting "
+"over them (such as using threading for parallelism only when it was "
+"available)."
+msgstr ""
+
+#: src/1868-portability-lint.md:516
+msgid "Proposed rollout"
+msgstr ""
+
+#: src/1868-portability-lint.md:518
+msgid ""
+"The most pressing problem in `std` is the desire for expansion, rather than "
+"subsetting, so we should start there. The `cfg` needed for expansion is "
+"totally straightforward, and will allow us to gain experience with the lint."
+msgstr ""
+
+#: src/1868-portability-lint.md:522
+msgid ""
+"Later, we can start exploring subsets of `std`, which will likely require "
+"some more thoughtful design to find the right granularity."
+msgstr ""
+
+#: src/1868-portability-lint.md:525
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1868-portability-lint.md:528
+msgid "There are several potential drawbacks to the approach of this RFC:"
+msgstr ""
+
+#: src/1868-portability-lint.md:530
+msgid "It adds a significant level of pedanticness about portability to Rust."
+msgstr ""
+
+#: src/1868-portability-lint.md:531
+msgid "It does not provide airtight guarantees."
+msgstr ""
+
+#: src/1868-portability-lint.md:532
+msgid ""
+"It may create compiler performance issues, due to the use of SAT solving."
+msgstr ""
+
+#: src/1868-portability-lint.md:534
+msgid ""
+"The fact that it's a lint offers some help with the first two points; the "
+"use of `std` as a default portability level should also help quite a bit "
+"with pedanticness."
+msgstr ""
+
+#: src/1868-portability-lint.md:538
+msgid ""
+"The worry about SAT solving is harder to mitigate; there's not much concrete "
+"evidence in either direction. But it is yet another place where the fact "
+"that it's a lint could help: we may be able to simply skip checking "
+"pathological cases, if they indeed arise in practice. In any case, it's hard "
+"to know how concerned to be until we try it."
+msgstr ""
+
+#: src/1868-portability-lint.md:544
+msgid ""
+"While the fact that it's a lint gives us more leeway to experiment, it's "
+"also a lint that could produce widespread warnings throughout the ecosystem, "
+"so we need to exercise care."
+msgstr ""
+
+#: src/1868-portability-lint.md:548
+msgid "Alternatives"
+msgstr ""
+
+#: src/1868-portability-lint.md:551
+msgid "The main alternatives are:"
+msgstr ""
+
+#: src/1868-portability-lint.md:553
+msgid ""
+"**Give up on encouraging \"portability by default\"**, and instead just land "
+"APIs in their natural location using today's `cfg` system. This is certainly "
+"the less costly way to go. It's also _forward-compatible_ with implementing "
+"the proposed lint, so we should discuss the possibility of landing APIs "
+"under `cfg` even before the lint is implemented."
+msgstr ""
+
+#: src/1868-portability-lint.md:559
+msgid ""
+"**Use a less precise checking strategy.** In particular, rather than trying "
+"to compare portabilities in a detailed, item-level way, we might just "
+"require some crate-level \"opt in\". That could either take the form of "
+"acknowledging \"this code makes assumptions beyond the mainstream "
+"platform\", or might list the specific `cfg` assumptions the code is allowed "
+"to make. Of course, the downside is that you get much less help making sure "
+"that your APIs are properly labeled in place."
+msgstr ""
+
+#: src/1868-portability-lint.md:567
+msgid "How we teach this"
+msgstr ""
+
+#: src/1868-portability-lint.md:570
+msgid ""
+"For people simply using libraries, this feature \"teaches itself\" by "
+"generating warnings. Those warnings should make clear what to do to fix the "
+"problem, and ideally provide extended error information that describes the "
+"system in more detail."
+msgstr ""
+
+#: src/1868-portability-lint.md:575
+msgid ""
+"For library authors, the documentation for `cfg` and `match_cfg` would "
+"explain the implications for the lint, and walk through several examples "
+"illustrating the scenarios that arise in practice."
+msgstr ""
+
+#: src/1868-portability-lint.md:579
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1868-portability-lint.md:582
+msgid "Extensions to `cfg` itself"
+msgstr ""
+
+#: src/1868-portability-lint.md:584
+msgid ""
+"If we allow `cfg` to go beyond simple key-value pairs, for example to talk "
+"about ranges, we will need to accommodate that somehow in the lint. One "
+"plausible approach would be to use something more like SMT solving, which "
+"incorporates reasoning about things like ordering constraints in addition to "
+"basic SAT questions."
+msgstr ""
+
+#: src/1868-portability-lint.md:590
+msgid "External libraries"
+msgstr ""
+
+#: src/1868-portability-lint.md:592
+msgid ""
+"It's not clear what the story should be for a library like `libc`, which "
+"currently involves intricate uses of `cfg`. We should have some idea for how "
+"to approach such cases before landing the RFC."
+msgstr ""
+
+#: src/1868-portability-lint.md:596
+msgid "The standard library"
+msgstr ""
+
+#: src/1868-portability-lint.md:598
+msgid ""
+"To what extent does this proposal obviate the need for the `std` facade? "
+"Might it be possible to deprecate `libcore` in favor of the \"subsetting "
+"`std`\" approach?"
+msgstr ""
+
+#: src/1868-portability-lint.md:601
+msgid "Cargo features"
+msgstr ""
+
+#: src/1868-portability-lint.md:603
+msgid ""
+"It's unclear whether, or how, to extend this approach to deal with Cargo "
+"features. In particular, features are namespaced per crate, so there's no "
+"way to use the `cfg` system today to talk about upstream features."
+msgstr ""
+
+#: src/1868-portability-lint.md:607
+msgid "Appendix: possible extensions"
+msgstr ""
+
+#: src/1868-portability-lint.md:609
+msgid "`match_cfg`"
+msgstr ""
+
+#: src/1868-portability-lint.md:611
+msgid ""
+"The original version of this RFC was more expansive, and proposed a "
+"`match_cfg` macro that provided some additional checking."
+msgstr ""
+
+#: src/1868-portability-lint.md:614
+msgid ""
+"The `match_cfg` macro takes a sequence of `cfg` patterns, followed by `=>` "
+"and an expression. Its syntax and semantics resembles that of `match`. "
+"However, there are some special considerations when checking portability:"
+msgstr ""
+
+#: src/1868-portability-lint.md:618
+msgid ""
+"When descending into an arm of a `match_cfg`, the arm is checked against "
+"portability that includes the pattern for the arm."
+msgstr ""
+
+#: src/1868-portability-lint.md:621
+msgid ""
+"The portability for the `match_cfg` itself is understood as `any(p1, ..., "
+"p_n)` where the `match_cfg` patterns are `p1` through `p_n`."
+msgstr ""
+
+#: src/1868-portability-lint.md:624
+msgid "Thus, for example, the following code will pass the lint:"
+msgstr ""
+
+#: src/1868-portability-lint.md:635
+msgid "// the expression here has portability `any(windows, unix)`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:638
+msgid ""
+"// allowed because we are within a scope with\n"
+"            // portability `all(any(windows, unix), windows)`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:643
+msgid ""
+"// allowed because we are within a scope with\n"
+"            // portability `all(any(windows, unix), unix)`\n"
+msgstr ""
+
+#: src/1868-portability-lint.md:651
+msgid ""
+"If you have a `match_case` that covers _all_ cases (like `windows` and "
+"`not(windows)`), then it imposes _no_ portability constraints on its context."
+msgstr ""
+
+#: src/1868-portability-lint.md:654
+msgid ""
+"On more reflection, though, this extension doesn't seem so worthwhile: while "
+"it provides some additional checking, the fact remains that only the "
+"currently-enabled `cfg` is fully checked, so the additional guarantee you "
+"get is somewhat mixed. It's also a rare (maybe non-existent) error to "
+"explicitly write code that's broken down by platforms, but forget one of the "
+"platforms you wish to cover."
+msgstr ""
+
+#: src/1868-portability-lint.md:661
+msgid ""
+"We can, however, add `match_cfg` as a backwards-compatible extension at any "
+"time."
+msgstr ""

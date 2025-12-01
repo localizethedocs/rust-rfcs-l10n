@@ -1,0 +1,883 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3516-public-private-dependencies.md:1
+msgid "Feature Name: `public_private_dependencies`"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:2
+msgid "Start Date: 2023-10-13"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:3
+msgid ""
+"Prior RFC PR: [rust-lang/rfcs#1977](https://github.com/rust-lang/rfcs/"
+"pull/1977)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:4
+msgid ""
+"Pre-RFC: [Pre-RFC: Superseding public/private dependencies](https://"
+"internals.rust-lang.org/t/pre-rfc-superseding-public-private-"
+"dependencies/19708)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#3516](https://github.com/rust-lang/rfcs/pull/3516)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:6
+msgid ""
+"Rust Issue: [rust-lang/rust#44663](https://github.com/rust-lang/rust/"
+"issues/44663)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:8
+msgid "Summary"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:11
+msgid "Introduce a public/private distinction to crate dependencies."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:13
+msgid ""
+"Note: this supersedes [RFC 1977](https://github.com/rust-lang/rfcs/"
+"pull/1977) Enough has changed in the time since that RFC was approved that "
+"we felt we needed to go back and get wider input on this, rather than "
+"handling decisions through the tracking issue."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:15
+msgid ""
+"[RFC 1977](https://github.com/rust-lang/rfcs/pull/1977) was written before "
+"Editions, `cfg` dependencies, and package renaming which can all affect it"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:16
+msgid ""
+"The resolver changes were a large part of [RFC 1977](https://github.com/rust-"
+"lang/rfcs/pull/1977) but there are concerns with it and we feel it'd be best "
+"to decouple it, offering a faster path to stabilization"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:18
+msgid ""
+"Note: The 2024 Edition is referenced in this RFC but that is a placeholder "
+"for whatever edition next comes up after stabilization."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:21
+msgid "Motivation"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:24
+msgid ""
+"The crates ecosystem has greatly expanded since Rust 1.0. With that, a few "
+"patterns for dependencies have evolved that challenge the existing "
+"dependency declaration system in Cargo and Rust. The most common problem is "
+"that a crate `A` depends on another crate `B` but some of the types from "
+"crate `B` are exposed through the API in crate `A`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:29
+msgid ""
+"Brittle semver compatibility as `A` might not have intended to expose `B`, "
+"like when adding `impl From<B::error> for AError` for convenience in using `?"
+"` in the implementation of `A`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:31
+msgid ""
+"When self-hosting documentation, you may want to render documentation for "
+"all of your public dependencies as well"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:32
+msgid ""
+"When running `cargo doc`, users may want to render [documentation for their "
+"accessible dependencies](https://github.com/rust-lang/cargo/issues/2025) "
+"[without the cost of their inaccessible dependencies](https://github.com/"
+"rust-lang/cargo/issues/4049)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:33
+msgid ""
+"When linting for semver compatibility [there isn't enough information to "
+"reason about dependencies](https://github.com/obi1kenobi/cargo-semver-checks/"
+"issues/121)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:35
+msgid "Related problems with this scenario not handled by this RFC:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:36
+msgid ""
+"Poor error messages when a user directly depends on `A` and `B` but with a "
+"version requirement on `B` that is semver incompatible with `A`s version "
+"requirement on `B`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:39
+msgid ""
+"See [Dependency visibility and the resolver](#rationale-and-alternatives) "
+"for why this is excluded."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:40
+msgid ""
+"Allow mutually exclusive features or overly-constrained version requirements "
+"by not requiring private dependencies to be unified."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:42
+msgid "Private dependencies are not sufficient on their own for this"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:43
+msgid ""
+"There are likely better alternatives, like [Pre-RFC: Mutually-exclusive, "
+"global features](https://internals.rust-lang.org/t/pre-rfc-mutually-excusive-"
+"global-features/19618)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:44
+msgid ""
+"Help check for missing feature declarations by duplicating dependencies, "
+"rather than unifying features"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:45
+msgid "See [Missing feature declaration check](#future-possibilities)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:47
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:50
+msgid "As a trivial, artificial example:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:51
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"diagnostic\"\n"
+"version = \"1.0.0\"\n"
+"\n"
+"[dependencies]\n"
+"serde = { version = \"1\", features = [\"derive\"] }\n"
+"serde_json = \"1\"\n"
+"```"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:78
+msgid ""
+"The dependencies `serde` and `serde_json` are both public dependencies, "
+"meaning their types are referenced in the public API. This has the "
+"implication that a semver incompatible upgrade of these dependencies is a "
+"breaking change for this package."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:81
+msgid ""
+"With this RFC, in pre-2024 editions, you can enable add `lints.rust."
+"exported_private_dependencies = \"warn\"` to your manifest and rustc will "
+"warn saying that `serde` and `serde_json` are private dependencies in a "
+"public API. In 2024+ editions, this will be an error."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:87
+msgid ""
+"To resolve the warning in a semver compatible way, they would need to "
+"declare both dependencies as public:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:88
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"diagnostic\"\n"
+"version = \"1.0.0\"\n"
+"\n"
+"[dependencies]\n"
+"serde = { version = \"1\", features = [\"derive\"], public = true }\n"
+"serde_json = { version = \"1\", public = true }\n"
+"```"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:97
+msgid ""
+"For edition migrations, `cargo fix` will look for the warning code and mark "
+"those dependencies as `public`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:99
+msgid ""
+"However, for this example, it was an oversight in exposing `serde_json` in "
+"the public API. Note that removing it from the public API is a semver "
+"incompatible change."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:101
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"diagnostic\"\n"
+"version = \"1.0.0\"\n"
+"\n"
+"[dependencies]\n"
+"serde = { version = \"1\", features = [\"derive\"], public = true }\n"
+"serde_json = \"1\"\n"
+"```"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:130
+msgid ""
+"If you then had a public dependency on `diagnostic`, then `serde` would "
+"automatically be considered a public dependency of yours."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:133
+msgid ""
+"At times, some public dependencies are effectively private. Take this code "
+"from older versions of `clap`"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:137
+#: src/3516-public-private-dependencies.md:149
+msgid "\"derive\""
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:143
+msgid ""
+"Since the proc-macro can only guarantee that the namespace `clap` is "
+"accessible, `clap` must re-export any functionality that is needed at "
+"runtime by the generated code. As a last-ditch way of dealing with this, a "
+"user may allow the error:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:155
+msgid "A similar case is pub-in-private:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:162
+msgid ""
+"Though this might be worked around by reducing the visibility to "
+"`pub(crate)`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:164
+msgid ""
+"I say \"last ditch\" because in most other cases, a user would be better "
+"served by wrapping the API which would be helped with features like `impl "
+"Trait` in type aliases if we had it."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:168
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:171
+msgid "rustc"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:173
+msgid ""
+"The main change to the compiler will be to accept a new modifier on the `--"
+"extern` flag that Cargo supplies which marks it as a private dependency. The "
+"modifier will be called `priv` (e.g. `--extern priv:serde`). The compiler "
+"then emits the lint `exported-private-dependencies` if it encounters private "
+"dependencies exposed as `public`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:179
+msgid ""
+"`exported-private-dependencies` will be `allow` by default for pre-2024 "
+"editions. It will be a member of the `rust-2024-compatibility` lint group so "
+"that it gets automatically picked up by `cargo fix --edition`. In the 2024 "
+"edition, this lint will be `deny`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:183
+msgid ""
+"In some situations, it can be necessary to allow private dependencies to "
+"become part of the public API. In that case one can permit this with "
+"`#[allow(exported_private_dependencies)]`. This is particularly useful when "
+"paired with `#[doc(hidden)]` and other already existing hacks. This most "
+"likely will also be necessary for the more complex relationship of `libcore` "
+"and `libstd` in Rust itself."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:190
+msgid "cargo"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:192
+msgid ""
+"A new dependency field, `public = <bool>` will be added that defaults to "
+"`false`. This field can be specified in `workspace.dependencies` and be "
+"overridden when `workspace = true` is in a dependency. When building a "
+"`lib`, Cargo will use the `priv` modifier with `--extern` for all private "
+"dependencies. What is private is what is left after recursively walking "
+"public dependencies (`public = true`). For other [`crate-type`s](https://doc."
+"rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field) (e.g. "
+"`bin`), we'll tell rustc that all dependencies are public to reduce noise "
+"from inaccessible `public` items."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:199
+msgid ""
+"Cargo will not force a `rust-version` bump when using this feature as "
+"someone building with an old version of cargo depending on packages that set "
+"`public = true` will not start to fail when upgrading to new versions of "
+"cargo."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:203
+msgid ""
+"`cargo add` will gain `--public <bool>` flags to control this field. When "
+"adding a dependency today, the version requirement is reused from other "
+"dependency tables within your manifest. With this RFC, that will be extended "
+"to also checking your dependencies for any `public` dependencies, and "
+"reusing their version requirement. This would be most easily done by having "
+"the field in the Index but `cargo add` could also read the `.crate` files as "
+"a fallback."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:208
+msgid "crates.io"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:210
+msgid ""
+"Crates.io should show public dependencies more prominently than private ones."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:212
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:215
+msgid ""
+"It might not be clear how to resolve the warning/error, as it's emitted by "
+"rustc but is resolved by changing information in the build system, "
+"generally, but not always, cargo. As a last resort, we could put a hack in "
+"cargo to intercept the lint and emit a new version of it that explains "
+"things in terms of cargo."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:221
+msgid ""
+"There are risks with the `cargo fix` approach as it requires us to take a "
+"non-machine applicable lint, parsing out the information we need to identify "
+"the corresponding `Cargo.toml`, and translate it into a change for `Cargo."
+"toml`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:225
+msgid ""
+"In the case where you depend on `foo = \"300\"`, there isn't a way to "
+"clarify that what is public is actually from `foo-core = \"1\"` without "
+"explicitly depending on it."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:227
+msgid ""
+"This doesn't cover the case where a dependency is public only if a feature "
+"is enabled."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:229
+msgid ""
+"The warning/error is emitted even when a `pub` item isn't accessible. We at "
+"least reduced the impact of this by not marking dependencies as private for "
+"`crate-type=[\"bin\"]`."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:232
+msgid ""
+"You can't definitively lint when a `public = true` is unused since it may "
+"depend on which platform or features."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:234
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:237
+msgid "Misc"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:239
+msgid ""
+"`Cargo.toml`: instead of `public` (like [RFC 1977](https://github.com/rust-"
+"lang/rfcs/pull/1977)), we could name the field `pub` (named after the [Rust "
+"keyword](https://doc.rust-lang.org/reference/visibility-and-privacy.html)) "
+"or name the field `visibility = \"<public|private>\"`"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:240
+msgid "`pub` has a nice parallel with Rust"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:241
+msgid ""
+"`pub`: Cargo doesn't use abbreviations as much as Rust (though some are used)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:242
+msgid "`pub` could be seen as ambiguous with `publish`"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:243
+msgid ""
+"`public` already is reserved and requires a `cargo_features`, meaning using "
+"it requires an MSRV bump"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:244
+msgid ""
+"While `visibility` would offer greater flexibility, it is unclear if we need "
+"that flexibility and if the friction of any feature leveraging it would be "
+"worth it"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:245
+msgid ""
+"`rustc`: Instead of `allow` by default for pre-2024 editions, we could warn "
+"by default"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:246
+msgid "More people would get the benefit of the feature now"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:247
+msgid "However, this would be extremely noisy and likely make people grumpy"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:248
+msgid ""
+"If we did this, we'd likely want to not require an MSRV bump so people can "
+"immediately silence the warning which would require using a key besides "
+"`public` (since it's already reserved) and treating the field as an unused "
+"key when the `-Z` isn't enabled."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:249
+msgid ""
+"`Cargo.toml`: Instead of `public = false` being the default and changing the "
+"warning level on an edition boundary, we could instead start with `public = "
+"true` and change the default on an edition boundary."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:250
+#: src/3516-public-private-dependencies.md:252
+msgid ""
+"This would require `cargo fix` marking all dependencies as `public = true`, "
+"while using the warning means we can limit it to only those dependencies "
+"that need it."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:251
+msgid ""
+"`Cargo.toml`: Instead of `public = false` being the default, we could have a "
+"\"unchecked\" / \"unset\" state"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:253
+msgid ""
+"`Cargo.toml`: In the long term, we decided on the default being `public = "
+"false` as that is the common case and gives us more information than "
+"supporting a `public = \"unchecked\"` and having that be the long term "
+"solution."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:254
+msgid ""
+"`cargo add`: instead of `--public <bool>` it could be `--public` / `--no-"
+"public` like `--optional` or `--public` / `--private`"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:255
+msgid ""
+"`cargo add`: when adding a dependency, we could automatically add all of its "
+"`public` dependencies."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:256
+msgid ""
+"This was passed up as being too noisy, especially when dealing with facade "
+"crates, those that fully re-export their `public = true` dependency"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:257
+msgid "We leave whether `public` is in the Index as unspecified"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:258
+msgid "It isn't strictly needed now"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:259
+msgid "It would make `cargo add` easier"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:260
+msgid ""
+"If we rely on `public` in the resolver, we might need it but we can always "
+"backfill it"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:261
+msgid "Parts of the implementation are already there from the original RFC"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:263
+msgid "Minimal version resolution"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:265
+msgid ""
+"[RFC 1977](https://github.com/rust-lang/rfcs/pull/1977) included the idea of "
+"verifying version requirements are high enough. This is a problem whether "
+"the dependency is private or not. This should be handled independent of this "
+"RFC."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:269
+#: src/3516-public-private-dependencies.md:311
+msgid "Dependency visibility and the resolver"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:271
+msgid "This is deferred to [Future possibilities](#future-possibilities)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:272
+msgid ""
+"This has been the main hang-up for stabilization over the last 6 years since "
+"the RFC was approved"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:273
+#: src/3516-public-private-dependencies.md:347
+msgid ""
+"For more on the complexity involved, see the thread starting at [this "
+"comment](https://github.com/rust-lang/rust/"
+"issues/44663#issuecomment-881965668)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:274
+#: src/3516-public-private-dependencies.md:348
+msgid ""
+"More thought is needed as we found that making a dependency `public = true` "
+"can be a breaking change if the caller also depends on it but with a "
+"different semver incompatible version"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:275
+#: src/3516-public-private-dependencies.md:349
+msgid ""
+"More thought is needed on what happens if you have multiple versions of a "
+"package that are public (via renaming like `tokio_03` and `tokio_1`)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:277
+msgid "Related problems potentially blocked on this"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:278
+msgid ""
+"It is hoped that the resolver change would help with [cargo#9029](https://"
+"github.com/rust-lang/cargo/issues/9029)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:279
+msgid ""
+"If we allow duplication of private semver compatible dependencies, it would "
+"help with [cargo#10053](https://github.com/rust-lang/cargo/issues/10053)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:281
+msgid "Prior art"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:284
+msgid "Within the cargo ecosystem:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:285
+msgid ""
+"[cargo public-api-crates](https://github.com/davidpdrsn/cargo-public-api-"
+"crates)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:287
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:290
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:293
+msgid "Help keep versions in-sync"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:295
+msgid ""
+"When upgrading one dependency, you might need to upgrade another because you "
+"use it to interact with the first, like `clap` and `clap_complete`. The "
+"existing error messages are not great, along the lines of \"expected `clap::"
+"Command`, found `clap::Command`\". Ideally, you would be presented instead "
+"with a message saying \"clap_complete 3.4 is not compatible with clap 4.0, "
+"try upgrading to clap_complete 4.0\". Even better if we could help users do "
+"this upgrade automatically."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:302
+msgid ""
+"As solving this, via the resolver, has been the main sticking point for [RFC "
+"1977](https://github.com/rust-lang/rfcs/pull/1977), this was deferred out to "
+"take smaller, more incremental steps, that open the door for more "
+"experimentation in the future to understand how best to solve these problems."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:309
+msgid "Some possible routes:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:313
+msgid ""
+"[RFC 1977](https://github.com/rust-lang/rfcs/pull/1977) originally proposed "
+"handling this within the resolver"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:315
+msgid ""
+"Cargo will specifically reject graphs that contain two different versions of "
+"the same crate being publicly depended upon and reachable from each other. "
+"This will prevent the strange errors possible today at version resolution "
+"time rather than at compile time."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:320
+msgid "How this will work:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:322
+msgid ""
+"First, a resolution graph has a bunch of nodes. These nodes are \"package "
+"ids\" which are a triple of (name, source, version). Basically this means "
+"that different versions of the same crate are different nodes, and different "
+"sources of the same name (e.g. git and crates.io) are also different nodes."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:326
+msgid ""
+"There are _directed edges_ between nodes. A directed edge represents a "
+"dependency. For example if A depends on B then there's a directed edge from "
+"A to B."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:328
+msgid ""
+"With public/private dependencies, we can now say that every edge is either "
+"tagged with public or private."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:330
+msgid ""
+"This means that we can have a collection of subgraphs purely connected by "
+"public dependency edges. The directionality of the public dependency edges "
+"within the subgraph doesn't matter. Each of these subgraphs represents an "
+"\"ecosystem\" of crates publicly depending on each other. These subgraphs "
+"are \"pools of public types\" where if you have access to the subgraph, you "
+"have access to all types within that pool of types."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:336
+msgid ""
+"We can place a constraint that each of these \"publicly connected "
+"subgraphs\" are required to have exactly one version of all crates "
+"internally. For example, each subgraph can only have one version of Hyper."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:339
+msgid ""
+"Finally, we can consider all pairs of edges coming out of one node in the "
+"resolution graph. If the two edges point to _two distinct publicly connected "
+"subgraphs from above_ and those subgraphs contain two different versions of "
+"the same crate, we consider that an error. This basically means that if you "
+"privately depend on Hyper 0.3 and Hyper 0.4, that's an error."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:345
+msgid "If we want to go this route, some hurdles to overcome include:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:346
+msgid ""
+"Difficulties in working with cargo's resolver as this has been the main hang-"
+"up for stabilization over the last 6 years since the [RFC 1977](https://"
+"github.com/rust-lang/rfcs/pull/1977) was approved"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:351
+msgid "Caller-declared relations"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:353
+msgid ""
+"As an alternative, when declaring dependencies, a user could [explicitly "
+"delegate the version requirement to another package](https://github.com/rust-"
+"lang/cargo/issues/4641)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:356
+msgid "One possible approach for this:"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:357
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"some-cli\"\n"
+"\n"
+"[dependencies]\n"
+"clap = { from = [\"clap_complete\", \"clap_mangen\"] }\n"
+"clap_complete = \"3.4\"\n"
+"clap_mangen = \"3.4\"\n"
+"```"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:366
+msgid ""
+"When resolving the dependencies for `some-cli`, the resolver will not "
+"explicitly choose a version for `clap` but will continue resolving the "
+"graph. Upon completion, it will look to see what instance of `clap_complete` "
+"was resolved and act as if that was what was specified inside of the in-"
+"memory `clap` dependency."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:372
+msgid ""
+"The package using `from` must be a public dependency of the `from` package. "
+"In this case, `clap` must be a public dependency of `clap_complete`. If the "
+"different packages in `from` do not agree on what the package version should "
+"resolve to (clap 3.4 vs clap 4.0), then it is an error."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:377
+msgid "Compared to the resolver doing this implicitly"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:378
+msgid ""
+"It is unclear if this would be any more difficult to implement in the "
+"resolver"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:379
+msgid ""
+"Changing a dependency from `public = false` to `public = true` is backwards "
+"compatible because it has no effect on existing callers."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:380
+msgid ""
+"It is unclear how this would handle multiple versions of a package that are "
+"public"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:382
+msgid ""
+"The downside is it feels like the declaration is backwards. If you have one "
+"core crate (e.g. `clap`) and many crates branching off (e.g. "
+"`clap_complete`, `clap_mangen`), it seems like those helper crates should "
+"have their version picked from `clap`. This can be worked around by "
+"publishing a `clap_distribution` package that has dependencies on every "
+"package. Users would depend on `clap_distribution` through a never-matching "
+"target-dependency so it doesn't affect builds. It exists so users would "
+"`version.from = [\"clap_distribution\"]` it, keeping the set in sync. This "
+"only helps when the packages are managed by a single project."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:390
+msgid ""
+"Whether this should be specified across all sources (`from`) or per source "
+"(`registry.from`, `git.from`, `path.from`) will need to be worked out. See "
+"[rust-lang/cargo#6921](https://github.com/rust-lang/cargo/issues/6921) for "
+"an example of using this for git dependencies."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:393
+msgid "Missing feature declaration check"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:395
+msgid ""
+"It is easy for packages to accidentally rely on a dependency enabling a "
+"feature for them. We could add a mode that limits feature unification to "
+"reachable dependencies, forcing duplication and longer builds for the sake "
+"of checking if any features need specifying."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:400
+msgid ""
+"However, this will still likely miss a lot of cases, making the pay off "
+"questionable. This also has the risk of being abused as a workaround so "
+"people can use mutually exclusive features. If packages start relying on it, "
+"it could coerce callers into abusing this mechanism, having a cascading "
+"effect in the ecosystem in the wrong direction."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:407
+msgid "Warn about semver incompatible public dependency"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:409
+msgid ""
+"`cargo update` (or a manifest linter) could warn about public new "
+"incompatible public dependencies that are available to help the ecosystem "
+"progress in lockstep."
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:413
+msgid "Warn about pre-1.0 public dependencies in 1.0+ packages"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:415
+msgid ""
+"See [rust-lang/cargo#6018](https://github.com/rust-lang/cargo/issues/6018)"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:417
+msgid "Flag for `cargo doc` to skip inaccessible dependencies"
+msgstr ""
+
+#: src/3516-public-private-dependencies.md:419
+msgid ""
+"When building documentation for local development, a lot of times only the "
+"direct dependencies and their public dependencies are relevant but you can "
+"get stuck generating documentation for large dependencies ([rust-lang/"
+"cargo#4049](https://github.com/rust-lang/cargo/issues/4049)). Instead, "
+"`cargo doc` could have a flag to skip any of the dependencies that aren't "
+"relevant to local development which are private transitive dependencies. See "
+"[rust-lang/cargo#2025](https://github.com/rust-lang/cargo/issues/2025)."
+msgstr ""

@@ -1,0 +1,316 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1201-naked-fns.md:1
+msgid "Feature Name: `naked_fns`"
+msgstr ""
+
+#: src/1201-naked-fns.md:2
+msgid "Start Date: 2015-07-10"
+msgstr ""
+
+#: src/1201-naked-fns.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1201](https://github.com/rust-lang/rfcs/pull/1201)"
+msgstr ""
+
+#: src/1201-naked-fns.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#32408](https://github.com/rust-lang/rust/"
+"issues/32408)"
+msgstr ""
+
+#: src/1201-naked-fns.md:6
+msgid "This RFC was previously approved, but later **withdrawn**"
+msgstr ""
+
+#: src/1201-naked-fns.md:8
+msgid ""
+"In short this RFC was superseded by RFC 2972. For details see the [summary "
+"comment](https://github.com/rust-lang/rust/"
+"issues/32408#issuecomment-1016931986)."
+msgstr ""
+
+#: src/1201-naked-fns.md:12
+msgid "Summary"
+msgstr ""
+
+#: src/1201-naked-fns.md:14
+msgid ""
+"Add support for generating naked (prologue/epilogue-free) functions via a "
+"new function attribute."
+msgstr ""
+
+#: src/1201-naked-fns.md:17
+msgid "Motivation"
+msgstr ""
+
+#: src/1201-naked-fns.md:19
+msgid ""
+"Some systems programming tasks require that the programmer have complete "
+"control over function stack layout and interpretation, generally in cases "
+"where the compiler lacks support for a specific use case. While these cases "
+"can be addressed by building the requisite code with external tools and "
+"linking with Rust, it is advantageous to allow the Rust compiler to drive "
+"the entire process, particularly in that code may be generated via "
+"monomorphization or macro expansion."
+msgstr ""
+
+#: src/1201-naked-fns.md:27
+msgid ""
+"When writing interrupt handlers for example, most systems require additional "
+"state be saved beyond the usual ABI requirements.  To avoid corrupting "
+"program state, the interrupt handler must save the registers which might be "
+"modified before handing control to compiler-generated code. Consider a "
+"contrived interrupt handler for x86\\_64:"
+msgstr ""
+
+#: src/1201-naked-fns.md:35
+msgid "\"push %rax\""
+msgstr ""
+
+#: src/1201-naked-fns.md:36
+msgid "/* Additional pushes elided */"
+msgstr ""
+
+#: src/1201-naked-fns.md:36 src/1201-naked-fns.md:39 src/1201-naked-fns.md:157
+msgid "\"volatile\""
+msgstr ""
+
+#: src/1201-naked-fns.md:38
+msgid "\"pop %rax\""
+msgstr ""
+
+#: src/1201-naked-fns.md:39
+msgid "/* Additional pops elided */"
+msgstr ""
+
+#: src/1201-naked-fns.md:43
+msgid ""
+"The generated assembly for this function might resemble the following "
+"(simplified for readability):"
+msgstr ""
+
+#: src/1201-naked-fns.md:56
+msgid ""
+"Here the programmer's need to save machine state conflicts with the "
+"compiler's assumption that it has complete control over stack layout, with "
+"the result that the saved value of `rax` is clobbered by the compiler. Given "
+"that details of stack layout for any given function are not predictable (and "
+"may change with compiler version or optimization settings), attempting to "
+"predict the stack layout to sidestep this issue is infeasible."
+msgstr ""
+
+#: src/1201-naked-fns.md:63
+msgid ""
+"When interacting with FFIs that are not natively supported by the compiler, "
+"a similar situation arises where the programmer knows the expected calling "
+"convention and can implement a translation between the foreign ABI and one "
+"supported by the compiler."
+msgstr ""
+
+#: src/1201-naked-fns.md:68
+msgid ""
+"Support for naked functions also allows programmers to write functions that "
+"would otherwise be unsafe, such as the following snippet which returns the "
+"address of its caller when called with the C ABI on x86."
+msgstr ""
+
+#: src/1201-naked-fns.md:79
+msgid ""
+"Because the compiler depends on a function prologue and epilogue to maintain "
+"storage for local variable bindings, it is generally unsafe to write "
+"anything but inline assembly inside a naked function.  The [LLVM language "
+"reference](http://llvm.org/docs/LangRef.html#function-attributes) describes "
+"this feature as having \"very system-specific consequences\", which the "
+"programmer must be aware of."
+msgstr ""
+
+#: src/1201-naked-fns.md:86
+msgid "Detailed design"
+msgstr ""
+
+#: src/1201-naked-fns.md:88
+msgid ""
+"Add a new function attribute to the language, `#[naked]`, indicating the "
+"function should have prologue/epilogue emission disabled."
+msgstr ""
+
+#: src/1201-naked-fns.md:91
+msgid ""
+"Because the calling convention of a naked function is not guaranteed to "
+"match any calling convention the compiler is compatible with, calls to naked "
+"functions from within Rust code are forbidden unless the function is also "
+"declared with a well-defined ABI."
+msgstr ""
+
+#: src/1201-naked-fns.md:96
+msgid ""
+"Defining a naked function with the default (Rust) ABI is an error, because "
+"the Rust ABI is unspecified and the programmer can never write a function "
+"which is guaranteed to be compatible. For example, The function declaration "
+"of `foo` in the following code block is an error."
+msgstr ""
+
+#: src/1201-naked-fns.md:106
+msgid ""
+"The following variant is not an error because the C calling convention is "
+"well-defined and it is thus possible for the programmer to write a "
+"conforming function:"
+msgstr ""
+
+#: src/1201-naked-fns.md:112 src/1201-naked-fns.md:153
+msgid "\"C\""
+msgstr ""
+
+#: src/1201-naked-fns.md:117
+msgid ""
+"Because the compiler cannot verify the correctness of code written in a "
+"naked function (since it may have an unknown calling convention), naked "
+"functions must be declared `unsafe` or contain no non-`unsafe` statements in "
+"the body. The function `error` in the following code block is a compile-time "
+"error, whereas the functions `correct1` and `correct2` are permitted."
+msgstr ""
+
+#: src/1201-naked-fns.md:123
+msgid ""
+"```\n"
+"#[naked]\n"
+"extern \"C\" fn error(x: &mut u8) {\n"
+"    *x += 1;\n"
+"}\n"
+"\n"
+"#[naked]\n"
+"unsafe extern \"C\" fn correct1(x: &mut u8) {\n"
+"    *x += 1;\n"
+"}\n"
+"\n"
+"#[naked]\n"
+"extern \"C\" fn correct2(x: &mut u8) {\n"
+"    unsafe {\n"
+"        *x += 1;\n"
+"    }\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/1201-naked-fns.md:142
+msgid "Example"
+msgstr ""
+
+#: src/1201-naked-fns.md:144
+msgid ""
+"The following example illustrates the possible use of a naked function for "
+"implementation of an interrupt service routine on 32-bit x86."
+msgstr ""
+
+#: src/1201-naked-fns.md:152
+msgid "\"x86\""
+msgstr ""
+
+#: src/1201-naked-fns.md:154
+msgid ""
+"\"pushad\n"
+"          call increment_breakpoint_count\n"
+"          popad\n"
+"          iretd\""
+msgstr ""
+
+#: src/1201-naked-fns.md:168
+msgid "/* ... */"
+msgstr ""
+
+#: src/1201-naked-fns.md:172
+msgid "// ...\n"
+msgstr ""
+
+#: src/1201-naked-fns.md:176
+msgid "Implementation Considerations"
+msgstr ""
+
+#: src/1201-naked-fns.md:178
+msgid ""
+"The current support for `extern` functions in `rustc` generates a minimum of "
+"two basic blocks for any function declared in Rust code with a non-default "
+"calling convention: a trampoline which translates the declared calling "
+"convention to the Rust convention, and a Rust ABI version of the function "
+"containing the actual implementation. Calls to the function from Rust code "
+"call the Rust ABI version directly."
+msgstr ""
+
+#: src/1201-naked-fns.md:185
+msgid ""
+"For naked functions, it is impossible for the compiler to generate a Rust "
+"ABI version of the function because the implementation may depend on the "
+"calling convention. In cases where calling a naked function from Rust is "
+"permitted, the compiler must be able to use the target calling convention "
+"directly rather than call the same function with the Rust convention."
+msgstr ""
+
+#: src/1201-naked-fns.md:191
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1201-naked-fns.md:193
+msgid ""
+"The utility of this feature is extremely limited to most users, and it might "
+"be misused if the implications of writing a naked function are not carefully "
+"considered."
+msgstr ""
+
+#: src/1201-naked-fns.md:197
+msgid "Alternatives"
+msgstr ""
+
+#: src/1201-naked-fns.md:199
+msgid ""
+"Do nothing. The required functionality for the use case outlined can be "
+"implemented outside Rust code and linked in as needed. Support for "
+"additional calling conventions could be added to the compiler as needed, or "
+"emulated with external libraries such as `libffi`."
+msgstr ""
+
+#: src/1201-naked-fns.md:204
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1201-naked-fns.md:206
+msgid ""
+"It is easy to quietly generate wrong code in naked functions, such as by "
+"causing the compiler to allocate stack space for temporaries where none were "
+"anticipated. There is currently no restriction on writing Rust statements "
+"inside a naked function, while most compilers supporting similar features "
+"either require or strongly recommend that authors write only inline assembly "
+"inside naked functions to ensure no code is generated that assumes a "
+"particular stack layout. It may be desirable to place further restrictions "
+"on what statements are permitted in the body of a naked function, such as "
+"permitting only `asm!` statements."
+msgstr ""
+
+#: src/1201-naked-fns.md:216
+msgid ""
+"The `unsafe` requirement on naked functions may not be desirable in all "
+"cases. However, relaxing that requirement in the future would not be a "
+"breaking change."
+msgstr ""
+
+#: src/1201-naked-fns.md:219
+msgid ""
+"Because a naked function may use a calling convention unknown to the "
+"compiler, it may be useful to add a \"unknown\" calling convention to the "
+"compiler which is illegal to call directly. Absent this feature, functions "
+"implementing an unknown ABI would need to be declared with a calling "
+"convention which is known to be incorrect and depend on the programmer to "
+"avoid calling such a function incorrectly since it cannot be prevented "
+"statically."
+msgstr ""

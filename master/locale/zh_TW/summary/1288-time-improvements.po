@@ -1,0 +1,539 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1288-time-improvements.md:1
+msgid "Feature Name: `time_improvements`"
+msgstr ""
+
+#: src/1288-time-improvements.md:2
+msgid "Start Date: 2015-09-20"
+msgstr ""
+
+#: src/1288-time-improvements.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1288](https://github.com/rust-lang/rfcs/pull/1288)"
+msgstr ""
+
+#: src/1288-time-improvements.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#29866](https://github.com/rust-lang/rust/"
+"issues/29866)"
+msgstr ""
+
+#: src/1288-time-improvements.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1288-time-improvements.md:8
+msgid ""
+"This RFC proposes several new types and associated APIs for working with "
+"times in Rust. The primary new types are `Instant`, for working with time "
+"that is guaranteed to be monotonic, and `SystemTime`, for working with times "
+"across processes on a single system (usually internally represented as a "
+"number of seconds since an epoch)."
+msgstr ""
+
+#: src/1288-time-improvements.md:13
+msgid "Motivations"
+msgstr ""
+
+#: src/1288-time-improvements.md:15
+msgid ""
+"The primary motivation of this RFC is to flesh out a larger set of APIs for "
+"representing instants in time and durations of time."
+msgstr ""
+
+#: src/1288-time-improvements.md:18
+msgid ""
+"For various reasons that this RFC will explore, APIs related to time are "
+"fairly error-prone and have a number of caveats that programmers do not "
+"expect."
+msgstr ""
+
+#: src/1288-time-improvements.md:21
+msgid ""
+"Rust APIs tend to expose more of these kinds of caveats through their APIs, "
+"in order to help programmers become aware of and handle edge-cases. At the "
+"same time, un-ergonomic APIs can work against that goal."
+msgstr ""
+
+#: src/1288-time-improvements.md:25
+msgid ""
+"This RFC attempts to balance the desire to expose common footguns and help "
+"programmers handle edge-cases with a desire to avoid creating so many hoops "
+"to jump through that the useful caveats get ignored."
+msgstr ""
+
+#: src/1288-time-improvements.md:29
+msgid "At a high level, this RFC covers two concepts related to time:"
+msgstr ""
+
+#: src/1288-time-improvements.md:31
+msgid "Instants, moments in time"
+msgstr ""
+
+#: src/1288-time-improvements.md:32
+msgid "Durations, an amount of time between two instants"
+msgstr ""
+
+#: src/1288-time-improvements.md:34
+msgid ""
+"We would like to be able to do some basic operations with these instants:"
+msgstr ""
+
+#: src/1288-time-improvements.md:36
+msgid "Compare two instants"
+msgstr ""
+
+#: src/1288-time-improvements.md:37
+msgid "Add a time period to an instant"
+msgstr ""
+
+#: src/1288-time-improvements.md:38
+msgid "Subtract a time period from an instant"
+msgstr ""
+
+#: src/1288-time-improvements.md:39
+msgid "Compare an instant to \"now\" to discover time elapsed"
+msgstr ""
+
+#: src/1288-time-improvements.md:41
+msgid ""
+"However, there are a number of problems that arise when trying to define "
+"these types and operations."
+msgstr ""
+
+#: src/1288-time-improvements.md:44
+msgid ""
+"First of all, with the exception of moments in time created using system "
+"APIs that guarantee monotonicity (because they were created within a single "
+"process, or created during since the last boot), moments in time are not "
+"monotonic. A simple example of this is that if a program creates two files "
+"sequentially, it cannot assume that the creation time of the second file is "
+"later than the creation time of the first file."
+msgstr ""
+
+#: src/1288-time-improvements.md:51
+msgid ""
+"This is because NTP (the network time protocol) can arbitrarily change the "
+"system clock, and can even **rewind time**. This kind of time travel means "
+"that the \"system time-line\" is not continuous and monotonic, which is "
+"something that programmers very often forget when writing code involving "
+"machine times."
+msgstr ""
+
+#: src/1288-time-improvements.md:56
+msgid ""
+"This design attempts to help programmers avoid some of the most egregious "
+"and unexpected consequences of this kind of \"time travel\"."
+msgstr ""
+
+#: src/1288-time-improvements.md:61
+msgid ""
+"Leap seconds, which cannot be predicted, mean that it is impossible to "
+"reliably add a number of seconds to a particular moment in time represented "
+"as a human date and time (\"1 million seconds from 2015-09-20 at midnight\")."
+msgstr ""
+
+#: src/1288-time-improvements.md:65
+msgid ""
+"They also mean that seemingly simple concepts, like \"1 minute\", have "
+"caveats depending on exactly how they are used. Caveats related to leap "
+"seconds create real-world bugs, because of how unusual leap seconds are, and "
+"how unlikely programmers are to consider \"12:00:60\" as a valid time."
+msgstr ""
+
+#: src/1288-time-improvements.md:70
+msgid ""
+"Certain kinds of seemingly simple operations may not make sense in all "
+"cases. For example, adding \"1 year\" to February 29, 2012 would produce "
+"February 29, 2013, which is not a valid date. Adding \"1 month\" to August "
+"31, 2015 would produce September 31, 2015, which is also not a valid date."
+msgstr ""
+
+#: src/1288-time-improvements.md:75
+msgid ""
+"Certain human descriptions of durations, like \"1 month and 35 days\" do not "
+"make sense, and human descriptions like \"1 month and 5 days\" have "
+"ambiguous meaning when used in operations (do you add 1 month first and then "
+"5 days or vice versa)."
+msgstr ""
+
+#: src/1288-time-improvements.md:81
+msgid ""
+"For these reasons, this RFC does not attempt to define a human duration with "
+"fields for years, days or months. Such a duration would be difficult to use "
+"in operations without hard-to-remember ordering rules."
+msgstr ""
+
+#: src/1288-time-improvements.md:85
+msgid ""
+"For these reasons, this RFC does not propose APIs related to human concepts "
+"dates and times. It is intentionally forwards-compatible with such "
+"extensions."
+msgstr ""
+
+#: src/1288-time-improvements.md:91
+msgid ""
+"Finally, many APIs that **take** a `Duration` can only do something useful "
+"with positive values. For example, a timeout API would not know how to wait "
+"a negative amount of time before timing out. Even discounting the "
+"possibility of coding mistakes, the problem of system clock time travel "
+"means that programmers often produce negative durations that they did not "
+"expect, and APIs that liberally accept negative durations only propagate the "
+"error further."
+msgstr ""
+
+#: src/1288-time-improvements.md:98
+msgid ""
+"As a result, this RFC makes a number of simplifying assumptions that can be "
+"relaxed over time with additional types or through further RFCs:"
+msgstr ""
+
+#: src/1288-time-improvements.md:101
+msgid ""
+"It provides convenience methods for constructing Durations from larger units "
+"of time (minutes, hours, days), but gives them names like `Duration."
+"from_standard_hour`. A standard hour is always 3600 seconds, regardless of "
+"leap seconds."
+msgstr ""
+
+#: src/1288-time-improvements.md:106
+msgid ""
+"It provides APIs that are expected to produce positive `Duration`s, and "
+"expects that APIs like timeouts will accept positive `Durations` (which is "
+"currently the case in Rust's standard library). These APIs help the "
+"programmer discover the possibility of system clock time travel, and either "
+"handle the error explicitly, or at least avoid propagating the problem into "
+"other APIs (by using `unwrap`)."
+msgstr ""
+
+#: src/1288-time-improvements.md:112
+msgid ""
+"It separates monotonic time (`Instant`) from time derived from the system "
+"clock (`SystemTime`), which must account for the possibility of time travel. "
+"This allows methods related to monotonic time to be uncaveated, while "
+"working with the system clock has more methods that return `Result`s."
+msgstr ""
+
+#: src/1288-time-improvements.md:117
+msgid ""
+"This RFC does not attempt to define a type for calendared DateTimes, nor "
+"does it directly address time zones."
+msgstr ""
+
+#: src/1288-time-improvements.md:120
+msgid "Proposal"
+msgstr ""
+
+#: src/1288-time-improvements.md:122
+msgid "Types"
+msgstr ""
+
+#: src/1288-time-improvements.md:141
+msgid "Instant"
+msgstr ""
+
+#: src/1288-time-improvements.md:143
+msgid ""
+"`Instant` is the simplest of the types representing moments in time. It "
+"represents an opaque (non-serializable!) timestamp that is guaranteed to be "
+"monotonic when compared to another `Instant`."
+msgstr ""
+
+#: src/1288-time-improvements.md:147
+msgid ""
+"In this context, monotonic means that a timestamp created later in real-"
+"world time will always be not less than a timestamp created earlier in real-"
+"world time."
+msgstr ""
+
+#: src/1288-time-improvements.md:151
+msgid ""
+"The `Duration` type can be used in conjunction with `Instant`, and these "
+"operations have none of the usual time-related caveats."
+msgstr ""
+
+#: src/1288-time-improvements.md:154
+msgid "Add a `Duration` to a `Instant`, producing a new `Instant`"
+msgstr ""
+
+#: src/1288-time-improvements.md:155
+msgid "compare two `Instant`s to each other"
+msgstr ""
+
+#: src/1288-time-improvements.md:156
+msgid "subtract a `Instant` from a later `Instant`, producing a `Duration`"
+msgstr ""
+
+#: src/1288-time-improvements.md:157
+msgid ""
+"ask for an amount of time elapsed since a `Instant`, producing a `Duration`"
+msgstr ""
+
+#: src/1288-time-improvements.md:159
+msgid ""
+"Asking for an amount of time elapsed from a given `Instant` is a very common "
+"operation that is guaranteed to produce a positive `Duration`. Asking for "
+"the difference between an earlier and a later `Instant` also produces a "
+"positive `Duration` when used correctly."
+msgstr ""
+
+#: src/1288-time-improvements.md:164
+msgid ""
+"This design does not assume that negative `Duration`s are never useful, but "
+"rather that the most common uses of `Duration` do not have a meaningful use "
+"for negative values. Rather than require each API that takes a `Duration` to "
+"produce an `Err` (or `panic!`) when receiving a negative value, this design "
+"optimizes for the broadly useful positive `Duration`."
+msgstr ""
+
+#: src/1288-time-improvements.md:172
+msgid "/// Returns an instant corresponding to \"now\".\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:175
+msgid ""
+"/// Panics if `earlier` is later than &self.\n"
+"  /// Because Instant is monotonic, the only time that `earlier` should be\n"
+"  /// a later time is a bug in your code.\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:180
+msgid ""
+"/// Panics if self is later than the current time (can happen if a Instant\n"
+"  /// is produced synthetically)\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:199
+msgid ""
+"For convenience, several new constructors are added to `Duration`. Because "
+"any unit greater than seconds has caveats related to leap seconds, all of "
+"the constructors take \"standard\" units. For example a \"standard minute\" "
+"is 60 seconds, while a \"standard hour\" is 3600 seconds."
+msgstr ""
+
+#: src/1288-time-improvements.md:204
+msgid ""
+"The \"standard\" terminology comes from [JodaTime](http://joda-time."
+"sourceforge.net/apidocs/org/joda/time/Duration.html#standardDays(long))."
+msgstr ""
+
+#: src/1288-time-improvements.md:210
+msgid ""
+"/// a standard minute is 60 seconds\n"
+"  /// panics if the number of minutes is larger than u64 seconds\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:214
+msgid ""
+"/// a standard hour is 60 standard minutes\n"
+"  /// panics if the number of hours is larger than u64 seconds\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:218
+msgid ""
+"/// a standard day is 24 standard hours\n"
+"  /// panics if the number of days is larger than u64 seconds\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:224
+msgid "SystemTime"
+msgstr ""
+
+#: src/1288-time-improvements.md:226
+msgid ""
+"**This type should not be used for in-process timestamps, like those used in "
+"benchmarks.**"
+msgstr ""
+
+#: src/1288-time-improvements.md:229
+msgid ""
+"A `SystemTime` represents a time stored on the local machine derived from "
+"the system clock (in UTC). For example, it is used to represent `mtime` on "
+"the file system."
+msgstr ""
+
+#: src/1288-time-improvements.md:233
+msgid ""
+"The most important caveat of `SystemTime` is that it is **not monotonic**. "
+"This means that you can save a file to the file system, then save another "
+"file to the file system, **and the second file has an `mtime` earlier than "
+"the second**."
+msgstr ""
+
+#: src/1288-time-improvements.md:237
+msgid ""
+"**This means that an operation that happens after another operation in real "
+"time may have an earlier `SystemTime`!**"
+msgstr ""
+
+#: src/1288-time-improvements.md:240
+msgid ""
+"In practice, most programmers do not think about this kind of \"time "
+"travel\" with the system clock, leading to strange bugs once the mistaken "
+"assumption propagates through the system."
+msgstr ""
+
+#: src/1288-time-improvements.md:244
+msgid ""
+"This design attempts to help the programmer catch the most egregious of "
+"these kinds of mistakes (unexpected travel **back in time**) before the "
+"mistake propagates."
+msgstr ""
+
+#: src/1288-time-improvements.md:250
+msgid "/// Returns the system time corresponding to \"now\".\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:253
+msgid "/// Returns an `Err` if `earlier` is later\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:256
+msgid "/// Returns an `Err` if &self is later than the current system time.\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:267
+msgid ""
+"// An anchor which can be used to generate new SystemTime instances from a "
+"known\n"
+"// Duration or convert a SystemTime to a Duration which can later then be "
+"used\n"
+"// again to recreate the SystemTime.\n"
+"//\n"
+"// Defined to be \"1970-01-01 00:00:00 UTC\" on all systems.\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:274
+msgid ""
+"// Note that none of these operations actually imply that the underlying "
+"system\n"
+"// operation that produced these SystemTimes happened at the same time\n"
+"// (for Eq) or before/after (for Ord) than the other system operation.\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:284
+msgid ""
+"/// A SystemTimeError originates from attempting to subtract two SystemTime\n"
+"    /// instances, a and b. If a < b then an error is returned, and the "
+"duration\n"
+"    /// returned represents (b - a).\n"
+msgstr ""
+
+#: src/1288-time-improvements.md:291
+msgid ""
+"The main difference from the design of `Instant` is that it is impossible to "
+"know for sure that a `SystemTime` is in the past, even if the operation that "
+"produced it happened in the past (in real time)."
+msgstr ""
+
+#: src/1288-time-improvements.md:297
+msgid "Illustrative Example:"
+msgstr ""
+
+#: src/1288-time-improvements.md:299
+msgid ""
+"If a program requests a `SystemTime` that represents the `mtime` of a given "
+"file, then writes a new file and requests its `SystemTime`, it may expect "
+"the second `SystemTime` to be after the first."
+msgstr ""
+
+#: src/1288-time-improvements.md:303
+msgid ""
+"Using `duration_from_earlier` will remind the programmer that \"time "
+"travel\" is possible, and make it easy to handle that case. As always, the "
+"programmer can use `.unwrap()` in the prototype stage to avoid having to "
+"handle the edge-case yet, while retaining a reminder that the edge-case is "
+"possible."
+msgstr ""
+
+#: src/1288-time-improvements.md:308
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1288-time-improvements.md:310
+msgid ""
+"This RFC defines two new types for describing times, and posits a third type "
+"to complete the picture. At first glance, having three different APIs for "
+"working with times may seem overly complex."
+msgstr ""
+
+#: src/1288-time-improvements.md:314
+msgid ""
+"However, there are significant differences between times that only go "
+"forward and times that can go forward or backward. There are also "
+"significant differences between times represented as a number since an epoch "
+"and time represented in human terms."
+msgstr ""
+
+#: src/1288-time-improvements.md:319
+msgid ""
+"As a result, this RFC chose to make these differences explicit, allowing "
+"ergonomic, uncaveated use of monotonic time, and a small speedbump when "
+"working with times that can move both forward and backward."
+msgstr ""
+
+#: src/1288-time-improvements.md:323
+msgid "Alternatives"
+msgstr ""
+
+#: src/1288-time-improvements.md:325
+msgid ""
+"One alternative design would be to attempt to have a single unified time "
+"type. The rationale for not doing so is explained under Drawbacks."
+msgstr ""
+
+#: src/1288-time-improvements.md:328
+msgid ""
+"Another possible alternative is to allow free math between instants, rather "
+"than providing operations for comparing later instants to earlier ones."
+msgstr ""
+
+#: src/1288-time-improvements.md:332
+msgid ""
+"In practice, the vast majority of APIs **taking** a `Duration` expect a "
+"positive-only `Duration`, and therefore code that subtracts a time from "
+"another time will usually want a positive `Duration`."
+msgstr ""
+
+#: src/1288-time-improvements.md:336
+msgid ""
+"The problem is especially acute when working with `SystemTime`, where it is "
+"possible for a question like: \"how much time has elapsed since I created "
+"this file\" to return a negative Duration!"
+msgstr ""
+
+#: src/1288-time-improvements.md:340
+msgid ""
+"This RFC attempts to catch mistakes related to negative `Duration`s at the "
+"point where they are produced, rather than requiring all APIs that **take** "
+"a `Duration` to guard against negative values."
+msgstr ""
+
+#: src/1288-time-improvements.md:344
+msgid ""
+"Because `Ord` is implemented on `SystemTime` and `Instant`, it is possible "
+"to compare two arbitrary times to each other first, and then use "
+"`duration_from_earlier` reliably to get a positive `Duration`."
+msgstr ""
+
+#: src/1288-time-improvements.md:348
+msgid "Unresolved Questions"
+msgstr ""
+
+#: src/1288-time-improvements.md:350
+msgid ""
+"This RFC leaves types related to human representations of dates and times to "
+"a future proposal."
+msgstr ""

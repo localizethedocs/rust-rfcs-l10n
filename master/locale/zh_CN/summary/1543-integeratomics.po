@@ -1,0 +1,221 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1543-integer_atomics.md:1
+msgid "Feature Name: `integer_atomics`"
+msgstr ""
+
+#: src/1543-integer_atomics.md:2
+msgid "Start Date: 2016-03-14"
+msgstr ""
+
+#: src/1543-integer_atomics.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1543](https://github.com/rust-lang/rfcs/pull/1543)"
+msgstr ""
+
+#: src/1543-integer_atomics.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#32976](https://github.com/rust-lang/rust/"
+"issues/32976)"
+msgstr ""
+
+#: src/1543-integer_atomics.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1543-integer_atomics.md:9
+msgid "This RFC basically changes `core::sync::atomic` to look like this:"
+msgstr ""
+
+#: src/1543-integer_atomics.md:12 src/1543-integer_atomics.md:14
+#: src/1543-integer_atomics.md:16
+msgid "\"8\""
+msgstr ""
+
+#: src/1543-integer_atomics.md:18 src/1543-integer_atomics.md:20
+msgid "\"16\""
+msgstr ""
+
+#: src/1543-integer_atomics.md:22 src/1543-integer_atomics.md:24
+msgid "\"32\""
+msgstr ""
+
+#: src/1543-integer_atomics.md:26 src/1543-integer_atomics.md:28
+#: src/1543-integer_atomics.md:72 src/1543-integer_atomics.md:74
+msgid "\"64\""
+msgstr ""
+
+#: src/1543-integer_atomics.md:30 src/1543-integer_atomics.md:32
+#: src/1543-integer_atomics.md:67 src/1543-integer_atomics.md:69
+msgid "\"128\""
+msgstr ""
+
+#: src/1543-integer_atomics.md:34 src/1543-integer_atomics.md:36
+#: src/1543-integer_atomics.md:38
+msgid "\"ptr\""
+msgstr ""
+
+#: src/1543-integer_atomics.md:42
+msgid "Motivation"
+msgstr ""
+
+#: src/1543-integer_atomics.md:45
+msgid ""
+"Many lock-free algorithms require a two-value `compare_exchange`, which is "
+"effectively twice the size of a `usize`. This would be implemented by "
+"atomically swapping a struct containing two members."
+msgstr ""
+
+#: src/1543-integer_atomics.md:47
+msgid ""
+"Another use case is to support Linux's futex API. This API is based on "
+"atomic `i32` variables, which currently aren't available on x86_64 because "
+"`AtomicIsize` is 64-bit."
+msgstr ""
+
+#: src/1543-integer_atomics.md:49
+msgid "Detailed design"
+msgstr ""
+
+#: src/1543-integer_atomics.md:52
+msgid "New atomic types"
+msgstr ""
+
+#: src/1543-integer_atomics.md:54
+msgid ""
+"The `AtomicI8`, `AtomicI16`, `AtomicI32`, `AtomicI64` and `AtomicI128` types "
+"are added along with their matching `AtomicU*` type. These have the same API "
+"as the existing `AtomicIsize` and `AtomicUsize` types. Note that support for "
+"128-bit atomics is dependent on the [i128/u128 RFC](https://github.com/rust-"
+"lang/rfcs/pull/1504) being accepted."
+msgstr ""
+
+#: src/1543-integer_atomics.md:56
+msgid "Target support"
+msgstr ""
+
+#: src/1543-integer_atomics.md:58
+msgid ""
+"One problem is that it is hard for a user to determine if a certain type `T` "
+"can be placed inside an `Atomic<T>`. After a quick survey of the LLVM and "
+"Clang code, architectures can be classified into 3 categories:"
+msgstr ""
+
+#: src/1543-integer_atomics.md:60
+msgid ""
+"The architecture does not support any form of atomics (mainly "
+"microcontroller architectures)."
+msgstr ""
+
+#: src/1543-integer_atomics.md:61
+msgid ""
+"The architecture supports all atomic operations for integers from i8 to iN "
+"(where N is the architecture word/pointer size)."
+msgstr ""
+
+#: src/1543-integer_atomics.md:62
+msgid ""
+"The architecture supports all atomic operations for integers from i8 to "
+"i(N\\*2)."
+msgstr ""
+
+#: src/1543-integer_atomics.md:64
+msgid ""
+"A new target cfg is added: `target_has_atomic`. It will have multiple "
+"values, one for each atomic size supported by the target. For example:"
+msgstr ""
+
+#: src/1543-integer_atomics.md:78
+msgid ""
+"Note that it is not necessary for an architecture to natively support atomic "
+"operations for all sizes (`i8`, `i16`, etc) as long as it is able to perform "
+"a `compare_exchange` operation with a larger size. All smaller operations "
+"can be emulated using that. For example a byte atomic can be emulated by "
+"using a `compare_exchange` loop that only modifies a single byte of the "
+"value. This is actually how LLVM implements byte-level atomics on MIPS, "
+"which only supports word-sized atomics native. Note that the out-of-bounds "
+"read is fine here because atomics are aligned and will never cross a page "
+"boundary. Since this transformation is performed transparently by LLVM, we "
+"do not need to do any extra work to support this."
+msgstr ""
+
+#: src/1543-integer_atomics.md:80
+msgid "Changes to `AtomicPtr`, `AtomicIsize` and `AtomicUsize`"
+msgstr ""
+
+#: src/1543-integer_atomics.md:82
+msgid ""
+"These types will have a `#[cfg(target_has_atomic = \"ptr\")]` bound added to "
+"them. Although these types are stable, this isn't a breaking change because "
+"all targets currently supported by Rust will have this type available. This "
+"would only affect custom targets, which currently fail to link due to "
+"missing compiler-rt symbols anyways."
+msgstr ""
+
+#: src/1543-integer_atomics.md:84
+msgid "Changes to `AtomicBool`"
+msgstr ""
+
+#: src/1543-integer_atomics.md:86
+msgid ""
+"This type will be changes to use an `AtomicU8` internally instead of an "
+"`AtomicUsize`, which will allow it to be safely transmuted to a `bool`. This "
+"will make it more consistent with the other atomic types that have the same "
+"layout as their underlying type. (For example futex code will assume that a "
+"`&AtomicI32` can be passed as a `&i32` to the system call)"
+msgstr ""
+
+#: src/1543-integer_atomics.md:88
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1543-integer_atomics.md:91
+msgid ""
+"Having certain atomic types get enabled/disable based on the target isn't "
+"very nice, but it's unavoidable because support for atomic operations is "
+"very architecture-specific."
+msgstr ""
+
+#: src/1543-integer_atomics.md:93
+msgid ""
+"This approach doesn't directly support for atomic operations on user-defined "
+"structs, but this can be emulated using transmutes."
+msgstr ""
+
+#: src/1543-integer_atomics.md:95
+msgid "Alternatives"
+msgstr ""
+
+#: src/1543-integer_atomics.md:98
+msgid ""
+"One alternative that was discussed in a [previous RFC](https://github.com/"
+"rust-lang/rfcs/pull/1505) was to add a generic `Atomic<T>` type. However the "
+"consensus was that having unsupported atomic types either fail at "
+"monomorphization time or fall back to lock-based implementations was "
+"undesirable."
+msgstr ""
+
+#: src/1543-integer_atomics.md:100
+msgid ""
+"Several other designs have been suggested [here](https://internals.rust-lang."
+"org/t/pre-rfc-extended-atomic-types/3068)."
+msgstr ""
+
+#: src/1543-integer_atomics.md:102
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1543-integer_atomics.md:105
+msgid "None"
+msgstr ""

@@ -1,0 +1,141 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2056-allow-trivial-where-clause-constraints.md:1
+msgid "Feature Name: `allow_trivial_constraints`"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:2
+msgid "Start Date: 2017-07-05"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2056](https://github.com/rust-lang/rfcs/pull/2056)"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#48214](https://github.com/rust-lang/rust/"
+"issues/48214)"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:9
+msgid ""
+"Allow constraints to appear in where clauses which are trivially known to "
+"either always hold or never hold. This would mean that `impl Foo for Bar "
+"where i32: Iterator` would become valid, and the impl would never be "
+"satisfied."
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:16
+msgid ""
+"It may seem strange to ever want to include a constraint that is always "
+"known to hold or not hold. However, as with many of these cases, allowing "
+"this would be useful for macros. For example, a custom derive may want to "
+"add additional functionality if two derives are used together. As another "
+"more concrete example, Diesel allows the use of normal Rust operators to "
+"generate the equivalent SQL. Due to coherence rules, we can't actually "
+"provide a blanket impl, but we'd like to automatically implement `std::ops::"
+"Add` for columns when they are of a type for which `+` is a valid operator. "
+"The generated impl would look like:"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:32
+msgid "// ...\n"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:36
+msgid ""
+"One would never write this impl normally since we always know the type of "
+"`my_column::SqlType`. However, when you consider the use case of a macro, we "
+"can't always easily know whether that constraint would hold or not at the "
+"time when we're generating code."
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:41
+msgid "Detailed design"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:44
+msgid ""
+"Concretely implementing this means the removal of [`E0193`](https://doc.rust-"
+"lang.org/error-index.html#E0193). Interestingly, as of Rust 1.7, that error "
+"never actually appears. Instead the current behavior is that something like "
+"`impl Foo for Bar where i32: Copy` (e.g. anywhere that the constraint always "
+"holds) compiles fine, and `impl Foo for Bar where i32: Iterator` fails to "
+"compile by complaining that `i32` does not implement `Iterator`. The "
+"original error message explicitly forbidding this case does not seem to ever "
+"appear."
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:52
+msgid ""
+"The obvious complication that comes to mind when implementing this feature "
+"is that it would allow nonsensical projections to appear in the where clause "
+"as well. For example, when `i32: IntoIterator` appears in a where clause, we "
+"would also need to allow `i32::Item: SomeTrait` to appear in the same "
+"clause, and even allow `for _ in 1` to appear in item bodies, and have it "
+"all successfully compile."
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:59
+msgid ""
+"Since code that was caught by this error is usually nonsense outside of "
+"macros, it would be valuable for the error to continue to live on as a lint. "
+"The lint `trivial_constraints` would be added, matching the pre-1.7 "
+"semantics of E0193, and would be set to warn by default."
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:66
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:69
+msgid ""
+"This feature does not need to be taught explicitly. Knowing the basic rules "
+"of where clauses, one would naturally already expect this to work."
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:72
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:75
+msgid ""
+"The changes to the compiler could potentially increase complexity quite a bit"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:77
+msgid "Alternatives"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:80
+msgid "n/a"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:82
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2056-allow-trivial-where-clause-constraints.md:85
+msgid "Should the lint error by default instead of warn?"
+msgstr ""

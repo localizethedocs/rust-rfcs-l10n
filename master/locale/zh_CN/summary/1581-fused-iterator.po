@@ -1,0 +1,236 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1581-fused-iterator.md:1
+msgid "Feature Name: fused"
+msgstr ""
+
+#: src/1581-fused-iterator.md:2
+msgid "Start Date: 2016-04-15"
+msgstr ""
+
+#: src/1581-fused-iterator.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1581](https://github.com/rust-lang/rfcs/pull/1581)"
+msgstr ""
+
+#: src/1581-fused-iterator.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#35602](https://github.com/rust-lang/rust/"
+"issues/35602)"
+msgstr ""
+
+#: src/1581-fused-iterator.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1581-fused-iterator.md:9
+msgid ""
+"Add a marker trait `FusedIterator` to `std::iter` and implement it on "
+"`Fuse<I>` and applicable iterators and adapters. By implementing "
+"`FusedIterator`, an iterator promises to behave as if `Iterator::fuse()` had "
+"been called on it (i.e. return `None` forever after returning `None` once). "
+"Then, specialize `Fuse<I>` to be a no-op if `I` implements `FusedIterator`."
+msgstr ""
+
+#: src/1581-fused-iterator.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/1581-fused-iterator.md:18
+msgid ""
+"Iterators are allowed to return whatever they want after returning `None` "
+"once. However, assuming that an iterator continues to return `None` can make "
+"implementing some algorithms/adapters easier. Therefore, `Fuse` and "
+"`Iterator::fuse` exist. Unfortunately, the `Fuse` iterator adapter "
+"introduces a noticeable overhead. Furthermore, many iterators (most if not "
+"all iterators in std) already act as if they were fused (this is considered "
+"to be the \"polite\" behavior). Therefore, it would be nice to be able to "
+"pay the `Fuse` overhead only when necessary."
+msgstr ""
+
+#: src/1581-fused-iterator.md:27
+msgid "Microbenchmarks:"
+msgstr ""
+
+#: src/1581-fused-iterator.md:44
+msgid "\"iterator adaptors are lazy and do nothing unless consumed\""
+msgstr ""
+
+#: src/1581-fused-iterator.md:137
+msgid "Detailed Design"
+msgstr ""
+
+#: src/1581-fused-iterator.md:140
+msgid ""
+"```\n"
+"trait FusedIterator: Iterator {}\n"
+"\n"
+"impl<I: Iterator> FusedIterator for Fuse<I> {}\n"
+"\n"
+"impl<A> FusedIterator for Range<A> {}\n"
+"// ...and for most std/core iterators...\n"
+"\n"
+"\n"
+"// Existing implementation of Fuse repeated for convenience\n"
+"pub struct Fuse<I> {\n"
+"    iterator: I,\n"
+"    done: bool,\n"
+"}\n"
+"\n"
+"impl<I> Iterator for Fuse<I> where I: Iterator {\n"
+"    type Item = I::Item;\n"
+"\n"
+"    #[inline]\n"
+"    fn next(&mut self) -> Self::Item {\n"
+"        if self.done {\n"
+"            None\n"
+"        } else {\n"
+"            let next = self.iterator.next();\n"
+"            self.done = next.is_none();\n"
+"            next\n"
+"        }\n"
+"    }\n"
+"}\n"
+"\n"
+"// Then, specialize Fuse...\n"
+"impl<I> Iterator for Fuse<I> where I: FusedIterator {\n"
+"    type Item = I::Item;\n"
+"\n"
+"    #[inline]\n"
+"    fn next(&mut self) -> Self::Item {\n"
+"        // Ignore the done flag and pass through.\n"
+"        // Note: this means that the done flag should *never* be exposed to "
+"the\n"
+"        // user.\n"
+"        self.iterator.next()\n"
+"    }\n"
+"}\n"
+"\n"
+"```"
+msgstr ""
+
+#: src/1581-fused-iterator.md:185
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1581-fused-iterator.md:188
+msgid "Yet another special iterator trait."
+msgstr ""
+
+#: src/1581-fused-iterator.md:189
+msgid "There is a useless done flag on no-op `Fuse` adapters."
+msgstr ""
+
+#: src/1581-fused-iterator.md:190
+msgid ""
+"Fuse isn't used very often anyways. However, I would argue that it should be "
+"used more often and people are just playing fast and loose. I'm hoping that "
+"making `Fuse` free when unneeded will encourage people to use it when they "
+"should."
+msgstr ""
+
+#: src/1581-fused-iterator.md:193
+msgid ""
+"This trait locks implementors into following the `FusedIterator` spec; "
+"removing the `FusedIterator` implementation would be a breaking change. This "
+"precludes future optimizations that take advantage of the fact that the "
+"behavior of an `Iterator` is undefined after it returns `None` the first "
+"time."
+msgstr ""
+
+#: src/1581-fused-iterator.md:200
+msgid "Alternatives"
+msgstr ""
+
+#: src/1581-fused-iterator.md:202
+msgid "Do Nothing"
+msgstr ""
+
+#: src/1581-fused-iterator.md:204
+msgid ""
+"Just pay the overhead on the rare occasions when fused is actually used."
+msgstr ""
+
+#: src/1581-fused-iterator.md:206
+msgid "IntoFused"
+msgstr ""
+
+#: src/1581-fused-iterator.md:208
+msgid ""
+"Use an associated type (and set it to `Self` for iterators that already "
+"provide the fused guarantee) and an `IntoFused` trait:"
+msgstr ""
+
+#: src/1581-fused-iterator.md:225
+msgid ""
+"// Currently complains about a mismatched type but I think that's a\n"
+"        // specialization bug.\n"
+msgstr ""
+
+#: src/1581-fused-iterator.md:240
+msgid ""
+"For now, this doesn't actually compile because rust believes that the "
+"associated type `Fused` could be specialized independent of the `into_fuse` "
+"function."
+msgstr ""
+
+#: src/1581-fused-iterator.md:243
+msgid ""
+"While this method gets rid of memory overhead of a no-op `Fuse` wrapper, it "
+"adds complexity, needs to be implemented as a separate trait (because adding "
+"associated types is a breaking change), and can't be used to optimize the "
+"iterators returned from `Iterator::fuse` (users would _have_ to call "
+"`IntoFused::into_fused`)."
+msgstr ""
+
+#: src/1581-fused-iterator.md:249
+msgid "Associated Type"
+msgstr ""
+
+#: src/1581-fused-iterator.md:251
+msgid ""
+"If we add the ability to condition associated types on `Self: Sized`, I "
+"believe we can add them without it being a breaking change (associated types "
+"only need to be fully specified on DSTs). If so (after fixing the bug in "
+"specialization noted above), we could do the following:"
+msgstr ""
+
+#: src/1581-fused-iterator.md:266
+msgid "// ...\n"
+msgstr ""
+
+#: src/1581-fused-iterator.md:270
+msgid ""
+"However, changing an iterator to take advantage of this would be a breaking "
+"change."
+msgstr ""
+
+#: src/1581-fused-iterator.md:273
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1581-fused-iterator.md:276
+msgid ""
+"Should this trait be unsafe? I can't think of any way generic unsafe code "
+"could end up relying on the guarantees of `FusedIterator`."
+msgstr ""
+
+#: src/1581-fused-iterator.md:279
+msgid ""
+"~~Also, it's possible to implement the specialized `Fuse` struct without a "
+"useless `done` bool. Unfortunately, it's _very_ messy. IMO, this is not "
+"worth it for now and can always be fixed in the future as it doesn't change "
+"the `FusedIterator` trait.~~ Resolved: It's not possible to remove the "
+"`done` bool without making `Fuse` invariant."
+msgstr ""

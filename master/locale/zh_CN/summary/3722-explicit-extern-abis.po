@@ -1,0 +1,175 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3722-explicit-extern-abis.md:1
+msgid "Feature Name: `explicit_extern_abis`"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:2
+msgid "Start Date: 2024-10-30"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3722](https://github.com/rust-lang/rfcs/pull/3722)"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#134986](https://github.com/rust-lang/rust/"
+"issues/134986)"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:8
+msgid ""
+"Disallow `extern` without an explicit ABI in a new edition. Write `extern "
+"\"C\"` (or another ABI) instead of just `extern`."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:20
+msgid ""
+"Originally, `\"C\"` was a very reasable default for `extern`. However, with "
+"work ongoing to add other ABIs to Rust, it is no longer obvious that `\"C\"` "
+"should forever stay the default."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:23
+msgid ""
+"By making the ABI explicit, it becomes much clearer that `\"C\"` is just one "
+"of the possible choices, rather than the \"standard\" way for external "
+"functions. Removing the default makes it easier to add a new ABI on equal "
+"footing as `\"C\"`."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:26
+msgid ""
+"Right now, \"extern\", \"FFI\" and \"C\" are somewhat used interchangeably "
+"in Rust. For example, this is the diagnostic when using a `String` in an "
+"`extern` function:"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:40
+msgid ""
+"If another future ABI will support `String`, this error should make it "
+"clearer that the problem is not that `String` doesn't support FFI, but "
+"rather that the `\"C\"` ABI doesn't support `String`. This would be easier "
+"if there was actually a `\"C\"` token to point at in the source code. E.g.:"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:43
+msgid ""
+"```\n"
+"warning: `extern` fn uses type `String`, which is not supported by the \"C\" "
+"ABI\n"
+" --> src/main.rs:1:16\n"
+"  |\n"
+"1 | extern \"C\" fn a(s: String) {}\n"
+"  |        ---         ^^^^^^ String type not supported by this ABI\n"
+"  |         |\n"
+"  |         the \"C\" ABI does not support this type\n"
+"```"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:53
+msgid ""
+"It would also make it clearer that swapping `\"C\"` for another ABI might be "
+"an option."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:55
+msgid "Guilde-level explanation"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:57
+msgid ""
+"Up to the previous edition, `extern` without an explicit ABI was equivalent "
+"to `extern \"C\"`. In the new edition, writing `extern` without an ABI is an "
+"error. Instead, you must write `extern \"C\"` explicitly."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:61
+msgid "Automatic migration"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:63
+msgid ""
+"Automatic migration (for `cargo fix --edition`) is trivial: Insert `\"C\"` "
+"after `extern` if there is no ABI."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:65
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:67
+msgid "This is a breaking change and needs to be done in a new edition."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:69
+msgid "Prior art"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:71
+msgid ""
+"This was proposed before Rust 1.0 in 2015 in [RFC 697](https://github.com/"
+"rust-lang/rfcs/pull/697). It was not accepted at the time, because \"C\" "
+"seemed like the only resonable default. It was later closed because it'd be "
+"a backwards incompatible change, and editions were not yet invented."
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:75
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:77
+msgid "~~In which edition do we make this change?~~"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:78
+msgid ""
+"It's too late for the 2024 edition: https://github.com/rust-lang/rfcs/"
+"pull/3722#issuecomment-2447333966"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:79
+msgid ""
+"~~Do we warn about `extern` without an explicit ABI in previous editions?~~"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:80
+msgid ""
+"Yes, with separate FCP: https://github.com/rust-lang/rfcs/"
+"pull/3722#issuecomment-2447719047"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:82
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3722-explicit-extern-abis.md:84
+msgid ""
+"In the future, we might want to add a new default ABI. For example, if "
+"`extern \"stable-rust-abi\"` becomes a thing and e.g. dynamically linking "
+"Rust from Rust becomes very popular, it might make sense to make that the "
+"default when writing `extern fn` without an ABI. That is, however, a "
+"separate discussion; it might also be reasonable to never have a default ABI "
+"again."
+msgstr ""

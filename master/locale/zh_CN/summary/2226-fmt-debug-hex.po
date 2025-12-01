@@ -1,0 +1,249 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2226-fmt-debug-hex.md:1
+msgid "Feature Name: fmt-debug-hex"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:2
+msgid "Start Date: 2017-11-24"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2226](https://github.com/rust-lang/rfcs/pull/2226)"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#48584](https://github.com/rust-lang/rust/"
+"issues/48584)"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:9
+msgid ""
+"Add support for formatting integers as hexadecimal with the `fmt::Debug` "
+"trait, including when they occur within larger types."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:13
+msgid "\"{:02X?}\""
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:13
+msgid "b\"AZaz\\0\""
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:22
+msgid ""
+"Sometimes the bits that make up an integer are more meaningful than its "
+"purely numerical value. For example, an RGBA color encoded in `u32` with 8 "
+"bits per channel is easier to understand when shown as `00CC44FF` than "
+"`13387007`."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:26
+msgid ""
+"The `std::fmt::UpperHex` and `std::fmt::LowerHex` traits provide hexadecimal "
+"formatting through `{:X}` and `{:x}` in formatting strings, but they’re only "
+"implemented for plain integer types and not other types like slices that "
+"might contain integers."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:31
+msgid ""
+"The `std::fmt::Debug` trait (used with `{:?}`) however is intended for "
+"formatting “in a programmer-facing, debugging context”. It can be derived, "
+"and doing so is recommended for most types."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:35
+msgid "This RFC proposes adding the missing combination of:"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:37
+msgid ""
+"Output intended primarily for end-users (`Display`) v.s. for programmers "
+"(`Debug`)"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:38
+msgid "Numbers shown in decimal v.s. hexadecimal"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:40
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:43
+msgid ""
+"In formatting strings like in the `format!` and `println!` macros, the "
+"formatting parameters `x` or `X` − to select lower-case or upper-case "
+"hexadecimal − can now be combined with `?` which select the `Debug` trait."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:47
+msgid ""
+"For example, `format!(\"{:X?}\", [65280].first())` returns `Some(FF00)`."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:49
+msgid ""
+"This can also be combined with other formatting parameters. For example, "
+"`format!(\"{:02X?}\", b\"AZaz\\0\")` zero-pads each byte to two hexadecimal "
+"digits and return `[41, 5A, 61, 7A, 00]`."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:53
+msgid "An API returning `Vec<u32>` might be tested like this:"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:57
+msgid "/* ... */"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:58
+msgid "\"{:08X?} != {:08X?}\""
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:61
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:64
+msgid "Formatting strings"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:66
+msgid ""
+"The syntax of formatting strings is [specified with a grammar](https://doc."
+"rust-lang.org/std/fmt/#syntax) which at the moment is as follows:"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:87
+msgid "This RFC adds an optional _radix_ immediately before _type_:"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:94
+msgid "`Formatter` API"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:96
+msgid ""
+"Note that `x` and `X` are already valid _types_. They are only interpreted "
+"as a radix when the type is `?`, since combining them with other types "
+"doesn’t make sense."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:100
+msgid ""
+"This radix is exposed indirectly in two additional methods of `std::fmt::"
+"Formatter`:"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:104
+msgid "// ...\n"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:106
+msgid ""
+"/// Based on the radix and type: 16, 10, 8, or 2.\n"
+"    ///\n"
+"    /// This is mostly useful in `Debug` impls,\n"
+"    /// where the trait itself doesn’t imply a radix.\n"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:112
+msgid ""
+"/// true for `X` or `E`\n"
+"    ///\n"
+"    /// This is mostly useful in `Debug` impls,\n"
+"    /// where the trait itself doesn’t imply a case.\n"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:120
+msgid ""
+"Although the radix and type are separate in the formatting string grammar, "
+"they are intentionally conflated in this new API."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:123
+msgid "`Debug` impls"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:125
+msgid ""
+"The `Debug` implementation for primitive integer types `{u,i}{8,16,32,64,128,"
+"size}` is modified to defer to `LowerHex` or `UpperHex` instead of "
+"`Display`, based on `formatter.number_radix()` and `formatter."
+"number_uppercase()`. The _alternate_ `#` flag is ignored, since it already "
+"has a separate meaning for `Debug`: the `0x` prefix is _not_ included."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:131
+msgid ""
+"As of Rust 1.22, impls using the `Formatter::debug_*` methods do not forward "
+"formatting parameters such as _width_ when formatting keys/values/items. "
+"Doing so is important for this RFC to be useful. This is fixed by [PR #46233]"
+"(https://github.com/rust-lang/rust/pull/46233)."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:136
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:139
+msgid ""
+"The hexadecimal flag in the `Debug` trait is superficially redundant with "
+"the `LowerHex` and `UpperHex` traits. If these traits were not stable yet, "
+"we could have considered a more unified design."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:143
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:146
+msgid ""
+"Implementing `LowerHex` and `UpperHex` was proposed and rejected in [PR "
+"#44751](https://github.com/rust-lang/rust/pull/44751)."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:149
+msgid ""
+"The status quo is that debugging or testing code that could be a one-liner "
+"requires manual `Debug` impls and/or concatenating the results of separate "
+"string formatting operations."
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:153
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:156
+msgid ""
+"Should this be extended to octal and binary (as `{:o?}` and `{:b?}`)? Other "
+"formatting types/traits too?"
+msgstr ""
+
+#: src/2226-fmt-debug-hex.md:158
+msgid "Details of the new `Formatter` API"
+msgstr ""

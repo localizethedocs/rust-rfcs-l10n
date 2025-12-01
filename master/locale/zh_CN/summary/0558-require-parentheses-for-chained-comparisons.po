@@ -1,0 +1,150 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:1
+msgid "Start Date: 2015-01-07"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#558](https://github.com/rust-lang/rfcs/pull/558)"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#20724](https://github.com/rust-lang/rust/"
+"issues/20724)"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:7
+msgid ""
+"Remove chaining of comparison operators (e.g. `a == b == c`) from the "
+"syntax. Instead, require extra parentheses (`(a == b) == c`)."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:10
+msgid "Motivation"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:18
+msgid ""
+"This code is currently accepted and is evaluated as `((a == b) == c)`. This "
+"may be confusing to programmers coming from languages like Python, where "
+"chained comparison operators are evaluated as `(a == b && b == c)`."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:22
+msgid ""
+"In C, the same problem exists (and is exacerbated by implicit conversions). "
+"Styleguides like Misra-C require the use of parentheses in this case."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:25
+msgid ""
+"By requiring the use of parentheses, we avoid potential confusion now, and "
+"open up the possibility for python-like chained comparisons post-1.0."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:28
+msgid ""
+"Additionally, making the chain `f < b > (c)` invalid allows us to easily "
+"produce a diagnostic message: \"Use `::<` instead of `<` if you meant to "
+"specify type arguments.\", which would be a vast improvement over the "
+"current diagnostics for this mistake."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:32
+msgid "Detailed design"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:34
+msgid ""
+"Emit a syntax error when a comparison operator appears as an operand of "
+"another comparison operator (without being surrounded by parentheses). The "
+"comparison operators are `<` `>` `<=` `>=` `==` and `!=`."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:38
+msgid "This is easily implemented directly in the parser."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:40
+msgid ""
+"Note that this restriction on accepted syntax will effectively merge the "
+"precedence level 4 (`<` `>` `<=` `>=`) with level 3 (`==` `!=`)."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:42
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:44
+msgid "It's a breaking change."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:46
+msgid ""
+"In particular, code that currently uses the difference between precedence "
+"level 3 and 4 breaks and will require the use of parentheses:"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:50
+msgid "/* both negative or both non-negative */"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:53
+msgid ""
+"However, I don't think this kind of code sees much use. The rustc codebase "
+"doesn't seem to have any occurrences of chained comparisons."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:56
+msgid "Alternatives"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:58
+msgid ""
+"As this RFC just makes the chained comparison syntax available for post-1.0 "
+"language features, pretty much every alternative (including returning to the "
+"status quo) can still be implemented later."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:61
+msgid ""
+"If this RFC is not accepted, it will be impossible to add python-style "
+"chained comparison operators later."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:63
+msgid ""
+"A variation on this RFC would be to keep the separation between precedence "
+"level 3 and 4, and only reject programs where a comparison operator appears "
+"as an operand of another comparison operator of the same precedence level. "
+"This minimizes the breaking changes, but does not allow full python-style "
+"chained comparison operators in the future (although a more limited form of "
+"them would still be possible)."
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:68
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0558-require-parentheses-for-chained-comparisons.md:70
+msgid ""
+"Is there real code that would get broken by this change? So far, I've been "
+"unable to find any."
+msgstr ""

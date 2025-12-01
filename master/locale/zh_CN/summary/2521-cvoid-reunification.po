@@ -1,0 +1,318 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2521-c_void-reunification.md:1
+msgid "Feature Name: `c_void_reunification`"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:2
+msgid "Start Date: 2018-08-02"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2521](https://github.com/rust-lang/rfcs/pull/2521)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#53856](https://github.com/rust-lang/rust/"
+"issues/53856)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:9
+msgid ""
+"Unify `std::os::raw::c_void` and `libc::c_void` by making them both re-"
+"exports of a definition in libcore."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:16
+msgid "`std::os::raw::c_void` and `libc::c_void` are different types:"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:27
+msgid "// ...\n"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:44
+msgid "There is no good reason for this, the program above should compile."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:46
+msgid ""
+"Note that having separate definitions is not as much of a problem for other "
+"`c_*` types since they are `type` aliases. `c_int` _is_ `i32` for example, "
+"and separate aliases with identical definitions are compatible with each "
+"other in the type system. `c_void` however is currently defined as an `enum` "
+"(of size 1 byte, with semi-private variants), and two `enum` types with "
+"identical definitions are still different types."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:52
+msgid "This has been extensively discussed already:"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:54
+msgid ""
+"[Issue #31536: std `c_void` and libc `c_void` are different types](https://"
+"github.com/rust-lang/rust/issues/31536)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:55
+msgid ""
+"[Internals #3268: Solve `std::os::raw::c_void`](https://internals.rust-lang."
+"org/t/solve-std-os-raw-c-void/3268)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:56
+msgid ""
+"[Issue #36193: Move std::os::raw to libcore?](https://github.com/rust-lang/"
+"rust/issues/36193)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:57
+msgid ""
+"[RFC #1783: Create a separate libc_types crate for basic C types](https://"
+"github.com/rust-lang/rfcs/pull/1783)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:58
+msgid ""
+"[Issue #47027: Types in std::os::raw should be same as libc crate](https://"
+"github.com/rust-lang/rust/issues/47027)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:59
+msgid ""
+"[Internals #8086: Duplicate std::os::raw in core?](https://internals.rust-"
+"lang.org/t/duplicate-std-raw-in-core/8086)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:60
+msgid ""
+"[PR #52839: Move std::os::raw into core](https://github.com/rust-lang/rust/"
+"pull/52839)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:63
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:66
+msgid ""
+"With this RFC implemented in both the standard library and in the `libc` "
+"crate, `std::os::raw::c_void` and `libc::c_void` are now two ways to name "
+"the same type."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:69
+msgid ""
+"If two independent libraries both provide FFI bindings to C functions that "
+"involve `void*` pointers, one might use `std` while the other uses `libc` to "
+"access the `c_void` type in order to expose `*mut c_void` in their "
+"respective public APIs. A pointer returned from one library can now be "
+"passed to the other library without an `as` pointer cast."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:74
+msgid ""
+"`#![no_std]` crates can now also access that same type at `core::ffi::"
+"c_void`."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:77
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:80
+msgid "In the standard library:"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:82
+msgid "Create a new `core::ffi` module."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:83
+msgid "Move the `enum` definition of `c_void` there."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:84
+msgid ""
+"In `c_void`’s former location (`std::os::raw`), replace it with a `pub use` "
+"reexport."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:85
+msgid ""
+"For consistency between `core` and `std`, also add a similar `pub use` "
+"reexport at `std::ffi::c_void`. (Note that the `std::ffi` module already "
+"exists.)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:88
+msgid "Once the above lands in Nightly, in the `libc` crate:"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:90
+msgid ""
+"Add a build script that detects the existence of `core::ffi::c_void` (for "
+"example by executing `$RUSTC` with a temporary file like `#![crate_type = "
+"\"lib\"] #![no_std] pub use core::ffi::c_void;`) and conditionally set a "
+"compilation flag for the library."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:94
+msgid ""
+"In the library, based on the presence of that flag, make `c_void` be either "
+"`pub use core::ffi::c_void;` or its current `enum` definition, to keep "
+"compatibility with older Rust versions."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:99
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:102
+msgid ""
+"This proposal is a breaking change for users who implement a trait of theirs "
+"like this:"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:110
+msgid ""
+"With the two `c_void` types being unified, the two `impl`s would overlap and "
+"fail to compile."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:112
+msgid ""
+"Hopefully such breakage is rare enough that we can manage it. Rarity could "
+"be evaluated with Crater by either:"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:115
+msgid ""
+"Adding support to Crater if it doesn’t have it already for adding a `[patch."
+"crates-io]` section to each root `Cargo.toml` being tested, in order to test "
+"with a patched `libc` crate in addition to a patched Rust."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:119
+msgid ""
+"Or speculatively landing the changes in `libc` and publishing them in crates."
+"io before landing them in Rust"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:123
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:126
+msgid ""
+"`libc` cannot reexport `std::os::raw::c_void` because this would regress "
+"compatibility with `#![no_std]`."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:129
+msgid ""
+"[RFC #1783](https://github.com/rust-lang/rfcs/pull/1783) proposed adding to "
+"the standard library distribution a new crate specifically for the C-"
+"compatible types. Both `std` and `libc` would depend on this crate."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:133
+msgid ""
+"This was apparently in response to reluctance about having operating-system-"
+"dependant definitions (such as for `c_long`) in libcore. This concern does "
+"not apply to `c_void`, whose definition is the same regardless of the "
+"target. However there was also reluctance to having an entire crate for so "
+"little functionality."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:138
+msgid "That RFC was closed / postponed with this explanation:"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:140
+msgid ""
+"The current consensus is to offer a canonical way of producing an \"unknown, "
+"opaque type\" (a better c_void), possible along the lines of [\\#1861]"
+"(https://github.com/rust-lang/rfcs/pull/1861)"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:144
+msgid ""
+"RFC 1861 for `extern` types is now being implemented, but those types are `!"
+"Sized`. Changing `c_void` from `Sized` to `!Sized` would be a significant "
+"breaking change: for example, `ptr::null::<c_void>()` and `<*mut c_void>::"
+"offset(n)` would not be usable anymore."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:148
+msgid ""
+"We could deprecated `c_void` and replace it with a new differently-named "
+"extern type, but forcing the ecosystem through that transition seems too "
+"costly for this theoretical nicety. Plus, this would still be a nominal "
+"type. If this new type is to be present if both `libc` and `std`, it would "
+"still have to be in `core` as well."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:155
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:158
+msgid "What is the appropriate location for `c_void` in libcore?"
+msgstr ""
+
+#: src/2521-c_void-reunification.md:160
+msgid ""
+"This RFC proposes `core::ffi` rather than `core::os::raw` on the basis that "
+"C-compatible types are misplaced in `std::os::raw`. `std::os` is documented "
+"as “OS-specific functionality”, but everything currently available under "
+"`std::os::raw` is about interoperabily with C rather than operating system "
+"functionality. (Although the exact definition of `c_char`, `c_long`, and "
+"`c_ulong` does vary based on the target operating system.) FFI stands for "
+"Foreign Function Interface and is about calling or being called from "
+"functions in other languages such as C. So the `ffi` module seems more "
+"appropriate than `os` for C types, and it already exists in `std`."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:171
+msgid ""
+"Following this logic to this conclusion, perhaps the rest of `std::os::raw` "
+"should also move to `std::ffi` as well, and the former module be deprecated "
+"eventually. This is left for a future RFC."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:176
+msgid ""
+"This RFC does not propose any change such as moving to libcore for the C "
+"types other than `c_void`."
+msgstr ""
+
+#: src/2521-c_void-reunification.md:178
+msgid ""
+"Although some in previous discussions have expressed desire for using C-"
+"compatible types without linking to the C runtime library (which the `libc` "
+"crate does) or depending on `std`. This use case is also left for a future "
+"proposal or RFC."
+msgstr ""

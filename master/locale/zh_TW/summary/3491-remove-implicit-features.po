@@ -1,0 +1,301 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3491-remove-implicit-features.md:1
+msgid "Feature Name: `remove-implicit-feature`"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:2
+msgid "Start Date: 2023-09-18"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3491](https://github.com/rust-lang/rfcs/pull/3491)"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:4
+msgid ""
+"Tracking Issue: [rust-lang/cargo#12826](https://github.com/rust-lang/cargo/"
+"issues/12826)"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:9
+msgid ""
+"By default, cargo will treat any optional dependency as a [feature](https://"
+"doc.rust-lang.org/cargo/reference/features.html). As of cargo 1.60, these "
+"can be disabled by declaring a feature that activates the optional "
+"dependency as `dep:<name>` (see [RFC #3143](https://rust-lang.github.io/"
+"rfcs/3143-cargo-weak-namespaced-features.html))."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:15
+msgid ""
+"On the next edition, cargo will stop exposing optional dependencies as "
+"features implicitly, requiring users to add `foo = [\"dep:foo\"]` if they "
+"still want it exposed."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:21
+msgid "While implicit features offer a low overhead way of defining features,"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:22
+msgid ""
+"It is easy to overlook using `dep:` when the optional dependency is not "
+"intended to be exposed"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:23
+msgid ""
+"Making it easy for crate authors to use the wrong syntax and be met with "
+"errors ([rust-lang/cargo#10125](https://github.com/rust-lang/cargo/"
+"issues/10125))"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:24
+msgid ""
+"Potentially breaking people if they are later removed ([rust-lang/"
+"cargo#12687)](https://github.com/rust-lang/cargo/pull/12687))"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:25
+msgid ""
+"Leading to confusing choices when `cargo add` lists features that look the "
+"same (e.g. `cargo add serde` showing `derive` and `serde_derive`)"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:26
+msgid ""
+"Leading to confusing errors for callers when they reference the dependency, "
+"instead of the feature, and things don't work right"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:27
+msgid ""
+"Tying feature names to dependency names is a code smell because it ties the "
+"API to the implementation"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:28
+msgid ""
+"It requires people and tools to deal with this special case ([rust-lang/"
+"cargo#10543](https://github.com/rust-lang/cargo/issues/10543))"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:29
+msgid ""
+"Granted, anything having to deal with old editions will still have to deal "
+"with this"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:31
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:36
+msgid "Updated documentation:"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:38
+msgid "Optional Dependencies"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:39
+msgid ""
+"_(Replaces the [same section in the book](https://doc.rust-lang.org/cargo/"
+"reference/features.html#optional-dependencies))_"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:41
+msgid ""
+"Dependencies can be marked \"optional\", which means they will not be "
+"compiled by default."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:44
+msgid ""
+"For example, let's say that our 2D image processing library uses an external "
+"package to handle GIF images. This can be expressed like this:"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:47
+msgid ""
+"```toml\n"
+"[features]\n"
+"gif = [\"dep:giffy\"]\n"
+"\n"
+"[dependencies]\n"
+"giffy = { version = \"0.11.1\", optional = true }\n"
+"```"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:55
+msgid ""
+"This means that this dependency will only be included if the `gif` feature "
+"is enabled."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:58
+msgid ""
+"**Note**: Prior to the 202X edition, features were implicitly created for "
+"optional dependencies not referenced via `dep:`."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:61
+msgid ""
+"**Note**: Another way to optionally include a dependency is to use "
+"\\[platform-specific dependencies\\]. Instead of using features, these are "
+"conditional based on the target platform."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:65
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:68
+msgid "Existing editions"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:70
+msgid ""
+"As is expected for edition changes, `cargo fix --edition` will add `foo = "
+"[\"dep:foo\"]` features as needed. Where undesired, users can remove these "
+"and switch their references to the dependency from `foo` to `dep:foo`, "
+"dealing with the [potential breaking changes](https://doc.rust-lang.org/"
+"cargo/reference/semver.html#cargo-remove-opt-dep)."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:75
+msgid ""
+"Ideally, this will be accomplished by `cargo` emitting an allow-by-default "
+"warning when parsing a workspace member's package when an optional "
+"dependency is not referenced via `dep:` in the features ([rust-lang/"
+"cargo#9088](https://github.com/rust-lang/cargo/issues/9088)) using the "
+"planned warning control system ([rust-lang/cargo#12235](https://github.com/"
+"rust-lang/cargo/issues/12235)). The warning will be named something like "
+"`cargo::implicit_feature` and be part of the `cargo::rust-202X-"
+"compatibility` group."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:84
+#: src/3491-remove-implicit-features.md:96
+msgid "Suggested text:"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:88
+msgid ""
+"This would be machine applicable with a suggestion to add `foo = [\"dep:"
+"foo\"]`.  `cargo fix` would then insert this feature."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:90
+msgid ""
+"If that system is not ready in time, we can always hard code the change in "
+"`cargo fix`."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:92
+msgid "Next edition"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:94
+msgid "On the next edition, this warning will be a hard error."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:100
+msgid ""
+"This could be machine applicable with a suggestion to add `foo = [\"dep:"
+"foo\"]`."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:102
+msgid "Other"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:104
+msgid ""
+"To help users through this, `cargo add` will be updated so that `cargo add "
+"foo --optional` will create a `foo = [\"dep:foo\"]` if its not already "
+"referenced by another features ([rust-lang/cargo#11010](https://github.com/"
+"rust-lang/cargo/issues/11010))."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:109
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:112
+msgid "Some boilerplate is needed for all features, rather than just a subset"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:113
+msgid "Extra ecosystem churn on the next edition update"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:115
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:118
+msgid ""
+"Instead of a `cargo::rust-202X-compatibility` group, we could put this in "
+"`rust-202X-compatibility` so there is one less group to enable to prepare "
+"for the next edition at the risk of user confusion over a \"rust\" lint "
+"controlling cargo."
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:122
+msgid "Instead of an error, optional dependencies could be"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:123
+msgid ""
+"Make optional dependencies private features ([RFC #3487](https://github.com/"
+"rust-lang/rfcs/pull/3487))"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:124
+msgid ""
+"Seems like the need for this would be relatively low and be less obvious"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:125
+msgid "We could still transition to this in the future"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:126
+msgid ""
+"Allow access to the feature via `#[cfg(accessible)]` ([RFC #2523](https://"
+"rust-lang.github.io/rfcs/2523-cfg-path-version.html))"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:128
+msgid "Prior art"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:131
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3491-remove-implicit-features.md:134
+msgid "Future possibilities"
+msgstr ""

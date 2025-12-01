@@ -1,0 +1,2056 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3681-default-field-values.md:1
+msgid "Feature Name: `default_field_values`"
+msgstr ""
+
+#: src/3681-default-field-values.md:2
+msgid "Start Date: 2024-08-22"
+msgstr ""
+
+#: src/3681-default-field-values.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3681](https://github.com/rust-lang/rfcs/pull/3681)"
+msgstr ""
+
+#: src/3681-default-field-values.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#132162](https://github.com/rust-lang/rust/"
+"issues/132162)"
+msgstr ""
+
+#: src/3681-default-field-values.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3681-default-field-values.md:9
+msgid ""
+"Allow `struct` definitions to provide default values for individual fields "
+"and thereby allowing those to be omitted from initializers. When deriving "
+"`Default`, the provided values will then be used. For example:"
+msgstr ""
+
+#: src/3681-default-field-values.md:16
+msgid "// impl Default for Pet will use Default::default() for name\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:17
+msgid "// impl Default for Pet will use the literal 42 for age\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:23
+msgid ""
+"These can then be used in the following way with the existing [functional "
+"update syntax](https://doc.rust-lang.org/reference/expressions/struct-expr."
+"html#functional-update-syntax), but without a \"base expression\" after the "
+"`..`:"
+msgstr ""
+
+#: src/3681-default-field-values.md:27
+msgid "// Pet { name: Some(\"\"), age: 42 }\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:28
+msgid "// Compilation error: `name` needs to be specified\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:33
+msgid "Derived `Default` `impl` also uses struct field defaults if present:"
+msgstr ""
+
+#: src/3681-default-field-values.md:36
+msgid "// Pet { name: None, age: 42 }\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:40
+msgid "Motivation"
+msgstr ""
+
+#: src/3681-default-field-values.md:43
+msgid "Boilerplate reduction"
+msgstr ""
+
+#: src/3681-default-field-values.md:45
+msgid "For `struct`s"
+msgstr ""
+
+#: src/3681-default-field-values.md:49
+msgid ""
+"Rust allows you to create an instance of a `struct` using the struct literal "
+"syntax `Foo { bar: expr, baz: expr }`. To do so, all fields in the `struct` "
+"must be assigned a value. This makes it inconvenient to create large "
+"`struct`s whose fields usually receive the same values. It also allows you "
+"construct [a new instance of the same `struct` by consuming some (or all) of "
+"the fields of an existing value](https://doc.rust-lang.org/book/ch05-01-"
+"defining-structs.html#creating-instances-from-other-instances-with-struct-"
+"update-syntax), which can reduce noise when a `struct` derives `Default`, "
+"but are also invalid when the `struct` has inaccessible fields and do not "
+"allow the creation of an `impl` where _some_ fields are mandatory."
+msgstr ""
+
+#: src/3681-default-field-values.md:58
+msgid ""
+"To work around these shortcomings, you can create constructor functions:"
+msgstr ""
+
+#: src/3681-default-field-values.md:68 src/3681-default-field-values.md:101
+msgid "/// Constructs a `Foo`.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:78
+msgid "\"Hello\""
+msgstr ""
+
+#: src/3681-default-field-values.md:83
+msgid ""
+"The problem with a constructor is that you need one for each combination of "
+"fields a caller can supply. To work around this, you can use builders, such "
+"as [`process::Command`](https://doc.rust-lang.org/stable/std/process/struct."
+"Command.html) in the standard library. Builders enable more advanced "
+"initialization, but require additional boilerplate. To represent the "
+"difference, we can see the dramatic syntactical increase for semantically "
+"small changes:"
+msgstr ""
+
+#: src/3681-default-field-values.md:91
+msgid "// All fields are mandatory\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:113
+msgid ""
+"// A builder type that is able to construct a `Foo`, but that will fail at "
+"runtime if a field is\n"
+"// missing.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:155
+msgid ""
+"// A builder type that is able to construct a `Foo`, but that will fail at "
+"compile time if a field\n"
+"// is missing.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:164
+msgid ""
+"// We provide this `impl` on its own so that `FooBuilder::new()` will work "
+"without specifying the\n"
+"// const parameters.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:172
+msgid ""
+"// The fields can only be set once. Calling `set_alpha` twice will result in "
+"a compilation error.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:191
+msgid "// If any field is optional,\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:194
+msgid "// can only be called if all fields have been set\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:198
+msgid "// This is an optional field with a default.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:205 src/3681-default-field-values.md:224
+msgid "\"\""
+msgstr ""
+
+#: src/3681-default-field-values.md:206
+msgid "// If we comment this out, it will no longer compile.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:207
+msgid "// If we comment this out, it will still compile.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:212
+msgid ""
+"All of the above can be represented with the exact same results with struct "
+"field default values, but with much less boilerplate:"
+msgstr ""
+
+#: src/3681-default-field-values.md:231
+msgid ""
+"The builder pattern is quite common in the Rust ecosystem, but as shown "
+"above its need is greatly reduced with `struct` field defaults."
+msgstr ""
+
+#: src/3681-default-field-values.md:234
+msgid "`#[derive(Default)]` in more cases"
+msgstr ""
+
+#: src/3681-default-field-values.md:236
+msgid ""
+"The `#[derive(..)]` (\"custom derive\") mechanism works by defining "
+"procedural _macros_. Because they are macros, these operate on abstract "
+"_syntax_ and don't have more information available. Therefore, when you "
+"`#[derive(Default)]` on a data type definition as with:"
+msgstr ""
+
+#: src/3681-default-field-values.md:249
+msgid "it only has the immediate \"textual\" definition available to it."
+msgstr ""
+
+#: src/3681-default-field-values.md:251
+msgid ""
+"Because Rust currently does not have an in-language way to define default "
+"values, you cannot `#[derive(Default)]` in the cases where you are not happy "
+"with the natural default values that each field's type provides. By "
+"extending the syntax of Rust such that default values can be provided, "
+"`#[derive(Default)]` can be used in many more circumstances and thus "
+"boilerplate is further reduced.  The addition of a single field, expands the "
+"code written by the `struct` author from a single `derive` line to a whole "
+"`Default` `impl`, which becomes more verbose linearly with the number of "
+"fields."
+msgstr ""
+
+#: src/3681-default-field-values.md:260
+msgid "Imperfect derives"
+msgstr ""
+
+#: src/3681-default-field-values.md:264
+msgid ""
+"One thing to notice, is that taking default values into consideration during "
+"the desugaring of `#[derive(Default)]` would allow to side-step the issue of "
+"our lack of [perfect derives](https://smallcultfollowing.com/babysteps/"
+"blog/2022/04/12/implied-bounds-and-perfect-derive/), by making the "
+"desugaring syntactically check which type parameters correspond to fields "
+"that don't have a default field, as in the expansion they will use the "
+"default value instead of `Default::default()`. By doing this a user can side-"
+"step the introduction of unnecessary bounds by specifying a default value of "
+"the same return value of `Default::default()`:"
+msgstr ""
+
+#: src/3681-default-field-values.md:279
+msgid "previously expands to:"
+msgstr ""
+
+#: src/3681-default-field-values.md:294
+msgid "but we can make the following:"
+msgstr ""
+
+#: src/3681-default-field-values.md:303
+msgid "expand to:"
+msgstr ""
+
+#: src/3681-default-field-values.md:318
+msgid "Usage by other `#[derive(..)]` macros"
+msgstr ""
+
+#: src/3681-default-field-values.md:322
+msgid "Custom derive macros exist that have a notion of or use default values."
+msgstr ""
+
+#: src/3681-default-field-values.md:324
+msgid "`serde`"
+msgstr ""
+
+#: src/3681-default-field-values.md:326
+msgid ""
+"For example, the [`serde`](https://serde.rs/attributes.html) crate provides "
+"a `#[serde(default)]` attribute that can be used on `struct`s, and fields. "
+"This will use the field's or type's `Default` implementations. This works "
+"well with field defaults; `serde` can either continue to rely on `Default` "
+"implementations in which case this RFC facilitates specification of field "
+"defaults; or it can directly use the default values provided in the type "
+"definition."
+msgstr ""
+
+#: src/3681-default-field-values.md:333
+msgid "`structopt`"
+msgstr ""
+
+#: src/3681-default-field-values.md:335
+msgid "Another example is the `structopt` crate with which you can write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:339 src/3681-default-field-values.md:352
+msgid "\"example\""
+msgstr ""
+
+#: src/3681-default-field-values.md:339 src/3681-default-field-values.md:352
+msgid "\"An example of StructOpt usage.\""
+msgstr ""
+
+#: src/3681-default-field-values.md:341 src/3681-default-field-values.md:354
+msgid "/// Set speed\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:348
+msgid ""
+"By having default field values in the language, `structopt` could let you "
+"write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:361
+msgid "`derive_builder`"
+msgstr ""
+
+#: src/3681-default-field-values.md:365 src/3681-default-field-values.md:1334
+msgid ""
+"A third example comes from the crate [`derive_builder`](https://docs.rs/"
+"derive_builder/0.7.0/derive_builder/#default-values). As the name implies, "
+"you can use it to `#[derive(Builder)]`s for your types. An example is:"
+msgstr ""
+
+#: src/3681-default-field-values.md:376
+msgid "Conclusion"
+msgstr ""
+
+#: src/3681-default-field-values.md:378
+msgid ""
+"As seen in the previous sections, rather than make deriving `Default` more "
+"magical, by allowing default field values in the language, user-space custom "
+"derive macros can make use of them."
+msgstr ""
+
+#: src/3681-default-field-values.md:382
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3681-default-field-values.md:385
+msgid "Providing field defaults"
+msgstr ""
+
+#: src/3681-default-field-values.md:387
+msgid "Consider a data-type such as (1):"
+msgstr ""
+
+#: src/3681-default-field-values.md:395
+msgid ""
+"You'd like encode the default probability value to be `0.5`; With this RFC "
+"now you can provide such a default directly where `Probability` is defined "
+"like so (2):"
+msgstr ""
+
+#: src/3681-default-field-values.md:405
+msgid ""
+"Having done this, you can now construct a `Probability` with a struct "
+"initializer and leave `value` out to use the default (3):"
+msgstr ""
+
+#: src/3681-default-field-values.md:412
+msgid "Deriving `Default`"
+msgstr ""
+
+#: src/3681-default-field-values.md:414
+msgid ""
+"Previously, you might have instead implemented the `Default` trait like so "
+"(4):"
+msgstr ""
+
+#: src/3681-default-field-values.md:424
+msgid "You can now shorten this to (5):"
+msgstr ""
+
+#: src/3681-default-field-values.md:434
+msgid ""
+"However, since you had specified `value: f32 = 0.5` in the definition of "
+"`Probability`, you can take advantage of that to write the more simpler and "
+"more idiomatic (6):"
+msgstr ""
+
+#: src/3681-default-field-values.md:445
+msgid ""
+"Having done this, a `Default` implementation equivalent to the one in (5) "
+"will be generated for you."
+msgstr ""
+
+#: src/3681-default-field-values.md:448
+msgid "More fields"
+msgstr ""
+
+#: src/3681-default-field-values.md:450
+msgid ""
+"As you saw in the [summary](#summary), you are not limited to a single field "
+"and all fields need not have any defaults associated with them. Instead, you "
+"can freely mix and match. Given the definition of `LaunchCommand` from the "
+"[motivation](#motivation) (7):"
+msgstr ""
+
+#: src/3681-default-field-values.md:463
+msgid "you can omit all fields but `cmd` (8):"
+msgstr ""
+
+#: src/3681-default-field-values.md:467 src/3681-default-field-values.md:476
+msgid "\"ls\""
+msgstr ""
+
+#: src/3681-default-field-values.md:472
+msgid "You can also elect to override the provided defaults (9):"
+msgstr ""
+
+#: src/3681-default-field-values.md:477
+msgid "\"-lah\""
+msgstr ""
+
+#: src/3681-default-field-values.md:479
+msgid "// setting_most_people_will_ignore is still defaulted.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:484
+msgid ""
+"Default fields values are [`const` context](https://github.com/rust-lang-"
+"nursery/reference/blob/66ef5396eccca909536b91cad853f727789c8ebe/src/"
+"const_eval.md#const-context)s"
+msgstr ""
+
+#: src/3681-default-field-values.md:488
+msgid ""
+"As you saw in (7), `Vec::new()`, a function call, was used. However, this "
+"assumes that `Vec::new` is a _`const fn`_. That is, when you provide a "
+"default value `field: Type = value`, the given `value` must be a _constant "
+"expression_ such that it is valid in a [`const` context](https://github.com/"
+"rust-lang-nursery/reference/blob/66ef5396eccca909536b91cad853f727789c8ebe/"
+"src/const_eval.md#const-context). Therefore, you cannot write something like "
+"(10):"
+msgstr ""
+
+#: src/3681-default-field-values.md:510
+msgid ""
+"Since launching missiles interacts with the real world and has _side-"
+"effects_ in it, it is not possible to do that in a `const` context since it "
+"may violate deterministic compilation."
+msgstr ""
+
+#: src/3681-default-field-values.md:514
+msgid "Privacy interactions"
+msgstr ""
+
+#: src/3681-default-field-values.md:516
+msgid ""
+"The same privacy interactions that the struct update syntax has when a base "
+"is present are still at place under this RFC: if a type can't be constructed "
+"from another base expression due to private fields, then it can't be "
+"constructed from field defaults either. See [Future Possibilities](#future-"
+"privacy) for additional context."
+msgstr ""
+
+#: src/3681-default-field-values.md:522 src/3681-default-field-values.md:1609
+msgid "`#[non_exhaustive]` interactions"
+msgstr ""
+
+#: src/3681-default-field-values.md:526
+msgid ""
+"[RFC 2008](https://github.com/rust-lang/rfcs/blob/master/text/2008-non-"
+"exhaustive.md#structs-1) introduced the attribute `#[non_exhaustive]` that "
+"can be placed on `struct`, `enum`, and `enum` variants. The RFC notes that "
+"upon defining a `struct` in _crate A_ such as (12):"
+msgstr ""
+
+#: src/3681-default-field-values.md:538
+msgid ""
+"it is **_not_** possible to initialize a `Config` in a different _crate B_ "
+"(13):"
+msgstr ""
+
+#: src/3681-default-field-values.md:544
+msgid ""
+"This is forbidden when `#[non_exhaustive]` is attached because the purpose "
+"of the attribute is to permit adding fields to `Config` without causing a "
+"breaking change. However, the RFC goes on to note that you can pattern match "
+"if you allow for the possibility of having fields be ignored with `..` (14):"
+msgstr ""
+
+#: src/3681-default-field-values.md:553
+msgid ""
+"This RFC restricts the use of default field values only to types that are "
+"_not_ annotated with `#[non_exhaustive]`, leaving it and the specifics of "
+"their interaction if allowed as an open question of future concern. "
+"Supporting this without additional compiler support could mean that the "
+"following"
+msgstr ""
+
+#: src/3681-default-field-values.md:561 src/3681-default-field-values.md:1620
+#: src/3681-default-field-values.md:1650
+msgid "// another crate\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:563 src/3681-default-field-values.md:1652
+msgid "// Currently forbidden\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:566
+msgid ""
+"Would be _allowed_, changing the meaning of this code in a way that goes "
+"against user intention."
+msgstr ""
+
+#: src/3681-default-field-values.md:569
+msgid "Some alternatives present for the case mentioned above can be:"
+msgstr ""
+
+#: src/3681-default-field-values.md:571
+msgid "Add a private non-defaulted field:"
+msgstr ""
+
+#: src/3681-default-field-values.md:580
+msgid "which disallows the following"
+msgstr ""
+
+#: src/3681-default-field-values.md:585
+msgid ""
+"at the cost of forcing the API-internal construction of `Config` to specify "
+"`__priv` everywhere."
+msgstr ""
+
+#: src/3681-default-field-values.md:587
+msgid ""
+"If defaulting private fields is allowed outside of the current crate, or "
+"that behavior can be explicitly set by the user, then the following:"
+msgstr ""
+
+#: src/3681-default-field-values.md:597
+msgid "still disallows the following"
+msgstr ""
+
+#: src/3681-default-field-values.md:602
+msgid ""
+"while also allowing precisely that syntax within the API-internal "
+"constructions of `Config`."
+msgstr ""
+
+#: src/3681-default-field-values.md:605
+msgid "Defaults for `enum`s"
+msgstr ""
+
+#: src/3681-default-field-values.md:607
+msgid ""
+"The ability to give fields default values is not limited to `struct`s. "
+"Fields of `enum` variants can also be given defaults (16):"
+msgstr ""
+
+#: src/3681-default-field-values.md:622
+msgid ""
+"Given these defaults, you can then proceed to initialize `Ingredient`s as "
+"you did with `struct`s (17):"
+msgstr ""
+
+#: src/3681-default-field-values.md:633
+msgid ""
+"Note that `enum` variants have public fields and in today's Rust, this "
+"cannot be controlled with visibility modifiers on variants."
+msgstr ""
+
+#: src/3681-default-field-values.md:636
+msgid ""
+"Furthermore, when `#[non_exhaustive]` is specified directly on an `enum`, it "
+"has no interaction with the defaults values and the ability to construct "
+"variants of said enum. However, as specified by [RFC 2008](https://github."
+"com/rust-lang/rfcs/blob/master/text/2008-non-exhaustive.md#structs-1), "
+"`#[non_exhaustive]` is permitted on variants. When that occurs, the "
+"behaviour is the same as if it had been attached to a `struct` with the same "
+"fields and field visibility."
+msgstr ""
+
+#: src/3681-default-field-values.md:642
+msgid "Interaction with `#[default]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:646
+msgid ""
+"It is possible today to specify a [`#[default]` variant](https://github.com/"
+"rust-lang/rfcs/pull/3107) in an enum so that it can be `#[derive(Default)]`. "
+"A variant marked with `#[default]` will use defaulted fields when present."
+msgstr ""
+
+#: src/3681-default-field-values.md:667
+msgid ""
+"Now the compiler does know that `Ingredient::Lettuce` should be considered "
+"the default and will accordingly generate an appropriate implementation of "
+"`Default for Ingredient` (19):"
+msgstr ""
+
+#: src/3681-default-field-values.md:681
+msgid "Defaults on tuple `struct`s and tuple `enum` variants"
+msgstr ""
+
+#: src/3681-default-field-values.md:683
+msgid ""
+"Default values are only allowed on named fields. There is no syntax provided "
+"for tuple types like `struct S(i32)` or `enum E { V(i32), }`."
+msgstr ""
+
+#: src/3681-default-field-values.md:686
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3681-default-field-values.md:689
+msgid "Field default values"
+msgstr ""
+
+#: src/3681-default-field-values.md:691
+msgid "Grammar"
+msgstr ""
+
+#: src/3681-default-field-values.md:693
+msgid ""
+"Let the grammar of record fields in `struct`s and `enum` variants be defined "
+"like so (in the `.lyg` notation):"
+msgstr ""
+
+#: src/3681-default-field-values.md:697 src/3681-default-field-values.md:703
+#: src/3681-default-field-values.md:723 src/3681-default-field-values.md:741
+msgid "\":\""
+msgstr ""
+
+#: src/3681-default-field-values.md:700
+msgid "Then, `RecordField` is changed into:"
+msgstr ""
+
+#: src/3681-default-field-values.md:703 src/3681-default-field-values.md:741
+msgid "\"=\""
+msgstr ""
+
+#: src/3681-default-field-values.md:706
+msgid ""
+"Further, given the following partial definition for the expression grammar:"
+msgstr ""
+
+#: src/3681-default-field-values.md:712
+msgid "\"{\""
+msgstr ""
+
+#: src/3681-default-field-values.md:712
+msgid "\"}\""
+msgstr ""
+
+#: src/3681-default-field-values.md:717
+msgid "\"..\""
+msgstr ""
+
+#: src/3681-default-field-values.md:718
+msgid "\",\" \",\" \"..\""
+msgstr ""
+
+#: src/3681-default-field-values.md:727
+msgid "the rule `StructExprFieldsAndBase` is extended with:"
+msgstr ""
+
+#: src/3681-default-field-values.md:734
+msgid "Static semantics"
+msgstr ""
+
+#: src/3681-default-field-values.md:736
+msgid "Defining defaults"
+msgstr ""
+
+#: src/3681-default-field-values.md:738
+msgid "Given a `RecordField` where the default is specified, i.e.:"
+msgstr ""
+
+#: src/3681-default-field-values.md:744
+msgid "all the following rules apply when type-checking:"
+msgstr ""
+
+#: src/3681-default-field-values.md:746
+msgid "The expression `def` must be a constant expression."
+msgstr ""
+
+#: src/3681-default-field-values.md:748
+msgid "The expression `def` must coerce to the type `ty`."
+msgstr ""
+
+#: src/3681-default-field-values.md:750
+msgid "Generic parameters of the current items are accessible"
+msgstr ""
+
+#: src/3681-default-field-values.md:757
+msgid ""
+"Default const expressions are _not_ evaluated at definition time, only "
+"during instantiation. This means that the following will not fail to compile:"
+msgstr ""
+
+#: src/3681-default-field-values.md:767
+msgid ""
+"Having said that, it can be possible to proactivelly attempt to evaluate the "
+"default values and emit a lint in a case where the expression is assured to "
+"always fail (which would only be possible for expressions that do not "
+"reference `const` parameters)."
+msgstr ""
+
+#: src/3681-default-field-values.md:772
+msgid ""
+"The `struct`'s parameters are properly propagated, meaning the following is "
+"possible:"
+msgstr ""
+
+#: src/3681-default-field-values.md:782
+msgid ""
+"When lints check attributes such as `#[allow(lint_name)]` are placed on a "
+"`RecordField`, it also applies to `def` if it exists."
+msgstr ""
+
+#: src/3681-default-field-values.md:785
+msgid "Initialization expressions"
+msgstr ""
+
+#: src/3681-default-field-values.md:787
+msgid ""
+"`Path { fields, .. }` is `const` since the defaulted fields are initialized "
+"from constants."
+msgstr ""
+
+#: src/3681-default-field-values.md:790
+msgid "`#[derive(Default)]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:792
+msgid ""
+"When generating an implementation of `Default` for a `struct` named `$s` on "
+"which `#[derive(Default)]` has been attached, the compiler will omit all "
+"fields which have default values provided in the `struct`. The the "
+"associated function `default` shall then be defined as (where `$f_i` denotes "
+"the `i`\\-th field of `$s`):"
+msgstr ""
+
+#: src/3681-default-field-values.md:804
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3681-default-field-values.md:807
+msgid ""
+"The usual drawback of increasing the complexity of the language applies. "
+"However, the degree to which complexity is increased is not substantial."
+msgstr ""
+
+#: src/3681-default-field-values.md:810
+msgid ""
+"In particular, the syntax `Foo { .. }` mirrors the identical and already "
+"existing pattern syntax. This makes the addition of `Foo { .. }` at worst "
+"low-cost and potentially cost-free."
+msgstr ""
+
+#: src/3681-default-field-values.md:814
+msgid ""
+"It is true that there are cases where `Foo { ..Default::default() }` will be "
+"allowed where `Foo { .. }` won't be, and vice-versa."
+msgstr ""
+
+#: src/3681-default-field-values.md:817
+msgid ""
+"This new syntax is more ergonomic to use, but it requires specifying a "
+"default value for every field which can be much less ergonomic than using "
+"`#[derive(Default)]` on your type. The following two are almost equivalent, "
+"and the more fields there are, the more the verbosity is increased:"
+msgstr ""
+
+#: src/3681-default-field-values.md:837
+msgid ""
+"This can become relevant when an API author wants to push users towards the "
+"new syntax because `..` is shorter than `..Default::default()`, or when some "
+"fields with types that `impl Default` are optional, but `#[derive(Default)]` "
+"can't be used because some fields are mandatory."
+msgstr ""
+
+#: src/3681-default-field-values.md:842
+msgid ""
+"The main complexity comes instead from introducing `field: Type = expr`. "
+"However, as seen in the [prior-art](#prior-art), there are several widely-"
+"used languages that have a notion of field / property / instance-variable "
+"defaults. Therefore, the addition is intuitive and thus the cost is seen as "
+"limited. As an implementation detail, `rustc` _already_ parses `field: Type "
+"= expr` purely to provide an appropriate diagnostic error:"
+msgstr ""
+
+#: src/3681-default-field-values.md:849
+msgid ""
+"```\n"
+"error: default values on `struct` fields aren't supported\n"
+" --> src/lib.rs:2:28\n"
+"  |\n"
+"2 |     pub alpha: &'static str = \"\",\n"
+"  |                            ^^^^^ help: remove this unsupported default "
+"value\n"
+"```"
+msgstr ""
+
+#: src/3681-default-field-values.md:857
+msgid ""
+"An issue arises when considering `const` patterns. A pattern `Foo { .. }` "
+"can match more things than just the expression `Foo { .. }`, because the "
+"pattern matches any value of the unmentioned fields, but the expression sets "
+"them to a particular value. This means that, with the unstable "
+"`inline_const_pat`, the arm `const { Foo { .. } } =>` matches less than the "
+"arm `Foo { .. } =>` (assuming a type like `struct Foo { a: i32 = 1 }`). A "
+"way to mitigate this might be to use an alternative syntax, like `...` or `.."
+"kw#default`."
+msgstr ""
+
+#: src/3681-default-field-values.md:865
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3681-default-field-values.md:868
+msgid ""
+"Besides the given [motivation](#motivation), there are some specific design "
+"choices worthy of more in-depth discussion, which is the aim of this section."
+msgstr ""
+
+#: src/3681-default-field-values.md:871
+msgid "Provided associated items as precedent"
+msgstr ""
+
+#: src/3681-default-field-values.md:873
+msgid ""
+"While Rust does not have any support for default values for fields or for "
+"formal parameters of functions, the notion of defaults are not foreign to "
+"Rust."
+msgstr ""
+
+#: src/3681-default-field-values.md:876
+msgid ""
+"Indeed, it is possible to provide default function bodies for `fn` items in "
+"`trait` definitions. For example:"
+msgstr ""
+
+#: src/3681-default-field-values.md:883
+msgid "// A default body.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:889
+msgid ""
+"In traits, `const` items can also be assigned a default value. For example:"
+msgstr ""
+
+#: src/3681-default-field-values.md:893
+msgid "// A default value.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:897
+msgid ""
+"Thus, to extend Rust with a notion of field defaults is not an entirely "
+"alien concept."
+msgstr ""
+
+#: src/3681-default-field-values.md:900
+msgid "Pattern matching follows construction"
+msgstr ""
+
+#: src/3681-default-field-values.md:904
+msgid ""
+"In mathematics there is a notion of one thing being the _[dual](https://en."
+"wikipedia.org/wiki/Duality_(mathematics))_ of another. Loosely speaking, "
+"duals are often about inverting something. In Rust, one example of such an "
+"inversion is expressions and patterns."
+msgstr ""
+
+#: src/3681-default-field-values.md:908
+msgid ""
+"Expressions are used to _build up_ and patterns _break apart_; While it "
+"doesn't hold generally, a principle of language design both in Rust and "
+"other languages with with pattern matching has been that the syntax for "
+"patterns should, to the extent possible, follow that of expressions."
+msgstr ""
+
+#: src/3681-default-field-values.md:913
+msgid "For example:"
+msgstr ""
+
+#: src/3681-default-field-values.md:915
+msgid ""
+"You can match on or build up a struct with `Foo { field }`. For patterns "
+"this will make `field` available as a binding while for expressions the "
+"binding `field` will be used to build a `Foo`."
+msgstr ""
+
+#: src/3681-default-field-values.md:919
+msgid ""
+"For a tuple struct, `Foo(x)` will work both for construction and matching."
+msgstr ""
+
+#: src/3681-default-field-values.md:921
+msgid ""
+"If you want to be more flexible, both patterns and expressions permit `Foo "
+"{ field: bar }`."
+msgstr ""
+
+#: src/3681-default-field-values.md:924
+msgid ""
+"You can use both `&x` to dereference and bind to `x` or construct a "
+"reference to `x`."
+msgstr ""
+
+#: src/3681-default-field-values.md:927
+msgid ""
+"An array can be constructed with `[a, b, c, d]` and the same is a valid "
+"pattern for destructuring an array."
+msgstr ""
+
+#: src/3681-default-field-values.md:930
+msgid ""
+"The reason why matching should follow construction is that it makes "
+"languages easier to understand; you simply learn the expression syntax and "
+"then reuse it to run the process in reverse."
+msgstr ""
+
+#: src/3681-default-field-values.md:934
+msgid ""
+"In some places, Rust could do a better job than it currently does of "
+"adhering to this principle. In this particular case, the pattern syntax `Foo "
+"{ a, b: c, .. }` has no counterpart in the expression syntax. This RFC "
+"rectifies this by permitting `Foo { a, b: c, .. }` as an expression syntax; "
+"this is identical to the expression syntax and thus consistency has been "
+"gained."
+msgstr ""
+
+#: src/3681-default-field-values.md:940
+msgid ""
+"However, it is not merely sufficient to use the same syntax for expressions; "
+"the semantics also have to be similar in kind for things to work out well. "
+"This RFC argues that this is the case because in both contexts, `..` "
+"indicates something partially ignorable is going on: \"I am _destructuring_/"
+"_constructing_ this struct, and by the way there are some more fields I "
+"don't care about _and let's_ drop those\\* / _and let's fill in with default "
+"values_\". In a way, the use of `_` to mean both a catch-all pattern and "
+"type / value placeholder is similar to `..`; in the case of `_` both cases "
+"indicate something unimportant going on. For patterns, `_` matches "
+"everything and doesn't give access to the value; for types, the placeholder "
+"is just an unbounded inference variable."
+msgstr ""
+
+#: src/3681-default-field-values.md:952
+msgid "On `const` contexts"
+msgstr ""
+
+#: src/3681-default-field-values.md:954
+msgid ""
+"To recap, the expression a default value is computed with must be constant "
+"one. There are many reasons for this restriction:"
+msgstr ""
+
+#: src/3681-default-field-values.md:957
+msgid ""
+"If _determinism_ is not enforced, then just by writing the following "
+"snippet, the condition `x == y` may fail:"
+msgstr ""
+
+#: src/3681-default-field-values.md:965
+msgid "This contributes to surprising behaviour overall."
+msgstr ""
+
+#: src/3681-default-field-values.md:967
+msgid ""
+"Now you may object with an observation that if you replace `Foo { .. }` with "
+"`make_foo()` then a reader no longer know just from the syntactic form "
+"whether `x == y` is still upheld. This is indeed true. However, there is a "
+"general expectation in Rust that a function call may not behave "
+"deterministically. Meanwhile, for the syntactic form `Foo { .. }` and with "
+"default values, the whole idea is that they are something that doesn't "
+"require close attention."
+msgstr ""
+
+#: src/3681-default-field-values.md:974
+msgid ""
+"The broader class of problem that non-determinism highlights is that of "
+"_side_\\-effects. These effects wrt. program behaviour are prefixed with "
+"_\"side\"_ because they happen without being communicated in the type system "
+"or more specifically in the inputs and outputs of a function."
+msgstr ""
+
+#: src/3681-default-field-values.md:979
+msgid ""
+"In general, it is easier to do formal verification of programs that lack "
+"side-effects. While programming with Rust, requirements are usually not that "
+"demanding and robust. However, the same properties that make pure logic "
+"easier to formally verify also make for more _local reasoning_."
+msgstr ""
+
+#: src/3681-default-field-values.md:986
+msgid ""
+"_By requring default field values to be `const` contexts, global reasoning "
+"can be avoided. Thus, the [reasoning footprint](https://blog.rust-lang."
+"org/2017/03/02/lang-ergonomics.html#implicit-vs-explicit) for `Foo { .. }` "
+"is reduced._"
+msgstr ""
+
+#: src/3681-default-field-values.md:989
+msgid ""
+"By restricting ourselves to `const` contexts, you can be sure that default "
+"literals have a degree of _cheapness_."
+msgstr ""
+
+#: src/3681-default-field-values.md:992
+msgid ""
+"While `const` expressions form a turing complete language and therefore have "
+"no limits to their complexity other than being computable, these expressions "
+"are evaluated at _compile time_. Thus, _`const` expressions cannot have "
+"unbounded complexity at run-time_. At most, `const` expressions can create "
+"huge arrays and similar cases;"
+msgstr ""
+
+#: src/3681-default-field-values.md:998
+msgid ""
+"Ensuring that `Foo { .. }` remains relatively cheap is therefore important "
+"because there is a general expectation that literal expressions have a small "
+"and predictable run-time cost and are trivially predictable. This is "
+"particularly important for Rust since this is a language that aims to give a "
+"high degree of control over space and time as well as predictable "
+"performance characteristics."
+msgstr ""
+
+#: src/3681-default-field-values.md:1005
+msgid ""
+"Keeping default values limited to `const` expressions ensures that if the "
+"following situation develops:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1009
+msgid "// Crate A:\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1014
+msgid "// Crate B:\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1020
+msgid ""
+"then crate A cannot suddenly, and unawares, cause a semver breakage for "
+"crate B by replacing `const_expr` with `non_const_expr` since the compiler "
+"would reject such a change (see lemmas 1-2). Thus, enforcing constness gives "
+"a helping hand in respecting semantic version."
+msgstr ""
+
+#: src/3681-default-field-values.md:1025
+msgid ""
+"Note that if Rust would ever gain a mechanism to state that a function will "
+"not diverge, e.g.:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1029
+msgid "// The weaker variant; more easily attainable.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1030
+msgid "// No divergence, period.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1033
+msgid ""
+"then the same semver problem would manifest itself for those types of "
+"functions. However, Rust does not have any such enforcement mechanism right "
+"now and if it did, it is generally harder to ensure that a function is total "
+"than it is to ensure that it is deterministic; thus, while it is "
+"regrettable, this is an acceptable trade-off."
+msgstr ""
+
+#: src/3681-default-field-values.md:1039
+msgid ""
+"Finally, note that `const fn`s, can become quite expressive. For example, it "
+"is possible to use `loop`s, `match`es, `let` statements, and `panic!(..)`s. "
+"Another feasible extension in the future is allocation."
+msgstr ""
+
+#: src/3681-default-field-values.md:1043
+msgid ""
+"Therefore, constant expressions should be enough to satisfy most expressive "
+"needs."
+msgstr ""
+
+#: src/3681-default-field-values.md:1046
+msgid "Instead of `Foo { ..Default::default() }`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1048
+msgid ""
+"As an alternative to the proposed design is either explicitly writing out `.."
+"Default::default()` or extending the language such that `Foo { .. }` becomes "
+"sugar for `Foo { ..Default::default() }`. While the former idea does not "
+"satisfy any of the [motivation](#motivation) set out, the latter does to a "
+"small extent."
+msgstr ""
+
+#: src/3681-default-field-values.md:1053
+msgid ""
+"In particular, `Foo { .. }` as sugar slightly improves ergonomics. However, "
+"it has some notable problems:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1056
+msgid ""
+"Because it desugars to `Foo { ..Default::default() }`, it cannot be required "
+"that the expression is a constant one. This carries all the problems noted "
+"in the previous section on why default field values should be a `const` "
+"context."
+msgstr ""
+
+#: src/3681-default-field-values.md:1060
+msgid ""
+"There is no way of implementing a `Default` implementation that has "
+"mandatory fields for users to specify during value construction."
+msgstr ""
+
+#: src/3681-default-field-values.md:1063
+msgid ""
+"It provides zero improvements to the ergonomics of _specifying_ defaults, "
+"only for using them. Arguably, the most important aspect of this RFC is not "
+"the syntax `Foo { .. }` but rather the ability to provide default values for "
+"fields."
+msgstr ""
+
+#: src/3681-default-field-values.md:1068
+msgid "By extension, the improvement to documentation clarity is lost."
+msgstr ""
+
+#: src/3681-default-field-values.md:1070
+msgid ""
+"The trait `Default` must now become a `#[lang_item]`. This is a sign of "
+"increasing the overall magic in the system; meanwhile, this proposal makes "
+"the default values provided usable by other custom derive macros."
+msgstr ""
+
+#: src/3681-default-field-values.md:1074
+msgid ""
+"Thus in conclusion, while desugaring `..` to `Default::default()` has lower "
+"cost, it also provides significantly less value to the point of not being "
+"worth it."
+msgstr ""
+
+#: src/3681-default-field-values.md:1077
+msgid "`..` is useful as a marker"
+msgstr ""
+
+#: src/3681-default-field-values.md:1079
+msgid ""
+"One possible change to the current design is to permit filling in defaults "
+"by simply writing `Foo {}`; in other words, `..` is simply dropped from the "
+"expression."
+msgstr ""
+
+#: src/3681-default-field-values.md:1083
+msgid "Among the benefits are:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1085
+msgid "To enhance ergonomics of initialization further."
+msgstr ""
+
+#: src/3681-default-field-values.md:1087
+msgid "To introduce less syntax."
+msgstr ""
+
+#: src/3681-default-field-values.md:1089
+msgid "To be more in line with how other languages treat default values."
+msgstr ""
+
+#: src/3681-default-field-values.md:1091
+msgid "Among the drawbacks are:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1093
+msgid ""
+"The syntax `Foo { .. }` is no longer introduced to complement the identical "
+"pattern syntax. As aforementioned, destruction (and pattern matching) "
+"generally attempts to follow construction in Rust. Because of that, "
+"introducing `Foo { .. }` is essentially cost-free in terms of the complexity "
+"budget. It is arguably even cost-negative."
+msgstr ""
+
+#: src/3681-default-field-values.md:1099
+msgid ""
+"By writing `Foo { .. }`, there is explicit indication that default values "
+"are being used; this enhances local reasoning further."
+msgstr ""
+
+#: src/3681-default-field-values.md:1102
+msgid ""
+"This RFC requires the `..` to get defaulted fields because it wants to "
+"continue to allow the workflow of intentionally _not_ including `..` in the "
+"struct literal expression so that when a user adds a field they get "
+"compilation errors on every use -- just like is currently possible in "
+"patterns by not including `..` in the struct pattern."
+msgstr ""
+
+#: src/3681-default-field-values.md:1108
+msgid "Named function arguments with default values"
+msgstr ""
+
+#: src/3681-default-field-values.md:1110
+msgid ""
+"A frequently requested feature is named function arguments. Today, the way "
+"to design around the lack of these in the language are:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1113
+msgid "Builder pattern"
+msgstr ""
+
+#: src/3681-default-field-values.md:1114
+msgid ""
+"Defining a `struct` \"bag-object\" where optional fields are set, making "
+"users call functions in the following way: `foo(mandatory, Optionals { bar: "
+"42, ..Default::default() })`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1117
+msgid ""
+"Provide multiple methods: `fn foo(mandatory)` _and_ `fn "
+"foo_with_bar(mandatory, bar)`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1119
+msgid "Prior art"
+msgstr ""
+
+#: src/3681-default-field-values.md:1122
+msgid ""
+"A prior version of this RFC, from which part of the contents in this version "
+"were sourced, exists at https://github.com/Centril/rfcs/pull/19."
+msgstr ""
+
+#: src/3681-default-field-values.md:1125
+msgid ""
+"This RFC was informed by a [lengthy discussion in internals.rust-lang.org]"
+"(https://internals.rust-lang.org/t/pre-pre-rfc-syntactic-sugar-for-default-"
+"default/13234/75) from a few years prior."
+msgstr ""
+
+#: src/3681-default-field-values.md:1128
+msgid ""
+"Another prior RFC for the same feature is at https://github.com/rust-lang/"
+"rfcs/pull/1806."
+msgstr ""
+
+#: src/3681-default-field-values.md:1130
+msgid "Other languages"
+msgstr ""
+
+#: src/3681-default-field-values.md:1132
+msgid ""
+"This selection of languages are not exhaustive; rather, a few notable or "
+"canonical examples are used instead."
+msgstr ""
+
+#: src/3681-default-field-values.md:1135
+msgid "Java"
+msgstr ""
+
+#: src/3681-default-field-values.md:1137
+msgid ""
+"In Java it is possible to assign default values, computed by any expression, "
+"to an instance variable; for example, you may write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1147
+msgid "\"I am making an int!\""
+msgstr ""
+
+#: src/3681-default-field-values.md:1157
+msgid ""
+"When executing this program, the JVM will print the following to `stdout`:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1163
+msgid "Two things are worth noting here:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1165
+msgid ""
+"It is possible to cause arbitrary side effects in the expression that "
+"computes the default value of `bar`. This behaviour is unlike that which "
+"this RFC proposes."
+msgstr ""
+
+#: src/3681-default-field-values.md:1169
+msgid ""
+"It is possible to construct a `Foo` which uses the default value of `bar` "
+"even though `bar` has `private` visibility. This is because default values "
+"act as syntactic sugar for how the default constructor `Foo()` should act. "
+"There is no such thing as constructors in Rust. However, the behaviour that "
+"Java has is morally equivalent to this RFC since literals are constructor-"
+"like and because this RFC also permits the usage of defaults for private "
+"fields where the fields are not visible."
+msgstr ""
+
+#: src/3681-default-field-values.md:1177
+msgid "Scala"
+msgstr ""
+
+#: src/3681-default-field-values.md:1179
+msgid ""
+"Being a JVM language, Scala builds upon Java and retains the notion of "
+"default field values. For example, you may write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1186
+msgid "\"foo\""
+msgstr ""
+
+#: src/3681-default-field-values.md:1187
+msgid "\"bar\""
+msgstr ""
+
+#: src/3681-default-field-values.md:1194
+msgid "As expected, this prints `foo` and then `bar` to the terminal."
+msgstr ""
+
+#: src/3681-default-field-values.md:1196
+msgid "Kotlin"
+msgstr ""
+
+#: src/3681-default-field-values.md:1198
+msgid ""
+"Kotlin is similar to both Java and Scala; here too can you use defaults:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1200
+msgid ""
+"```kotlin\n"
+"fun make_int(): Int {\n"
+"    println(\"foo\");\n"
+"    return 42;\n"
+"}\n"
+"\n"
+"class Person(val age: Int = make_int());\n"
+"\n"
+"fun main() {\n"
+"    Person();\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/3681-default-field-values.md:1213
+msgid ""
+"Similar to Java and Scala, Kotlin does also permit side-effects in the "
+"default values because both languages have no means of preventing the "
+"effects."
+msgstr ""
+
+#: src/3681-default-field-values.md:1216
+msgid "C\\#"
+msgstr ""
+
+#: src/3681-default-field-values.md:1218
+msgid ""
+"Another language with defaults of the object-oriented variety is C#. The is "
+"behaviour similar to Java:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1227
+msgid "C++"
+msgstr ""
+
+#: src/3681-default-field-values.md:1229
+msgid ""
+"Another language in the object-oriented family is C++. It also affords "
+"default values like so:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1233
+msgid "<iostream>"
+msgstr ""
+
+#: src/3681-default-field-values.md:1236
+msgid "\"hello\""
+msgstr ""
+
+#: src/3681-default-field-values.md:1236
+msgid "// As in Java.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1255
+msgid ""
+"In C++ it is still the case that the defaults are usable due to "
+"constructors. And while the language has `constexpr` to enforce the ability "
+"to evaluate something at compile time, as can be seen in the snippet above, "
+"no such requirement is placed on default field values."
+msgstr ""
+
+#: src/3681-default-field-values.md:1260
+msgid "Swift"
+msgstr ""
+
+#: src/3681-default-field-values.md:1264
+msgid ""
+"A language which is closer to Rust is [Swift](https://docs.swift.org/swift-"
+"book/LanguageGuide/Initialization.html), and it allows for default values:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1272
+msgid "This is equivalent to writing:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1283
+msgid "Agda"
+msgstr ""
+
+#: src/3681-default-field-values.md:1285
+msgid ""
+"Having defaults for record fields is not the sole preserve of OO languages. "
+"The pure, total, and dependently typed functional programming language Agda "
+"also affords default values. For example, you may write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1305
+msgid ""
+"In contrast to languages such as Java, Agda does not have have a notion of "
+"constructors. Rather, `record {}` fills in the default value."
+msgstr ""
+
+#: src/3681-default-field-values.md:1310
+msgid ""
+"Furthermore, Agda is a pure and [strongly normalizing](https://en.wikipedia."
+"org/wiki/Normalization_property_(abstract_rewriting)) language and as such, "
+"`record {}` may not cause any side-effects or even divergence. However, as "
+"Agda employs monadic IO in the vein of Haskell, it is possible to store a "
+"`IO Nat` value in the record:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1315
+msgid ""
+"```agda\n"
+"record Foo : Set where\n"
+"    bar : IO Nat\n"
+"    bar = do\n"
+"        putStrLn \"hello!\"\n"
+"        pure zero\n"
+"```"
+msgstr ""
+
+#: src/3681-default-field-values.md:1323
+msgid ""
+"Note that this is explicitly typed as `bar : IO Nat` and that `record {}` "
+"won't actually run the action. To do that, you will need take the `bar` "
+"value and run it in an `IO` context."
+msgstr ""
+
+#: src/3681-default-field-values.md:1327
+msgid "Procedural macros"
+msgstr ""
+
+#: src/3681-default-field-values.md:1329
+msgid ""
+"There are a number of crates which to varying degrees afford macros for "
+"default field values and associated facilities."
+msgstr ""
+
+#: src/3681-default-field-values.md:1332
+msgid "`#[derive(Builder)]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1345
+msgid "Under this RFC, the code would be"
+msgstr ""
+
+#: src/3681-default-field-values.md:1355
+msgid "`#[derive(Derivative)]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1359
+msgid ""
+"The crate [`derivative`](https://crates.io/crates/derivative) provides the "
+"`#[derivative(Default)]` attribute. With it, you may write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1383
+msgid "Contrast this with the equivalent in the style of this RFC:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1403
+msgid "There a few aspects to note:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1405
+msgid ""
+"The signal to noise ratio is low as compared to the notation in this RFC. "
+"Substantial of syntactic overhead is accumulated to specify defaults."
+msgstr ""
+
+#: src/3681-default-field-values.md:1408
+msgid ""
+"Expressions need to be wrapped in strings, i.e. `value=\"2 * (1 << 20)\"`. "
+"While this is flexible and allows most logic to be embedded, the mechanism "
+"works poorly with IDEs and other tooling. Syntax highlighting also goes out "
+"of the window because the highlighter has no idea that the string included "
+"in the quotes is Rust code. It could just as well be a poem due to "
+"Shakespeare. At best, a highlighter could use some heuristic."
+msgstr ""
+
+#: src/3681-default-field-values.md:1416
+msgid ""
+"The macro has no way to enforce that the code embedded in the strings are "
+"constant expressions. It might be possible to fix that but that might "
+"increase the logic of the macro considerably."
+msgstr ""
+
+#: src/3681-default-field-values.md:1420
+msgid ""
+"Because the macro merely customizes how deriving `Default` works, it cannot "
+"provide the syntax `Foo { .. }`, interact with privacy, and it cannot "
+"provide defaults for `enum` variants."
+msgstr ""
+
+#: src/3681-default-field-values.md:1424
+msgid ""
+"Like in this RFC, `derivative` allows you to derive `Default` for `enum`s. "
+"The syntax used in the macro is `#[derivative(Default)]` whereas the RFC "
+"provides the more ergonomic and direct notation `#[default]` in this RFC."
+msgstr ""
+
+#: src/3681-default-field-values.md:1428
+msgid ""
+"To its credit, the macro provides `#[derivative(Default(bound=\"\"))]` with "
+"which you can remove unnecessary bounds as well as add needed ones. This "
+"addresses a [deficiency in the current deriving system](https://"
+"smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-"
+"derive/) for built-in derive macros. However, the attribute solves an "
+"orthogonal problem.  The ability to specify default values would mean that "
+"`derivative` can piggyback on the default value syntax due to this RFC. The "
+"mechanism for removing or adding bounds can remain the same. Similar "
+"mechanisms could also be added to the language itself."
+msgstr ""
+
+#: src/3681-default-field-values.md:1437
+msgid "`#[derive(SmartDefault)]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1441
+msgid ""
+"The [`smart-default`](https://crates.io/crates/smart-default) provides "
+"`#[derive(SmartDefault)]` custom derive macro. It functions similarly to "
+"`derivative` but is specialized for the `Default` trait. With it, you can "
+"write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1465
+msgid ""
+"The signal to noise ratio is still higher as compared to the notation in due "
+"to this RFC. The problems aforementioned from the `derivative` crate with "
+"respect to embedding Rust code in strings also persists."
+msgstr ""
+
+#: src/3681-default-field-values.md:1469
+msgid "Points 2-4 regarding `derivative` apply to `smart-default` as well."
+msgstr ""
+
+#: src/3681-default-field-values.md:1471
+msgid ""
+"The same syntax `#[default]` is used both by `smart-default` and by this "
+"RFC. While it may seem that this RFC was inspired by `smart-default`, this "
+"is not the case. Rather, this RFC's author came up with the notation "
+"independently. That suggests that the notation is intuitive since and a "
+"solid design choice."
+msgstr ""
+
+#: src/3681-default-field-values.md:1476
+msgid ""
+"There is no trait `SmartDefault` even though it is being derived. This works "
+"because `#[proc_macro_derive(SmartDefault)]` is in fact not tied to any "
+"trait. That `#[derive(Serialize)]` refers to the same trait as the name of "
+"the macro is from the perspective of the language's static semantics "
+"entirely coincidental."
+msgstr ""
+
+#: src/3681-default-field-values.md:1482
+msgid ""
+"However, for users who aren't aware of this, it may seem strange that "
+"`SmartDefault` should derive for the `Default` trait."
+msgstr ""
+
+#: src/3681-default-field-values.md:1485
+msgid "`#[derive(new)]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1489
+msgid ""
+"The [`derive-new`](https://crates.io/crates/derive-new) crate provides the "
+"`#[derive(new)]` custom derive macro. Unlike the two previous procedural "
+"macro crates, `derive-new` does not provide implementations of `Default`. "
+"Rather, the macro facilitates the generation of `MyType::new` constructors."
+msgstr ""
+
+#: src/3681-default-field-values.md:1494
+msgid "For example, you may write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1512
+msgid "\"vec![1]\""
+msgstr ""
+
+#: src/3681-default-field-values.md:1520
+msgid ""
+"Notice how `#[new(value = \"vec![1]\")`, `#[new(value = \"42\")]`, and "
+"`#[new(default)]` are used to provide values that are then omitted from the "
+"respective constructor functions that are generated."
+msgstr ""
+
+#: src/3681-default-field-values.md:1524
+msgid ""
+"If you transcribe the above snippet as much as possible to the system "
+"proposed in this RFC, you would get:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1532
+msgid ""
+"//               --------------\n"
+"    //               note: assuming some `impl const Default { .. }` "
+"mechanism.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1540
+msgid "// See future possibilities.\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1549
+msgid "Relative to `#[derive(new)]`, the main benefits are:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1551
+msgid "No wrapping code in strings, as noted in previous sections."
+msgstr ""
+
+#: src/3681-default-field-values.md:1552
+msgid ""
+"The defaults used can be mixed and matches; it works to request all defaults "
+"or just some of them."
+msgstr ""
+
+#: src/3681-default-field-values.md:1555
+msgid ""
+"The constructor functions `new_first_variant(..)` are not provided for you. "
+"However, it should be possible to tweak `#[derive(new)]` to interact with "
+"this RFC so that constructor functions are regained if so desired."
+msgstr ""
+
+#: src/3681-default-field-values.md:1559
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3681-default-field-values.md:1562
+msgid "`#[non_exhaustive]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1563
+msgid "What is the right interaction wrt. `#[non_exhaustive]`?"
+msgstr ""
+
+#: src/3681-default-field-values.md:1565
+msgid "In particular, if given the following definition:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1575
+msgid ""
+"it could be possible to construct a `Config` like so, if the construction of "
+"types without default field values is allowed (to support semver changes):"
+msgstr ""
+
+#: src/3681-default-field-values.md:1582
+msgid ""
+"then adding a field to `Config` can only happen if and only if that field is "
+"provided a default value."
+msgstr ""
+
+#: src/3681-default-field-values.md:1585
+msgid ""
+"This arrangement, while diminishing the usefulness of `#[non_exhaustive]`, "
+"makes the ruleset of the language simpler, more consistent, and also "
+"simplifies type checking as `#[non_exhaustive]` is entirely ignored when "
+"checking `Foo { fields, .. }` expressions."
+msgstr ""
+
+#: src/3681-default-field-values.md:1590
+msgid ""
+"As an alternative, users who desire the semantics described above can omit "
+"`#[non_exhaustive]` from their type and instead add a private defaulted "
+"field that has a ZST, if the construction of structs with private fields is "
+"allowed. If they are not, then the attribute is still relevant and needed to "
+"control the accepted code to force `..`."
+msgstr ""
+
+#: src/3681-default-field-values.md:1596
+msgid "`enum` variants"
+msgstr ""
+
+#: src/3681-default-field-values.md:1600
+msgid ""
+"Currently `#[derive(Default)]` only supports unit `enum` variants. In this "
+"RFC we propose supporting `..` on struct `enum` variants. It would be nice "
+"to keep the symmetry with `struct`s and support `#[derive(Default)]` on "
+"them, but it is not absolutely necessary. [RFC-3683](https://github.com/rust-"
+"lang/rfcs/pull/3683) proposes that support. These two features are "
+"technically orthogonal, but work well together."
+msgstr ""
+
+#: src/3681-default-field-values.md:1606
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3681-default-field-values.md:1611
+msgid ""
+"This RFC doesn't allow mixing default field values and `#[non_exhaustive]` "
+"because of the interaction with the allowance to build struct literals that "
+"have private fields:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1622
+msgid ""
+"// Currently forbidden, but would be allowed by this RFC without the "
+"attribute\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1625
+msgid "There are several options:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1627
+msgid ""
+"Allow `#[non_exhaustive]` but deny the ability to build a struct literal "
+"when there are non-accessible fields with defaults"
+msgstr ""
+
+#: src/3681-default-field-values.md:1629
+msgid ""
+"Disallow both `#[non_exhaustive]` and building struct literals with private "
+"fields in order to resolve the interaction some-time in the future, as "
+"_enabling_ either ability is a backwards compatible change that strictly "
+"allows more code to work"
+msgstr ""
+
+#: src/3681-default-field-values.md:1633
+msgid ""
+"Have additional rules on what the interactions are, like for example allow "
+"building struct literals with private fields _as long as_ the type isn't "
+"annotated with `#[non_exhaustive]`"
+msgstr ""
+
+#: src/3681-default-field-values.md:1636
+msgid ""
+"Extend `#[non_exhaustive]` with arguments in order to specify the desired "
+"behavior"
+msgstr ""
+
+#: src/3681-default-field-values.md:1638
+msgid ""
+"Change the defaults of `#[non_exhaustive]` and allow for the change in "
+"meaning of it being set"
+msgstr ""
+
+#: src/3681-default-field-values.md:1641
+msgid ""
+"I propose to go for the maximally restrictive version of the default field "
+"values feature, and allow for future experimentation of which of these "
+"options best fits the language."
+msgstr ""
+
+#: src/3681-default-field-values.md:1645
+msgid "The following also needs to be specified:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1655
+msgid "Privacy: building `struct`s with private defaulted fields"
+msgstr ""
+
+#: src/3681-default-field-values.md:1661
+msgid ""
+"In this RFC we do not propose any changes to the normal visibility rules: "
+"constructing a `struct` with default fields requires those fields to be "
+"visible in that scope."
+msgstr ""
+
+#: src/3681-default-field-values.md:1665
+msgid "Let's consider a scenario where this comes into play:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1682
+msgid ""
+"Despite `foo::bar` being in a different module than `foo::Alpha` and despite "
+"`beta` and `gamma` being private to `foo::bar`, a Rust compiler could accept "
+"the above snippet. It would be legal because when `Alpha { .. }` expands to "
+"`Alpha { beta: 42, gamma: true }`, the fields `beta` and `gamma` can be "
+"considered in the context of `foo::Alpha`'s _definition site_ rather than "
+"`bar::baz`'s definition site."
+msgstr ""
+
+#: src/3681-default-field-values.md:1689
+msgid ""
+"By permitting the above snippet, you are able to construct a default value "
+"for a type more ergonomically with `Foo { .. }`. Since it isn't possible for "
+"functions in `beta` to access `field`'s value, the value `42` or any other "
+"remains at all times private to `alpha`. Therefore, privacy, and by "
+"extension soundness, is preserved."
+msgstr ""
+
+#: src/3681-default-field-values.md:1695
+msgid ""
+"This used to be the behavior the \\[Functional Record Update syntax had "
+"_before_ [RFC-0736](https://github.com/rust-lang/rfcs/blob/master/text/0736-"
+"privacy-respecting-fru.md), where we previously allowed for the construction "
+"of a value with private fields with values from a base expression."
+msgstr ""
+
+#: src/3681-default-field-values.md:1699
+msgid ""
+"If a user wishes to keep other modules from constructing a `Foo` with `Foo "
+"{ .. }` they can add, or keep, one private field without a default, or add "
+"(for now) `#[non_exhaustive]`, as mixing these two features is not allowed "
+"under this RFC. Situations where this can be important include those where "
+"`Foo` is some token for some resource and where fabricating a `Foo` may "
+"prove dangerous or worse unsound. This is however no different than "
+"carelessly adding `#[derive(Default)]`."
+msgstr ""
+
+#: src/3681-default-field-values.md:1707
+msgid ""
+"Changing this behavior after stabilization of this RFC does present a "
+"potential foot-gun: if an API author relies on the privacy of a defaulted "
+"field to make a type unconstructable outside of its defining crate, then "
+"this change would cause the API to no longer be correct, needing the "
+"addition of a non-defaulted private field to keep its prior behavior. If we "
+"were to make this change, we could lint about the situation when all default "
+"values are private, which would be silenced by adding another non-defaulted "
+"private field."
+msgstr ""
+
+#: src/3681-default-field-values.md:1715
+msgid ""
+"Another alternative would be to allow this new behavior in an opt in manner, "
+"such as an attribute or item modifier:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1737
+msgid ""
+"Additionally, the interaction between this privacy behavior and "
+"`#[non_exhaustive]` is fraught and requires additional discussion."
+msgstr ""
+
+#: src/3681-default-field-values.md:1740
+msgid "\"Empty\" types and types without default field values"
+msgstr ""
+
+#: src/3681-default-field-values.md:1742
+msgid ""
+"Under this RFC, the following code isn't specified one way or the other:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1747
+msgid "// should be denied\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1750
+msgid ""
+"I propose we disallow this at least initially. `..` can then _only_ be used "
+"if there is at least one default field. We might want to change this rule in "
+"the future, but careful with how it would interact with `#[non_exhaustive]`, "
+"as it could accidentally allow for types that are not meant to be "
+"constructed outside of a given crate to all of a sudden be constructable."
+msgstr ""
+
+#: src/3681-default-field-values.md:1756
+msgid ""
+"One alternative can be to provide an explicit opt-in attribute to allow for "
+"the use of default field values even if the type doesn't currently have any:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1763
+msgid "// ok\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1766
+msgid "Use of `_` on struct literals"
+msgstr ""
+
+#: src/3681-default-field-values.md:1768
+msgid ""
+"On patterns, one can currently use `field: _` to explicitly ignore a single "
+"named field, in order to force a compilation error at the pattern use place "
+"if a field is explicitly added to the type. One could envision a desire to "
+"allow for the use of the same syntax during construction, as an explicit "
+"expression to set a given default, but still fail to compile if a field has "
+"been added to the type:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1785
+msgid "Tuple structs and tuple variants"
+msgstr ""
+
+#: src/3681-default-field-values.md:1787
+msgid ""
+"Although it could, this proposal does not offer a way to specify default "
+"values for tuple struct / variant fields. For example, you may not write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1801
+msgid ""
+"While well-defined semantics could be given for these positional fields, "
+"there are some tricky design choices; in particular:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1804
+msgid "It's unclear whether the following should be permitted:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1811
+msgid ""
+"In particular, the fields with defaults are not at the end of the struct. A "
+"restriction could imposed to enforce that. However, it would also be useful "
+"to admit the above definition of `Beta` so that `#[derive(Default)]` can "
+"make use of `\"hello\"`."
+msgstr ""
+
+#: src/3681-default-field-values.md:1816
+msgid ""
+"The syntax `Alpha(..)` as an expression already has a meaning. Namely, it is "
+"sugar for `Alpha(RangeFull)`. Thus unfortunately, this syntax cannot be used "
+"to mean `Alpha(42, true)`. In newer editions, the syntax `Alpha(...)` (three "
+"dots) can be used for filling in defaults. This would ostensibly entail "
+"adding the pattern syntax `Alpha(...)` as well."
+msgstr ""
+
+#: src/3681-default-field-values.md:1823
+msgid ""
+"As mentioned in the previous section, `_` could also be allowed in `struct` "
+"literals. If so, then they would also be allowed in tuple literals, allowing "
+"us to use the `struct` in the prior snippet with `Beta(_, true)`."
+msgstr ""
+
+#: src/3681-default-field-values.md:1827
+msgid ""
+"For these reasons, default values for positional fields are not included in "
+"this RFC and are instead left as a possible future extension."
+msgstr ""
+
+#: src/3681-default-field-values.md:1830
+msgid "Integration with structural records"
+msgstr ""
+
+#: src/3681-default-field-values.md:1834
+msgid ""
+"In [RFC 2584](https://github.com/rust-lang/rfcs/pull/2584) structural "
+"records are proposed. These records are structural like tuples but have "
+"named fields. As an example, you can write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1842
+msgid "which then has the type:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1848
+msgid "These can then be used to further emulate named arguments. For example:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1852 src/3681-default-field-values.md:1863
+#: src/3681-default-field-values.md:1916
+msgid "// logic...\n"
+msgstr ""
+
+#: src/3681-default-field-values.md:1858
+msgid ""
+"Since this proposal introduces field defaults, the natural combination with "
+"structural records would be to permit them to have defaults. For example:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1867
+msgid "A coercion could then allow you to write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1873
+msgid ""
+"This could be interpreted as `open_window({ RangeFull })`, see the previous "
+"section for a discussion... alternatively `open_window(_)` could be "
+"permitted instead for general value inference where `_` is a placeholder "
+"expression similar to `_` as a type expression placeholder (i.e. a fresh and "
+"unconstrained unification variable)."
+msgstr ""
+
+#: src/3681-default-field-values.md:1879
+msgid "If you wanted to override a default, you would write:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1885
+msgid ""
+"Note that the syntax used to give fields in structural records defaults "
+"belongs to the type grammar; in other words, the following would be legal:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1894
+msgid ""
+"As structural records are not yet in the language, figuring out designs for "
+"how to extend this RFC to them is left as possible work for the future."
+msgstr ""
+
+#: src/3681-default-field-values.md:1899
+msgid "Integration with struct literal type inference"
+msgstr ""
+
+#: src/3681-default-field-values.md:1901
+msgid ""
+"Yet another common requested feature is the introduction of struct literal "
+"type inference in the form of elision of the name of an ADT literal when it "
+"can be gleaned from context. This has sometimes been proposed as an "
+"alternative or complementary to structural records. This would allow people "
+"to write `foo(_ { bar: 42 })` where the function argument type is inferred "
+"from the `foo` definition. struct literal type inference with default struct "
+"fields would also allow people to write APIs that \"feel\" like named "
+"function arguments when calling them, although not when defining them."
+msgstr ""
+
+#: src/3681-default-field-values.md:1922
+msgid "Accessing default values from the type"
+msgstr ""
+
+#: src/3681-default-field-values.md:1924
+msgid "If one were to conceptualize default field values in the following way:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1938
+msgid ""
+"It would follow that one should be able to access the value of these "
+"defaults _without_ constructing `Config`, by writing `Config::HEIGHT`. I do "
+"not believe this should be done or advanced, but there's nothing in this RFC "
+"that precludes _some_ mechanism to access these values in the future. With "
+"the RFC as written, these values can be accessed by instantiating `Config "
+"{ .. }.height`, as long as `height` is visible in the current scope."
+msgstr ""
+
+#: src/3681-default-field-values.md:1945
+msgid ""
+"Note that the _opposite_ is supported, writing that code will compile, so "
+"any API author that wants to make these `const` values on the type can:"
+msgstr ""
+
+#: src/3681-default-field-values.md:1959
+msgid "Non-const values"
+msgstr ""
+
+#: src/3681-default-field-values.md:1963
+msgid ""
+"Although there are [strong reasons](#on-const-contexts) to restrict default "
+"values only to const values, it would be possible to allow non-const values "
+"as well, potentially allowed but linted against. Expanding the kind of "
+"values that can be accepted can be expanded in the future."
+msgstr ""
+
+#: src/3681-default-field-values.md:1968
+msgid ""
+"Of note, `Default` implementations are not currently `~const`, but that is "
+"something to be addressed by making them `~const` when suitable instead."
+msgstr ""
+
+#: src/3681-default-field-values.md:1971
+msgid ""
+"Lint against explicit `impl Default` when `#[derive(Default)]` would be ok"
+msgstr ""
+
+#: src/3681-default-field-values.md:1973
+msgid ""
+"As a future improvement, we could nudge implementors towards leveraging the "
+"feature for less verbosity, but care will have to be taken in not being "
+"overly annoying, particularly for crates that have an MSRV that would "
+"preclude them from using this feature. This could be an edition lint, which "
+"would simplify implementation."
+msgstr ""

@@ -1,0 +1,441 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2361-dbg-macro.md:1
+msgid "Feature Name: `dbg_macro`"
+msgstr ""
+
+#: src/2361-dbg-macro.md:2
+msgid "Start Date: 2018-03-13"
+msgstr ""
+
+#: src/2361-dbg-macro.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2361](https://github.com/rust-lang/rfcs/pull/2361)"
+msgstr ""
+
+#: src/2361-dbg-macro.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#54306](https://github.com/rust-lang/rust/"
+"issues/54306)"
+msgstr ""
+
+#: src/2361-dbg-macro.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2361-dbg-macro.md:9
+msgid ""
+"Add a `dbg!($expr)` macro to the prelude (so that it doesn’t need to be "
+"imported) that prints its argument with some metadata (source code location "
+"and stringification) before returning it."
+msgstr ""
+
+#: src/2361-dbg-macro.md:13
+msgid ""
+"This is a simpler and more opinionated counter-proposal to [RFC 2173]"
+"(https://github.com/rust-lang/rfcs/pull/2173)."
+msgstr ""
+
+#: src/2361-dbg-macro.md:17
+msgid "Motivation"
+msgstr ""
+
+#: src/2361-dbg-macro.md:20
+msgid ""
+"Sometimes a debugger may not have enough Rust-specific support to introspect "
+"some data (such as calling a Rust method), or it may not be convenient to "
+"use or available at all. “`printf` debugging” is possible in today’s Rust "
+"with:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:25
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/2361-dbg-macro.md:28
+msgid "This RFC improves some aspects:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:30
+msgid ""
+"The `\"{:?}\",` part of this line is boilerplate that’s not trivial to "
+"remember or even type correctly."
+msgstr ""
+
+#: src/2361-dbg-macro.md:32
+msgid ""
+"If the expression to be inspected is part of a larger expression, it either "
+"needs to be duplicated (which may add side-effects or computation cost) or "
+"pulled into a `let` binding which adds to the boilerplate."
+msgstr ""
+
+#: src/2361-dbg-macro.md:35
+msgid ""
+"When more than one expression is printed at different places of the same "
+"program, and the formatting itself (for example a plain integer) doesn’t "
+"indicate what value is being printed, some distinguishing information may "
+"need to be added. For example: `println!(\"foo = {:?}\", x.foo());`"
+msgstr ""
+
+#: src/2361-dbg-macro.md:41
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2361-dbg-macro.md:44
+msgid ""
+"To inspect the value of a given expression at run-time, it can be wrapped in "
+"the `dbg!` macro to print the value to `STDERR`, along with its source "
+"location and source code:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:51
+msgid "/*…*/"
+msgstr ""
+
+#: src/2361-dbg-macro.md:58
+msgid "This prints the following to `STDERR`:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:64
+msgid "Another example is `factorial` which we can debug like so:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:80
+msgid ""
+"Running this program, in the playground, will print the following to "
+"`STDERR`:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:94
+msgid ""
+"Using `dbg!` requires type of the expression to implement the `std::fmt::"
+"Debug` trait."
+msgstr ""
+
+#: src/2361-dbg-macro.md:97
+msgid "Move semantics"
+msgstr ""
+
+#: src/2361-dbg-macro.md:99
+msgid ""
+"The `dbg!(x)` macro moves the value `x` and takes ownership of it, unless "
+"the type of `x` implements `Copy`, and returns `x` unchanged. If you want to "
+"retain ownership of the value, you can instead borrow `x` with `dbg!(&x)`."
+msgstr ""
+
+#: src/2361-dbg-macro.md:104
+msgid "Unstable output format"
+msgstr ""
+
+#: src/2361-dbg-macro.md:106
+msgid ""
+"The exact output printed by this macro should not be relied upon and is "
+"subject to future changes."
+msgstr ""
+
+#: src/2361-dbg-macro.md:109
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2361-dbg-macro.md:112
+msgid ""
+"The macro below is added to `src/libstd/macros.rs`, with a doc-comment based "
+"on the [Guide-level explanation](#guide-level-explanation) of this RFC."
+msgstr ""
+
+#: src/2361-dbg-macro.md:121
+msgid ""
+"// The exact formatting here is not stable and may change in the future.\n"
+msgstr ""
+
+#: src/2361-dbg-macro.md:122
+msgid "\"[{}:{}] {} = {:#?}\""
+msgstr ""
+
+#: src/2361-dbg-macro.md:130
+msgid ""
+"The use of `match` over `let` is similar to the implementation of `assert_eq!"
+"`. It [affects the lifetimes of temporaries](https://stackoverflow.com/"
+"questions/48732263/why-is-rusts-assert-eq-implemented-using-a-"
+"match#comment84465322_48732525)."
+msgstr ""
+
+#: src/2361-dbg-macro.md:134
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2361-dbg-macro.md:137
+msgid ""
+"Adding to the prelude should be done carefully. However a library can always "
+"define another macro with the same name and shadow this one."
+msgstr ""
+
+#: src/2361-dbg-macro.md:140
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2361-dbg-macro.md:143
+msgid ""
+"\\[RFC 2173\\] and provides a more complex alternative that offers more "
+"control but is also more complex. This RFC was designed with the goal of "
+"being a simpler and thus better fit for the standard library."
+msgstr ""
+
+#: src/2361-dbg-macro.md:146
+msgid "Alternative: tweaking formatting"
+msgstr ""
+
+#: src/2361-dbg-macro.md:148
+msgid ""
+"Any detail of the formatting can be tweaked. For example, `{:#?}` or `{:?}`?"
+msgstr ""
+
+#: src/2361-dbg-macro.md:150
+msgid "A simple macro without any control over output"
+msgstr ""
+
+#: src/2361-dbg-macro.md:152
+msgid ""
+"This RFC does not offer users control over the exact output being printed. "
+"This is because a use of this macro is intended to be run a small number of "
+"times before being removed. If more control is desired, for example logging "
+"in an app shipped to end users, other options such as `println!` or the "
+"`log` crate remain available."
+msgstr ""
+
+#: src/2361-dbg-macro.md:157
+msgid "Accepting a single expression instead of many"
+msgstr ""
+
+#: src/2361-dbg-macro.md:159
+msgid ""
+"If the macro accepts more than one expression (returning a tuple), there is "
+"a question of what to do with a single expression. Returning a one-value "
+"tuple `($expr,)` is probably unexpected, but _not_ doing so creates a "
+"discontinuty in the macro's behavior as things are added. With only one "
+"expression accepted, users can still pass a tuple expression or call the "
+"macro multiple times."
+msgstr ""
+
+#: src/2361-dbg-macro.md:166
+msgid "Including `file!()` in the output"
+msgstr ""
+
+#: src/2361-dbg-macro.md:168
+msgid ""
+"In a large project with multiple files, it becomes quite difficult to tell "
+"what the origin of the output is. Including `file!()` is therefore quite "
+"helpful in debugging. However, it is not very useful on the [playground]"
+"(https://play.rust-lang.org), but that exception is acceptable."
+msgstr ""
+
+#: src/2361-dbg-macro.md:174
+msgid "Including the line number"
+msgstr ""
+
+#: src/2361-dbg-macro.md:176
+msgid ""
+"The argument is analogous to that for `file!()`. For a large file, it would "
+"also be difficult to locate the source of the output without `line!()`."
+msgstr ""
+
+#: src/2361-dbg-macro.md:179
+msgid "Excluding the column number"
+msgstr ""
+
+#: src/2361-dbg-macro.md:181
+msgid ""
+"Most likely, only one `dbg!(expr)` call will occur per line. The remaining "
+"cases will likely occur when dealing with binary operators such as with: "
+"`dbg!(x) + dbg!(y) + dbg!(z)`, or with several arguments to a function / "
+"method call. However, since the macro prints out `stringify!(expr)`, the "
+"user can clearly see which expression on the line that generated the value. "
+"The only exception to this is if the same expression is used multiple times "
+"and crucically has side effects altering the value between calls. This "
+"scenario is probably uncommon. Furthermore, even in this case, one can "
+"visually distinguish between the calls since one is first and the second "
+"comes next."
+msgstr ""
+
+#: src/2361-dbg-macro.md:192
+msgid ""
+"Another reason to exclude `column!()` is that we want to keep the macro "
+"simple, and thus, we only want to keep the essential parts that help "
+"debugging most."
+msgstr ""
+
+#: src/2361-dbg-macro.md:195
+msgid ""
+"However, the `column!()` isn't very visually disturbing since it uses "
+"horizontal screen real-estate but not vertical real-estate, which may still "
+"be a good reason to keep it. Nonetheless, this argument is not sufficient to "
+"keep `column!()`, wherefore **this RFC will not include it**."
+msgstr ""
+
+#: src/2361-dbg-macro.md:201
+msgid "Including `stringify!(expr)`"
+msgstr ""
+
+#: src/2361-dbg-macro.md:203
+msgid ""
+"As discussed in the rationale regarding `column!()`, `stringify!(expr)` "
+"improves the legibility of similar looking expressions."
+msgstr ""
+
+#: src/2361-dbg-macro.md:206
+msgid ""
+"Another major motivation is that with many outputs, or without all of the "
+"source code in short term memory, it can become hard to associate the "
+"printed output with the logic as you wrote it. With `stringify!`, you can "
+"easily see how the left-hand side reduces to the right-hand side. This makes "
+"it easier to reason about the trace of your program and why things happened "
+"as they did. The ability to trace effectively can greatly improve the "
+"ability to debug with ease and speed."
+msgstr ""
+
+#: src/2361-dbg-macro.md:213
+msgid "Returning the value that was given"
+msgstr ""
+
+#: src/2361-dbg-macro.md:215
+msgid ""
+"One goal of the macro is to intrude and disturb as little as possible in the "
+"workflow of the user. The macro should fit the user, not the other way "
+"around. Returning the value that was given, i.e: that `dbg!(expr) == expr` "
+"and `typeof(expr) == typeof(dbg!(expr))` allows just that."
+msgstr ""
+
+#: src/2361-dbg-macro.md:220
+msgid "To see how writing flow is preserved, consider starting off with:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:227
+msgid ""
+"Now, you want to inspect what `fun(a)` and `fun(b)` evaluates to. But you "
+"would like to avoid going through the hassle of:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:230
+msgid "saving `fun(a)` and `fun(b)` to a variable"
+msgstr ""
+
+#: src/2361-dbg-macro.md:231
+msgid "printing out the variable"
+msgstr ""
+
+#: src/2361-dbg-macro.md:232
+msgid "using it in the expression as `let c = fa + fb;`."
+msgstr ""
+
+#: src/2361-dbg-macro.md:234
+msgid ""
+"The same logic applies to inspecting the temporary state of `self.first()`. "
+"Instead of the hassle, you can simply do:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:242
+msgid ""
+"This modification is considerably smaller and disturbs flow while debugging "
+"code to a lesser degree."
+msgstr ""
+
+#: src/2361-dbg-macro.md:244
+msgid "Keeping output when `cfg!(debug_assertions)` is disabled"
+msgstr ""
+
+#: src/2361-dbg-macro.md:246
+msgid ""
+"When `cfg!(debug_assertions)` is false, printing could be disabled to reduce "
+"runtime cost in release builds. However this cost is not relevant if uses of "
+"`dbg!` are removed before shipping to production, where crates such as `log` "
+"may be better suited, and deemed less important than the ability to easily "
+"investigate bugs that only occur with optimizations. These kinds of bugs [do "
+"happen](https://github.com/servo/servo/issues/19519) and can be a pain to "
+"debug."
+msgstr ""
+
+#: src/2361-dbg-macro.md:253
+msgid "`STDERR` should be used over `STDOUT` as the output stream"
+msgstr ""
+
+#: src/2361-dbg-macro.md:255
+msgid ""
+"The messages printed using `dbg!` are not usually errors, which is one "
+"reason to use `STDOUT` instead. However, `STDERR` is often used as a second "
+"channel for extra messages. This use of `STDERR` often occurs when `STDOUT` "
+"carries some data which you can't mix with random messages."
+msgstr ""
+
+#: src/2361-dbg-macro.md:260
+msgid ""
+"If we consider a program such as `ripgrep`, where should hypothetical uses "
+"of `dbg!` print to in the case of `rg some_word < input_file > "
+"matching_lines`? Should they end up on the terminal or in the file "
+"`matching_lines`? Clearly the former is correct in this case."
+msgstr ""
+
+#: src/2361-dbg-macro.md:265
+msgid "Outputting `lit = lit` for `dbg!(lit);` instead of `lit`"
+msgstr ""
+
+#: src/2361-dbg-macro.md:267
+msgid ""
+"The left hand side of the equality adds no new information wherefore it "
+"might be a redundant annoyance. On the other hand, it may give a sense of "
+"symmetry with the non-literal forms such as `a = 42`. Keeping `5 = 5` is "
+"also more consistent. In either case, since the macro is intentionally "
+"simple, there is little room for tweaks such as removing `lit = `. For these "
+"reasons, and especially the last one, the output format `lit = lit` is used."
+msgstr ""
+
+#: src/2361-dbg-macro.md:274
+msgid "Prior art"
+msgstr ""
+
+#: src/2361-dbg-macro.md:277
+msgid "Many languages have a construct that can be as terse as `print foo`."
+msgstr ""
+
+#: src/2361-dbg-macro.md:279
+msgid "Some examples are:"
+msgstr ""
+
+#: src/2361-dbg-macro.md:280
+msgid ""
+"[Haskell](http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude."
+"html#v:print)"
+msgstr ""
+
+#: src/2361-dbg-macro.md:281
+msgid "[python](https://docs.python.org/2/library/pprint.html)"
+msgstr ""
+
+#: src/2361-dbg-macro.md:282
+msgid "[PHP](http://php.net/manual/en/function.print-r.php)"
+msgstr ""
+
+#: src/2361-dbg-macro.md:286
+msgid ""
+"The specific idea to return back the input `expr` in `dbg!(expr)` was "
+"inspired by [`traceShowId`](http://hackage.haskell.org/package/base-4.10.1.0/"
+"docs/Debug-Trace.html#v:traceShowId) in Haskell."
+msgstr ""
+
+#: src/2361-dbg-macro.md:288
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2361-dbg-macro.md:291
+msgid "Unbounded bikeshedding."
+msgstr ""

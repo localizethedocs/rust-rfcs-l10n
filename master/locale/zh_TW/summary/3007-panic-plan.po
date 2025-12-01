@@ -1,0 +1,433 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3007-panic-plan.md:1
+msgid "Start Date: 2020-10-25"
+msgstr ""
+
+#: src/3007-panic-plan.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#3007](https://github.com/rust-lang/rfcs/pull/3007)"
+msgstr ""
+
+#: src/3007-panic-plan.md:3
+msgid "Rust Issue: [\\#80162](https://github.com/rust-lang/rust/issues/80162)"
+msgstr ""
+
+#: src/3007-panic-plan.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/3007-panic-plan.md:7
+msgid ""
+"This RFC proposes to make `core::panic!` and `std::panic!` identical and "
+"consistent in Rust 2021, and proposes a way to deal with the differences in "
+"earlier editions without breaking code."
+msgstr ""
+
+#: src/3007-panic-plan.md:10
+msgid "Problems"
+msgstr ""
+
+#: src/3007-panic-plan.md:12
+msgid ""
+"`core::panic!` and `std::panic!` behave mostly the same, but have their own "
+"incompatible quirks for the single-argument case."
+msgstr ""
+
+#: src/3007-panic-plan.md:14
+msgid ""
+"This leads to several different problems, which would all be solved if they "
+"didn't special-case `panic!(one_argument)`."
+msgstr ""
+
+#: src/3007-panic-plan.md:16
+msgid ""
+"For multiple-arguments (e.g. `panic!(\"error: {}\", e)`), both already "
+"behave identical."
+msgstr ""
+
+#: src/3007-panic-plan.md:18
+msgid "Panic"
+msgstr ""
+
+#: src/3007-panic-plan.md:20
+msgid ""
+"Both do not use `format_args!(\"..\")` for `panic!(\"..\")` like they do for "
+"multiple arguments, but use the string literally."
+msgstr ""
+
+#: src/3007-panic-plan.md:22
+msgid ""
+"_💔 **Problem 1:** `panic!(\"error: {}\")` is probably a mistake, but "
+"compiles fine._"
+msgstr ""
+
+#: src/3007-panic-plan.md:24
+msgid ""
+"_💔 **Problem 2:** `panic!(\"Here's a brace: {{\")` outputs two braces "
+"(`{{`), not one (`{`)._"
+msgstr ""
+
+#: src/3007-panic-plan.md:26
+msgid ""
+"In the case of `std::panic!(x)`, `x` does not have to be a string literal, "
+"but can be of any (`Any + Send`) type. This means that `std::panic!(\"{}\")` "
+"and even `std::panic!(&\"hi\")` compile without errors or warnings, even "
+"though these are most likely mistakes."
+msgstr ""
+
+#: src/3007-panic-plan.md:29
+msgid ""
+"_💔 **Problem 3:** `panic!(123)`, `panic!(&\"..\")`, `panic!(b\"..\")`, etc. "
+"are probably mistakes, but compile fine with `std`._"
+msgstr ""
+
+#: src/3007-panic-plan.md:31
+msgid ""
+"In the case of `core::panic!(x)`, `x` must be a `&str`, but does not have to "
+"be a string literal, nor does it have to be `'static`. This means that "
+"`core::panic!(\"{}\")` and `core::panic!(string.as_str())` compile fine."
+msgstr ""
+
+#: src/3007-panic-plan.md:34
+msgid ""
+"_💔 **Problem 4:** `let error = String::from(\"error\"); panic!(&error);` "
+"works fine in `no_std` code, but no longer compiles when switching `no_std` "
+"off._"
+msgstr ""
+
+#: src/3007-panic-plan.md:36
+msgid ""
+"_💔 **Problem 5:** `panic!(CustomError::Error);` works with std, but no "
+"longer compiles when switching `no_std` on._"
+msgstr ""
+
+#: src/3007-panic-plan.md:38
+msgid "Assert"
+msgstr ""
+
+#: src/3007-panic-plan.md:40
+msgid ""
+"`assert!(expr, args..)` and `assert_debug(expr, args..)` expand to `panic!"
+"(args..)` and therefore will have all the same problems. In addition, these "
+"can result in confusing mistakes:"
+msgstr ""
+
+#: src/3007-panic-plan.md:44
+msgid "// runs panic!(false) if v is not empty  😕\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:47
+msgid ""
+"_💔 **Problem 6:** `assert!(expr, expr)` should probably have been a "
+"`assert_eq!`, but compiles fine and gives no useful panic message._"
+msgstr ""
+
+#: src/3007-panic-plan.md:49
+msgid ""
+"Because `core::panic!` and `std::panic!` are different, `assert!` and "
+"related macros expand to `panic!(..)`, not to `$crate::panic!(..)`, making "
+"these macros not work with `#![no_implicit_prelude]`, as reported in "
+"[\\#78333](https://github.com/rust-lang/rust/issues/78333). This also means "
+"that the panic of an assert can be accidentally 'hijacked' by a locally "
+"defined `panic!` macro."
+msgstr ""
+
+#: src/3007-panic-plan.md:53
+msgid ""
+"_💔 **Problem 7:** `assert!` and related macros need to choose between "
+"`core::panic!` and `std::panic!`, and can't use `$crate::panic!` for proper "
+"hygiene._"
+msgstr ""
+
+#: src/3007-panic-plan.md:55
+msgid "Implicit formatting arguments"
+msgstr ""
+
+#: src/3007-panic-plan.md:57
+msgid ""
+"[RFC 2795](https://rust-lang.github.io/rfcs/2795-format-args-implicit-"
+"identifiers.html) adds implicit formatting args, as follows:"
+msgstr ""
+
+#: src/3007-panic-plan.md:61
+msgid "\"a is {a}\""
+msgstr ""
+
+#: src/3007-panic-plan.md:64
+msgid ""
+"It modifies `format_args!()` to automatically capture variables that are "
+"named in a formatting placeholder."
+msgstr ""
+
+#: src/3007-panic-plan.md:66
+msgid ""
+"With the current implementations of `panic!()` (both core's and std's), this "
+"would not work if there are no additional explicit arguments:"
+msgstr ""
+
+#: src/3007-panic-plan.md:71 src/3007-panic-plan.md:72
+msgid "\"{}\""
+msgstr ""
+
+#: src/3007-panic-plan.md:71 src/3007-panic-plan.md:74
+msgid "// prints `4`\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:72
+msgid "// panics with `4`\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:74 src/3007-panic-plan.md:75
+msgid "\"{a}\""
+msgstr ""
+
+#: src/3007-panic-plan.md:75
+msgid "// panics with `{a}`  😕\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:77 src/3007-panic-plan.md:78
+msgid "\"{a} {}\""
+msgstr ""
+
+#: src/3007-panic-plan.md:77
+msgid "// prints `4 4`\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:78
+msgid "// panics with `4 4`\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:81
+msgid ""
+"_💔 **Problem 8:** `panic!(\"error: {error}\")` will silently not work as "
+"expected, after [RFC 2795](https://rust-lang.github.io/rfcs/2795-format-args-"
+"implicit-identifiers.html) is implemented._"
+msgstr ""
+
+#: src/3007-panic-plan.md:83
+msgid "Bloat"
+msgstr ""
+
+#: src/3007-panic-plan.md:85
+msgid ""
+"`core::panic!(\"hello {\")` produces the same `fmt::Arguments` as "
+"`format_args!(\"hello {{\")`, not `format_args!(\"{}\", \"hello {\")` to "
+"avoid pulling in string's `Display` code, which can be quite big."
+msgstr ""
+
+#: src/3007-panic-plan.md:88
+msgid ""
+"However, `core::panic!(non_static_str)` does need to expand to `format_args!"
+"(\"{}\", non_static_str)`, because `fmt::Arguments` requires a `'static` "
+"lifetime for the non-formatted pieces. Because the `panic!` `macro_rules` "
+"macro can't distinguish between non-`'static` and `'static` values, this "
+"optimization is only applied to what macro_rules consider a `$_:literal`, "
+"which does not include `concat!(..)` or `CONST_STR`."
+msgstr ""
+
+#: src/3007-panic-plan.md:92
+msgid ""
+"_💔 **Problem 9:** `const CONST_STR: &'static str = \"hi\"; core::panic!"
+"(CONST_STR)` works, but will silently result in a lot more generated code "
+"than `core::panic!(\"hi\")`. (And also needs [special handling](https://"
+"github.com/rust-lang/rust/pull/78069) to make `const_panic` work.)_"
+msgstr ""
+
+#: src/3007-panic-plan.md:96
+msgid "Solution if we could go back in time"
+msgstr ""
+
+#: src/3007-panic-plan.md:98
+msgid ""
+"None of these these problems would have existed if 1) `panic!()` did not "
+"handle the single-argument case differently, and 2) `std::panic!` was no "
+"different than `core::panic!`:"
+msgstr ""
+
+#: src/3007-panic-plan.md:103
+msgid "// core\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:106
+msgid "\"explicit panic\""
+msgstr ""
+
+#: src/3007-panic-plan.md:112
+msgid "// std\n"
+msgstr ""
+
+#: src/3007-panic-plan.md:117
+msgid ""
+"The examples from problems 1, 2, 3, 4, 5, 6 and 9 would simply not compile, "
+"and problems 7 and 8 would not occur."
+msgstr ""
+
+#: src/3007-panic-plan.md:119
+msgid "However, that would break too much existing code."
+msgstr ""
+
+#: src/3007-panic-plan.md:121
+msgid "Proposed solution"
+msgstr ""
+
+#: src/3007-panic-plan.md:123
+msgid ""
+"Considering we should not break existing code, I propose we gate the "
+"breaking changes on the 2021 edition."
+msgstr ""
+
+#: src/3007-panic-plan.md:125
+msgid ""
+"In addition, we add a lint that _warns_ about the problems in Rust "
+"2015/2018, while not giving errors or changing the behaviour."
+msgstr ""
+
+#: src/3007-panic-plan.md:127
+msgid "Specifically:"
+msgstr ""
+
+#: src/3007-panic-plan.md:129
+msgid ""
+"Only for Rust 2021, we apply the breaking changes as in the previous "
+"section. So, `core::panic!` and `std::panic!` are the same, and _always_ put "
+"their arguments through `format_args!()`."
+msgstr ""
+
+#: src/3007-panic-plan.md:132
+msgid ""
+"Any optimization that needs special casing should be done _after_ "
+"`format_args!()`. (E.g. using [`fmt::Arguments::as_str()`](https://github."
+"com/rust-lang/rust/pull/74056), as is [already done](https://github.com/rust-"
+"lang/rust/pull/78119) for `core::panic!(\"literal\")`.)"
+msgstr ""
+
+#: src/3007-panic-plan.md:136
+msgid ""
+"This means `std::panic!(x)` can no longer be used to panic with arbitrary "
+"(`Any + Send`) payloads."
+msgstr ""
+
+#: src/3007-panic-plan.md:138
+msgid ""
+"We [add `std::panic::panic_any(x)`](https://github.com/rust-lang/rust/"
+"pull/74622), that still allows programs with std to panic with arbitrary "
+"(`Any + Send`) payloads."
+msgstr ""
+
+#: src/3007-panic-plan.md:141
+msgid ""
+"We [add a lint](https://github.com/rust-lang/rust/pull/78088) for Rust "
+"2015/2018 that warns about problem 1, 2, and 8, similar to [what Clippy "
+"already has](https://rust-lang.github.io/rust-clippy/master/index."
+"html#panic_params)."
+msgstr ""
+
+#: src/3007-panic-plan.md:144
+msgid ""
+"Note that this lint isn't just to warn about incompatibilities with Rust "
+"2021, but also to warn about usages of `panic!()` that are likely mistakes."
+msgstr ""
+
+#: src/3007-panic-plan.md:146
+msgid ""
+"This lint suggests add an argument to `panic!(\"hello: {}\")`, or to insert "
+"`\"{}\", ` to use it literally: `panic!(\"{}\", \"hello: {}\")`. "
+"([Screenshot here.](https://user-images.githubusercontent."
+"com/783247/96643867-79eb1080-1328-11eb-8d4e-a5586837c70a.png)) The second "
+"suggestion can be a pessimization for code size, but I believe that [can be "
+"solved separately](https://github.com/rust-lang/rust/issues/78356)."
+msgstr ""
+
+#: src/3007-panic-plan.md:150
+msgid ""
+"After `panic_any` is stable, we add a lint for Rust 2015/2018 (or extend the "
+"one above) to warn about problem 3, 4, 5 and 9. It warns about `panic!(x)` "
+"for anything other than a string literal, and suggests to use `panic_any(x)` "
+"instead of `std::panic!(x)`, and `panic!(\"{}\", x)` instead of `core::panic!"
+"(x)`."
+msgstr ""
+
+#: src/3007-panic-plan.md:155
+msgid ""
+"It will also detect problem 6 (e.g. `assert!(true, false)`) because that "
+"expands to such a panic invocation, but will suggest `assert_eq!()` for this "
+"case instead."
+msgstr ""
+
+#: src/3007-panic-plan.md:158
+msgid ""
+"We [modify the panic glue between core and std](https://github.com/rust-lang/"
+"rust/pull/78119) to use `Arguments::as_str()` to make sure both `std::panic!"
+"(\"literal\")` and `core::panic!(\"literal\")` result in a `&'static str` "
+"payload. This removes one of the differences between the two macros in Rust "
+"2015/2018."
+msgstr ""
+
+#: src/3007-panic-plan.md:162
+msgid "This is already merged."
+msgstr ""
+
+#: src/3007-panic-plan.md:164
+msgid ""
+"Now that `std::panic!(\"literal\")` and `core::panic!(\"literal\")` behave "
+"identically, [we modify `todo!()`, `unimplemented!()`, `assert_eq!()`, etc.]"
+"(https://github.com/rust-lang/rust/pull/78343) to use `$crate::panic!()` "
+"instead of `panic!()`. This solves problem 7 for all macros except `assert!"
+"()`."
+msgstr ""
+
+#: src/3007-panic-plan.md:168
+msgid ""
+"We modify `assert!()` to use `$crate::panic!()` instead of `panic!()` for "
+"the single argument case in Rust 2015/2018, and for all cases in Rust 2021."
+msgstr ""
+
+#: src/3007-panic-plan.md:171
+msgid ""
+"This solves problem 7 for the common case of `assert!(expr)` in Rust "
+"2015/2018, and for all cases of `assert!` in Rust 2021."
+msgstr ""
+
+#: src/3007-panic-plan.md:173
+msgid ""
+"Together, these actions address all problems, without breaking any existing "
+"code."
+msgstr ""
+
+#: src/3007-panic-plan.md:175
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3007-panic-plan.md:177
+msgid "This results in subtle differences between Rust editions."
+msgstr ""
+
+#: src/3007-panic-plan.md:179
+msgid ""
+"This requires `assert!` and `panic!` to behave differently depending on the "
+"Rust edition of the crate it is used in. `panic!` is just a `macro_rules` "
+"macro right now, which does not natively support that."
+msgstr ""
+
+#: src/3007-panic-plan.md:182
+msgid "Alternatives"
+msgstr ""
+
+#: src/3007-panic-plan.md:184
+msgid ""
+"Instead of the last step, we could also simply break `assert!(expr, "
+"non_string_literal)` in all editions. This usage is probably way less common "
+"than `panic!(non_string_literal)`."
+msgstr ""

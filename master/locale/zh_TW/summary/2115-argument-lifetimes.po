@@ -1,0 +1,664 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2115-argument-lifetimes.md:1
+msgid "Feature Name: argument_lifetimes"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:2
+msgid "Start Date: 2017-08-17"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2115](https://github.com/rust-lang/rfcs/pull/2115)"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44524](https://github.com/rust-lang/rust/"
+"issues/44524)"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:6
+msgid "⚠ Update 4 years later ⚠"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:8
+msgid ""
+"Much of this RFC was stabilized, including the wildcard lifetime and elision "
+"in `impl`s."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:10
+msgid ""
+"However, [the team decided to un-accept](https://github.com/rust-lang/rust/"
+"issues/44524#issuecomment-988260463) the parts of this RFC related to using "
+"lifetimes without a separate definition."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:13
+msgid "Summary"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:16
+msgid ""
+"Eliminate the need for separately binding lifetime parameters in `fn` "
+"definitions and `impl` headers, so that instead of writing:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:27
+msgid "you can write:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:37
+msgid ""
+"Lint against leaving off lifetime parameters in structs (like `Ref` or "
+"`Iter`), instead nudging people to use explicit lifetimes in this case (but "
+"leveraging the other improvements to make it ergonomic to do so)."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:41
+msgid "The changes, in summary, are:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:43
+msgid ""
+"A signature is taken to bind any lifetimes it mentions that are not already "
+"bound."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:44
+msgid ""
+"A style lint checks that lifetimes bound in `impl` headers are multiple "
+"characters long, to reduce potential confusion with lifetimes bound within "
+"functions. (There are some additional, less important lints proposed as "
+"well.)"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:47
+msgid ""
+"You can write `'_` to explicitly elide a lifetime, and it is deprecated to "
+"entirely leave off lifetime arguments for non-`&` types"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:50
+msgid "**This RFC does not introduce any breaking changes**."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:52
+msgid "Motivation"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:55
+msgid ""
+"Today's system of lifetime elision has a kind of \"cliff\". In cases where "
+"elision applies (because the necessary lifetimes are clear from the "
+"signature), you don't need to write anything:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:63
+msgid ""
+"But the moment that lifetimes need to be disambiguated, you suddenly have to "
+"introduce a named lifetime parameter and refer to it throughout, which "
+"generally requires changing three parts of the signature:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:71
+msgid ""
+"These concerns are just a papercut for advanced Rust users, but they also "
+"present a cliff in the learning curve, one affecting the most novel and "
+"difficult to learn part of Rust. In particular, when first explaining "
+"borrowing, we can say that `&` means \"borrowed\" and that borrowed values "
+"coming out of a function must come from borrowed values in its input:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:81
+msgid ""
+"It's then not too surprising that when there are multiple input borrows, you "
+"need to disambiguate which one you're borrowing from. But to learn how to do "
+"so, you must learn not only lifetimes, but also the system of lifetime "
+"parameterization and the subtle way you use it to tie lifetimes together. In "
+"the next section, I'll show how this RFC provides a gentler learning curve "
+"around lifetimes and disambiguation."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:88
+msgid ""
+"Another point of confusion for newcomers and old hands alike is the fact "
+"that you can leave off lifetime parameters for types:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:95
+msgid "// Iter here implicitly takes the lifetime from &self\n"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:99
+msgid ""
+"As detailed in the [ergonomics initiative blog post](https://blog.rust-lang."
+"org/2017/03/02/lang-ergonomics.html), this bit of lifetime elision is "
+"considered a mistake: it makes it difficult to see at a glance that "
+"borrowing is occurring, especially if you're unfamiliar with the types "
+"involved. (The `&` types, by contrast, are universally known to involve "
+"borrowing.)  This RFC proposes some steps to rectify this situation without "
+"regressing ergonomics significantly."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:108
+msgid ""
+"In short, this RFC seeks to improve the lifetime story for existing and new "
+"users by simultaneously improving clarity and ergonomics. In practice it "
+"should reduce the total occurrences of `<`, `>` and `'a` in signatures, "
+"while _increasing_ the overall clarity and explicitness of the lifetime "
+"system."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:113
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:116
+msgid ""
+"_Note: this is a **sketch** of what it might look like to teach someone "
+"lifetimes given this RFC_\\*."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:119
+msgid "Introducing references and borrowing"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:121
+msgid ""
+"_Assume that ownership has already been introduced, but not yet borrowing_."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:123
+msgid ""
+"While ownership is important in Rust, it's not very expressive or convenient "
+"by itself; it's quite common to want to \"lend\" a value to a function "
+"you're calling, without permanently relinquishing ownership of it."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:127
+msgid ""
+"Rust provides support for this kind of temporary lending through "
+"_references_ `&T`, which signify _a temporarily borrowed value of type `T`_. "
+"So, for example, you can write:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:134
+msgid "\"{}\""
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:139
+msgid "and you designate lending by writing an `&` on the callee side:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:145
+msgid ""
+"This borrow of `my_vec` lasts only for the duration of the `print_vec` call."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:147
+msgid "_Imagine more explanation here..._"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:149
+msgid "Functions that return borrowed data"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:151
+msgid ""
+"So far we've only seen functions that _consume_ borrowed data; what about "
+"producing it?"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:154
+msgid ""
+"In general, borrowed data is always borrowed _from something_. And that "
+"thing must always be available for longer than the borrow is. When a "
+"function returns, its stack frame is destroyed, which means that any "
+"borrowed data it returns must come from outside of its stack frame."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:159
+msgid ""
+"The most typical case is producing new borrowed data from already-borrowed "
+"data. For example, consider a \"getter\" method:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:175
+msgid ""
+"Here we're making what looks like a \"fresh\" borrow, it's \"derived\" from "
+"the existing borrow of `self`, and hence fine to return back to our caller; "
+"the actual `MyStruct` value must live outside our stack frame anyway."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:179
+msgid "Pinpointing borrows with lifetimes"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:181
+msgid ""
+"For Rust to guarantee safety, it needs to track the _lifetime_ of each loan, "
+"which says _for what portion of code the loan is valid_."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:184
+msgid ""
+"In particular, each `&` type also has an associated lifetime---but you can "
+"usually leave it off. The reason is that a lot of code works like the getter "
+"example above, where you're returning borrowed data which could only have "
+"come from the borrowed data you took in. Thus, in `get_field1` the lifetime "
+"for `&self` and for `&Foo` are assumed to be the same."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:190
+msgid ""
+"Rust is conservative about leaving lifetimes off, though: if there's any "
+"ambiguity, you need to say explicitly state the relationships between the "
+"loans. So for example, the following function signature is _not_ accepted:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:198
+msgid ""
+"Rust cannot tell how long the resulting borrow of `Item` is valid for; it "
+"can't deduce its lifetime. Instead, you need to connect it to one or both of "
+"the input borrows:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:207
+msgid ""
+"This notation lets you _name_ the lifetime associated with a borrow and "
+"refer to it later:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:210
+msgid ""
+"In the first variant, we name the `Data` borrow lifetime `'data`, and make "
+"clear that the returned `Item` borrow is valid for the same lifetime."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:213
+msgid ""
+"In the second variant, we give _both_ input lifetimes the _same_ name "
+"`'both`, which is a way of asking the compiler to determine their "
+"\"intersection\" (i.e. the period for which both of the loans are active); "
+"we then say the returned `Item` borrow is valid for that period (which means "
+"it may incorporate data from both of the input borrows)."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:219
+msgid "`struct`s and lifetimes"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:221
+msgid ""
+"Sometimes you need to build data types that contain borrowed data. Since "
+"those types can then be used in many contexts, you can't say in advance what "
+"the lifetime of those borrows will be. Instead, you must take it as a "
+"parameter:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:232
+msgid ""
+"Here we're defining a type for iterating over a vector, without requiring "
+"_ownership_ of that vector. To do so, we store a _borrow_ of the vector. But "
+"because our new `VecIter` struct contains borrowed data, it needs to surface "
+"that fact, and the lifetime connected with it. It does so by taking an "
+"explicit `'vec` parameter for the relevant lifetime, and using it within."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:238
+msgid ""
+"When using this struct, you can apply explicitly-named lifetimes as usual:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:246
+msgid ""
+"However, in cases like this example, we would normally be able to leave off "
+"the lifetime with `&`, since there's only one source of data we could be "
+"borrowing from. We can do something similar with structs:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:256
+msgid ""
+"The `'_` marker makes clear to the reader that _borrowing is happening_, "
+"which might not otherwise be clear."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:259
+msgid "`impl` blocks and lifetimes"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:261
+msgid ""
+"When writing an `impl` block for a structure that takes a lifetime "
+"parameter, you can give that parameter a name, which you should strive to "
+"make _meaningful_:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:269
+msgid "This name can then be referred to in the body:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:278
+msgid ""
+"If the type's lifetime is not relevant, you can leave it off using `'_`:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:284
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:287
+msgid ""
+"**Note: these changes are designed to _not_ require a new edition**. They do "
+"expand our naming style lint, however."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:290
+msgid "Lifetimes in `impl` headers"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:292
+msgid ""
+"When writing an `impl` header, you can mention lifetimes without binding "
+"them in the generics list. Any lifetimes that are not already in scope "
+"(which, today, means any lifetime whatsoever) is treated as being bound as a "
+"parameter of the `impl`."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:297 src/2115-argument-lifetimes.md:324
+#: src/2115-argument-lifetimes.md:377
+msgid "Thus, where today you would write:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:304 src/2115-argument-lifetimes.md:340
+#: src/2115-argument-lifetimes.md:384
+msgid "tomorrow you would write:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:311 src/2115-argument-lifetimes.md:356
+msgid "If any lifetime names are explicitly bound, they all must be."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:313
+msgid ""
+"This change goes hand-in-hand with a convention that lifetimes introduced in "
+"`impl` headers (and perhaps someday, modules) should be multiple characters, "
+"i.e. \"meaningful\" names, to reduce the chance of collision with typical "
+"`'a` usage in functions."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:318
+msgid "Lifetimes in `fn` signatures"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:320
+msgid ""
+"When writing a `fn` declaration, if a lifetime appears that is not already "
+"in scope, it is taken to be a new binding, i.e. treated as a parameter to "
+"the function."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:358
+msgid ""
+"For higher-ranked types (including cases like `Fn` syntax), elision works as "
+"it does today. However, **it is an error to mention a lifetime in a higher-"
+"ranked type that hasn't been explicitly bound** (either at the outer `fn` "
+"definition, or within an explicit `for<>`). These cases are extremely rare, "
+"and making them an error keeps our options open for providing an "
+"interpretation later on."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:364
+msgid ""
+"Similarly, if a `fn` definition is nested inside another `fn` definition, it "
+"is an error to mention lifetimes from that outer definition (without binding "
+"them explicitly). This is again intended for future-proofing and clarity, "
+"and is an edge case."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:369
+msgid "The wildcard lifetime"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:371
+msgid ""
+"When referring to a type (other than `&`/`&mut`) that requires lifetime "
+"arguments, it is deprecated to leave off those parameters."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:374
+msgid ""
+"Instead, you can write a `'_` for the parameters, rather than giving a "
+"lifetime name, which will have identical behavior to leaving them off today."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:391
+msgid "Additional lints"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:393
+msgid ""
+"Beyond the change to the style lint for `impl` header lifetimes, two more "
+"lints are provided:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:396
+msgid ""
+"One deny-by-default lint against `fn` definitions in which an unbound "
+"lifetime occurs exactly once. Such lifetimes can always be replaced by `'_` "
+"(or for `&`, elided altogether), and giving an explicit name is confusing at "
+"best, and indicates a typo at worst."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:401
+msgid ""
+"An expansion of Clippy's lints so that they warn when a signature contains "
+"other unnecessary elements, e.g. when it could be using elision or could "
+"leave off lifetimes from its generics list."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:405
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:408
+msgid ""
+"The style lint for `impl` headers could introduce some amount of churn. This "
+"could be mitigated by only applying that lint for lifetimes not bound in the "
+"generics list."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:412
+msgid ""
+"The fact that lifetime parameters are not bound in an out-of-band way is "
+"somewhat unusual and might be confusing---but then, so are lifetime "
+"parameters! Putting the bindings out of band buys us very little, as argued "
+"in the next section."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:417
+msgid ""
+"It's possible that the inconsistency with type parameters, which must always "
+"be bound explicitly, will be confusing. In particular, lifetime parameters "
+"for `struct` definitions appear side-by-side with parameter lists, but "
+"elsewhere are bound differently. However, users are virtually certain to "
+"encounter type generics prior to explicit lifetime generics, and if they try "
+"to follow the same style -- by binding lifetime parameters explicitly -- "
+"that will work just fine (but may be linted in Clippy as unnecessary)."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:425
+msgid ""
+"Requiring a `'_` rather than being able to leave off lifetimes altogether "
+"may be a slight decrease in ergonomics in some cases. In particular, "
+"`SomeType<'_>` is pretty sigil-heavy."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:429
+msgid ""
+"Cases where you could write `fn foo<'a, 'b: 'a>(...)` now need the `'b: 'a` "
+"to be given in a `where` clause, which might be slightly more verbose. These "
+"are relatively rare, though, due to our type well-formedness rule."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:433
+msgid ""
+"Otherwise, it's a bit hard to see drawbacks here: nothings is made less "
+"explicit or harder to determine, since the binding structure continues to be "
+"completely unambiguous; ergonomics and, arguably, learnability both improve. "
+"And signatures become less noisy and easier to read."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:438
+msgid "Rationale and Alternatives"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:441
+msgid "Core rationale"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:443
+msgid ""
+"The key insight of the proposed design is that out-of-band bindings for "
+"lifetime parameters is buying us very little today:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:446
+msgid ""
+"For free functions, it's completely unnecessary; the only lifetime \"in "
+"scope\" is `'static`, so everything else _must_ be a parameter."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:448
+msgid ""
+"For functions within `impl` blocks, it is solely serving the purpose of "
+"distinguishing between lifetimes bound by the `impl` header and those bounds "
+"by the `fn`."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:452
+msgid ""
+"While this might change if we ever allow modules to be parameterized by "
+"lifetimes, it won't change in any essential way: the point is that there are "
+"generally going to be _very_ few in-scope lifetimes when writing a function "
+"signature. So the premise is that we can use naming conventions to "
+"distinguish between the `impl` header (or eventual module headers) and `fn` "
+"bindings."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:458
+msgid ""
+"Alternatively, we could instead distinguish these cases at the use-site, for "
+"example by writing `outer('a)` or some such to refer to the `impl` block "
+"bindings."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:462
+msgid "Possible extension or alternative: \"backreferences\""
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:464
+msgid ""
+"A different approach would be referring to elided lifetimes through their "
+"parameter name, like so:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:471
+msgid ""
+"The idea is that each parameter that involves a single, elided lifetime will "
+"be understood to _bind_ a lifetime using that parameter's name."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:474
+msgid ""
+"Earlier iterations of this RFC combined these \"backreferences\" with the "
+"rest of the proposal, but this was deemed too confusing and error-prone, and "
+"in particular harmed readability by requiring you to scan both lifetime "
+"mentions _and_ parameter names."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:479
+msgid ""
+"We could consider _only_ allowing \"backreferences\" (i.e. references to "
+"argument names), and otherwise keeping binding as-is. However, this has a "
+"few downsides:"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:482
+msgid "It doesn't help with `impl` headers"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:483
+msgid ""
+"It doesn't entirely eliminate the need for lifetimes in generics lists for "
+"`fn` definitions, meaning that there's still _another_ step of learning to "
+"reach fully expressive lifetimes."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:486
+msgid ""
+"As @rpjohnst [argued](https://github.com/rust-lang/rfcs/"
+"pull/2115#issuecomment-324147717), backreferences can end up reinforcing an "
+"importantly-wrong mental model, namely that you're borrowing from an "
+"argument, rather than from its (already-borrowed) contents. By contrast, "
+"requiring you to write the lifetime reinforces the opposite idea: that "
+"borrowing has already occurred, and that what you're tying together is that "
+"existing lifetime."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:492
+msgid ""
+"On a similar note, using backreferences to tie multiple arguments together "
+"is often nonsensical, since there's no sense in which one argument is the "
+"\"primary definer\" of the lifetime."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:496
+msgid "Alternatives"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:498
+msgid ""
+"We could consider using this as an opportunity to eliminate `'` altogether, "
+"by tying these improvements to a new way of providing lifetimes, e.g. "
+"`&ref(x) T`."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:501
+msgid ""
+"The [internals thread]((https://internals.rust-lang.org/t/lang-team-minutes-"
+"elision-2-0/5182)) on this topic covers a wide array of syntactic options "
+"for leaving off a struct lifetime (which is `'_` in this RFC), including: "
+"`_`, `&`, `ref`. The choice of `'_` was driven by two factors: it's short, "
+"and it's self-explanatory, given our use of wildcards elsewhere. On the "
+"other hand, the syntax is pretty clunky."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:509
+msgid ""
+"As mentioned above, we could consider alternatives to the case distinction "
+"in lifetime variables, instead using something like `outer('a)` to refer to "
+"lifetimes from an `impl` header."
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:513
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2115-argument-lifetimes.md:516
+msgid "How to treat examples like `fn f() -> &'a str { \"static string\" }`."
+msgstr ""

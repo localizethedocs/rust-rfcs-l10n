@@ -1,0 +1,348 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3289-source_replacement_ambiguity.md:1
+msgid "Feature Name: source_replacement_ambiguity"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:2
+msgid "Start Date: 2022-07-05"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3289](https://github.com/rust-lang/rfcs/pull/3289)"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:4
+msgid ""
+"Tracking Issue: [rust-lang/cargo#10894](https://github.com/rust-lang/cargo/"
+"issues/10894)"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:9
+msgid ""
+"When Cargo is performing an API operation (`yank`/`login`/`publish`/etc.) to "
+"a source-replaced `crates-io`, require the user to pass `--registry <NAME>` "
+"to specify exactly which registry to use. Additionally, ensure that the "
+"token for `crates-io` is never sent to a replacement registry."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:14
+msgid ""
+"There are multiple issues that this RFC attempts to resolve around source-"
+"replacement."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:16
+msgid ""
+"When Cargo is performing an API operation, source replacement is only "
+"respected for `crates-io`, not alternative registries. This is inconsistent."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:17
+msgid ""
+"The [error message](https://github.com/rust-lang/cargo/issues/6722) for "
+"attempting to publish to a replaced crates-io is confusing, and there is no "
+"workaround other than temporarily removing the source replacement "
+"configuration."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:18
+msgid ""
+"When performing an API operation other than `publish` with a replaced "
+"`crates-io` source, the `crates-io` credentials are sent to the replacement "
+"registry's API. This is a security risk."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:19
+msgid ""
+"It's unclear which credentials should be used when fetching a source-"
+"replaced authenticated alternate registry ([RFC 3139](https://rust-lang."
+"github.io/rfcs/3139-cargo-alternative-registry-auth.html))."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:21
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:24
+msgid ""
+"When the `crates-io` source is replaced, the user needs to specify `--"
+"registry <NAME>` when running an API operation to disambiguate which "
+"registry to use. Otherwise, `cargo` will issue an error."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:26
+msgid ""
+"`cargo` only sends the token associated with a given registry to that "
+"registry and no other (even if source replacement is configured)."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:28
+msgid ""
+"When replacing a source with a registry, the `replace-with` key can "
+"reference the name of a registry in the `[registries]` table."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:30
+msgid "Example scenarios"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:32
+msgid "Local source replacement (vendoring)"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:33
+msgid ""
+"A repository has a local `.cargo/config.toml` that vendors all dependencies "
+"from crates.io. Fetching and building within the repository would work as "
+"expected with the vendored sources."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:35
+msgid ""
+"If the user decides to publish the crate, `cargo publish --registry crates-"
+"io` will ignore the source-replacement and publish to crates.io."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:37
+msgid "`crates-io` mirror registry"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:38
+msgid ""
+"A server has been set up that provides a complete mirror of crates.io. The "
+"user has configured a `~/.cargo/config.toml` that points to the mirror "
+"registry in the `[registries]` table. The mirror requires authentication to "
+"access (based on [RFC 3139](https://rust-lang.github.io/rfcs/3139-cargo-"
+"alternative-registry-auth.html))."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:40
+msgid ""
+"The user can log in to the mirror using `cargo login --registry mirror`. "
+"Fetching and building use the mirror."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:42
+msgid ""
+"The user decides to publish the crate to crates.io, and does `cargo login --"
+"registry crates-io` to log in to crates.io. Source replacement is ignored, "
+"and the token is saved."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:44
+msgid ""
+"Next, the user runs `cargo publish --registry crates-io` to publish to "
+"crates.io. Cargo ignores source replacement when building and publishing the "
+"crate to crates.io."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:46
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:49
+msgid "Change 1: respect `--registry`"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:50
+msgid ""
+"When running an API operation (`login`, `logout`, `owner`, `publish`, "
+"`search`, `yank`), Cargo always uses the registry specified by `--registry "
+"<NAME>`, and never a source-replacement."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:52
+msgid "Change 2: error for replaced crates-io"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:53
+msgid ""
+"When running an API operation (as defined above) and ALL of the following "
+"are true:"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:54
+msgid "`crates-io` has been replaced by a remote-registry source."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:55
+msgid "command line argument `--registry <NAME>` is not present."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:56
+msgid "command line argument `--index <URL>` is not present."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:57
+msgid ""
+"`Cargo.toml` manifest key `publish = <NAME>` is not set (only applies for "
+"publishing)."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:59
+msgid "`cargo` issues an error:"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:64
+msgid "Change 3: credentials are only sent to the same registry"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:65
+msgid ""
+"If the `crates-io` source is replaced with another remote registry, the "
+"credentials for `crates-io` are never sent to the replacement registry. This "
+"makes `crates-io` consistent with alternative registries and ensures "
+"credentials are only sent to the registry they are associated with."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:70
+msgid "Change 4: `[source]` table can reference `[registries]` table"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:71
+msgid ""
+"The `replace-with` key in the `[source]` table can reference a registry "
+"defined in the `[registries]` table."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:73
+msgid "For example, the following configuration would be valid:"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:75
+msgid ""
+"```\n"
+"[source.crates-io]\n"
+"replace-with = \"my-registry\"\n"
+"\n"
+"[registries.my-registry]\n"
+"index = \"https://my-registry-index/\"\n"
+"```"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:83
+msgid ""
+"This is necessary to allow the `--registry <NAME>` command-line argument to "
+"work with source-replaced registries. It also allows additional "
+"configuration (such as a token) to be specified for a source-replacement "
+"registry without duplicating configuration between `[registries]` and "
+"`[source]` tables."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:85
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:88
+msgid ""
+"Behavior is changed around where credentials are sent, which could break "
+"some workflows."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:90
+msgid ""
+"If a mirror of crates.io is set up with `config.json` containing `\"api\": "
+"\"https://crates.io\"`, then the current system of sending the crates.io "
+"token to the replaced source would work correctly, and this RFC would break "
+"it."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:92
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:95
+msgid "Alternative: ignore source replacement for API operations"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:96
+msgid ""
+"When doing an API operation with a replaced `crates-io`, `cargo` would "
+"ignore source replacement without additional arguments. This is how "
+"alternative registries currently work."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:98
+msgid ""
+"If the user wants to use the replacement, they could pass `--registry "
+"<NAME>`, but would not be required to do so."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:100
+msgid ""
+"A new option `--respect-source-config` could be added to make cargo follow "
+"the source replacement for API operations (similar to what we already have "
+"for `cargo vendor`)."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:102
+msgid ""
+"This may be too confusing for users since it silently changes behavior. The "
+"RFC proposes a solution that requires the user to be explicit about which "
+"registry to use in the ambiguous situation (crates-io replacement)."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:104
+msgid "Alternative: disallow source replacement for API operations"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:106
+msgid ""
+"Attempting an API operation on a replaced source would be an error. The user "
+"could use `--registry crates-io` to explicitly bypass the source replacement."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:111
+msgid "Prior art"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:114
+msgid "Other package managers don't seem to have a source replacement feature."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:116
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:119
+msgid ""
+"Should the `--registry <NAME>` command line argument be allowed to reference "
+"the name of a `source` from the `[source]` table as well? This makes it more "
+"flexible, but adds potentially unnecessary complexity."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:121
+msgid ""
+"Cargo's tests rely on the ability to replace the crates.io source and have "
+"the crates.io credentials go to the replaced source. We need a way for these "
+"tests to continue working."
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:123
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3289-source_replacement_ambiguity.md:126
+msgid "Can't think of anything."
+msgstr ""

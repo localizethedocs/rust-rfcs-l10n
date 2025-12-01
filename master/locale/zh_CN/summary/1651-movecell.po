@@ -1,0 +1,129 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1651-movecell.md:1
+msgid "Feature Name: move_cell"
+msgstr ""
+
+#: src/1651-movecell.md:2
+msgid "Start Date: 2016-06-15"
+msgstr ""
+
+#: src/1651-movecell.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1651](https://github.com/rust-lang/rfcs/pull/1651)"
+msgstr ""
+
+#: src/1651-movecell.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#39264](https://github.com/rust-lang/rust/"
+"issues/39264)"
+msgstr ""
+
+#: src/1651-movecell.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1651-movecell.md:9
+msgid "Extend `Cell` to work with non-`Copy` types."
+msgstr ""
+
+#: src/1651-movecell.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1651-movecell.md:14
+msgid ""
+"It allows safe inner-mutability of non-`Copy` types without the overhead of "
+"`RefCell`'s reference counting."
+msgstr ""
+
+#: src/1651-movecell.md:16
+msgid ""
+"The key idea of `Cell` is to provide a primitive building block to safely "
+"support inner mutability. This must be done while maintaining Rust's "
+"aliasing requirements for mutable references. Unlike `RefCell` which "
+"enforces this at runtime through reference counting, `Cell` does this "
+"statically by disallowing any reference (mutable or immutable) to the data "
+"contained in the cell."
+msgstr ""
+
+#: src/1651-movecell.md:18
+msgid ""
+"While the current implementation only supports `Copy` types, this "
+"restriction isn't actually necessary to maintain Rust's aliasing invariants. "
+"The only affected API is the `get` function which, by design, is only usable "
+"with `Copy` types."
+msgstr ""
+
+#: src/1651-movecell.md:20
+msgid "Detailed design"
+msgstr ""
+
+#: src/1651-movecell.md:39
+msgid "The `get` method is kept but is only available for `T: Copy`."
+msgstr ""
+
+#: src/1651-movecell.md:41
+msgid ""
+"The `set` method is available for all `T`. It will need to be implemented by "
+"calling `replace` and dropping the returned value. Dropping the old value in-"
+"place is unsound since the `Drop` impl will hold a mutable reference to the "
+"cell contents."
+msgstr ""
+
+#: src/1651-movecell.md:43
+msgid ""
+"The `into_inner` and `replace` methods are added, which allow the value in a "
+"cell to be read even if `T` is not `Copy`. The `get` method can't be used "
+"since the cell must always contain a valid value."
+msgstr ""
+
+#: src/1651-movecell.md:45
+msgid ""
+"Finally, a `take` method is added which is equivalent to `self."
+"replace(Default::default())`."
+msgstr ""
+
+#: src/1651-movecell.md:47
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1651-movecell.md:50
+msgid "It makes the `Cell` type more complicated."
+msgstr ""
+
+#: src/1651-movecell.md:52
+msgid ""
+"`Cell` will only be able to derive traits like `Eq` and `Ord` for types that "
+"are `Copy`, since there is no way to non-destructively read the contents of "
+"a non-`Copy` `Cell`."
+msgstr ""
+
+#: src/1651-movecell.md:54
+msgid "Alternatives"
+msgstr ""
+
+#: src/1651-movecell.md:57
+msgid ""
+"The alternative is to use the `MoveCell` type from crates.io which provides "
+"the same functionality."
+msgstr ""
+
+#: src/1651-movecell.md:59
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1651-movecell.md:62
+msgid "None"
+msgstr ""

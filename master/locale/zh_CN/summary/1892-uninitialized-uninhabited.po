@@ -1,0 +1,357 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1892-uninitialized-uninhabited.md:1
+msgid "Feature Name: `uninitialized_uninhabited`"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:2
+msgid "Start Date: 2017-02-09"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1892](https://github.com/rust-lang/rfcs/pull/1892)"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#53491](https://github.com/rust-lang/rust/"
+"issues/53491)"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:9
+msgid ""
+"Deprecate `mem::uninitialized::<T>` and `mem::zeroed::<T>` and replace them "
+"with a `MaybeUninit<T>` type for safer and more principled handling of "
+"uninitialized data."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:16
+msgid ""
+"The problems with `uninitialized` centre around its usage with uninhabited "
+"types, and its interaction with Rust's type layout invariants. The concept "
+"of \"uninitialized data\" is extremely problematic when it comes into "
+"contact with types like `!` or `Void`."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:21
+msgid ""
+"For any given type, there may be valid and invalid bit-representations. For "
+"example, the type `u8` consists of a single byte and all possible bytes can "
+"be sensibly interpreted as a value of type `u8`. By contrast, a `bool` also "
+"consists of a single byte but not all bytes represent a `bool`: the bit "
+"vectors `[00000000]` (`false`) and `[00000001]` (`true`) are valid `bool`s "
+"whereas `[00101010]` is not. By further contrast, the type `!` has no valid "
+"bit-representations at all. Even though it's treated as a zero-sized type, "
+"the empty bit vector `[]` is not a valid representation and has no "
+"interpretation as a `!`."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:31
+msgid ""
+"As `bool` has both valid and invalid bit-representations, an uninitialized "
+"`bool` cannot be known to be invalid until it is inspected. At this point, "
+"if it is invalid, the compiler is free to invoke undefined behaviour. By "
+"contrast, an uninitialized `!` can only possibly be invalid. Without even "
+"inspecting such a value the compiler can assume that it's working in an "
+"impossible state-of-affairs whenever such a value is in scope. This is the "
+"logical basis for using a return type of `!` to represent diverging "
+"functions.  If we call a function which returns `bool`, we can't assume that "
+"the returned value is invalid and we have to handle the possibility that the "
+"function returns. However if a function call returns `!`, we know that the "
+"function cannot sensibly return. Therefore we can treat everything after the "
+"call as dead code and we can write-off the scenario where the function "
+"_does_ return as being undefined behaviour."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:45
+msgid ""
+"The issue then is what to do about `uninitialized::<T>()` where `T = !`? "
+"`uninitialized::<T>` is meaningless for uninhabited `T` and is currently "
+"instant undefined behaviour when `T = !` - even if the \"value of type `!`\" "
+"is never read. The type signature of `uninitialized::<!>` is, after all, "
+"that of a diverging function:"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:55
+msgid ""
+"Yet calling this function does not diverge! It just breaks everything then "
+"eats your laundry instead."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:58
+msgid ""
+"This problem is most prominent with `!` but also applies to other types that "
+"have restrictions on the values they can carry.  For example, `Some(mem::"
+"uninitialized::<bool>()).is_none()` could actually return `true` because "
+"uninitialized memory could violate the invariant that a `bool` is always "
+"`[00000000]` or `[00000001]` -- and Rust relies on this invariant when doing "
+"enum layout. So, `mem::uninitialized::<bool>()` is instantaneous undefined "
+"behavior just like `mem::uninitialized::<!>()`. This also affects `mem::"
+"zeroed` when considering types where the all-`0` bit pattern is not valid, "
+"like references: `mem::zeroed::<&'static i32>()` is instantaneous undefined "
+"behavior."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:68
+msgid "Tracking uninitializedness in the type"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:70
+msgid ""
+"An alternative way of representing uninitialized data is through a union "
+"type:"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:79
+msgid ""
+"Instead of creating an \"uninitialized value\", we can create a "
+"`MaybeUninit` initialized with `uninit: ()`. Then, once we know that the "
+"value in the union is valid, we can extract it with `my_uninit.value`. This "
+"is a better way of handling uninitialized data because it doesn't involve "
+"lying to the type system and pretending that we have a value when we don't. "
+"It also better represents what's actually going on: we never _really_ have a "
+"value of type `T` when we're using `uninitialized::<T>`, what we have is "
+"some memory that contains either a value (`value: T`) or nothing (`uninit: "
+"()`), with it being the programmer's responsibility to keep track of which "
+"state we're in. Notice that creating a `MaybeUninit<T>` is safe for any `T`! "
+"Only when accessing `my_uninit.value`, we have to be careful to ensure this "
+"has been properly initialized."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:91
+msgid ""
+"To see how this can replace `uninitialized` and fix bugs in the process, "
+"consider the following code:"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:113
+msgid ""
+"Naively, this code might look safe. The problem though is that by the time "
+"we get to `let mut foo_ref` we're already saying we have a value of type "
+"`T`. But we don't, and for `T = !` this is impossible. And so if this "
+"function is called with a diverging callback it will invoke undefined "
+"behaviour before it even gets to `catch_unwind`."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:119
+msgid "We can fix this by using `MaybeUninit` instead:"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:144
+msgid ""
+"Note the difference: we've moved the unsafe block to the part of the code "
+"which is actually unsafe - where we have to assert to the compiler that we "
+"have a valid value. And we only ever tell the compiler we have a value of "
+"type `T` where we know we actually do have a value of type `T`. As such, "
+"this is fine to use with any `T`, including `!`. If the callback diverges "
+"then it's not possible to get to the `unsafe` block and try to read the non-"
+"existent value."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:151
+msgid ""
+"Given that it's so easy for code using `uninitialized` to hide bugs like "
+"this, and given that there's a better alternative, this RFC proposes "
+"deprecating `uninitialized` and introducing the `MaybeUninit` type into the "
+"standard library as a replacement."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:156
+msgid "Detailed design"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:159
+msgid "Add the aforementioned `MaybeUninit` type to the standard library:"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:168
+msgid ""
+"The type should have at least the following interface ([Playground link]"
+"(https://play.rust-lang.org/?"
+"gist=81f5ab9a7e7107c9583de21382ef4333&version=nightly&mode=debug&edition=2015)):"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:173
+msgid ""
+"/// Create a new `MaybeUninit` in an uninitialized state.\n"
+"    ///\n"
+"    /// Note that dropping a `MaybeUninit` will never call `T`'s drop code.\n"
+"    /// It is your responsibility to make sure `T` gets dropped if it got "
+"initialized.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:183
+msgid ""
+"/// Create a new `MaybeUninit` in an uninitialized state, with the memory "
+"being\n"
+"    /// filled with `0` bytes.  It depends on `T` whether that already makes "
+"for\n"
+"    /// proper initialization. For example, `MaybeUninit<usize>::zeroed()` "
+"is initialized,\n"
+"    /// but `MaybeUninit<&'static i32>::zeroed()` is not because references "
+"must not\n"
+"    /// be null.\n"
+"    ///\n"
+"    /// Note that dropping a `MaybeUninit` will never call `T`'s drop code.\n"
+"    /// It is your responsibility to make sure `T` gets dropped if it got "
+"initialized.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:197
+msgid ""
+"/// Set the value of the `MaybeUninit`. The overwrites any previous value "
+"without dropping it.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:204
+msgid ""
+"/// Extract the value from the `MaybeUninit` container.  This is a great "
+"way\n"
+"    /// to ensure that the data will get dropped, because the resulting `T` "
+"is\n"
+"    /// subject to the usual drop handling.\n"
+"    ///\n"
+"    /// # Unsafety\n"
+"    ///\n"
+"    /// It is up to the caller to guarantee that the `MaybeUninit` really is "
+"in an initialized\n"
+"    /// state, otherwise this will immediately cause undefined behavior.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:216
+msgid ""
+"/// Get a reference to the contained value.\n"
+"    ///\n"
+"    /// # Unsafety\n"
+"    ///\n"
+"    /// It is up to the caller to guarantee that the `MaybeUninit` really is "
+"in an initialized\n"
+"    /// state, otherwise this will immediately cause undefined behavior.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:226
+msgid ""
+"/// Get a mutable reference to the contained value.\n"
+"    ///\n"
+"    /// # Unsafety\n"
+"    ///\n"
+"    /// It is up to the caller to guarantee that the `MaybeUninit` really is "
+"in an initialized\n"
+"    /// state, otherwise this will immediately cause undefined behavior.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:236
+msgid ""
+"/// Get a pointer to the contained value. Reading from this pointer will be "
+"undefined\n"
+"    /// behavior unless the `MaybeUninit` is initialized.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:242
+msgid ""
+"/// Get a mutable pointer to the contained value. Reading from this pointer "
+"will be undefined\n"
+"    /// behavior unless the `MaybeUninit` is initialized.\n"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:250
+msgid ""
+"Deprecate `uninitialized` with a deprecation messages that points people to "
+"the `MaybeUninit` type. Make calling `uninitialized` on an empty type "
+"trigger a runtime panic which also prints the deprecation message."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:254
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:257
+msgid ""
+"Correct handling of uninitialized data is an advanced topic and should "
+"probably be left to The Rustonomicon. There should be a paragraph somewhere "
+"therein introducing the `MaybeUninit` type."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:261
+msgid ""
+"The documentation for `uninitialized` should explain the motivation for "
+"these changes and direct people to the `MaybeUninit` type."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:264
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:267
+msgid ""
+"This will be a rather large breaking change as a lot of people are using "
+"`uninitialized`. However, much of this code already likely contains subtle "
+"bugs."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:271
+msgid "Alternatives"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:274
+msgid "Not do this."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:275
+msgid ""
+"Just make `uninitialized::<!>` panic instead (making `!`'s behaviour "
+"surprisingly inconsistent with all the other types)."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:277
+msgid ""
+"Introduce an `Inhabited` auto-trait for inhabited types and add it as a "
+"bound to the type argument of `uninitialized`."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:279
+msgid ""
+"Disallow using uninhabited types with `uninitialized` by making it behave "
+"like `transmute` does today - by having restrictions on its type arguments "
+"which are enforced outside the trait system."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:283
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:286
+msgid "None known."
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:288
+msgid "Future directions"
+msgstr ""
+
+#: src/1892-uninitialized-uninhabited.md:290
+msgid ""
+"Ideally, Rust's type system should have a way of talking about "
+"initializedness statically. In the past there have been proposals for new "
+"pointer types which could safely handle uninitialized data. We should "
+"seriously consider pursuing one of these proposals."
+msgstr ""

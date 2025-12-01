@@ -1,0 +1,893 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2136-build-systems.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/2136-build-systems.md:2
+msgid "Start Date: 2017-09-01"
+msgstr ""
+
+#: src/2136-build-systems.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2136](https://github.com/rust-lang/rfcs/pull/2136)"
+msgstr ""
+
+#: src/2136-build-systems.md:4
+msgid "Rust Issue: N/A"
+msgstr ""
+
+#: src/2136-build-systems.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2136-build-systems.md:9
+msgid ""
+"This **experimental RFC** lays out a high-level plan for improving Cargo's "
+"ability to integrate with other build systems and environments. As an "
+"experimental RFC, it opens the door to landing [unstable features](https://"
+"github.com/rust-lang/cargo/pull/4433/) in Cargo to try out ideas, but _not_ "
+"to stabilizing those features, which will require follow-up RFCs. It "
+"proposes a variety of features which, in total, permit a wide spectrum of "
+"integration cases -- from customizing a single aspect of Cargo to letting an "
+"external build system run almost the entire show."
+msgstr ""
+
+#: src/2136-build-systems.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/2136-build-systems.md:22
+msgid ""
+"One of the first hurdles for using Rust in production is integrating it into "
+"your organization's build system. The level of challenge depends on the "
+"level of integration required: it's relatively painless to invoke Cargo from "
+"a makefile and let it fully manage building Rust code, but gets harder as "
+"you want the external build system to exert finer-grained control over how "
+"Rust code is built. The goal of this RFC is to lay out a vision for making "
+"integration at _any_ scale much easier than it is today."
+msgstr ""
+
+#: src/2136-build-systems.md:30
+msgid ""
+"After extensive discussion with stakeholders, there appear to be two "
+"distinct kinds of use-cases (or \"customers\") involved here:"
+msgstr ""
+
+#: src/2136-build-systems.md:33
+msgid ""
+"**Mixed build systems**, where building already involves a variety of "
+"language- or project-specific build systems. For this use case, the desire "
+"is to use Cargo as-is, except for some specific concerns. Those concerns "
+"take a variety of shapes: customizing caching, having a local crate "
+"registry, custom handling for native dependencies, and so on. Addressing "
+"these concerns well means adding new points of extensibility or control to "
+"Cargo."
+msgstr ""
+
+#: src/2136-build-systems.md:40
+msgid ""
+"**Homogeneous build systems** like [Bazel](https://bazel.build/), where "
+"there is a single prevailing build system and methodology that works across "
+"languages and projects and is expected to drive all aspects of the build. In "
+"such cases the goal of Cargo integration is largely _interoperability_, "
+"including easy use of the crates.io ecosystem and Rust-centric tooling, both "
+"of which expect Cargo-driven build management."
+msgstr ""
+
+#: src/2136-build-systems.md:49
+msgid ""
+"The interoperability constraints are, in actuality, hard constraints around "
+"_any_ kind of integration."
+msgstr ""
+
+#: src/2136-build-systems.md:52
+msgid "In more detail, a build system integration _must_:"
+msgstr ""
+
+#: src/2136-build-systems.md:54
+msgid ""
+"Make it easy for the outer build system to control the aspects of building "
+"that are under its purview (e.g. artifact management, caching, network "
+"access)."
+msgstr ""
+
+#: src/2136-build-systems.md:56
+msgid "Make it easy to depend on arbitrary crates in the crates.io ecosystem."
+msgstr ""
+
+#: src/2136-build-systems.md:57
+msgid ""
+"Make it easy to use Rust tooling like `rustfmt` or the RLS with projects "
+"that depend on the external build system."
+msgstr ""
+
+#: src/2136-build-systems.md:60
+msgid "A build system integration _should_:"
+msgstr ""
+
+#: src/2136-build-systems.md:62
+msgid ""
+"Provide Cargo-based or Cargo-like workflows when developing Rust projects, "
+"so that documentation and guidance from the Rust community applies even when "
+"working within a different build system."
+msgstr ""
+
+#: src/2136-build-systems.md:65
+msgid ""
+"To the extent possible, support Cargo concepts in a smooth, first-class way "
+"in the external build system (e.g. Cargo features, profiles, etc)"
+msgstr ""
+
+#: src/2136-build-systems.md:68
+msgid ""
+"This RFC does not attempt to provide a detailed solution for all of the "
+"needed extensibility points in Cargo, but rather to outline a general plan "
+"for how to get there over time. Individual components that add significant "
+"features to Cargo will need follow-up RFCs before stabilization."
+msgstr ""
+
+#: src/2136-build-systems.md:73
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2136-build-systems.md:76
+msgid ""
+"The plan proposed in this RFC is to address the two use-cases from the "
+"[motivation](#motivation) section in parallel:"
+msgstr ""
+
+#: src/2136-build-systems.md:79
+msgid ""
+"**For the mixed build system case**, we will triage feature requests and "
+"work on adding further points of extensibility to Cargo based on expected "
+"impact. Each added point of extensibility should ease build system "
+"integration for another round of customers."
+msgstr ""
+
+#: src/2136-build-systems.md:84
+msgid ""
+"**For the homogeneous build system case**, we will immediately pursue "
+"extensibility points that will enable the external build system to perform "
+"many of the tasks that Cargo does today--but while still meeting our "
+"interoperability constraints. We will then work on smoothing remaining rough "
+"edges, which have a high degree of overlap with the work on mixed build "
+"systems."
+msgstr ""
+
+#: src/2136-build-systems.md:91
+msgid ""
+"In the long run, these two parallel lines of work will converge, such that "
+"we offer a complete spectrum of options (in terms of what Cargo controls "
+"versus an external system). But they start at critically different points, "
+"and working on those in parallel is the key to delivering value quickly and "
+"incrementally."
+msgstr ""
+
+#: src/2136-build-systems.md:96
+msgid "A high-level model of what Cargo does"
+msgstr ""
+
+#: src/2136-build-systems.md:98
+msgid ""
+"Before delving into the details of the plan, it's helpful to lay out a "
+"mental model of the work that Cargo does today, broken into several stages:"
+msgstr ""
+
+#: src/2136-build-systems.md:101
+msgid "**Step**"
+msgstr ""
+
+#: src/2136-build-systems.md:101
+msgid "**Conceptual output**"
+msgstr ""
+
+#: src/2136-build-systems.md:101
+msgid "**Related concerns**"
+msgstr ""
+
+#: src/2136-build-systems.md:103
+msgid "Dependency resolution"
+msgstr ""
+
+#: src/2136-build-systems.md:103
+msgid "Lock file"
+msgstr ""
+
+#: src/2136-build-systems.md:103
+msgid "Custom registries, mirrors, offline/local, native deps, ..."
+msgstr ""
+
+#: src/2136-build-systems.md:104
+msgid "Build configuration"
+msgstr ""
+
+#: src/2136-build-systems.md:104
+msgid "Cargo settings per crate in graph"
+msgstr ""
+
+#: src/2136-build-systems.md:104
+msgid "Profiles"
+msgstr ""
+
+#: src/2136-build-systems.md:105
+msgid "Build lowering"
+msgstr ""
+
+#: src/2136-build-systems.md:105
+msgid ""
+"A build plan: a series of steps that must be run in sequence, including "
+"rustc and binary invocations"
+msgstr ""
+
+#: src/2136-build-systems.md:105
+msgid "Build scripts, plugins"
+msgstr ""
+
+#: src/2136-build-systems.md:106
+msgid "Build execution"
+msgstr ""
+
+#: src/2136-build-systems.md:106
+msgid "Compiled artifacts"
+msgstr ""
+
+#: src/2136-build-systems.md:106
+msgid "Caching"
+msgstr ""
+
+#: src/2136-build-systems.md:108
+msgid ""
+"The first stage, dependency resolution, is the most complex; it's where our "
+"model of semver comes into play, as well as a huge list of related concerns."
+msgstr ""
+
+#: src/2136-build-systems.md:112
+msgid ""
+"Dependency resolution produces a lockfile, which records what crates are "
+"included in the dependency graph, coming from what sources and at what "
+"versions, as well as interdependencies. It operates independently of the "
+"requested Cargo workflow."
+msgstr ""
+
+#: src/2136-build-systems.md:117
+msgid ""
+"The next stage is build _configuration_, which conceptually is where things "
+"like profiles come into play: of the crates we're going to build, we need to "
+"decide, at a high level, \"how\" we're going to build them. This "
+"configuration is at the \"Cargo level of abstraction\", i.e. in terms of "
+"things like profiles rather than low-level rustc flags. There's strong "
+"desire to make this system more expressive, for example by allowing you to "
+"always optimize certain dependencies even when otherwise in the debug "
+"profile."
+msgstr ""
+
+#: src/2136-build-systems.md:125
+msgid ""
+"After configuration, we know at the Cargo level exactly what we want to "
+"build, but we need to _lower_ the level of abstraction into concrete, "
+"individual steps. This is where, for example, profile information is "
+"transformed into specific rustc flags. Lowering is done independently for "
+"each crate, and results in a sequence of process invocations, interleaving "
+"calls to `rustc` with e.g. running the binary for a build script. You can "
+"think of these sequences as expanding what was previously a \"compile this "
+"crate with this configuration\" node in the dependency graph into a finer-"
+"grained set of nodes for running rustc etc."
+msgstr ""
+
+#: src/2136-build-systems.md:135
+msgid ""
+"Finally, there's the actual build _execution_, which is conceptually "
+"straightforward: we analyze the dependency graph and existing, cached "
+"artifacts, and then actually perform any un-cached build steps (in parallel "
+"when possible). Of course, this is the bread-and-butter of many external "
+"build systems, so we want to make it easy for them to tweak or entirely "
+"control this part of the process."
+msgstr ""
+
+#: src/2136-build-systems.md:142
+msgid ""
+"The first two steps -- dependency resolution and build configuration -- need "
+"to operate on an entire dependency graph at once. Build lowering, by "
+"contrast, can be performed for any crate in isolation."
+msgstr ""
+
+#: src/2136-build-systems.md:146
+msgid "Customizing Cargo"
+msgstr ""
+
+#: src/2136-build-systems.md:148
+msgid ""
+"**A key point is that, in principle, each of these steps is separable from "
+"the others**. That is, we should be able to rearchitect Cargo so that each "
+"of these steps is managed by a distinct component, and the components have a "
+"stable -- and public! -- way of communicating with one another. That in turn "
+"will enable replacing any particular component while keeping the others. (To "
+"be clear, the breakdown above is just a high-level sketch; in reality, we'll "
+"need a more nuanced and layered picture of Cargo's activities)."
+msgstr ""
+
+#: src/2136-build-systems.md:156
+msgid ""
+"This RFC proposes to provide _some_ means of customizing Cargo's activities "
+"at various layers and stages. The details here are _very much_ up for grabs, "
+"and are part of the experimentation we need to do."
+msgstr ""
+
+#: src/2136-build-systems.md:160
+msgid "Likely design constraints"
+msgstr ""
+
+#: src/2136-build-systems.md:162
+msgid "Some likely constraints for a Cargo customization/plugin system are:"
+msgstr ""
+
+#: src/2136-build-systems.md:164
+msgid ""
+"It should be possible for Rust tools (like `rustfmt`, IDEs, linters) to "
+"\"call Cargo\" to get information or artifacts in a standardized way, while "
+"remaining oblivious to any customizations. Ideally, `Cargo` workflows "
+"(including custom commands) would also work transparently."
+msgstr ""
+
+#: src/2136-build-systems.md:169
+msgid ""
+"It should be possible to customize or swap out a _small part_ of Cargo's "
+"behavior without understanding or reimplementing other parts."
+msgstr ""
+
+#: src/2136-build-systems.md:172
+msgid ""
+"The interface for customization should be _forward-compatible_: existing "
+"plugins should continue to work with new versions of Cargo."
+msgstr ""
+
+#: src/2136-build-systems.md:175
+msgid ""
+"It should be difficult or impossible to introduce customizations that are "
+"\"incoherent\", for example that result in unexpected differences in the way "
+"that `rustc` is invoked in different workflows (because, say, the testing "
+"workflow was customized but the normal build workflow wasn't). In other "
+"words, customizations are subject to _cross-cutting concerns_, which need to "
+"be identified and factored out."
+msgstr ""
+
+#: src/2136-build-systems.md:182
+msgid ""
+"We will iterate on the constraints to form core design principles as we "
+"experiment."
+msgstr ""
+
+#: src/2136-build-systems.md:185
+msgid "A concrete example"
+msgstr ""
+
+#: src/2136-build-systems.md:187
+msgid ""
+"Since the above is quite hand-wavy, it's helpful to see a very simple, "
+"concrete example of what a customization might look like. You could imagine "
+"something like the following for supplying manifest information from an "
+"external build system, rather than through `Cargo.toml`:"
+msgstr ""
+
+#: src/2136-build-systems.md:192
+msgid "**Cargo.toml**"
+msgstr ""
+
+#: src/2136-build-systems.md:199
+msgid "**$root/.cargo/meta.toml**"
+msgstr ""
+
+#: src/2136-build-systems.md:201
+msgid ""
+"```toml\n"
+"[plugins]\n"
+"\n"
+"# These dependencies cannot themselves use plugins.\n"
+"# This file is \"staged\" earlier than Cargo.toml\n"
+"\n"
+"bazel = \"1.0\" # a regular crates.io dependency\n"
+"```"
+msgstr ""
+
+#: src/2136-build-systems.md:210
+msgid "**Semantics**"
+msgstr ""
+
+#: src/2136-build-systems.md:212
+msgid ""
+"If any `plugins` entry in `Cargo.toml` defines a `generate-manifest` key, "
+"whenever Cargo would be about to return the parsed results of `Cargo.toml` , "
+"instead:"
+msgstr ""
+
+#: src/2136-build-systems.md:216
+msgid ""
+"look for the associated plugin in `.cargo/meta.toml`, and ask it to generate "
+"the manifest"
+msgstr ""
+
+#: src/2136-build-systems.md:217
+msgid "return that instead"
+msgstr ""
+
+#: src/2136-build-systems.md:219
+msgid "Specifics for the homogeneous build system case"
+msgstr ""
+
+#: src/2136-build-systems.md:221
+msgid ""
+"For homogeneous build systems, there are two kinds of code that must be "
+"dealt with: code originally written using vanilla Cargo and a crate "
+"registry, and code written \"natively\" in the context of the external build "
+"system. Any integration has to handle the first case to have access to "
+"crates.io or a vendored mirror thereof."
+msgstr ""
+
+#: src/2136-build-systems.md:227
+msgid "Using crates vendored from or managed by a crate registry"
+msgstr ""
+
+#: src/2136-build-systems.md:229
+msgid ""
+"Whether using a registry server or a vendored copy, if you're building Rust "
+"code that is written using vanilla Cargo, you will at some level need to use "
+"Cargo's dependency resolution and `Cargo.toml` files. In this case, the "
+"external build system should invoke Cargo for _at least_ the dependency "
+"resolution and build configuration steps, and likely the build lowering step "
+"as well. In such a world, Cargo is responsible for _planning_ the build "
+"(which involves largely Rust-specific concerns), but the external build "
+"system is responsible for _executing_ it."
+msgstr ""
+
+#: src/2136-build-systems.md:238
+msgid ""
+"A typical pattern of usage is to have a whitelist of \"root dependencies\" "
+"from an external registry which will be permitted as dependencies within the "
+"organization, often pinning to a specific version and set of Cargo features. "
+"This whitelist can be described as a single `Cargo.toml` file, which can "
+"then drive Cargo's dependency resolution just once for the entire registry. "
+"The resulting lockfile can be used to guide vendoring and construction of a "
+"build plan for consumption by the external build system."
+msgstr ""
+
+#: src/2136-build-systems.md:246
+msgid ""
+"One important concern is: how do you depend on code from other languages, "
+"which is being managed by the external build system? That's a narrow version "
+"of a more general question around _native dependencies_, which will be "
+"addressed separately in a later section."
+msgstr ""
+
+#: src/2136-build-systems.md:251 src/2136-build-systems.md:281
+msgid "Workflow and interop story"
+msgstr ""
+
+#: src/2136-build-systems.md:253
+msgid ""
+"On the external build system side, a rule or plugin will need to be written "
+"that knows how to invoke Cargo to produce a build plan corresponding to a "
+"whitelisted (and potentially vendored) registry, then translate that build "
+"plan back into appropriate rules for the build system. Thus, when doing "
+"normal builds, the external build system drives the entire process, but "
+"invokes Cargo for guidance during the planning stage."
+msgstr ""
+
+#: src/2136-build-systems.md:260
+msgid "Using crates managed by the build system"
+msgstr ""
+
+#: src/2136-build-systems.md:262
+msgid ""
+"Many organization want to employ their own strategy for maintaining and "
+"versioning code and for resolving dependencies, _in addition_ to build "
+"execution."
+msgstr ""
+
+#: src/2136-build-systems.md:266
+msgid ""
+"In this case, the big question is: how can we arrange things such that the "
+"Rust tooling ecosystem can understand what the external build system is "
+"doing, to gather the information needed for the tools to operate."
+msgstr ""
+
+#: src/2136-build-systems.md:270
+msgid ""
+"The possibility we'll examine here is using Cargo **purely as a conduit for "
+"information from the external build system to Rust tools** (see Alternatives "
+"for more discussion). That is, tools will be able to call into Cargo in a "
+"uniform way, with Cargo subsequently just forwarding those calls along to "
+"custom user code hooking into an external build system. In this approach, "
+"Cargo.toml will generally consist of a single entry forwarding to a plugin "
+"(as in the example plugin above). The description of dependencies is then "
+"written in the external build system's rule format. Thus, Cargo acts "
+"primarily as a _workflow and tool orchestrator_, since it is not involved in "
+"either planning or executing the build. Let's dig into it."
+msgstr ""
+
+#: src/2136-build-systems.md:283
+msgid ""
+"Even though the external build system is entirely handling both dependency "
+"resolution and build execution for the crates under its management, it may "
+"still use Cargo for _lowering_, i.e. to produce the actual `rustc` "
+"invocations from a higher-level configuration. Cargo will provide a way to "
+"do this."
+msgstr ""
+
+#: src/2136-build-systems.md:288
+msgid ""
+"When _developing_ a crate, it should be possible to invoke Cargo commands as "
+"usual. We do this via a plugin. When invoking, for example, `cargo build`, "
+"the plugin will translate that to a request to the external build system, "
+"which will then execute the build (possibly re-invoking Cargo for lowering). "
+"For `cargo run`, the same steps are followed by putting the resulting build "
+"artifact in an appropriate location, and then following Cargo's usual logic. "
+"And so on."
+msgstr ""
+
+#: src/2136-build-systems.md:295
+msgid ""
+"A similar story plays out when using, for example, the RLS or `rustfmt`. "
+"Ideally, these tools will have no idea that a Cargo plugin is in play; the "
+"information and artifacts they need can be obtained by using Cargo's in a "
+"standard way, transparently -- but the underlying information will be coming "
+"from the external build system, via the plugin. Thus the plugin for the "
+"external build system must be able to translate its dependencies back into "
+"something equivalent to a lockfile, at least."
+msgstr ""
+
+#: src/2136-build-systems.md:303
+msgid "The complete picture"
+msgstr ""
+
+#: src/2136-build-systems.md:305
+msgid ""
+"In general, any integration with a homogeneous build system needs to be able "
+"to handle (vendored) crate registries, because access to crates.io is a hard "
+"constraint."
+msgstr ""
+
+#: src/2136-build-systems.md:308
+msgid ""
+"Usually, you'll want to combine the handling of these external registries "
+"with crates managed purely by the external build system, meaning that there "
+"are effectively _two_ modes of building crates at play overall. All that's "
+"needed to do this is a distinction within the external build system between "
+"these two kinds of dependencies, which then drives the plugin interactions "
+"accordingly."
+msgstr ""
+
+#: src/2136-build-systems.md:314
+msgid "Cross-cutting concern: native dependencies"
+msgstr ""
+
+#: src/2136-build-systems.md:316
+msgid ""
+"One important point left out of the above explanation is the story for "
+"dependencies on non-Rust code. These dependencies should be built and "
+"managed by the external build system. But there's a catch: existing \"sys\" "
+"crates on crates.io that provide core native dependencies use custom build "
+"scripts to build or discover those dependencies. We want to _reroute_ those "
+"crates to instead use the dependencies provided by the build system."
+msgstr ""
+
+#: src/2136-build-systems.md:323
+msgid "Here, there's a short-term story and a long-term story."
+msgstr ""
+
+#: src/2136-build-systems.md:325
+msgid "Short term: white lists with build script overrides"
+msgstr ""
+
+#: src/2136-build-systems.md:327
+msgid ""
+"Cargo today offers the ability to [override the build script](http://doc."
+"crates.io/build-script.html#overriding-build-scripts) for any crate using "
+"the `links` key (which is generally how you signal _what_ native dependency "
+"you're providing), and instead provide the library location directly. This "
+"feature can be used to instead point at the output provided by the external "
+"build system. Together with whitelisting crates that use build scripts, it's "
+"possible to use the existing crates.io ecosystem while managing native "
+"dependencies via the external build system."
+msgstr ""
+
+#: src/2136-build-systems.md:337
+msgid ""
+"There are some downsides, though. If the sys crates change in any way -- for "
+"example, altering the way they build the native dependency, or the version "
+"they use -- there's no clear heads-up that something may need to be adjusted "
+"within the external build system. It might be possible, however, to use "
+"version-specific whitelisting to side-step this issue."
+msgstr ""
+
+#: src/2136-build-systems.md:343
+msgid ""
+"Even so, whitelisting itself is a laborious process, and in the long run "
+"there are advantages to offering a higher-level way of specifying native "
+"dependencies in the first place."
+msgstr ""
+
+#: src/2136-build-systems.md:347
+msgid "Long term: declarative native dependencies"
+msgstr ""
+
+#: src/2136-build-systems.md:349
+msgid ""
+"Reliably building native dependencies in a cross-platform way is... "
+"challenging. Today, Rust offers some help with this through crates like "
+"[`gcc`](https://docs.rs/gcc) and [`pkgconfig`](https://docs.rs/pkg-config), "
+"which provide building blocks for writing build scripts that discover or "
+"build native dependencies. But still, today, each build script is a bespoke "
+"affair, customizing the use of these crates in arbitrary ways. It's "
+"difficult, error-prone work."
+msgstr ""
+
+#: src/2136-build-systems.md:359
+msgid ""
+"This RFC proposes to start a _long term_ effort to provide a more first-"
+"class way of specifying native dependencies. The hope is that we can get "
+"coverage of, say, 80% of native dependencies using a simple, high-level "
+"specification, and only in the remaining 20% have to write arbitrary code. "
+"And, in any case, such a system can provide richer information about "
+"dependencies to help avoid the downsides of the whitelisting approach."
+msgstr ""
+
+#: src/2136-build-systems.md:366
+msgid ""
+"The likely approach here is to provide [some mechanism](https://internals."
+"rust-lang.org/t/pre-rfc-cargo-build-and-native-dependency-integration-via-"
+"crate-based-build-scripts/5708) for using a dependency _as_ a build script, "
+"so that you could specify high-level native dependency information directly "
+"in `Cargo.toml` attributes, and have a general tool translate that into the "
+"appropriate build script."
+msgstr ""
+
+#: src/2136-build-systems.md:373
+msgid ""
+"Needless to say, this approach will need significant experimentation. But if "
+"successful, it would have benefits not just for build system integration, "
+"but for using external dependencies _anywhere_."
+msgstr ""
+
+#: src/2136-build-systems.md:377
+msgid "The story for externally-managed native dependencies"
+msgstr ""
+
+#: src/2136-build-systems.md:379
+msgid ""
+"Finally, in the case where the external build system is the one specifying "
+"and providing a native dependency, all we need is for that to result in the "
+"appropriate flags to the lowered `rustc` invocations. If the external build "
+"system is producing those lowered calls itself, it can completely manage "
+"this concern. Otherwise, we will need for the plugin interface to provide a "
+"way to plumb this information through to Cargo."
+msgstr ""
+
+#: src/2136-build-systems.md:386
+msgid "Specifics for the mixed build system case"
+msgstr ""
+
+#: src/2136-build-systems.md:388
+msgid ""
+"Switching gears, let's look at mixed build systems. Here, we may address the "
+"need for customization with a mixture of plugins and new core Cargo "
+"features. The primary ones on the radar right now are as follows."
+msgstr ""
+
+#: src/2136-build-systems.md:392
+msgid ""
+"**Multiple/custom registries**. There is a longstanding desire to support "
+"registries other than crates.io, e.g. for private code, and to allow them to "
+"be used _in conjunction_ with crates.io. In particular, this is a key pain "
+"point for customers who are otherwise happy to use Cargo as-is, but want a "
+"crates.io-like experience for their own code. There's an [RFC](https://"
+"github.com/rust-lang/rfcs/pull/2141) on this topic, and more work here is "
+"planned soon. Note: here, we address the needs via a straightforward "
+"enhancement to Cargo's features, rather than via a plugin system."
+msgstr ""
+
+#: src/2136-build-systems.md:402
+msgid ""
+"**Network and source control**. We've already put significant work into "
+"providing control over where sources live (though vendoring) and tools for "
+"preventing network access. However, we could do more to make the experience "
+"here first class, and to give people a greater sense of control and "
+"assurance when using Cargo on their build farm. Here again, this is probably "
+"more about flags and configuration than plugins per se."
+msgstr ""
+
+#: src/2136-build-systems.md:409
+msgid ""
+"**Caching and artifact control**. Many organizations would like to provide a "
+"shared build cache for the entire organization, across all of its projects. "
+"Here we'd likely need some kind of plugin."
+msgstr ""
+
+#: src/2136-build-systems.md:413
+msgid ""
+"These bullets are quite vague, and that's because, while we know there are "
+"needs here, the precise problem -- let alone the solution -- it not yet "
+"clear. The point, though, is that these are the most important problems we "
+"want to get our head around in the foreseeable future."
+msgstr ""
+
+#: src/2136-build-systems.md:418
+msgid "Additional areas where revisions are expected"
+msgstr ""
+
+#: src/2136-build-systems.md:420
+msgid ""
+"Beyond all of the above, it seems very likely that some existing features of "
+"Cargo will need to be revisited to fit with the build system integration "
+"work. For example:"
+msgstr ""
+
+#: src/2136-build-systems.md:424
+msgid ""
+"**Profiles**. Putting the idea of the \"build configuration\" step on firmer "
+"footing will require clarifying the precise role of profiles, which today "
+"blur the line somewhat between _workflows_ (e.g. `test` vs `bench`) and "
+"flags (e.g. `--release`). Moreover, integration with a homogeneous build "
+"system effectively requires that we can translate profiles on the Cargo side "
+"back and forth to _something_ meaningful to the external build system, so "
+"that for example we can make `cargo test` invoke the external build system "
+"in a sensible way. Additional clarity here might help pave the way for "
+"[custom profiles](https://github.com/rust-lang/cargo/issues/2007) and other "
+"enhancements. On a very different note, it's not currently possible to "
+"control enough about the `rustc` invocation for at least some integration "
+"cases, and the answer may in part lie in improvements to profiles."
+msgstr ""
+
+#: src/2136-build-systems.md:436
+msgid ""
+"**Build scripts**. Especially for homogeneous build systems, build scripts "
+"can pose some serious pain, because in general they may depend on numerous "
+"environmental factors invisibly. It may be useful to grow some ways of "
+"telling Cargo the precise inputs and outputs of the build script, "
+"declaratively."
+msgstr ""
+
+#: src/2136-build-systems.md:441
+msgid ""
+"**Vendoring**. While we have [support for vendoring](https://github.com/"
+"alexcrichton/cargo-vendor/) dependencies today, it is not treated uniformly "
+"as a mirror. We may want to tighten up Cargo's understanding, possibly by "
+"treating vendoring in a more first-class way."
+msgstr ""
+
+#: src/2136-build-systems.md:448
+msgid ""
+"There are undoubtedly other aspects of Cargo that will need to be touched to "
+"achieve better build system integration; the plan as a whole is predicated "
+"on making Cargo much more modular, which is bound to reveal concerns that "
+"should be separated. As with everything else in this RFC, user-facing "
+"changes will require a full RFC prior to stabilization."
+msgstr ""
+
+#: src/2136-build-systems.md:454
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2136-build-systems.md:457
+msgid ""
+"This is an experimental RFC. Reference-level details will be presented in "
+"follow-up RFCs after experimentation has concluded."
+msgstr ""
+
+#: src/2136-build-systems.md:460
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2136-build-systems.md:463
+msgid ""
+"It's somewhat difficult to state drawbacks for such a high-level plan; "
+"they're more likely to arise through the particulars."
+msgstr ""
+
+#: src/2136-build-systems.md:466
+msgid ""
+"That said, it's plausible that following the plan in this RFC will result in "
+"greater overall complexity for Cargo. The key to managing this complexity "
+"will be ensuring that it's surfaced only on an as-needed basis. That is, "
+"uses of Cargo in the pure crates.io ecosystem should not become more complex "
+"-- if anything, they should become more streamlined, through improvements to "
+"features like profiles, build scripts, and the handling of native "
+"dependencies."
+msgstr ""
+
+#: src/2136-build-systems.md:473
+msgid "Rationale and Alternatives"
+msgstr ""
+
+#: src/2136-build-systems.md:476
+msgid ""
+"Numerous organizations we've talked to who are considering, or already are, "
+"running Rust in production complain about difficulties with build system "
+"integration. There's often a sense that Cargo \"does too much\" or is \"too "
+"opinionated\", in a way that works fine for the crates.io ecosystem but is "
+"\"not realistic\" when integrating into larger build systems."
+msgstr ""
+
+#: src/2136-build-systems.md:482
+msgid ""
+"It's thus critical to take steps to smooth integration, both to remove "
+"obstacles to Rust adoption, but also to establish that Cargo has an "
+"important role to play even within opinionated external build systems: "
+"coordinating with Rust tooling and workflows."
+msgstr ""
+
+#: src/2136-build-systems.md:487
+msgid ""
+"This RFC is essentially a _strategic vision_, and so the alternatives are "
+"different strategies for tackling the problem of integration. Some options "
+"include:"
+msgstr ""
+
+#: src/2136-build-systems.md:491
+msgid "Focusing entirely on one of the use-cases mentioned. For example:"
+msgstr ""
+
+#: src/2136-build-systems.md:492
+msgid ""
+"We could decide that it's not worthwhile to have Cargo play a role within a "
+"build system like [Bazel](https://bazel.build/), and instead focus on users "
+"who just need to customize a particular aspect of Cargo. However, this would "
+"be giving up on the hope of providing strong integration with Rust tooling "
+"and workflows."
+msgstr ""
+
+#: src/2136-build-systems.md:496
+msgid ""
+"We could decide to focus solely on the [Bazel](https://bazel.build/)\\-style "
+"use-cases. But that would likely push people who would otherwise be happy to "
+"use Cargo to manage most of their build (but need to customize some aspect) "
+"to instead try to manage more of the concerns themselves."
+msgstr ""
+
+#: src/2136-build-systems.md:501
+msgid ""
+"Attempting to impose more control when integrating with hommogenous build "
+"systems. In the most extreme case presented above, for internal crates Cargo "
+"is little more than a middleman between Rust tooling and the external build "
+"system. We could instead support only using custom registries to manage "
+"crates, and hence always use Cargo's dependency resolution and so on. This "
+"would, however, be a non-starter for many organizations who want a single-"
+"version, mono-repo world internally, and it's not clear what the gains would "
+"be."
+msgstr ""
+
+#: src/2136-build-systems.md:510
+msgid ""
+"One key open question is: what, exactly, do Rust tools need to do their "
+"work? Tool interop is a major goal for this effort, but ideally we'd support "
+"it with a minimum of fuss. It may be that the needs are simple enough that "
+"we can get away with a separate interchange format, which both Cargo and "
+"other build tools can create. As part of the \"experimental\" part of this "
+"RFC, the Cargo team will work with the Dev Tools team to fully enumerate "
+"their needs."
+msgstr ""
+
+#: src/2136-build-systems.md:517
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2136-build-systems.md:520
+msgid ""
+"Since this is an experimental RFC, there are more questions here than "
+"answers. However, one question that would be good to tackle prior to "
+"acceptance is: how should we prioritize various aspects of this work? Should "
+"we have any specific customers in mind that we're trying to target (or who, "
+"better yet, are working directly with us and plan to test and use the "
+"results)?"
+msgstr ""

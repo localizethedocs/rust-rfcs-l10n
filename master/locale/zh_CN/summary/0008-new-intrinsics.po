@@ -1,0 +1,160 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0008-new-intrinsics.md:1
+msgid "Start Date: 2014-03-14"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:2
+msgid "RFC PR: [rust-lang/rfcs#8](https://github.com/rust-lang/rfcs/pull/8)"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:3
+msgid "Rust Issue:"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:5
+msgid ""
+"**Note: this RFC was never implemented and has been retired. The design may "
+"still be useful in the future, but before implementing we would prefer to "
+"revisit it so as to be sure it is up to date.**"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:9
+msgid "Summary"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:11
+msgid ""
+"The way our intrinsics work forces them to be wrapped in order to behave "
+"like normal functions. As a result, rustc is forced to inline a great number "
+"of tiny intrinsic wrappers, which is bad for both compile-time performance "
+"and runtime performance without optimizations. This proposal changes the way "
+"intrinsics are surfaced in the language so that they behave the same as "
+"normal Rust functions by removing the \"rust-intrinsic\" foreign ABI and "
+"reusing the \"Rust\" ABI."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:20
+msgid "Motivation"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:22
+msgid ""
+"A number of commonly-used intrinsics, including `transmute`, `forget`, "
+"`init`, `uninit`, and `move_val_init`, are accessed through wrappers whose "
+"only purpose is to present the intrinsics as normal functions. As a result, "
+"rustc is forced to inline a great number of tiny intrinsic wrappers, which "
+"is bad for both compile-time performance and runtime performance without "
+"optimizations."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:29
+msgid ""
+"Intrinsics have a differently-named ABI from Rust functions (\"rust-"
+"intrinsic\" vs. \"Rust\") though the actual ABI implementation is "
+"identical.  As a result one can't take the value of an intrinsic as a "
+"function:"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:34
+msgid ""
+"```\n"
+"// error: the type of transmute is `extern \"rust-intrinsic\" fn ...`\n"
+"let transmute: fn(int) -> uint = intrinsics::transmute;\n"
+"```"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:39
+msgid ""
+"This incongruity means that we can't just expose the intrinsics directly as "
+"part of the public API."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:42
+msgid "Detailed design"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:44
+msgid ""
+"`extern \"Rust\" fn` is already equivalent to `fn`, so if intrinsics have "
+"the \"Rust\" ABI then the problem is solved."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:47
+msgid ""
+"Under this scheme intrinsics will be declared as `extern \"Rust\"` functions "
+"and identified as intrinsics with the `#[lang = \"...\"]` attribute:"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:50
+msgid ""
+"```\n"
+"extern \"Rust\" {\n"
+"    #[lang = \"transmute\"]\n"
+"    fn transmute<T, U>(T) -> U;\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:57
+msgid ""
+"The compiler will type check and translate intrinsics the same as today. "
+"Additionally, when trans sees a \"Rust\" extern tagged as an intrinsic it "
+"will not emit a function declaration to LLVM bitcode."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:61
+msgid ""
+"Because intrinsics will be lang items, they can no longer be redeclared "
+"arbitrary number of times. This will require a small amount of existing "
+"library code to be refactored, and all intrinsics to be exposed through "
+"public abstractions."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:66
+msgid ""
+"Currently, \"Rust\" foreign functions may not be generic; this change will "
+"require a special case that allows intrinsics to be generic."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:69
+msgid "Alternatives"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:71
+msgid ""
+"Instead of making intrinsics lang items we could create a slightly different "
+"mechanism, like an `#[intrinsic]` attribute, that would continue letting "
+"intrinsics to be redeclared."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:75
+msgid ""
+"While using lang items to identify intrinsics, intrinsic lang items _could_ "
+"be allowed to be redeclared."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:78
+msgid ""
+"We could also make \"rust-intrinsic\" coerce or otherwise be the same as "
+"\"Rust\" externs and normal Rust functions."
+msgstr ""
+
+#: src/0008-new-intrinsics.md:81
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0008-new-intrinsics.md:83
+msgid "None."
+msgstr ""

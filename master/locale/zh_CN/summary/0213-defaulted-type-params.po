@@ -1,0 +1,975 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0213-defaulted-type-params.md:1
+msgid "Start Date: 2015-02-04"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#213](https://github.com/rust-lang/rfcs/pull/213)"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#27336](https://github.com/rust-lang/rust/"
+"issues/27336)"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:7
+msgid ""
+"Rust currently includes feature-gated support for type parameters that "
+"specify a default value. This feature is not well-specified. The aim of this "
+"RFC is to fully specify the behavior of defaulted type parameters:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:12
+msgid "Type parameters in any position can specify a default."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:13
+msgid ""
+"Within fn bodies, defaulted type parameters are used to drive inference."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:14
+msgid "Outside of fn bodies, defaulted type parameters supply fixed defaults."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:16
+msgid ""
+"`_` can be used to omit the values of type parameters and apply a suitable "
+"default:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:18
+msgid ""
+"In a fn body, any type parameter can be omitted in this way, and a suitable "
+"type variable will be used."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:20
+msgid ""
+"Outside of a fn body, only defaulted type parameters can be omitted, and the "
+"specified default is then used."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:23
+msgid ""
+"Points 2 and 4 extend the current behavior of type parameter defaults, "
+"aiming to address some shortcomings of the current implementation."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:26 src/0213-defaulted-type-params.md:106
+msgid "This RFC would remove the feature gate on defaulted type parameters."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:28
+msgid "Motivation"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:30
+msgid "Why defaulted type parameters"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:32
+msgid "Defaulted type parameters are very useful in two main scenarios:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:34
+msgid "Extended a type without breaking existing clients."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:35
+msgid ""
+"Allowing customization in ways that many or most users do not care about."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:38
+msgid ""
+"Often, these two scenarios occur at the same time. A classic historical "
+"example is the `HashMap` type from Rust's standard library. This type now "
+"supports the ability to specify custom hashers. For most clients, this is "
+"not particularly important and this initial versions of the `HashMap` type "
+"were not customizable in this regard. But there are some cases where having "
+"the ability to use a custom hasher can make a huge difference. Having the "
+"ability to specify defaults for type parameters allowed the `HashMap` type "
+"to add a new type parameter `H` representing the hasher type without "
+"breaking any existing clients and also without forcing all clients to "
+"specify what hasher to use."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:50
+msgid ""
+"However, customization occurs in places other than types. Consider the "
+"function `range()`. In early versions of Rust, there was a distinct range "
+"function for each integral type (e.g. `uint::range`, `int::range`, etc). "
+"These functions were eventually consolidated into a single `range()` "
+"function that is defined generically over all \"enumerable\" types:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:62
+msgid ""
+"This version is often more convenient to use, particularly in a generic "
+"context."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:65
+msgid ""
+"However, the generic version does have the downside that when the bounds of "
+"the range are integral, inference sometimes lacks enough information to "
+"select a proper type:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:69
+msgid ""
+"    // ERROR -- Type argument unconstrained, what integral type did you "
+"want?\n"
+"    for x in range(0, 10) { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:72
+msgid "Thus users are forced to write:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:76
+msgid ""
+"This RFC describes how to integrate default type parameters with inference "
+"such that the type parameter on `range` can specify a default (`uint`, for "
+"example):"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:84
+msgid ""
+"Using this definition, a call like `range(0, 10)` is perfectly legal. If it "
+"turns out that the type argument is not other constraint, `uint` will be "
+"used instead."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:88
+msgid "Extending types without breaking clients."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:90
+msgid ""
+"Without defaults, once a library is released to \"the wild\", it is not "
+"possible to add type parameters to a type without breaking all existing "
+"clients. However, it frequently happens that one wants to take an existing "
+"type and make it more flexible that it used to be. This often entails adding "
+"a new type parameter so that some type which was hard-coded before can now "
+"be customized. Defaults provide a means to do this while having older "
+"clients transparently fallback to the older behavior."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:99
+msgid ""
+"_Historical example:_ Extending HashMap to support various hash algorithms."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:102
+msgid "Detailed Design"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:104
+msgid "Remove feature gate"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:108
+msgid "Type parameters with defaults"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:110
+msgid ""
+"Defaults can be placed on any type parameter, whether it is declared on a "
+"type definition (`struct`, `enum`), type alias (`type`), trait definition "
+"(`trait`), trait implementation (`impl`), or a function or method (`fn`)."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:115
+msgid ""
+"Once a given type parameter declares a default value, all subsequent type "
+"parameters in the list must declare default values as well:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:118
+msgid ""
+"    // OK. All defaulted type parameters come at the end.\n"
+"    fn foo<A,B=uint,C=uint>() { .. }\n"
+"    \n"
+"    // ERROR. B has a default, but C does not.\n"
+"    fn foo<A,B=uint,C>() { .. }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:124
+msgid ""
+"The default value of a type parameter `X` may refer to other type parameters "
+"declared on the same item. However, it may only refer to type parameters "
+"declared _before_ `X` in the list of type parameters:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:128
+msgid ""
+"    // OK. Default value of `B` refers to `A`, which is not defaulted.\n"
+"    fn foo<A,B=A>() { .. }\n"
+"    \n"
+"    // OK. Default value of `C` refers to `B`, which comes before\n"
+"    // `C` in the list of parameters.\n"
+"    fn foo<A,B=uint,C=B>() { .. }\n"
+"    \n"
+"    // ERROR. Default value of `B` refers to `C`, which comes AFTER\n"
+"    // `B` in the list of parameters.\n"
+"    fn foo<A,B=C,C=uint>() { .. }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:139
+msgid "Instantiating defaults"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:141
+msgid ""
+"This section specifies how to interpret a reference to a generic type. "
+"Rather than writing out a rather tedious (and hard to understand) "
+"description of the algorithm, the rules are instead specified by a series of "
+"examples. The high-level idea of the rules is as follows:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:147
+msgid ""
+"Users must always provide _some_ value for non-defaulted type parameters. "
+"Defaulted type parameters may be omitted."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:149
+msgid ""
+"The `_` notation can always be used to _explicitly omit_ the value of a type "
+"parameter:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:151
+msgid "Inside a fn body, any type parameter may be omitted. Inference is used."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:152
+msgid ""
+"Outside a fn body, only defaulted type parameters may be omitted. The "
+"default value is used."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:154
+msgid ""
+"_Motivation:_ This is consistent with Rust tradition, which generally "
+"requires explicit types or a mechanical defaulting process outside of `fn` "
+"bodies."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:158
+msgid "References to generic types"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:160
+msgid "We begin with examples of references to the generic type `Foo`:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:164
+msgid ""
+"`Foo` defines four type parameters, the final two of which are defaulted. "
+"First, let us consider what happens outside of a fn body. It is mandatory to "
+"supply explicit values for all non-defaulted type parameters:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:169
+msgid ""
+"    // ERROR: 2 parameters required, 0 provided.\n"
+"    fn f(_: &Foo) { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:172
+msgid "Defaulted type parameters are filled in based on the defaults given:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:174
+msgid ""
+"    // Legal: Equivalent to `Foo<int,uint,DefaultHasher,DefaultHasher>`\n"
+"    fn f(_: &Foo<int,uint>) { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:177
+msgid ""
+"Naturally it is legal to specify explicit values for the defaulted type "
+"parameters if desired:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:180
+msgid ""
+"    // Legal: Equivalent to `Foo<int,uint,uint,char,u8>`\n"
+"    fn f(_: &Foo<int,uint,char,u8>) { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:183
+msgid ""
+"It is also legal to provide just one of the defaulted type parameters and "
+"not the other:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:186
+msgid ""
+"    // Legal: Equivalent to `Foo<int,uint,char,char>`\n"
+"    fn f(_: &Foo<int,uint,char>) { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:189
+msgid ""
+"If the user wishes to supply the value of the type parameter `D` explicitly, "
+"but not `C`, then `_` can be used to request the default:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:192
+msgid ""
+"    // Legal: Equivalent to `Foo<int,uint,DefaultHasher,uint>`\n"
+"    fn f(_: &Foo<int,uint,_,uint>) { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:195
+msgid ""
+"Note that, outside of a fn body, `_` can _only_ be used with defaulted type "
+"parameters:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:198
+msgid ""
+"    // ERROR: outside of a fn body, `_` cannot be\n"
+"    // used for a non-defaulted type parameter\n"
+"    fn f(_: &Foo<int,_>) { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:202
+msgid ""
+"Inside a fn body, the rules are much the same, except that `_` is legal "
+"everywhere. Every reference to `_` creates a fresh type variable `$n`. If "
+"the type parameter whose value is omitted has an associate default, that "
+"default is used as the _fallback_ for `$n` (see the section \"Type variables "
+"with fallbacks\" for more information). Here are some examples:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:209
+msgid ""
+"    fn f() {\n"
+"        // Error: `Foo` requires at least 2 type parameters, 0 supplied.\n"
+"        let x: Foo = ...;\n"
+"    \n"
+"        // All of these 4 examples are OK and equivalent. Each\n"
+"        // results in a type `Foo<$0,$1,$2,$3>` and `$0`-`$4` are type\n"
+"        // variables. `$2` has a fallback of `DefaultHasher` and `$3`\n"
+"        // has a fallback of `$2`.\n"
+"        let x: Foo<_,_> = ...;\n"
+"        let x: Foo<_,_,_> = ...;\n"
+"        let x: Foo<_,_,_,_> = ...;\n"
+"    \n"
+"        // Results in a type `Foo<int,uint,$0,char>` where `$0`\n"
+"        // has a fallback of `DefaultHasher`.\n"
+"        let x: Foo<int,uint,_,char> = ...;\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:226
+msgid "References to generic traits"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:228
+msgid ""
+"The rules for traits are the same as the rules for types.  Consider a trait "
+"`Foo`:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:233
+msgid ""
+"References to this trait can omit values for `C` and `D` in precisely the "
+"same way as was shown for types:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:236
+msgid ""
+"    // All equivalent to Foo<i8,u8,uint,uint>:\n"
+"    fn foo<T:Foo<i8,u8>>() { ... }\n"
+"    fn foo<T:Foo<i8,u8,_>>() { ... }\n"
+"    fn foo<T:Foo<i8,u8,_,_>>() { ... }\n"
+"    \n"
+"    // Equivalent to Foo<i8,u8,char,char>:\n"
+"    fn foo<T:Foo<i8,u8,char,_>>() { ... }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:244
+msgid "References to generic functions"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:246
+msgid ""
+"The rules for referencing generic functions are the same as for types, "
+"except that it is legal to omit values for all type parameters if desired. "
+"In that case, the behavior is the same as it would be if `_` were used as "
+"the value for every type parameter. Note that functions can only be "
+"referenced from within a fn body."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:252
+msgid "References to generic impls"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:254
+msgid ""
+"Users never explicitly \"reference\" an impl. Rather, the trait matching "
+"system implicitly instantiates impls as part of trait matching. This implies "
+"that all type parameters are always instantiated with type variables. These "
+"type variables are assigned fallbacks according to the defaults given."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:260
+msgid "Type variables with fallbacks"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:262
+msgid ""
+"We extend the inference system so that when a type variable is created, it "
+"can optionally have a _fallback value_, which is another type."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:266
+msgid ""
+"In the type checker, whenever we create a fresh type variable to represent a "
+"type parameter with an associated default, we will use that default as the "
+"fallback value for this type variable."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:270
+msgid "Example:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:272
+msgid ""
+"```\n"
+"fn foo<A,B=A>(a: A, b: B) { ... }\n"
+"\n"
+"fn bar() {\n"
+"    // Here, the values of the type parameters are given explicitly.\n"
+"    let f: fn(uint, uint) = foo::<uint, uint>;\n"
+"\n"
+"    // Here the value of the first type parameter is given explicitly,\n"
+"    // but not the second. Because the second specifies a default, this\n"
+"    // is permitted. The type checker will create a fresh variable `$0`\n"
+"    // and attempt to infer the value of this defaulted type parameter.\n"
+"    let g: fn(uint, $0) = foo::<uint>;\n"
+"\n"
+"    // Here, the values of the type parameters are not given explicitly,\n"
+"    // and hence the type checker will create fresh variables\n"
+"    // `$1` and `$2` for both of them.\n"
+"    let h: fn($1, $2) = foo;\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:292
+msgid ""
+"In this snippet, there are three references to the generic function `foo`, "
+"each of which specifies progressively fewer types. As a result, the type "
+"checker winds up creating three type variables, which are referred to in the "
+"example as `$0`, `$1`, and `$2` (not that this `$` notation is just for "
+"explanatory purposes and is not actual Rust syntax)."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:299
+msgid "The fallback values of `$0`, `$1`, and `$2` are as follows:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:301
+msgid ""
+"`$0` was created to represent the type parameter `B` defined on `foo`.  This "
+"means that `$0` will have a fallback value of `uint`, since the type "
+"variable `A` was specified to be `uint` in the expression that created `$0`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:305
+msgid ""
+"`$1` was created to represent the type parameter `A`, which has no default. "
+"Therefore `$1` has no fallback."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:307
+msgid ""
+"`$2` was created to represent the type parameter `B`. It will have the "
+"fallback value of `$1`, which was the value of `A` within the expression "
+"where `$2` was created."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:311
+msgid "Trait resolution, fallbacking, and inference"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:313
+msgid ""
+"Prior to this RFC, type-checking a function body proceeds roughly as follows:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:316 src/0213-defaulted-type-params.md:326
+msgid ""
+"The function body is analyzed. This results in an accumulated set of type "
+"variables, constraints, and trait obligations."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:318
+msgid ""
+"Those trait obligations are then resolved until a fixed point is reached."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:320
+msgid "If any trait obligations remain unresolved, an error is reported."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:321
+msgid ""
+"If any type variables were never bound to a concrete value, an error is "
+"reported."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:324
+msgid "To accommodate fallback, the new procedure is somewhat different:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:328
+msgid "Execute in a loop:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:329
+msgid "Run trait resolution until a fixed point is reached."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:330
+msgid ""
+"Create a (initially empty) set `UB` of unbound type and integral/float "
+"variables.  This set represents the set of variables for which fallbacks "
+"should be applied."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:333
+msgid "Add all unbound integral and float variables to the set `UB`"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:334
+msgid "For each type variable `X`:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:335
+msgid "If `X` has no fallback defined, skip."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:336
+msgid "If `X` is not bound, add `X` to `UB`"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:337
+msgid ""
+"If `X` is bound to an unbound integral variable `I`, add `X` to `UB` and "
+"remove `I` from `UB` (if present)."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:339
+msgid ""
+"If `X` is bound to an unbound float variable `F`, add `X` to `UB` and remove "
+"`F` from `UB` (if present)."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:341
+msgid "If `UB` is the empty set, break out of the loop."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:342
+msgid "For each member of `UB`:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:343
+msgid "If the member is an integral type variable `I`, set `I` to `int`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:344
+msgid "If the member is a float variable `F`, set `I` to `f64`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:345
+msgid ""
+"Otherwise, the member must be a variable `X` with a defined fallback. Set "
+"`X` to its fallback."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:347
+msgid ""
+"Note that this \"set\" operations can fail, which indicates conflicting "
+"defaults. A suitable error message should be given."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:350
+msgid ""
+"If any type parameters still have no value assigned to them, report an error."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:351
+msgid "If any trait obligations could not be resolved, report an error."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:353
+msgid "There are some subtle points to this algorithm:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:355
+msgid ""
+"**When defaults are to be applied, we first gather up the set of variables "
+"that have applicable defaults (step 2.2) and then later unconditionally "
+"apply those defaults (step 2.4).** In particular, we do not loop over each "
+"type variable, check whether it is unbound, and apply the default only if it "
+"is unbound. The reason for this is that it can happen that there are "
+"contradictory defaults and we want to ensure that this results in an error:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:363
+msgid ""
+"    fn foo<F:Default=uint>() -> F { }\n"
+"    fn bar<B=int>(b: B) { }\n"
+"    fn baz() {\n"
+"        // Here, F is instantiated with $0=uint\n"
+"        let x: $0 = foo();\n"
+"    \n"
+"        // Here, B is instantiated with $1=uint, and constraint $0 <: $1 is "
+"added.\n"
+"        bar(x);\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:373
+msgid ""
+"In this example, two type variables are created. `$0` is the value of `F` in "
+"the call to `foo()` and `$1` is the value of `B` in the call to `bar()`. The "
+"fact that `x`, which has type `$0`, is passed as an argument to `bar()` will "
+"add the constraint that `$0 <: $1`, but at no point are any concrete types "
+"given. Therefore, once type checking is complete, we will apply defaults. "
+"Using the algorithm given above, we will determine that both `$0` and `$1` "
+"are unbound and have suitable defaults. We will then unify `$0` with `uint`. "
+"This will succeed and, because `$0 <: $1`, cause `$1` to be unified with "
+"`uint`. Next, we will try to unify `$1` with its default, `int`. This will "
+"lead to an error. If we combined the checking of whether `$1` was unbound "
+"with the unification with the default, we would have first unified `$0` and "
+"then decided that `$1` did not require unification."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:387
+msgid ""
+"**In the general case, a loop is required to continue resolving traits and "
+"applying defaults in sequence.** Resolving traits can lead to unifications, "
+"so it is clear that we must resolve all traits that we can before we apply "
+"any defaults. However, it is also true that adding defaults can create new "
+"trait obligations that must be resolved."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:393
+msgid ""
+"Here is an example where processing trait obligations creates defaults, and "
+"processing defaults created trait obligations:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:396
+msgid ""
+"    trait Foo { }\n"
+"    trait Bar { }\n"
+"    \n"
+"    impl<T:Bar=uint> Foo for Vec<T> { } // Impl 1\n"
+"    impl Bar for uint { } // Impl 2\n"
+"    \n"
+"    fn takes_foo<F:Foo>(f: F) { }\n"
+"    \n"
+"    fn main() {\n"
+"        let x = Vec::new(); // x: Vec<$0>\n"
+"        takes_foo(x); // adds oblig Vec<$0> : Foo\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:409
+msgid ""
+"When we finish type checking `main`, we are left with a variable `$0` and a "
+"trait obligation `Vec<$0> : Foo`. Processing the trait obligation selects "
+"the impl 1 as the way to fulfill this trait obligation. This results in:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:414
+msgid ""
+"a new type variable `$1`, which represents the parameter `T` on the impl. "
+"`$1` has a default, `uint`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:416
+msgid "the constraint that `$0=$1`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:417
+msgid "a new trait obligation `$1 : Bar`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:419
+msgid ""
+"We cannot process the new trait obligation yet because the type variable "
+"`$1` is still unbound. (We know that it is equated with `$0`, but we do not "
+"have any concrete types yet, just variables.) After trait resolution reaches "
+"a fixed point, defaults are applied.  `$1` is equated with `uint` which in "
+"turn propagates to `$0`. At this point, there is still an outstanding trait "
+"obligation `uint : Bar`.  This trait obligation can be resolved to impl 2."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:427
+msgid ""
+"The previous example consisted of \"1.5\" iterations of the loop. That is, "
+"although trait resolution runs twice, defaults are only needed one time:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:431
+msgid "Trait resolution executed to resolve `Vec<$0> : Foo`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:432
+msgid "Defaults were applied to unify `$1 = $0 = uint`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:433
+msgid "Trait resolution executed to resolve `uint : Bar`"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:434
+msgid "No more defaults to apply, done."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:436
+msgid "The next example does 2 full iterations of the loop."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:438
+msgid ""
+"    trait Foo { }\n"
+"    trait Bar<U> { }\n"
+"    trait Baz { }\n"
+"    \n"
+"    impl<U,T:Bar<U>=Vec<U>> Foo for Vec<T> { } // Impl 1\n"
+"    impl<V=uint> Bar for Vec<V> { } // Impl 2\n"
+"    \n"
+"    fn takes_foo<F:Foo>(f: F) { }\n"
+"    \n"
+"    fn main() {\n"
+"        let x = Vec::new(); // x: Vec<$0>\n"
+"        takes_foo(x); // adds oblig Vec<$0> : Foo\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:452
+msgid "Here the process is as follows:"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:454
+msgid ""
+"Trait resolution executed to resolve `Vec<$0> : Foo`. The result is two "
+"fresh variables, `$1` (for `U`) and `$2=Vec<$1>` (for `$T`), the constraint "
+"that `$0=$2`, and the obligation `$2 : Bar<$1>`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:457
+msgid "Defaults are applied to unify `$2 = $0 = Vec<$1>`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:458
+msgid ""
+"Trait resolution executed to resolve `$2 : Bar<$1>`. The result is a fresh "
+"variable `$3=uint` (for `$V`) and the constraint that `$1=$3`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:461
+msgid "Defaults are applied to unify `$3 = $1 = uint`."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:463
+msgid ""
+"It should be clear that one can create examples in this vein so as to "
+"require any number of loops."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:466
+msgid ""
+"**Interaction with integer/float literal fallback.** This RFC gives "
+"defaulted type parameters precedence over integer/float literal fallback. "
+"This seems preferable because such types can be more specific. Below are "
+"some examples. See also the _alternatives_ section."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:472
+msgid ""
+"```\n"
+"// Here the type of the integer literal 22 is inferred\n"
+"// to `int` using literal fallback.\n"
+"fn foo<T>(t: T) { ... }\n"
+"foo(22)\n"
+"```"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:479
+msgid ""
+"```\n"
+"// Here the type of the integer literal 22 is inferred\n"
+"// to `uint` because the default on `T` overrides the\n"
+"// standard integer literal fallback.\n"
+"fn foo<T=uint>(t: T) { ... }\n"
+"foo(22)\n"
+"```"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:487
+msgid ""
+"```\n"
+"// Here the type of the integer literal 22 is inferred\n"
+"// to `char`, leading to an error. This can be resolved\n"
+"// by using an explicit suffix like `22i`.\n"
+"fn foo<T=char>(t: T) { ... }\n"
+"foo(22)\n"
+"```"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:495
+msgid ""
+"**Termination.** Any time that there is a loop, one must inquire after "
+"termination. In principle, the loop above could execute indefinitely. This "
+"is because trait resolution is not guaranteed to terminate -- basically "
+"there might be a cycle between impls such that we continue creating new type "
+"variables and new obligations forever. The trait matching system already "
+"defends against this with a recursion counter. That same recursion counter "
+"is sufficient to guarantee termination even when the default mechanism is "
+"added to the mix. This is because the default mechanism can never itself "
+"create new trait obligations: it can only cause previous ambiguous trait "
+"obligations to now be matchable (because unbound variables become bound). "
+"But the actual need to iteration through the loop is still caused by trait "
+"matching generating recursive obligations, which have an associated depth "
+"limit."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:510
+msgid "Compatibility analysis"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:512
+msgid ""
+"One of the major design goals of defaulted type parameters is to permit new "
+"parameters to be added to existing types or methods in a backwards "
+"compatible way. This remains possible under the current design."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:517
+msgid ""
+"Note though that adding a default to an _existing_ type parameter can lead "
+"to type errors in clients. This can occur if clients were already relying on "
+"an inference fallback from some other source and there is now an ambiguity. "
+"Naturally clients can always fix this error by specifying the value of the "
+"type parameter in question manually."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:523
+msgid "Downsides and alternatives"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:525
+msgid "Avoid inference"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:527
+msgid ""
+"Rather than adding the notion of _fallbacks_ to type variables, defaults "
+"could be mechanically added, even within fn bodies, as they are today. But "
+"this is disappointing because it means that examples like `range(0,10)`, "
+"where defaults could inform inference, still require explicit annotation. "
+"Without the notion of fallbacks, it is also difficult to say what defaulted "
+"type parameters in methods or impls should mean."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:535
+msgid "More advanced interaction between integer literal inference"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:537
+msgid ""
+"There were some other proposals to have a more advanced interaction between "
+"custom fallbacks and literal inference. For example, it is possible to "
+"imagine that we allow literal inference to take precedence over type default "
+"fallbacks, unless the fallback is itself integral. The problem is that this "
+"is both complicated and possibly not forwards compatible if we opt to allow "
+"a more general notion of literal inference in the future (in other words, if "
+"integer literals may be mapped to more than just the built-in integral "
+"types). Furthermore, these rules would create strictly fewer errors, and "
+"hence can be added in the future if desired."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:548
+msgid "Notation"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:550
+msgid ""
+"Allowing `_` notation outside of fn body means that it's meaning changes "
+"somewhat depending on context. However, this is consistent with the meaning "
+"of omitted lifetimes, which also change in the same way (mechanical default "
+"outside of fn body, inference within)."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:555
+msgid ""
+"An alternative design is to use the `K=V` notation proposed in the "
+"associated items RFC for specify the values of default type parameters. "
+"However, this is somewhat odd, because default type parameters appear in a "
+"positional list, and thus it is surprising that values for the non-defaulted "
+"parameters are given positionally, but values for the defaulted type "
+"parameters are given with labels."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:562
+msgid ""
+"Another alternative would to simply prohibit users from specifying the value "
+"of a defaulted type parameter unless values are given for all previous "
+"defaulted typed parameters. But this is clearly annoying in those cases "
+"where defaulted type parameters represent distinct axes of customization."
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:568
+msgid "Hat Tip"
+msgstr ""
+
+#: src/0213-defaulted-type-params.md:570
+msgid ""
+"eddyb introduced defaulted type parameters and also opened the first pull "
+"request that used them to inform inference."
+msgstr ""

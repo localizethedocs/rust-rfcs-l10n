@@ -1,0 +1,282 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1857-stabilize-drop-order.md:1
+msgid "Feature Name: stable_drop_order"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:2
+msgid "Start Date: 2017-01-19"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1857](https://github.com/rust-lang/rfcs/pull/1857)"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#43034](https://github.com/rust-lang/rust/"
+"issues/43034)"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:9
+msgid ""
+"I propose we specify and stabilize drop order in Rust, instead of treating "
+"it as an implementation detail. The stable drop order should be based on the "
+"current implementation. This results in avoiding breakage and still allows "
+"alternative, opt-in, drop orders to be introduced in the future."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:17
+msgid ""
+"After lots of discussion on [issue 744](https://github.com/rust-lang/rfcs/"
+"issues/744), there seems to be consensus about the need for a stable drop "
+"order. See, for instance, [this](https://github.com/rust-lang/rfcs/"
+"issues/744#issuecomment-231215181) and [this](https://github.com/rust-lang/"
+"rfcs/issues/744#issuecomment-231237499) comment."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:22
+msgid ""
+"The current drop order seems counter-intuitive (fields are dropped in FIFO "
+"order instead of LIFO), but changing it would inevitably result in breakage. "
+"There have been cases in the recent past when code broke because of people "
+"relying on unspecified behavior (see for instance the [post](https://"
+"internals.rust-lang.org/t/rolling-out-or-unrolling-struct-field-"
+"reorderings/4485) about struct field reorderings). It is highly probable "
+"that similar breakage would result from changes to the drop order. See for "
+"instance, the [comment](https://github.com/rust-lang/rfcs/"
+"issues/744#issuecomment-225918642) from @sfackler, which reflects the "
+"problems that would arise:"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:32
+msgid ""
+"Real code in the wild does rely on the current drop order, including rust-"
+"openssl, and _there is no upgrade path_ if we reverse it. Old versions of "
+"the libraries will be subtly broken when compiled with new rustc, and new "
+"versions of the libraries will be broken when compiled with old rustc."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:37
+msgid ""
+"Introducing a new drop order without breaking things would require figuring "
+"out how to:"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:39
+msgid ""
+"Forbid an old compiler (with the old drop order) from compiling recent Rust "
+"code (which could rely on the new drop order)."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:41
+msgid ""
+"Let the new compiler (with the new drop order) recognize old Rust code "
+"(which could rely on the old drop order). This way it could choose to "
+"either: (a) fail to compile; or (b) compile using the old drop order."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:45
+msgid ""
+"Both requirements seem quite difficult, if not impossible, to meet. Even in "
+"case we figured out how to meet those requirements, the complexity of the "
+"approach would probably outweigh the current complexity of having a non-"
+"intuitive drop order."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:49
+msgid ""
+"Finally, in case people really dislike the current drop order, it may still "
+"be possible to introduce alternative, opt-in, drop orders in a backwards "
+"compatible way. However, that is not covered in this RFC."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:53
+msgid "Detailed design"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:56
+msgid ""
+"The design is the same as currently implemented in rustc and is described "
+"below. This behavior will be enforced by run-pass tests."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:59
+msgid "Tuples, structs and enum variants"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:61
+msgid ""
+"Struct fields are dropped in the same order as they are declared. Consider, "
+"for instance, the struct below:"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:71
+msgid ""
+"In this case, `bar` will be the first field to be destroyed, followed by "
+"`baz`."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:73
+msgid ""
+"Tuples and tuple structs show the same behavior, as well as enum variants of "
+"both kinds (struct and tuple variants)."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:76
+msgid ""
+"Note that a panic during construction of one of previous data structures "
+"causes destruction in a different order. Since the object has not yet been "
+"constructed, its fields are treated as local variables (which are destroyed "
+"in LIFO order). See the example below:"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:89
+msgid ""
+"In this case, `field2` is destructed first and `field1` second, which may "
+"seem counterintuitive at first but makes sense when you consider that the "
+"initialized fields are actually temporary variables. Note that the drop "
+"order depends on the order of the fields in the _initializer_ and not in the "
+"struct declaration."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:95
+msgid "Slices and Vec"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:97
+msgid ""
+"Slices and vectors show the same behavior as structs and enums. This "
+"behavior can be illustrated by the code below, where the first elements are "
+"dropped first."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:105
+msgid ""
+"If there is a panic during construction of the slice or the `Vec`, the drop "
+"order is reversed (that is, when using `[]` literals or the `vec![]` macro). "
+"Consider the following example:"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:113
+msgid "Here, `Y` will be dropped first and `X` second."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:115
+msgid "Allowed unspecified behavior"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:117
+msgid ""
+"Besides the previous constructs, there are other ones that do not need a "
+"stable drop order (at least, there is not yet evidence that it would be "
+"useful). It is the case of `vec![expr; n]` and closure captures."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:121
+msgid ""
+"Vectors initialized with `vec![expr; n]` syntax clone the value of `expr` in "
+"order to fill the vector. In case `clone` panics, the values produced so far "
+"are dropped in unspecified order. The order is closely tied to an "
+"implementation detail and the benefits of stabilizing it seem small. It is "
+"difficult to come up with a real-world scenario where the drop order of "
+"cloned objects is relevant to ensure some kind of invariant. Furthermore, we "
+"may want to modify the implementation in the future."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:129
+msgid ""
+"Closure captures are also dropped in unspecified order. At this moment, it "
+"seems like the drop order is similar to the order in which the captures are "
+"consumed within the closure (see [this blog post](https://ochagavia.nl/blog/"
+"exploring-rusts-unspecified-drop-order/) for more details). Again, this "
+"order is closely tied to an implementation that we may want to change in the "
+"future, and the benefits of stabilizing it seem small. Furthermore, "
+"enforcing invariants through closure captures seems like a terrible footgun "
+"at best (the same effect can be achieved with much less obscure methods, "
+"like passing a struct as an argument)."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:138
+msgid ""
+"Note: we ignore slices initialized with `[expr; n]` syntax, since they may "
+"only contain `Copy` types, which in turn cannot implement `Drop`."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:141
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:144
+msgid ""
+"When mentioning destructors in the Rust book, Reference and other "
+"documentation, we should also mention the overall picture for a type that "
+"implements `Drop`. In particular, if a `struct`/`enum` implements Drop, then "
+"when it is dropped we will first execute the user's code and then drop all "
+"the fields (in the given order). Thus any code in `Drop` must leave the "
+"fields in an initialized state such that they can be dropped. If you wish to "
+"interleave the fields being dropped and user code being executed, you can "
+"make the fields into `Option` and have a custom drop that calls take() (or "
+"else wrap your type in a union with a single member and implement `Drop` "
+"such that it invokes `ptr::read()` or something similar)."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:154
+msgid ""
+"It is also important to mention that `union` types never drop their contents."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:156
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:159
+msgid "The counter-intuitive drop order is here to stay."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:161
+msgid "Alternatives"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:164
+msgid ""
+"Figure out how to let rustc know the language version targeted by a given "
+"program. This way we could introduce a new drop order without breaking code."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:166
+msgid ""
+"Introduce a new drop order anyway, try to minimize breakage by running "
+"crater and hope for the best."
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:169
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1857-stabilize-drop-order.md:172
+msgid ""
+"Where do we draw the line between the constructs where drop order should be "
+"stabilized and the rest? Should the drop order of closure captures be "
+"specified? And the drop order of `vec![expr; n]`?"
+msgstr ""

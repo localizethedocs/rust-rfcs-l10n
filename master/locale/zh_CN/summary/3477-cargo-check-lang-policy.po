@@ -1,0 +1,196 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3477-cargo-check-lang-policy.md:1
+msgid "Feature Name: `cargo-check-lang-policy`"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:2
+msgid "Start Date: 2023-08-22"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3477](https://github.com/rust-lang/rfcs/pull/3477)"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:8
+msgid ""
+"This RFC helps to codify the T-lang policy regarding `cargo check` vs `cargo "
+"build`."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:10
+msgid ""
+"This is a policy RFC rather than a change to the language itself, and is "
+"thus \"instantly stable\" once accepted. There's no associated feature "
+"within the compiler, and no further stabilization report necessary."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:15
+msgid ""
+"It has often come up within GitHub issues what _exactly_ the intended line "
+"is between Cargo's `check` and `build` commands should be, what users should "
+"expect, and so on."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:17
+msgid ""
+"The RFC gives a clear policy from T-lang's perspective so that both other "
+"teams within the Rust project as well as users of the Rust project can have "
+"the same expectations."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:19
+msgid "Decision"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:22
+msgid "`cargo build` catches all Rust compilation errors."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:23
+msgid ""
+"`cargo check` only catches some subset of the possible compilation errors."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:24
+msgid ""
+"A Rust program **must** compile with `cargo build` to be covered by Rust's "
+"standard stability guarantee."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:26
+msgid ""
+"Specifically, if a given Rust program does not compile with `cargo build` "
+"then it might or might not pass `cargo check`. If a program does not compile "
+"with `cargo build` but does pass `cargo check` it still might not pass a "
+"`cargo check` in a future version of Rust. Changes in `cargo check` outcome "
+"when `cargo build` does not work are not considered a breaking change in "
+"Rust."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:28
+msgid ""
+"`cargo check` **should** catch as many errors as possible, but the emphasis "
+"of `cargo check` is on giving a \"fast\" answer rather than giving a "
+"\"complete\" answer. If you need a complete answer with all possible errors "
+"accounted for then you **must** use `cargo build`. The rationale for this is "
+"that giving a \"complete\" answer requires (among other things) doing full "
+"monomorphization (since some errors, such as those related to associated "
+"consts, can only be caught during monomorphization). Monomorphization is "
+"expensive: instead of having to check each function only once, each function "
+"now has to be checked once for all choices of generic parameters that the "
+"crate needs. Given this performance cost and the fact that errors during "
+"monomorphization are fairly rare, `cargo check` favors speed over "
+"completeness."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:34
+msgid ""
+"Examples where the optimization level can affect if a program passes `cargo "
+"check` and/or `cargo build` are considered bugs unless there is a documented "
+"policy exception, approved by T-lang. One example of such an exception is "
+"[RFC #3016](https://rust-lang.github.io/rfcs/3016-const-ub.html), which "
+"indicated that undefined behavior in const functions cannot always be "
+"detected statically (and in particular, optimizations may cause the UB to be "
+"undetectable)."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:36
+msgid "Frequently Asked Questions"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:38
+msgid "Why doesn't `check` catch everything?"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:40
+msgid ""
+"The simplest example here is linker errors.  There's no practical way to "
+"confirm that linking will work without actually going through all the work "
+"of generating the artifacts and actually calling the linker, but that that "
+"point one might as well run `build` instead."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:42
+msgid ""
+"An important part of what can make `check` faster than `build` is just _not_ "
+"doing that kind of thing.  And linker errors are rare in pure Rust code, so "
+"this is often a good trade-off."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:44
+msgid "Why not let more things through in optimized builds?"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:46
+msgid ""
+"Rust takes [stability without stagnation](https://blog.rust-lang."
+"org/2014/10/30/Stability.html#the-plan) very seriously.  We want to make "
+"sure stuff keeps compiling if it did before, but we also want to be able to "
+"work on improving rust without being so constrained as to make that "
+"functionally impossible."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:48
+msgid ""
+"If an optimization might allow something more to compile, that means that "
+"every small tweak to that optimization requires careful oversight for "
+"exactly what it's committing to support _forever_, which results in extreme "
+"overhead for rustc's developers.  The best way to avoid that is to have "
+"optimizations be about making things faster, not about what compiles _at "
+"all_."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:50
+msgid ""
+"For things where people want a certain behaviour, that should be something "
+"guaranteed as an intentional language semantic, which we can restrict "
+"appropriately to make it feasible with or without optimization."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:52
+msgid ""
+"As an example, there are various _lints_ that can detect more cases when "
+"optimizations are run, but that's part of why they're lints -- which are "
+"fundamentally not _guaranteed_ -- rather than part-of-the-language _errors_."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:56
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:59
+msgid ""
+"Is there any situation when we would _want_ to allow optimization level to "
+"affect if a program passes or fails a build? This seems unlikely."
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:61
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3477-cargo-check-lang-policy.md:64
+msgid ""
+"Any future changes in this policy would require a future RFC so that such "
+"changes are as clear and visible as possible."
+msgstr ""

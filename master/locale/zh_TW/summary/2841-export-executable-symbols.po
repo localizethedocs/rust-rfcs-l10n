@@ -1,0 +1,244 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2841-export-executable-symbols.md:1
+msgid "Feature Name: export-executable-symbols"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:2
+msgid "Start Date: 2019-12-28"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2841](https://github.com/rust-lang/rfcs/pull/2841)"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#84161](https://github.com/rust-lang/rust/"
+"issues/84161)"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:9
+msgid ""
+"Add the ability to export symbols from executables, not just dylibs, via a "
+"new compiler flag: `-C export-executable-symbols`."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:15
+msgid ""
+"Java and C# can't statically link against C/Rust code.  Both require dylib "
+"symbols for their common native interop solution.  Which is fine if you let "
+"their executables call your dylib, but is a problem if you want your Rust "
+"executable to load a JVM instance, and let it call back into your "
+"executable. You might want to do this to allow you to:"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:20
+msgid ""
+"Load multiple language runtimes into the same process (Rust + C# + Java + "
+"Lua anyone?  Only one of them can be the entry executable...)"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:21
+msgid ""
+"Display user-friendly error messages if language runtimes are missing (maybe "
+"even a download link!)"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:22
+msgid ""
+"[\\#\\[test\\] Java/Rust interop via cargo test.](https://github.com/"
+"MaulingMonkey/jerk/blob/04250c9d1b6ccc292eb27663f70919345c31007f/example-"
+"hello-world-jar/src/Global.rs)"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:24
+msgid ""
+"For this last case, I [manually export](https://github.com/MaulingMonkey/"
+"jerk/blob/04250c9d1b6ccc292eb27663f70919345c31007f/example-hello-world-jar/"
+"exports.def) executable symbols via [LINK](https://github.com/MaulingMonkey/"
+"jerk/blob/04250c9d1b6ccc292eb27663f70919345c31007f/example-hello-world-jar/"
+"build.rs#L4). This is ugly, brittle, and rustc [already knows](https://"
+"github.com/rust-lang/rust/blob/a916ac22b9f7f1f0f7aba0a41a789b3ecd765018/src/"
+"librustc_codegen_ssa/back/linker.rs#L706-L717) how to do this automatically, "
+"across more platforms, and better."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:32
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:35
+msgid "https://doc.rust-lang.org/rustc/codegen-options/index.html could gain:"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:46
+msgid "`rustc -C help` could gain:"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:52
+msgid ""
+"My Java interop [Quick Start](https://github.com/MaulingMonkey/jerk/blob/"
+"master/Readme.md#quick-start) would start recommending a `.cargo/config` "
+"with:"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:54
+msgid ""
+"```toml\n"
+"[build]\n"
+"rustflags = [\"-C\", \"export-executable-symbols\"]\n"
+"```"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:59
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:62
+msgid ""
+"On a technical level, this just involves preventing an early bailout when "
+"calling `fn export_symbols` on executables with MSVC or GNU linker backends. "
+"Other linker backends (EmLinker, WasmLd, PtxLinker) do not have this early "
+"bailout in the first place, and remain unaffected."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:67
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:70
+msgid "Options bloat"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:71
+msgid ""
+"The burden of supporting a niche use-case in hideously platform specific code"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:73
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:76
+msgid ""
+"This is _very_ simple to implement, leverages existing code to enable it to "
+"do exactly what it was meant to do, and has few drawbacks."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:78
+msgid "Alternatives:"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:80
+msgid ""
+"Unconditionally export symbols from executables instead of introducing a new "
+"compiler flag."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:81
+msgid ""
+"Introduce a crate-level attribute instead of a compiler flag (`#!"
+"[export_all_symbols]`? `#![export_symbols]`?)"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:82
+msgid ""
+"Write _yet another_ cargo subcommand to install/remember for interop testing "
+"instead of using cargo test."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:83
+msgid ""
+"Write interop tests exclusively as integration tests, in an entirely "
+"separate crate, that can load the testee as a dylib."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:84
+msgid ""
+"Continue abusing LINK, writing a tool to auto-generate .defs via build "
+"scripts - possibly by reading metadata from other tools."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:85
+msgid ""
+"Use nightly link-args instead of LINK, but still write a .def generator."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:86
+msgid ""
+"Remember to always cargo build a dylib copy of a crate manually before cargo "
+"test ing, and load that instead. (That would also add a whole second copy of "
+"all functions and static vars in the same unit test process!)"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:89
+msgid "Prior art"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:92
+msgid ""
+"C and C++ compilers can already do this via `__declspec(dllexport)` "
+"annotations. Most people don't really notice it, for good or for ill."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:95
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:98
+msgid "Is this a good name for it?"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:99
+msgid ""
+"Should it be more general and export when limit_rdylib_exports or crate_type "
+"== ProcMacro?"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:101
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:104
+msgid ""
+"We could introduce a new source annotation, `#[export]`.  For backwards "
+"compatibility with current behavior, `#[no_mangle]` symbols could be "
+"exported by default - and possibly disabled with `#[export(false)]`.  This "
+"would reduce the need to hide this change to compiler/linker behavior behind "
+"a compiler flag or crate annotation."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:110
+msgid ""
+"Maybe other options to control what symbols get exported?  Although I'd fear "
+"turning rustc into yet another linker script implementation, so maybe not."
+msgstr ""
+
+#: src/2841-export-executable-symbols.md:113
+msgid ""
+"My own building atop this in the wider language ecosystem would be for "
+"improved Java/Rust interop/testing, with the eventual goal of improved "
+"Android API support for Rust.  Many APIs are only exposed via Java, and I'd "
+"like said APIs to be usable in a safe and sound fashion."
+msgstr ""

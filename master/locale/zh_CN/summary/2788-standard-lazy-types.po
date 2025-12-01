@@ -1,0 +1,668 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2788-standard-lazy-types.md:1
+msgid "Feature Name: `once_cell`"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:2
+msgid "Start Date: 2019-10-17"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2788](https://github.com/rust-lang/rfcs/pull/2788)"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#74465](https://github.com/rust-lang/rust/"
+"issues/74465), [rust-lang/rust#109736](https://github.com/rust-lang/rust/"
+"issues/109736), [rust-lang/rust#109737](https://github.com/rust-lang/rust/"
+"issues/109737)"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:9
+msgid ""
+"Add support for lazy initialized values to standard library, effectively "
+"superseding the popular [`lazy_static`](https://crates.io/crates/"
+"lazy_static) crate."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:13
+msgid ""
+"// `BACKTRACE` implements `Deref<Target = Option<String>>` and is "
+"initialized\n"
+"// on the first access\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:17
+msgid "\"RUST_BACKTRACE\""
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:21
+msgid "Motivation"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:24
+msgid ""
+"Working with lazy initialized values is ubiquitous, [`lazy_static`](https://"
+"crates.io/crates/lazy_static) and [`lazycell`](https://crates.io/crates/"
+"lazycell) crates are used throughout the ecosystem. Although some of the "
+"popularity of `lazy_static` can be attributed to current limitations of "
+"constant evaluation in Rust, there are many cases when even perfect `const "
+"fn` can't replace lazy values."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:27
+msgid "At the same time, working with lazy values in Rust is not easy:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:29
+msgid ""
+"Implementing them requires moderately tricky unsafe code. Multiple soundness "
+"holes were found in the implementations from crates.io."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:30
+msgid ""
+"C++ and Java provide language-level delayed initialization for static "
+"values, while Rust requires explicit code to handle runtime-initialization."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:31
+msgid ""
+"Rust borrowing rules require a special pattern when implementing lazy fields."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:33
+msgid ""
+"`lazy_static` is implemented using macros, to work-around former language "
+"limitations. Since then, various language improvements have made it possible "
+"to  create runtime initialized (lazy) objects in a `static` scope, "
+"accomplishing the same goals without macros."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:35
+msgid ""
+"We can have a single canonical API for a commonly used tricky unsafe "
+"concept, so we probably should have it!"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:37
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:40
+msgid ""
+"Lazy values are a form of interior mutability. The key observation is that "
+"restricting a cell to single assignment allows to safely return a shared "
+"reference to the contents of the cell. Such cell is called `OnceCell`, by "
+"analogy with `std::sync::Once` type. The core API is as follows:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:48
+msgid "/// Creates a new empty cell.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:51
+msgid ""
+"/// Gets the reference to the underlying value.\n"
+"    ///\n"
+"    /// Returns `None` if the cell is empty.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:56
+msgid ""
+"/// Sets the contents of this cell to `value`.\n"
+"    ///\n"
+"    /// Returns `Ok(())` if the cell was empty and `Err(value)` if it was\n"
+"    /// full.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:62
+msgid ""
+"/// Gets the contents of the cell, initializing it with `f`\n"
+"    /// if the cell was empty.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// If `f` panics, the panic is propagated to the caller, and the cell\n"
+"    /// remains uninitialized.\n"
+"    ///\n"
+"    /// It is an error to reentrantly initialize the cell from `f`. Doing\n"
+"    /// so results in a panic or a deadlock.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:77
+msgid ""
+"/// Gets the contents of the cell, initializing it with `f` if\n"
+"    /// the cell was empty. If the cell was empty and `f` failed, an\n"
+"    /// error is returned.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// If `f` panics, the panic is propagated to the caller, and the cell\n"
+"    /// remains uninitialized.\n"
+"    ///\n"
+"    /// It is an error to reentrantly initialize the cell from `f`. Doing\n"
+"    /// so results in a panic or a deadlock.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:95
+msgid "Notable features of the API:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:97
+msgid "`OnceCell` is created empty, by a const fn."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:98
+msgid "Initialization succeeds at most once."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:99
+msgid ""
+"`get_or_init` and `get_or_try_init` methods can be used to conveniently "
+"initialize a cell."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:100
+msgid "`get_` family of methods return `&T`."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:102
+msgid ""
+"Similarly to other interior mutability primitives, `OnceCell` comes in two "
+"flavors:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:104
+msgid "Non thread-safe `std::cell::OnceCell`."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:105
+msgid "Thread-safe `std::sync::OnceLock`."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:107
+msgid ""
+"Here's how `OnceCell` can be used to implement lazy-initialized global data:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:116 src/2788-standard-lazy-types.md:173
+msgid "\"Spica\""
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:117 src/2788-standard-lazy-types.md:174
+msgid "\"Hoyten\""
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:123
+msgid "Here's how `OnceCell` can be used to implement a lazy field:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:143
+msgid ""
+"We also provide the more convenient but less powerful `Lazy<T, F>` and "
+"`LazyLock<T, F>` wrappers around `OnceCell<T>` and `OnceLock<T>`, which "
+"allows specifying the initializing closure at creation time:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:149
+msgid "/// Creates a new lazy value with the given initializing function.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:152
+msgid ""
+"/// Forces the evaluation of this lazy value and returns a reference to\n"
+"    /// the result.\n"
+"    ///\n"
+"    /// This is equivalent to the `Deref` impl, but is explicit.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:166
+msgid "`LazyLock` directly replaces `lazy_static!`:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:179
+msgid ""
+"Moreover, once `#[thread_local]` attribute is stable, `Lazy` might supplant "
+"`std::thread_local!` as well:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:189
+msgid "Unlike `lazy_static!`, `Lazy` can be used for locals:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:203
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:206
+msgid ""
+"The proposed API is directly copied from [`once_cell`](https://crates.io/"
+"crates/once_cell) crate."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:208
+msgid "Altogether, this RFC proposes to add four types:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:210
+msgid "`std::cell::OnceCell`, `std::cell::LazyCell`"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:211
+msgid "`std::sync::OnceLock`, `std::sync::LazyLock`"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:213
+msgid ""
+"`OnceCell` and `OnceLock` are important primitives. `LazyCell ` and "
+"`LazyLock` can be stabilized separately from `OnceCell`, or optionally "
+"omitted from the standard library altogether. However, as they provide "
+"significantly nicer ergonomics for the common use case of static lazy "
+"values, it is worth developing in tandem."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:217
+msgid ""
+"Non thread-safe flavor is implemented by storing an `UnsafeCell<Option<T>>`:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:221
+msgid "// Invariant: written to at most once.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:226
+msgid ""
+"The implementation is mostly straightforward. The only tricky bit is that "
+"reentrant initialization should be explicitly forbidden. That is, the "
+"following program panics:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:238
+msgid "\"would be use after free: {:?}\""
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:241
+msgid "Non thread-safe flavor can be added to `core` as well."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:243
+msgid ""
+"The thread-safe variant is implemented similarly to `std::sync::Once`. "
+"Crucially, it has support for blocking: if many threads call `get_or_init` "
+"concurrently, only one will be able to execute the closure, while all other "
+"threads will block. For this reason, most of `std::sync::OnceLock` API can "
+"not be provided in `core`. In the `sync` case, reliably panicking on re-"
+"entrant initialization is not trivial. For this reason, the implementation "
+"would simply deadlock, with a note that a deadlock might be elevated to a "
+"panic in the future."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:249
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:252
+msgid ""
+"This is a moderately large addition to stdlib, there's a chance we do "
+"something wrong. This can be mitigated by piece-wise stabilization (in "
+"particular, `LazyCell` convenience types are optional) and the fact that API "
+"is tested in the crates.io ecosystem via `once_cell` crate."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:255
+msgid ""
+"The design of `LazyCell` type uses default type-parameter as a workaround "
+"for the absence of type inference of statics."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:257
+msgid ""
+"We use the same name for unsync and sync types, which might be confusing."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:259
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:262
+msgid "Why not `LazyCell` as a primitive?"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:264
+msgid ""
+"On the first look, it may seem like we don't need `OnceCell`, and should "
+"only provide `LazyCell`. The critical drawback of `LazyCell` is that it's "
+"not always possible to provide the closure at creation time."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:267
+msgid "This is important for lazy fields:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:280
+msgid ""
+"// We would like to write something like\n"
+"                // `fs::read_to_string(&self.config_path)`\n"
+"                // here, but we can't have access to `self`\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:290
+msgid "Or for singletons, initialized with parameters:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:301
+msgid "\"logger is not initialized\""
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:309
+msgid "// Note how we use locally-created value for initialization.\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:312
+msgid "// use `Logger::global()` from now on\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:316
+msgid "Why `OnceCell` as a primitive?"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:318
+msgid ""
+"It is possible to imagine a type, slightly more general than `OnceCell`:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:332
+msgid ""
+"That is, we can store some initial state in the cell and consume it during "
+"initialization. In practice, such flexibility seems to be rarely required. "
+"Even if we add a type, similar to `OnceFlipCell`, having a dedicated "
+"`OnceCell` (which _could_ be implemented on top of `OnceFlipCell`) type "
+"simplifies a common use-case."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:336
+msgid "Variations of `set`"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:338
+msgid "The RFC proposes \"obvious\" signature for the `set` method:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:344
+msgid ""
+"Note, however, that `set` establishes an invariant that the cell is "
+"initialized, so a more precise signature would be"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:350
+msgid ""
+"To be able to return a reference, `set` might need to block a thread. For "
+"example, if two threads call `set` concurrently, one of them needs to block "
+"while the other moves the value into the cell. It is possible to provide a "
+"non-blocking alternative to `set`:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:358
+msgid ""
+"That is, if value is set successfully, a reference is returned. Otherwise, "
+"the cell is either fully initialized, and a reference is returned as well, "
+"or the cell is being initialized, and no valid reference exist yet."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:361
+msgid "Support for `no_std`"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:363
+msgid ""
+"The RFC proposes to add `cell::OnceCell` and `cell::LazyCell` to `core`, "
+"while keeping `sync::OnceLock` and `sync::LazyLock` `std`\\-only. However, "
+"there's a subset of `OnceLock` that can be provided in `core`:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:374
+msgid ""
+"It is possible because, while `OnceCell` needs blocking for full API, its "
+"internal state can be implemented as a single `AtomicUsize`, so the `core` "
+"part does not need to know about blocking. It is unclear if this API would "
+"be significantly useful. In particular, the guarantees of non-blocking `set` "
+"are pretty weak, and are not enough to implement the `Lazy` wrapper."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:378
+msgid ""
+"While it is possible to implement blocking in `#[no_std]` via a spin lock, "
+"we explicitly choose not to do so. Spin locks are a sharp tool, which should "
+"only be used in specific circumstances (namely, when you have full control "
+"over thread scheduling). `#[no_std]` code might end up in user space "
+"applications with preemptive scheduling, where unbounded spin locks are "
+"inappropriate."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:382
+msgid ""
+"A spin-lock based implementation of `OnceCell` is provided on crates.io in "
+"[`conquer-once`](https://github.com/oliver-giersch/conquer-once) crate."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:384
+msgid "Poisoning"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:386
+msgid ""
+"As a cell can be empty or fully initialized, the proposed API does not use "
+"poisoning. If an initialization function panics, the cell remains "
+"uninitialized. An alternative would be to add poisoning, which will make all "
+"subsequent `get` calls to panic."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:390
+msgid ""
+"Similarly, because `OnceCell` provides strong exception safety guarantee, it "
+"implements `UnwindSafe`:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:397
+msgid "Default type parameter on `Lazy`"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:399
+msgid "`Lazy` is defined with default type parameter."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:405
+msgid ""
+"This is important to make using `Lazy` in static contexts convenient. "
+"Without this default, the user would have to type `T` type twice:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:413
+msgid "If we allow type inference in statics, this could be shortened to"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:420
+msgid "There are two drawbacks of using fn pointer type:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:422
+msgid ""
+"fn pointers are not ZSTs, so we waste one pointer per static lazy value. "
+"Lazy locals will generally rely on type-inference and will use more specific "
+"closure type."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:424
+msgid ""
+"Specifying type for local lazy value might be tricky: `let x: Lazy<i32> = "
+"Lazy::new(|| closed_over_var)` fails with type error, the correct syntax is "
+"`let x: Lazy<i32, _> = Lazy::new(|| closed_over_var)`."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:426
+msgid "Only thread-safe flavor"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:428
+msgid ""
+"It is possible to add only `sync` version of the types, as they are the most "
+"useful. However, this would be against zero cost abstractions spirit. "
+"Additionally, non thread-safe version is required to replace `thread_local!` "
+"macro without imposing synchronization."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:432
+msgid "Synchronization Guarantees"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:434
+msgid ""
+"In theory, it is possible to specify two different synchronization "
+"guarantees for `get` operation, release/acquire or release/consume. They "
+"differ in how they treat side effects. If thread **A** executes "
+"`get_or_init(f)`, and thread **B** executes `get` and observes the value, "
+"release/acquire guarantees that **B** also observes side-effects of `f`."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:438
+msgid "Here's a program which allows to observe the difference:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:443
+msgid "// thread1\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:446
+msgid "// thread2\n"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:453
+msgid ""
+"Under release/acquire, the assert never fires. Under release/consume, it "
+"might fire."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:456
+msgid ""
+"Release/consume can potentially be implemented more efficiently on weak "
+"memory model architectures. However, the situation with `consume` ordering "
+"is cloudy right now:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:459
+msgid ""
+"[nobody knows what it actually means](http://www.open-std.org/jtc1/sc22/wg21/"
+"docs/papers/2016/p0371r0.html),"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:460
+msgid ""
+"[but people rely on it in practice for performance](https://docs.rs/"
+"crossbeam-utils/0.7.0/crossbeam_utils/atomic/trait.AtomicConsume."
+"html#tymethod.load_consume)."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:462
+msgid ""
+"Given the cost of `consume` ordering for minimal benefit, this crate "
+"proposes to specify and implement `acquire/release` ordering. If at some "
+"point Rust adds a `consume/release` option to `std::sync::atomic::Ordering`, "
+"the option of adding API methods that accept an `Ordering` can be considered."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:464
+msgid "Prior art"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:467
+msgid ""
+"The primary bit of prior art here is the [`once_cell`](https://crates.io/"
+"crates/once_cell) library, which itself draws on multiple sources:"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:469
+msgid "[double-checked-cell](https://crates.io/crates/double-checked-cell)"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:470
+msgid "[lazy-init](https://crates.io/crates/lazy-init)"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:471
+msgid "[lazycell](https://crates.io/crates/lazycell)"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:472
+msgid "[mitochondria](https://crates.io/crates/mitochondria)"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:473
+msgid "[lazy_static](https://crates.io/crates/lazy_static)"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:475
+msgid ""
+"Many languages provide library-defined lazy values, for example [Kotlin]"
+"(https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/lazy."
+"html#kotlin$lazy(kotlin.Function0((kotlin.lazy.T)))). Typically, a lazy "
+"value is just a wrapper around closure. This design doesn't always work in "
+"Rust, as closing over `self` runs afoul of the borrow checker, we need a "
+"more primitive `OnceCell` type."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:479
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:482
+msgid "What is the best naming/place for these types?"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:483
+msgid ""
+"What is the best naming scheme for methods? Is it `get_or_try_init` or "
+"`try_insert_with`?"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:484
+msgid "Is the `F = fn() -> T` hack worth it?"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:485
+msgid "Which synchronization guarantee should we pick?"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:487
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:490
+msgid ""
+"Once `#[thread_local]` attribute is stable, `cell::Lazy` can serve as a "
+"replacement for `std::thread_local!` macro."
+msgstr ""
+
+#: src/2788-standard-lazy-types.md:491
+msgid ""
+"Supporting type inference in constants might allow us to drop the default "
+"type parameter on `Lazy`."
+msgstr ""

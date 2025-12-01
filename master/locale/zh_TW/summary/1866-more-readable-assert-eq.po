@@ -1,0 +1,168 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1866-more-readable-assert-eq.md:1
+msgid "Feature Name: more-readable-assert-eq"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:2
+msgid "Start Date: 2017-01-23"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1866](https://github.com/rust-lang/rfcs/pull/1866)"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#41615](https://github.com/rust-lang/rust/"
+"issues/41615)"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:10
+msgid ""
+"Improve the `assert_eq` failure message formatting to increase legibility."
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:12
+msgid "[Previous RFC issue](https://github.com/rust-lang/rfcs/issues/1864)."
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:18
+msgid ""
+"Currently when `assert_eq` fails the default panic text has all the "
+"information on one long line, which is difficult to parse. This is more "
+"difficult when working with larger data structures. I'd like to alter the "
+"format of this text in order improve legibility, putting each piece of "
+"information on a different line."
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:25
+msgid "Detailed design"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:28
+msgid "Here is an failing test with the current format:"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:30
+msgid ""
+"```\n"
+"---- log_packet::tests::syntax_error_test stdout ----\n"
+"        thread 'log_packet::tests::syntax_error_test' panicked at 'assertion "
+"failed: `(left == right)` (left: `\"Syntax Error: a.rb:1: syntax error, "
+"unexpected end-of-input\\n\\n\"`, right: `\"Syntax error: a.rb:1: syntax "
+"error, unexpected end-of-input\\n\\n\"`)', src/log_packet.rs:102\n"
+"note: Run with `RUST_BACKTRACE=1` for a backtrace.\n"
+"```"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:36
+msgid "Here is a failing test with an alternate format:"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:38
+msgid ""
+"```\n"
+"---- log_packet::tests::syntax_error_test stdout ----\n"
+"        thread 'log_packet::tests::syntax_error_test' panicked at 'assertion "
+"failed: `(left == right)`\n"
+"\n"
+"left:  `\"Syntax Error: a.rb:1: syntax error, unexpected end-of-"
+"input\\n\\n\"`\n"
+"right: `\"Syntax error: a.rb:1: syntax error, unexpected end-of-"
+"input\\n\\n\"`\n"
+"\n"
+"', src/log_packet.rs:102\n"
+"note: Run with `RUST_BACKTRACE=1` for a backtrace.\n"
+"```"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:49
+msgid ""
+"In addition to putting each expression on a separate line I've also padding "
+"the word \"left\" with an extra space. This makes the values line up and "
+"easier to visually diff."
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:53
+msgid ""
+"This could be further improved with coloured diff'ing or indication of "
+"differences. i.e. If two strings are between a certain levenshtein distance "
+"colour additional chars green and missing ones red."
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:57
+msgid ""
+"Here is a screenshot of the output of the Elixir lang ExUnit test assertion "
+"macro, which I think is extremely clear:"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:60
+msgid ""
+"![2017-01-22-232834_932x347_scrot](https://cloud.githubusercontent.com/"
+"assets/6134406/22187245/a862ea0a-e0fa-11e6-8861-2a7c08df4332.png)"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:62
+msgid ""
+"As the stdlib does not contain any terminal colour manipulation features at "
+"the moment LLVM style arrows could also be used, as suggested by @p-"
+"kraszewski:"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:65
+msgid ""
+"```````\n"
+"---- log_packet::tests::syntax_error_test stdout ----\n"
+"        thread 'log_packet::tests::syntax_error_test' panicked at 'assertion "
+"failed: `(left == right)`\n"
+"\n"
+"left:  `\"Syntax Error: a.rb:1: syntax error, unexpected end-of-"
+"input\\n\\n\"`\n"
+"right: `\"Syntax error: a.rb:1: syntax error, unexpected end-of-"
+"input\\n\\n\"`\n"
+"         ~~~~~~ ^ ~~~~\n"
+"', src/log_packet.rs:102\n"
+"note: Run with `RUST_BACKTRACE=1` for a backtrace.\n"
+"```````"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:77
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:80
+msgid ""
+"This could be a breaking change if people are parsing this text. I feel the "
+"format of this text shouldn't be relied upon, so this is probably OK."
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:83
+msgid ""
+"Colour diffing will require quite a bit more work to support terminals on "
+"all platforms."
+msgstr ""
+
+#: src/1866-more-readable-assert-eq.md:87
+msgid "Unresolved questions"
+msgstr ""

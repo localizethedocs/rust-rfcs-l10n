@@ -1,0 +1,163 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1849-non-static-type-id.md:1
+msgid "Feature Name: non_static_type_id"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:2
+msgid "Start Date: 2017-01-08"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1849](https://github.com/rust-lang/rfcs/pull/1849)"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#41875](https://github.com/rust-lang/rust/"
+"issues/41875)"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:6
+msgid "UPDATE"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:8
+msgid ""
+"The lang team ultimately [decided to retract this RFC](https://github.com/"
+"rust-lang/rust/issues/41875#issuecomment-623023056). It was never "
+"implemented. The motivation for retraction was that the change was too prone "
+"to mis-use and did not provide adequate benefit."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:14
+msgid "Summary"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:17
+msgid ""
+"Remove the `'static` bound from the `type_id` intrinsic so users can "
+"experiment with usecases where lifetimes either soundly irrelevant to type "
+"checking or where lifetime correctness is enforced elsewhere in the program."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:22
+msgid ""
+"Sometimes it's useful to encode a type so it can be checked at runtime. This "
+"can be done using the `type_id` intrinsic, that gives an id value that's "
+"guaranteed to be unique across the types available to the program. The "
+"drawback is that it's only valid for types that are `'static`, because "
+"concrete lifetimes aren't encoded in the id. For most cases this makes "
+"sense, otherwise the encoded type could be used to represent data in "
+"lifetimes it isn't valid for. There are cases though where lifetimes can be "
+"soundly checked outside the type id, so it's not possible to misrepresent "
+"the validy of the data. These cases can't make use of type ids right now, "
+"they need to rely on workarounds. One such workaround is to define a trait "
+"with an associated type that's expected to be a `'static` version of the "
+"implementor:"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:37
+msgid ""
+"This requires additional boilerplate that may lead to undefined behaviour if "
+"implemented incorrectly or not kept up to date."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:39
+msgid ""
+"This RFC proposes simply removing the `'static` bound from the `type_id` "
+"intrinsic, leaving the stable `TypeId` and `Any` traits unchanged. That way "
+"users who opt-in to unstable intrinsics can build the type equality "
+"guarantees they need without waiting for stable API support."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:41
+msgid ""
+"This is an important first step in expanding the tools available to users at "
+"runtime to reason about their data. With the ability to fetch a guaranteed "
+"unique type id for non-static types, users can build their own `TypeId` or "
+"`Any` traits."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:43
+msgid "Detailed design"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:46
+msgid "Remove the `'static` bound from the `type_id` intrinsic in `libcore`."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:48
+msgid ""
+"Allowing type ids for non-static types exposes the fact that concrete "
+"lifetimes aren't taken into account. This means a type id for "
+"`SomeStruct<'a, 'b>` will be the same as `SomeStruct<'b, 'a>`, even though "
+"they're different types."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:50
+msgid ""
+"Users need to be very careful using `type_id` directly, because it can "
+"easily lead to undefined behaviour if lifetimes aren't verified properly."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:52
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:55
+msgid ""
+"This changes an unstable compiler intrinsic so we don't need to teach it. "
+"The change does need to come with plenty of warning that it's unsound for "
+"type-checking and can't be used to produce something like a lifetime "
+"parameterised `Any` trait."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:57
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:60
+msgid ""
+"Removing the `'static` bound means callers may now depend on the fact that "
+"`type_id` doesn't consider concrete lifetimes, even though this probably "
+"isn't its intended final behaviour."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:62
+msgid "Alternatives"
+msgstr ""
+
+#: src/1849-non-static-type-id.md:65
+msgid ""
+"Create a new intrinsic called `runtime_type_id` that's specifically designed "
+"ignore concrete lifetimes, like `type_id` does now. Having a totally "
+"separate intrinsic means `type_id` could be changed in the future to account "
+"for lifetimes without impacting the usecases that specifically ignore them."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:66
+msgid ""
+"Don't do this. Stick with existing workarounds for getting a `TypeId` for "
+"non-static types."
+msgstr ""
+
+#: src/1849-non-static-type-id.md:68
+msgid "Unresolved questions"
+msgstr ""

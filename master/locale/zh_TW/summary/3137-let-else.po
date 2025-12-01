@@ -1,0 +1,989 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3137-let-else.md:1
+msgid "Feature Name: `let-else`"
+msgstr ""
+
+#: src/3137-let-else.md:2
+msgid "Start Date: 2021-05-31"
+msgstr ""
+
+#: src/3137-let-else.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3137](https://github.com/rust-lang/rfcs/pull/3137)"
+msgstr ""
+
+#: src/3137-let-else.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#87335](https://github.com/rust-lang/rust/"
+"issues/87335)"
+msgstr ""
+
+#: src/3137-let-else.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3137-let-else.md:9
+msgid ""
+"Introduce a new `let PATTERN: TYPE = EXPRESSION else DIVERGING_BLOCK;` "
+"construct (informally called a **let-else statement**), the counterpart of "
+"if-let expressions."
+msgstr ""
+
+#: src/3137-let-else.md:12
+msgid ""
+"If the pattern match from the assigned expression succeeds, its bindings are "
+"introduced _into the surrounding scope_. If it does not succeed, it must "
+"diverge (return `!`, e.g. return or break). Technically speaking, let-else "
+"statements are refutable `let` statements. The expression has some "
+"restrictions, notably it may not end with an `}` or be just a "
+"`LazyBooleanExpression`."
+msgstr ""
+
+#: src/3137-let-else.md:17
+msgid ""
+"This RFC is a modernization of a [2015 RFC (pull request 1303)](https://"
+"github.com/rust-lang/rfcs/pull/1303) for an almost identical feature."
+msgstr ""
+
+#: src/3137-let-else.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/3137-let-else.md:22
+msgid ""
+"`let else` simplifies some very common error-handling patterns. It is the "
+"natural counterpart to `if let`, just as `else` is to regular `if`."
+msgstr ""
+
+#: src/3137-let-else.md:25
+msgid ""
+"[if-let expressions](https://rust-lang.github.io/rfcs/0160-if-let.html) "
+"offer a succinct syntax for pattern matching single patterns. This is "
+"particularly useful for unwrapping types like `Option`, particularly those "
+"with a clear \"success\" variant for the given context but no specific "
+"\"failure\" variant. However, an if-let expression can only create bindings "
+"within its body, which can force rightward drift, introduce excessive "
+"nesting, and separate conditionals from error paths."
+msgstr ""
+
+#: src/3137-let-else.md:31
+msgid ""
+"let-else statements move the \"failure\" case into the body block, while "
+"allowing the \"success\" case to continue in the surrounding context without "
+"additional nesting."
+msgstr ""
+
+#: src/3137-let-else.md:34
+msgid ""
+"let-else statements are also more succinct and natural than emulating the "
+"equivalent pattern with `match` or if-let, which require intermediary "
+"bindings (usually of the same name)."
+msgstr ""
+
+#: src/3137-let-else.md:37
+msgid "Examples"
+msgstr ""
+
+#: src/3137-let-else.md:39
+msgid ""
+"let-else is particularly useful when dealing with enums which are not "
+"`Option`/`Result`, and as such do not have access to e.g. `ok_or()`. "
+"Consider the following example transposed from a real-world project written "
+"in part by the author:"
+msgstr ""
+
+#: src/3137-let-else.md:42
+msgid "Without let-else, as this code was originally written:"
+msgstr ""
+
+#: src/3137-let-else.md:49 src/3137-let-else.md:92
+msgid ""
+"// RFC comment: ok_or_else works fine to early return when working with "
+"`Option`.\n"
+msgstr ""
+
+#: src/3137-let-else.md:50 src/3137-let-else.md:93
+msgid "\"Entity has no history\""
+msgstr ""
+
+#: src/3137-let-else.md:74 src/3137-let-else.md:121
+msgid "// more lines omitted\n"
+msgstr ""
+
+#: src/3137-let-else.md:78
+msgid "// RFC comment: Far away from the associated conditional.\n"
+msgstr ""
+
+#: src/3137-let-else.md:79 src/3137-let-else.md:102
+msgid "\"must begin with a Register action\""
+msgstr ""
+
+#: src/3137-let-else.md:85
+msgid "With let-else:"
+msgstr ""
+
+#: src/3137-let-else.md:101
+msgid "// RFC comment: Directly located next to the associated conditional.\n"
+msgstr ""
+
+#: src/3137-let-else.md:128
+msgid "A practical refactor with `match`"
+msgstr ""
+
+#: src/3137-let-else.md:130
+msgid ""
+"It is possible to use `match` expressions to emulate this today, but at a "
+"significant cost in length and readability."
+msgstr ""
+
+#: src/3137-let-else.md:133
+msgid ""
+"A refactor on an http server codebase in part written by the author to move "
+"some if-let conditionals to early-return `match` expressions yielded 4 "
+"changes of large if-let blocks over `Option`s to use `ok_or_else` + `?`, and "
+"5 changed to an early-return `match`. The commit of the refactor was +531 "
+"−529 lines of code over a codebase of 4111 lines of rust code. The largest "
+"block was 90 lines of code which was able to be shifted to the left, and "
+"have its error case moved up to the conditional, showing the value of early-"
+"returns for this kind of program."
+msgstr ""
+
+#: src/3137-let-else.md:139
+msgid ""
+"While that refactor was positive, it should be noted that such alternatives "
+"were unclear the authors when they were less experienced rust programmers, "
+"and also that the resulting `match` code includes syntax boilerplate (e.g. "
+"the block) that could theoretically be reduced today but also interferes "
+"with rustfmt's rules:"
+msgstr ""
+
+#: src/3137-let-else.md:148 src/3137-let-else.md:160
+msgid "\"GeoJSON was not a Feature Collection\""
+msgstr ""
+
+#: src/3137-let-else.md:154
+msgid "However, with let-else this could be more succinct & clear:"
+msgstr ""
+
+#: src/3137-let-else.md:165
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3137-let-else.md:168
+msgid ""
+"A common pattern in non-trivial code where static guarantees can not be "
+"fully met (e.g. I/O, network or otherwise) is to check error cases when "
+"possible before proceeding, and \"return early\", by constructing an error "
+"`Result` or an empty `Option`, and returning it before the \"happy path\" "
+"code."
+msgstr ""
+
+#: src/3137-let-else.md:171
+msgid ""
+"This pattern serves no practical purpose to a computer, but it is helpful "
+"for humans interacting with the code. Returning early helps improve code "
+"clarity in two ways:"
+msgstr ""
+
+#: src/3137-let-else.md:173
+msgid ""
+"Ensuring the returned result in near the conditional, visually, as the "
+"following logic may be lengthy."
+msgstr ""
+
+#: src/3137-let-else.md:174
+msgid ""
+"Reduces rightward shift, as the error return is now in the block, rather "
+"than the following logic."
+msgstr ""
+
+#: src/3137-let-else.md:176
+msgid ""
+"This RFC proposes _(Rust provides)_ an extension to `let` assignment "
+"statements to help with this pattern, an `else { }` which can follow a "
+"pattern match as a `let` assigning statement:"
+msgstr ""
+
+#: src/3137-let-else.md:181
+msgid ""
+"// Called if `an_option` is not `Option::Some(T)`.\n"
+"    // This block must diverge (stop executing the existing context to the "
+"parent block or function).\n"
+msgstr ""
+
+#: src/3137-let-else.md:185
+msgid "// `a` is now in scope and is the type which the `Option` contained.\n"
+msgstr ""
+
+#: src/3137-let-else.md:189
+msgid ""
+"This is a counterpart to `if let` expressions, and the pattern matching "
+"works identically, except that the value from the pattern match is assigned "
+"to the surrounding scope rather than the block's scope."
+msgstr ""
+
+#: src/3137-let-else.md:192
+msgid "Reference-level explanations"
+msgstr ""
+
+#: src/3137-let-else.md:195
+msgid ""
+"let-else is syntactical sugar for `match` where the non-matched case "
+"diverges."
+msgstr ""
+
+#: src/3137-let-else.md:198 src/3137-let-else.md:206
+msgid "/* diverging expr */"
+msgstr ""
+
+#: src/3137-let-else.md:201
+msgid "desugars to"
+msgstr ""
+
+#: src/3137-let-else.md:211
+msgid ""
+"Most expressions may be put into the expression position with two "
+"restrictions:"
+msgstr ""
+
+#: src/3137-let-else.md:212
+msgid ""
+"May not end with a `}` (before macro expansion). (Such things must be put in "
+"parentheses.)"
+msgstr ""
+
+#: src/3137-let-else.md:213
+msgid ""
+"May not be just a lazy boolean expression (`&&` or `||`). (Must not be a "
+"[`LazyBooleanExpression`](https://doc.rust-lang.org/reference/expressions/"
+"operator-expr.html#lazy-boolean-operators).)"
+msgstr ""
+
+#: src/3137-let-else.md:215
+msgid ""
+"While allowing e.g. `if {} else {}` directly in the expression position is "
+"technically feasible this RFC proposes it be disallowed for programmer "
+"clarity so as to avoid `... else {} else {}` situations as discussed in the "
+"[drawbacks](#drawbacks) section. Boolean matches are not useful with let-"
+"else and so lazy boolean expressions are disallowed for reasons noted in "
+"[future-possibilities](#future-possibilities). These types of expressions "
+"can still be used when combined in a less ambiguous manner with parentheses, "
+"which is allowed under the two expression restrictions. Invisible groupings "
+"from macros expansions are also allowed, however macro expansion "
+"representations to humans should include parentheses around the expression "
+"output in this position if it ends in a `}` where possible (or otherwise "
+"show the invisible grouping)."
+msgstr ""
+
+#: src/3137-let-else.md:223
+msgid ""
+"Any refutable pattern that could be put into if-let's pattern position can "
+"be put into let-else's pattern position."
+msgstr ""
+
+#: src/3137-let-else.md:225
+msgid ""
+"If the pattern is irrefutable, rustc will emit the "
+"`irrefutable_let_patterns` warning lint, as it does with an irrefutable "
+"pattern in an `if let`."
+msgstr ""
+
+#: src/3137-let-else.md:227
+msgid ""
+"The `else` block must _diverge_, meaning the `else` block must return the "
+"[never type (`!`)](https://doc.rust-lang.org/std/primitive.never.html)). "
+"This could be a keyword which diverges (returns `!`), such as `return`, "
+"`break`, `continue` or `loop { ... }`, a diverging function like `std::"
+"process::abort` or `std::process::exit`, or a panic."
+msgstr ""
+
+#: src/3137-let-else.md:230
+msgid ""
+"If the pattern does not match, the expression is not consumed, and so any "
+"existing variables from the surrounding scope are accessible as they would "
+"normally be."
+msgstr ""
+
+#: src/3137-let-else.md:233
+msgid ""
+"For patterns which match multiple variants, such as through the `|` (or) "
+"syntax, all variants must produce the same bindings (ignoring additional "
+"bindings in uneven patterns), and those bindings must all be names the same. "
+"Valid example:"
+msgstr ""
+
+#: src/3137-let-else.md:239
+msgid ""
+"let-else does not combine with the `let` from if-let, as if-let is not "
+"actually a _let statement_. If you ever try to write something like `if let "
+"p = e else { } { }`, instead use a regular if-else by writing `if let p = e "
+"{ } else { }`."
+msgstr ""
+
+#: src/3137-let-else.md:242
+msgid "Desugaring example"
+msgstr ""
+
+#: src/3137-let-else.md:248
+msgid "Desugars to"
+msgstr ""
+
+#: src/3137-let-else.md:260
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3137-let-else.md:263
+msgid "The diverging block"
+msgstr ""
+
+#: src/3137-let-else.md:265
+msgid ""
+"\"Must diverge\" is an unusual requirement, which doesn't exist elsewhere in "
+"the language as of the time of writing, and might be difficult to explain or "
+"lead to confusing errors for programmers new to this feature."
+msgstr ""
+
+#: src/3137-let-else.md:268
+msgid ""
+"However, rustc does have support for representing the divergence through the "
+"type-checker via `!` or any other uninhabited type, so the implementation is "
+"not a problem."
+msgstr ""
+
+#: src/3137-let-else.md:271
+msgid "`let PATTERN = if {} else {} else {};`"
+msgstr ""
+
+#: src/3137-let-else.md:273
+msgid ""
+"One unfortunate combination of this feature with regular if-else expressions "
+"is the possibility of `let PATTERN = if { a } else { b } else { c };`. This "
+"is likely to be unclear if anyone writes it, but does not pose a syntactical "
+"issue, as `let PATTERN = if y { a } else { b };` should always be "
+"interpreted as `let Enum(x) = (if y { a } else { b });` (still a compile "
+"error as there no diverging block: `error[E0005]: refutable pattern in local "
+"binding: ...`) because the compiler won't interpret it as `let PATTERN = (if "
+"y { a }) else { b };` since `()` is not an enum."
+msgstr ""
+
+#: src/3137-let-else.md:278
+msgid ""
+"This can be overcome by making a raw if-else in the expression position a "
+"compile error and instead requiring that parentheses are inserted to "
+"disambiguate: `let PATTERN = (if { a } else { b }) else { c };`."
+msgstr ""
+
+#: src/3137-let-else.md:281
+msgid ""
+"This restriction can be made by checking if the expression ends in `}` after "
+"parsing but _before_ macro expansion."
+msgstr ""
+
+#: src/3137-let-else.md:283
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3137-let-else.md:286
+msgid ""
+"let-else attempts to be as consistent as possible to similar existing syntax."
+msgstr ""
+
+#: src/3137-let-else.md:288
+msgid ""
+"Fundamentally it is treated as a `let` statement, necessitating an "
+"assignment and the trailing semicolon."
+msgstr ""
+
+#: src/3137-let-else.md:290
+msgid ""
+"Pattern matching works identically to if-let, no new \"negation\" pattern "
+"matching rules are introduced."
+msgstr ""
+
+#: src/3137-let-else.md:292
+msgid ""
+"Operator precedence with `&&` in made to be like if-let, requiring that a "
+"case which is an error prior to this RFC be changed to be a slightly "
+"different error. This is for a possible extension for let-else similar to "
+"the (yet unimplemented) if-else-chains feature, as mentioned in [future-"
+"possibilities](#future-possibilities) with more detail. Specifically, while "
+"the following example is an error today, by the default `&&` operator rules "
+"it would cause problems with if-let-chains like `&&` chaining:"
+msgstr ""
+
+#: src/3137-let-else.md:299 src/3137-let-else.md:564
+msgid ""
+"// The RFC proposes boolean patterns with a lazy boolean operator (&& or "
+"||)\n"
+"//  be made into a compile error, for potential future compatibility with if-"
+"let-chains.\n"
+msgstr ""
+
+#: src/3137-let-else.md:307
+msgid ""
+"The expression must not end with a `}`, in order to prevent `else {} else {}"
+"` (and similar) confusion, as noted in \\[drawbacks\\]\\[\\#drawbacks\\]."
+msgstr ""
+
+#: src/3137-let-else.md:309
+msgid ""
+"The `else` must be followed by a block, as in `if {} else {}`. This else "
+"block must be diverging as the outer context cannot be guaranteed to "
+"continue soundly without assignment, and no alternate assignment syntax is "
+"provided."
+msgstr ""
+
+#: src/3137-let-else.md:312
+msgid "Alternatives"
+msgstr ""
+
+#: src/3137-let-else.md:314
+msgid ""
+"While this feature can partly be covered by functions such `ok_or`/"
+"`ok_or_else` on the `Option` and `Result` types combined with the Try "
+"operator (`?`), such functions do not exist automatically on custom enum "
+"types and require non-obvious and non-trivial implementation, and may not be "
+"map-able to `Option`/`Result`\\-style functions at all (especially for enums "
+"where the \"success\" variant is contextual and there are many variants). "
+"These functions will also not work for code which wishes to return something "
+"other than `Option` or `Result`. Moreover, this does not cover diverging "
+"blocks that do something other than return with an error or target an "
+"enclosing `try` block, for example if the diverging expression is `continue "
+"e` or `break 'outer_loop e`."
+msgstr ""
+
+#: src/3137-let-else.md:321
+msgid "Naming of `else` (`let ... otherwise { ... }`)"
+msgstr ""
+
+#: src/3137-let-else.md:323
+msgid ""
+"One often proposed alternative is to use a different keyword than `else`, "
+"such as `otherwise`. This is supposed to help disambiguate let-else "
+"statements from other code with blocks and `else`."
+msgstr ""
+
+#: src/3137-let-else.md:326
+msgid ""
+"This RFC avoids this as it would mean losing symmetry with if-else and if-"
+"let-else, and would require adding a new keyword. Adding a new keyword could "
+"mean more to teach and could promote even more special casing around let-"
+"else's semantics."
+msgstr ""
+
+#: src/3137-let-else.md:329
+msgid "Comma-before-else (`, else { ... }`)"
+msgstr ""
+
+#: src/3137-let-else.md:331
+msgid ""
+"Another proposal very similar to renaming `else` it to have it be proceeded "
+"by some character such as a comma."
+msgstr ""
+
+#: src/3137-let-else.md:333
+msgid ""
+"It is possible that adding such additional separating syntax would make "
+"combinations with expressions which have blocks easier to read and less "
+"ambiguous, but is also generally inconsistent with the rest of the rust "
+"language at time of writing."
+msgstr ""
+
+#: src/3137-let-else.md:336
+msgid "Introducer syntax (`guard let ... {}`)"
+msgstr ""
+
+#: src/3137-let-else.md:338
+msgid ""
+"Another often proposed alternative is to add some introducer syntax (usually "
+"an extra keyword) to the beginning of the let-else statement, to denote that "
+"it is different than a regular `let` statement."
+msgstr ""
+
+#: src/3137-let-else.md:341
+msgid ""
+"One possible benefit of adding a keyword is that it could make a possible "
+"future extension for similarity to the (yet unimplemented) [if-let-chains]"
+"(https://rust-lang.github.io/rfcs/2497-if-let-chains.html) feature more "
+"straightforward. However, as mentioned in the [future-possibilities](#future-"
+"possibilities) section, this is likely not necessary."
+msgstr ""
+
+#: src/3137-let-else.md:344
+msgid ""
+"One drawback of this alternative syntax: it would introduce a binding "
+"without either starting a new block containing that binding or starting with "
+"a `let`. Currently, in Rust, only a `let` statement can introduce a binding "
+"_in the current block_ without starting a new block. (Note that [`static`]"
+"(https://doc.rust-lang.org/reference/items/static-items.html) and [`const`]"
+"(https://doc.rust-lang.org/reference/items/constant-items.html) are _items_, "
+"which can be forward-referenced.) This alternative syntax would potentially "
+"make it more difficult for Rust developers to scan their code for bindings, "
+"as they would need to look for both `let` and `unless let`. By contrast, a "
+"let-else statement begins with `let` and the start of a let-else statement "
+"looks exactly like a normal let binding."
+msgstr ""
+
+#: src/3137-let-else.md:350
+msgid ""
+"This syntax has prior art in the Swift programming language, which includes "
+"a [guard-let-else](https://developer.apple.com/library/prerelease/ios/"
+"documentation/Swift/Conceptual/Swift_Programming_Language/ControlFlow.html#//"
+"apple_ref/doc/uid/TP40014097-CH9-ID525) statement which is roughly "
+"equivalent to this proposal except for the choice of keywords."
+msgstr ""
+
+#: src/3137-let-else.md:353
+msgid "`if !let PAT = EXPR { BODY }`"
+msgstr ""
+
+#: src/3137-let-else.md:355
+msgid ""
+"The [old RFC](https://github.com/rust-lang/rfcs/pull/1303) originally "
+"proposed this general feature via some kind of pattern negation as `if !let "
+"PAT = EXPR { BODY }`."
+msgstr ""
+
+#: src/3137-let-else.md:357
+msgid ""
+"This RFC avoids adding any kind of new or special pattern matching rules. "
+"The pattern matching works as it does for if-let. The general consensus in "
+"the old RFC was also that the negation syntax is much less clear than `if "
+"PATTERN = EXPR_WITHOUT_BLOCK else { /* diverge */ };`, and partway through "
+"that RFC's lifecycle it was updated to be similar to this RFC's proposed let-"
+"else syntax."
+msgstr ""
+
+#: src/3137-let-else.md:361
+msgid ""
+"The `if !let` alternative syntax would also share the binding drawback of "
+"the `unless let` alternative syntax."
+msgstr ""
+
+#: src/3137-let-else.md:363
+msgid "`let PATTERN = EXPR else DIVERGING_EXPR;`"
+msgstr ""
+
+#: src/3137-let-else.md:365
+msgid ""
+"A potential alternative to requiring parentheses in `let PATTERN = (if { a } "
+"else { b }) else { c };` is to change the syntax of the `else` to no longer "
+"be a block but instead _any_ expression which diverges, such as a `return`, "
+"`break`, or any block which diverges."
+msgstr ""
+
+#: src/3137-let-else.md:369
+msgid "Example:"
+msgstr ""
+
+#: src/3137-let-else.md:374
+msgid ""
+"This RFC avoids this because it is overall less consistent with `else` from "
+"if-else, which requires block expressions."
+msgstr ""
+
+#: src/3137-let-else.md:376
+msgid ""
+"This was originally suggested in the old RFC, comment at https://github.com/"
+"rust-lang/rfcs/pull/1303#issuecomment-188526691"
+msgstr ""
+
+#: src/3137-let-else.md:378
+msgid "`else`\\-block fall-back assignment"
+msgstr ""
+
+#: src/3137-let-else.md:380
+msgid ""
+"A fall-back assignment alternate to the diverging block has been proposed "
+"multiple times in relation to this feature in the \\[original rfc\\]\\[\\] "
+"and also in out-of-RFC discussions."
+msgstr ""
+
+#: src/3137-let-else.md:382
+msgid ""
+"This RFC avoids this proposal, because there is no clear syntax to use for "
+"it which would be consistent with other existing features. Also use-cases "
+"for having a single fall-back are much more rare and unusual, where as use "
+"cases for the diverging block are very common. This RFC proposes that most "
+"fallback cases are sufficiently or better covered by using `match`."
+msgstr ""
+
+#: src/3137-let-else.md:386
+msgid ""
+"An example, using a proposal to have the binding be visible and assignable "
+"from the `else`\\-block. Note that this is incompatible with this RFC and "
+"could probably not be added as an extension from this RFC."
+msgstr ""
+
+#: src/3137-let-else.md:400
+msgid "Another potential alternative for fall-back:"
+msgstr ""
+
+#: src/3137-let-else.md:413
+msgid "Assign to outer scope from `match`"
+msgstr ""
+
+#: src/3137-let-else.md:415
+msgid ""
+"Another alternative is to allow assigning to the outer scope from within a "
+"`match`."
+msgstr ""
+
+#: src/3137-let-else.md:419
+msgid "// Assigns x to outer scope.\n"
+msgstr ""
+
+#: src/3137-let-else.md:420
+msgid "\"We were sad because of {}\""
+msgstr ""
+
+#: src/3137-let-else.md:421
+msgid "\"We cried hard because of {}\""
+msgstr ""
+
+#: src/3137-let-else.md:425
+msgid ""
+"However this is not an obvious opposite to if-let, and would introduce an "
+"entirely new positional meaning of `let`."
+msgstr ""
+
+#: src/3137-let-else.md:427 src/3137-let-else.md:619
+msgid "`||` in pattern-matching"
+msgstr ""
+
+#: src/3137-let-else.md:429
+msgid ""
+"A more complex, more flexible, but less obvious alternative is to allow `||` "
+"in any pattern matches as a fall-through match case fallback. Such a feature "
+"would likely interact more directly with [if-let-chains](https://rust-lang."
+"github.io/rfcs/2497-if-let-chains.html), but could also be use to allow "
+"refutable patterns in let statements by covering every possible variant of "
+"an enum (possibly by use of a diverging fallback block similar to `_` in "
+"`match`)."
+msgstr ""
+
+#: src/3137-let-else.md:433
+msgid "For example, covering the use-case of let-else:"
+msgstr ""
+
+#: src/3137-let-else.md:438
+msgid "With a fallback:"
+msgstr ""
+
+#: src/3137-let-else.md:443
+msgid ""
+"Combined with `&&` as proposed in if-let-chains, constructs such as the "
+"following are conceivable:"
+msgstr ""
+
+#: src/3137-let-else.md:446 src/3137-let-else.md:459
+msgid "\"Bad x\""
+msgstr ""
+
+#: src/3137-let-else.md:446 src/3137-let-else.md:467
+msgid "// Complex. Both x and z are now in scope.\n"
+msgstr ""
+
+#: src/3137-let-else.md:450
+msgid ""
+"This is not a simple construct, and could be quite confusing to newcomers."
+msgstr ""
+
+#: src/3137-let-else.md:452
+msgid ""
+"That said, such a thing is not perfectly obvious to write today, and might "
+"be just as confusing to read:"
+msgstr ""
+
+#: src/3137-let-else.md:471
+msgid ""
+"This is, as stated, a much more complex alternative interacting with much "
+"more of the language, and is also not an obvious opposite of if-let "
+"expressions."
+msgstr ""
+
+#: src/3137-let-else.md:473
+msgid "Macro"
+msgstr ""
+
+#: src/3137-let-else.md:475
+msgid ""
+"Another suggested solution is to create a macro which handles this. A crate "
+"containing such a macro is mentioned in the [Prior art](#prior-art) section "
+"of this RFC."
+msgstr ""
+
+#: src/3137-let-else.md:478
+msgid ""
+"This crate has not been widely used in the rust crate ecosystem with only "
+"47k downloads over the ~6 years it has existed at the time of writing."
+msgstr ""
+
+#: src/3137-let-else.md:480
+msgid "Null Alternative"
+msgstr ""
+
+#: src/3137-let-else.md:482
+msgid ""
+"Don't make any changes; use existing syntax like `match` (or `if let`) as "
+"shown in the motivating example, or write macros to simplify the code."
+msgstr ""
+
+#: src/3137-let-else.md:484
+msgid "Prior art"
+msgstr ""
+
+#: src/3137-let-else.md:487
+msgid ""
+"This RFC is a modernization of a [2015 RFC (pull request 1303)](https://"
+"github.com/rust-lang/rfcs/pull/1303)."
+msgstr ""
+
+#: src/3137-let-else.md:489
+msgid ""
+"A lot of this RFC's proposals come from that RFC and its ensuing discussions."
+msgstr ""
+
+#: src/3137-let-else.md:491
+msgid ""
+"The Swift programming language, which inspired Rust's if-let expression, "
+"also includes a [guard-let-else](https://developer.apple.com/library/"
+"prerelease/ios/documentation/Swift/Conceptual/Swift_Programming_Language/"
+"ControlFlow.html#//apple_ref/doc/uid/TP40014097-CH9-ID525) statement which "
+"is roughly equivalent to this proposal except for the choice of keywords."
+msgstr ""
+
+#: src/3137-let-else.md:495
+msgid ""
+"A `guard!` macro implementing something very similar to this RFC has been "
+"available on crates.io since 2015 (the time of the old RFC)."
+msgstr ""
+
+#: src/3137-let-else.md:496
+msgid "[Crate for `guard!`](https://crates.io/crates/guard)"
+msgstr ""
+
+#: src/3137-let-else.md:497
+msgid "[GitHub repo for `guard!`](https://github.com/durka/guard)"
+msgstr ""
+
+#: src/3137-let-else.md:499
+msgid ""
+"The `match` alternative in particular is fairly prevalent in rust code on "
+"projects which have many possible error conditions."
+msgstr ""
+
+#: src/3137-let-else.md:501
+msgid ""
+"The Try operator allows for an `ok_or_else` alternative to be used where the "
+"types are only `Option` and `Result`, which is considered to be idiomatic "
+"rust."
+msgstr ""
+
+#: src/3137-let-else.md:504
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3137-let-else.md:507
+msgid "Readability in practice"
+msgstr ""
+
+#: src/3137-let-else.md:509
+msgid ""
+"Will `let ... else { ... };` be clear enough to humans in practical code, or "
+"will some introducer syntax be desirable?"
+msgstr ""
+
+#: src/3137-let-else.md:511
+msgid "Conflicts with if-let-chains"
+msgstr ""
+
+#: src/3137-let-else.md:513
+msgid "Does this conflict too much with the if-let-chains RFC or vice-versa?"
+msgstr ""
+
+#: src/3137-let-else.md:515
+msgid ""
+"Neither this feature nor that feature should be stabilized without "
+"considering the other."
+msgstr ""
+
+#: src/3137-let-else.md:517
+msgid "Amount of special cases"
+msgstr ""
+
+#: src/3137-let-else.md:519
+msgid "Are there too many special-case interactions with other features?"
+msgstr ""
+
+#: src/3137-let-else.md:521
+msgid "Grammar clarity"
+msgstr ""
+
+#: src/3137-let-else.md:523
+msgid "Does the grammar need to be clarified?"
+msgstr ""
+
+#: src/3137-let-else.md:525
+msgid "This RFC has some slightly unusual grammar requirements."
+msgstr ""
+
+#: src/3137-let-else.md:527
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3137-let-else.md:530
+msgid "if-let-chains"
+msgstr ""
+
+#: src/3137-let-else.md:532
+msgid ""
+"An RFC exists for a (unimplemented at time of writing) feature called [if-"
+"let-chains](https://rust-lang.github.io/rfcs/2497-if-let-chains.html):"
+msgstr ""
+
+#: src/3137-let-else.md:538
+msgid ""
+"While this RFC does not introduce or propose the same thing for let-else it "
+"attempts to allow it to be a future possibility for potential future "
+"consistency with if-let-chains."
+msgstr ""
+
+#: src/3137-let-else.md:541
+msgid ""
+"The primary obstacle is existing operator order precedence. Given the above "
+"example, it would likely be parsed as follows with ordinary operator "
+"precedence rules for `&&`:"
+msgstr ""
+
+#: src/3137-let-else.md:547
+msgid ""
+"However, given that all existing occurrences of this behavior before this "
+"RFC are type errors anyways, a specific boolean-only case can be avoided and "
+"thus parsing can be changed to leave the door open to this possible "
+"extension. This boolean case is always equivalent to a less flexible `if` "
+"statement and as such is not useful."
+msgstr ""
+
+#: src/3137-let-else.md:554
+msgid "// Always an error regardless, because && only operates on booleans.\n"
+msgstr ""
+
+#: src/3137-let-else.md:572
+msgid ""
+"Note also that this does not work today either, because booleans are "
+"refutable patterns:"
+msgstr ""
+
+#: src/3137-let-else.md:573
+msgid ""
+"```\n"
+"error[E0005]: refutable pattern in local binding: `false` not covered\n"
+" --> src/main.rs:5:9\n"
+"  |\n"
+"5 |     let true = a && b;\n"
+"  |         ^^^^ pattern `false` not covered\n"
+"  |\n"
+"  = note: `let` bindings require an \"irrefutable pattern\", like a `struct` "
+"or an `enum` with only one variant\n"
+"```"
+msgstr ""
+
+#: src/3137-let-else.md:583
+msgid "Fall-back assignment"
+msgstr ""
+
+#: src/3137-let-else.md:585
+msgid ""
+"This RFC does not suggest that we do any of these, but notes that they would "
+"be future possibilities."
+msgstr ""
+
+#: src/3137-let-else.md:587
+msgid ""
+"If fall-back assignment as discussed above in [rationale-and-alternatives]"
+"(#rationale-and-alternatives) is desirable, it could be added a few "
+"different ways, not all potential ways are covered here, but the ones which "
+"seem most popular at time of writing are:"
+msgstr ""
+
+#: src/3137-let-else.md:590
+msgid "let-else-else-chains"
+msgstr ""
+
+#: src/3137-let-else.md:592
+msgid ""
+"Where the pattern is sequentially matched against each expression following "
+"an else, up until a required diverging block if the pattern did not match on "
+"any value. Similar to the above-mentioned alternative of `||` in pattern-"
+"matching, but restricted to only be used with let-else."
+msgstr ""
+
+#: src/3137-let-else.md:599
+msgid ""
+"Another way to look at let-else-else-chains: a `match` statement takes one "
+"expression and applies multiple patterns to it until one matches, while let-"
+"else-else-chains would take one pattern and apply it to multiple expressions "
+"until one matches."
+msgstr ""
+
+#: src/3137-let-else.md:602
+msgid ""
+"This has a complexity issue with or-patterns, where expressions can _easily_ "
+"become exponential. (This is already possible with or-patterns with guards "
+"but this would make it much easier to encounter.)"
+msgstr ""
+
+#: src/3137-let-else.md:609
+msgid "let-else-match"
+msgstr ""
+
+#: src/3137-let-else.md:611
+msgid ""
+"Where the `match` must cover all patters which are not the let assignment "
+"pattern."
+msgstr ""
+
+#: src/3137-let-else.md:621
+msgid ""
+"A variant of `||` in pattern-matching could still be a non-conflicting "
+"addition if it was allowed to be refutable, ending up with constructs "
+"similar to the above mentioned let-else-else-chains. In this way it would "
+"add to let-else rather than replace it."
+msgstr ""
+
+#: src/3137-let-else.md:628
+msgid "let-else within if-let"
+msgstr ""
+
+#: src/3137-let-else.md:630
+msgid ""
+"This RFC naturally brings with it the question of if let-else should be "
+"allowable in the `let` position within if-let, creating a potentially "
+"confusing and poorly reading construct:"
+msgstr ""
+
+#: src/3137-let-else.md:635
+msgid "// I guess this RFC had it coming for it\n"
+msgstr ""
+
+#: src/3137-let-else.md:639
+msgid ""
+"However, since the `let` within if-let is part of the if-let expression and "
+"is not an actual `let` statement, this would have to be explicitly allowed. "
+"This RFC does not propose we allow this. Rather, rust should avoid ever "
+"allowing this, because it is confusing to read syntactically, and it is "
+"functionally similar to `if let p = e { } else { }` but with more drawbacks."
+msgstr ""

@@ -1,0 +1,491 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2383-lint-reasons.md:1
+msgid "Feature Name: `lint_reasons`"
+msgstr ""
+
+#: src/2383-lint-reasons.md:2
+msgid "Start Date: 2018-04-02"
+msgstr ""
+
+#: src/2383-lint-reasons.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2383](https://github.com/rust-lang/rfcs/pull/2383)"
+msgstr ""
+
+#: src/2383-lint-reasons.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#54503](https://github.com/rust-lang/rust/"
+"issues/54503)"
+msgstr ""
+
+#: src/2383-lint-reasons.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2383-lint-reasons.md:9
+msgid ""
+"Rust has a number of code lints, both built into the compiler and provided "
+"through external tools, which provide guidelines for code style. The linter "
+"behavior can be customized by attaching attributes to regions of code to "
+"allow, warn, or forbid, certain lint checks."
+msgstr ""
+
+#: src/2383-lint-reasons.md:14
+msgid ""
+"The decision for allowing, warning on, or forbidding, specific lints is "
+"occasionally placed in a comment above the attribute or, more often, left "
+"unstated. This RFC proposes adding syntax to the lint attributes to encode "
+"the documented reason for a lint configuration choice."
+msgstr ""
+
+#: src/2383-lint-reasons.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/2383-lint-reasons.md:22
+msgid ""
+"The style guide for a project, team, or company can cover far more than just "
+"syntax layout. Rules for the semantic shape of a codebase are documented in "
+"natural language and often in automated checking programs, such as the Rust "
+"compiler and Clippy. Because the decisions about what rules to follow or "
+"ignore shape the codebase and its growth, the decisions are worth storing in "
+"the project directly with the settings they affect."
+msgstr ""
+
+#: src/2383-lint-reasons.md:29
+msgid ""
+"It is common wisdom that only the text the environment can read stays true; "
+"text it ignores will drift out of sync with the code over time, if it was "
+"even in sync to begin. Lint settings should have an explanation for their "
+"use to explain why they were chosen and where they are or are not "
+"applicable. As they are text that is read by some lint program, they have an "
+"opportunity to include an explanation similar to the way Rust documentation "
+"is a first-class attribute on code."
+msgstr ""
+
+#: src/2383-lint-reasons.md:37
+msgid "The RFC template asks three questions for motivation:"
+msgstr ""
+
+#: src/2383-lint-reasons.md:39
+msgid "Why are we doing this?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:41
+msgid ""
+"We are adding this behavior to give projects a mechanism for storing human "
+"design choices about code in a manner that the tools can track and use to "
+"empower human work. For example, the compiler could use the contents of the "
+"lint explanation when it emits lint messages, or the documenter could "
+"collect them into a set of code style information."
+msgstr ""
+
+#: src/2383-lint-reasons.md:47
+msgid "What use cases does it support?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:49
+msgid ""
+"This supports the use cases of projects, teams, or organizations using "
+"specific sets of code style guidelines beyond the Rust defaults. This also "
+"enables the creation and maintenance of documented practices and preferences "
+"that can be standardized in a useful way. Furthermore, this provides a "
+"standardized means of explaining decisions when a style guide must be "
+"violated by attaching an overriding lint attribute to a specific item."
+msgstr ""
+
+#: src/2383-lint-reasons.md:56
+msgid "What is the expected outcome?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:58
+msgid ""
+"The expected outcome of this RFC is that projects will have more information "
+"about the decisions and expectations of the project, and can have support "
+"from the tools to maintain and inform these decisions. Global and specific "
+"choices can have their information checked and maintained by the tools, and "
+"the Rust ecosystem can have a somewhat more uniform means of establishing "
+"code guidelines and practices."
+msgstr ""
+
+#: src/2383-lint-reasons.md:65
+msgid ""
+"I expect Clippy will be a significant benefactor of this RFC, as Clippy "
+"lints are far more specific and plentiful than the compiler lints, and from "
+"personal experience much more likely to want explanation for their use or "
+"disuse."
+msgstr ""
+
+#: src/2383-lint-reasons.md:69
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2383-lint-reasons.md:72
+msgid ""
+"When a linting tool such as the compiler or Clippy encounter a code span "
+"that they determine breaks one of their rules, they emit a message "
+"indicating the problem and, often, how to fix it. These messages explain how "
+"to make the linter program happy, but carry very little information on why "
+"the code may be a problem from a human perspective."
+msgstr ""
+
+#: src/2383-lint-reasons.md:78
+msgid ""
+"These lints can be configured away from the default settings by the use of "
+"an attribute modifying the code span that triggers a lint, or by setting the "
+"linter behavior for a module or crate, with attributes like `#[allow(rule)]` "
+"and `#![deny(rule)]`."
+msgstr ""
+
+#: src/2383-lint-reasons.md:83
+msgid ""
+"It is generally good practice to include an explanation for why certain "
+"rules are set so that programmers working on a project can know what the "
+"project expects from their work. These explanations can be embedded directly "
+"in the lint attribute with the `reason = \"Your reasoning here\"` attribute."
+msgstr ""
+
+#: src/2383-lint-reasons.md:88
+msgid ""
+"For example, if you are implementing `Ord` on an enum where the "
+"discriminants are not the correct ordering, you might have code like this:"
+msgstr ""
+
+#: src/2383-lint-reasons.md:116
+msgid ""
+"The ordering of the left hand side of the match branches is significant, and "
+"allows a compact number of match arms. However, if you're using Clippy, this "
+"will cause the `match_same_arms` lint to trip! You can silence the lint in "
+"this spot, and provide an explanation that indicates you are doing so "
+"deliberately, by placing this attribute above the `match` line:"
+msgstr ""
+
+#: src/2383-lint-reasons.md:123
+msgid "\"The arms are order-dependent\""
+msgstr ""
+
+#: src/2383-lint-reasons.md:126
+msgid ""
+"Now, when the lints run, no warning will be raised on this specific "
+"instance, and there is an explanation of why you disabled the lint, directly "
+"in the lint command."
+msgstr ""
+
+#: src/2383-lint-reasons.md:130
+msgid ""
+"Similarly, if you want to increase the strictness of a lint, you can explain "
+"why you think the lint is worth warning or forbidding directly in it:"
+msgstr ""
+
+#: src/2383-lint-reasons.md:134
+msgid "\"This code runs in a context without floats\""
+msgstr ""
+
+#: src/2383-lint-reasons.md:137
+msgid ""
+"With a warning or denial marker, when a linting tool encounters such a lint "
+"trap it will emit its builtin diagnostic, but also include the reason in its "
+"output."
+msgstr ""
+
+#: src/2383-lint-reasons.md:140
+msgid ""
+"For instance, using the above Clippy lint and some floating-point arithmetic "
+"code will result in the following lint output:"
+msgstr ""
+
+#: src/2383-lint-reasons.md:143
+msgid ""
+"```text\n"
+"error: floating-point arithmetic detected\n"
+"reason: This code runs in a context without floats\n"
+" --> src/lib.rs:4:2\n"
+"  |\n"
+"4 |     a + b\n"
+"  |     ^^^^^\n"
+"  |\n"
+"note: lint level defined here\n"
+" --> src/lib.rs:1:44\n"
+"  |\n"
+"1 | #![cfg_attr(deny(float_arithmetic, reason = \"...\"))]\n"
+"  |                  ^^^^^^^^^^^^^^^^\n"
+"  = help: for further information visit ...\n"
+"```"
+msgstr ""
+
+#: src/2383-lint-reasons.md:159
+msgid "`expect` Lint Attribute"
+msgstr ""
+
+#: src/2383-lint-reasons.md:161
+msgid ""
+"This RFC adds an `expect` lint attribute that functions identically to "
+"`allow`, but will cause a lint to be emitted when the code it decorates "
+"_**does not**_ raise a lint warning. This lint was inspired by Yehuda Katz:"
+msgstr ""
+
+#: src/2383-lint-reasons.md:165
+msgid ""
+"[@ManishEarth](https://twitter.com/ManishEarth) has anyone ever asked for "
+"something like #\\[expect(lint)\\] which would basically be like "
+"#\\[allow(lint)\\] but give you a lint warning if the problem ever went away?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:169
+msgid ""
+"I basically want to mark things as ok while doing initial work, but I need "
+"to know when safe to remove"
+msgstr ""
+
+#: src/2383-lint-reasons.md:172
+msgid "— Yehuda Katz ([@wycats](https://twitter.com/wycats))"
+msgstr ""
+
+#: src/2383-lint-reasons.md:174
+msgid "[March 30, 2018](https://twitter.com/wycats/status/979742693378019329)"
+msgstr ""
+
+#: src/2383-lint-reasons.md:176
+msgid ""
+"When the lint passes run, the `expect` attribute suppresses a lint generated "
+"by the span to which it attached. It does not swallow any other lint raised, "
+"and when it does not receive a lint to suppress, it raises a lint warning "
+"itself. `expect` can take a `reason` field, which is printed when the lint "
+"is raised, just as with the `allow`/`warn`/`deny` markers."
+msgstr ""
+
+#: src/2383-lint-reasons.md:182
+msgid ""
+"This is used when prototyping and using code that will generate lints for "
+"now, but will eventually be refactored and stop generating lints and thus no "
+"longer need the permission."
+msgstr ""
+
+#: src/2383-lint-reasons.md:187
+msgid "\"Everything is mut until I get this figured out\""
+msgstr ""
+
+#: src/2383-lint-reasons.md:194
+msgid ""
+"will remain quiet while you're not mutating `a`, but when you do write code "
+"that mutates it, or decide you don't need it mutable and strip the `mut`, "
+"the `expect` lint will fire and inform you that there is no unused mutation "
+"in the span."
+msgstr ""
+
+#: src/2383-lint-reasons.md:200
+msgid "\"...\""
+msgstr ""
+
+#: src/2383-lint-reasons.md:207
+msgid "will emit"
+msgstr ""
+
+#: src/2383-lint-reasons.md:209
+msgid ""
+"```text\n"
+"warning: expected lint `unused_mut` did not appear\n"
+"reason: Everything is mut until I get this figured out\n"
+" --> src/lib.rs:1:1\n"
+"  |\n"
+"1 | #[expect(unused_mut, reason = \"...\")]\n"
+"  |   -------^^^^^^^^^^-----------------\n"
+"  |   |\n"
+"  |   help: remove this `#[expect(...)]`\n"
+"  |\n"
+"  = note: #[warn(expectation_missing)] on by default\n"
+"```"
+msgstr ""
+
+#: src/2383-lint-reasons.md:222
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2383-lint-reasons.md:225
+msgid ""
+"This RFC adds a `reason = STRING` element to the three lint attributes. The "
+"diagnostic emitter in the compiler and other lint tools such as Clippy will "
+"need to be made aware of this element so that they can emit it in diagnostic "
+"text."
+msgstr ""
+
+#: src/2383-lint-reasons.md:229
+msgid ""
+"This RFC also adds the `expect(lint_name, reason = STRING)` lint attribute. "
+"The `expect` attribute uses the same lint-suppression mechanism that `allow` "
+"does, but will raise a new lint, `expectation_missing` (name open to "
+"change), when the lint it expects does not arrive."
+msgstr ""
+
+#: src/2383-lint-reasons.md:234
+msgid ""
+"The `expectation_missing` lint is itself subject to `allow`/`expect`/`warn`/"
+"`deny` attributes in a higher scope, so it is possible to suppress "
+"expectation failures, lint when no expectation failures occur, or fail the "
+"build when one occurs. The default setting is `#!"
+"[warn(expectation_missing)]`."
+msgstr ""
+
+#: src/2383-lint-reasons.md:240
+msgid "That’s pretty much it, for technical details."
+msgstr ""
+
+#: src/2383-lint-reasons.md:242
+msgid "OPTIONAL — Yet Another Comment Syntax"
+msgstr ""
+
+#: src/2383-lint-reasons.md:244
+msgid ""
+"A sugar for lint text MAY be the line comment `//#` or the block comment `/"
+"*# #*/` with `U+0023 # NUMBER SIGN` as the signifying character. These "
+"comments MUST be placed immediately above a lint attribute. They are "
+"collected into a single string and collapsed as the text content of the "
+"attribute they decorate using the same processing logic that documentation "
+"comments (`///` and `//!` and their block variants) currently use. Example:"
+msgstr ""
+
+#: src/2383-lint-reasons.md:252
+msgid ""
+"//# Floating Point Arithmetic Unsupported\n"
+"//#\n"
+"//# This crate is written to be run on an AVR processor which does not have\n"
+"//# floating-point capability in hardware. As such, all floating-point work "
+"is\n"
+"//# done in software routines that can take a significant amount of time "
+"and\n"
+"//# space to perform. Rather than pay this cost, floating-point work is\n"
+"//# statically disabled. All arithmetic is in fixed-point integer math, "
+"using\n"
+"//# the `FixedPoint` wrapper over integer primitives.\n"
+msgstr ""
+
+#: src/2383-lint-reasons.md:263
+msgid ""
+"The `#` character is chosen as the signifying character to provide room for "
+"possible future expansion – these comments MAY in the future be repurposed "
+"as sugar for writing the text of an attribute that declares a string "
+"parameter that can accept such comments."
+msgstr ""
+
+#: src/2383-lint-reasons.md:268
+msgid ""
+"This comment syntax already pushes the edge of the scope of this RFC, and "
+"extension of all attributes is certainly beyond it."
+msgstr ""
+
+#: src/2383-lint-reasons.md:271
+msgid ""
+"Implementing this comment syntax would require extending the existing "
+"transform pass that replaces documentation comments with documentation "
+"attributes. Specifically, the transform pass would ensure that all lint "
+"comments are directly attached to a lint attribute, and then use the strip-"
+"and-trim method that the documentation comments experience to remove the "
+"comment markers and collapse the comment text, across multiple consecutive "
+"comment spans, into a single string that is then inserted as `reason = "
+"STRING` into the attribute."
+msgstr ""
+
+#: src/2383-lint-reasons.md:279
+msgid ""
+"Given that this is a lot of work and a huge addition to the comment grammar, "
+"the author does not expect it to be included in the main RFC at all, and is "
+"writing it solely to be a published prior art in case of future desire for "
+"such a feature."
+msgstr ""
+
+#: src/2383-lint-reasons.md:284
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2383-lint-reasons.md:287
+msgid "Why should we _not_ do this?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:289
+msgid "Possibly low value add for the effort."
+msgstr ""
+
+#: src/2383-lint-reasons.md:291
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2383-lint-reasons.md:294
+msgid "Why is this design the best in the space of possible designs?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:296
+msgid "Attributes taking descriptive text is a common pattern in Rust."
+msgstr ""
+
+#: src/2383-lint-reasons.md:298
+msgid ""
+"What other designs have been considered and what is the rationale for not "
+"choosing them?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:301 src/2383-lint-reasons.md:305
+msgid "None."
+msgstr ""
+
+#: src/2383-lint-reasons.md:303
+msgid "What is the impact of not doing this?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:307
+msgid "Prior art"
+msgstr ""
+
+#: src/2383-lint-reasons.md:310
+msgid ""
+"The `stable` and `unstable` attributes both take descriptive text parameters "
+"that appear in diagnostic and documentation output."
+msgstr ""
+
+#: src/2383-lint-reasons.md:313
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2383-lint-reasons.md:316
+msgid ""
+"What parts of the design do you expect to resolve through the RFC process "
+"before this gets merged?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:319
+msgid "The name of the `reason` parameter."
+msgstr ""
+
+#: src/2383-lint-reasons.md:321
+msgid ""
+"What parts of the design do you expect to resolve through the implementation "
+"of this feature before stabilization?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:324
+msgid "The use sites of the `reason` parameter."
+msgstr ""
+
+#: src/2383-lint-reasons.md:326
+msgid ""
+"What related issues do you consider out of scope for this RFC that could be "
+"addressed in the future independently of the solution that comes out of this "
+"RFC?"
+msgstr ""
+
+#: src/2383-lint-reasons.md:330
+msgid ""
+"The means of filling the `reason` parameter, or what tools like `rustdoc` "
+"would do with them."
+msgstr ""

@@ -1,0 +1,707 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3128-io-safety.md:1
+msgid "Feature Name: `io_safety`"
+msgstr ""
+
+#: src/3128-io-safety.md:2
+msgid "Start Date: 2021-05-24"
+msgstr ""
+
+#: src/3128-io-safety.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3128](https://github.com/rust-lang/rfcs/pull/3128)"
+msgstr ""
+
+#: src/3128-io-safety.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#87074](https://github.com/rust-lang/rust/"
+"issues/87074)"
+msgstr ""
+
+#: src/3128-io-safety.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3128-io-safety.md:9
+msgid ""
+"Close a hole in encapsulation boundaries in Rust by providing users of "
+"`AsRawFd` and related traits guarantees about their raw resource handles, by "
+"introducing a concept of _I/O safety_ and a new set of types and traits."
+msgstr ""
+
+#: src/3128-io-safety.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/3128-io-safety.md:16
+msgid ""
+"Rust's standard library almost provides _I/O safety_, a guarantee that if "
+"one part of a program holds a raw handle privately, other parts cannot "
+"access it. [`FromRawFd::from_raw_fd`](https://doc.rust-lang.org/stable/std/"
+"os/fd/trait.FromRawFd.html#tymethod.from_raw_fd) is unsafe, which prevents "
+"users from doing things like `File::from_raw_fd(7)`, in safe Rust, and doing "
+"I/O on a file descriptor which might be held privately elsewhere in the "
+"program."
+msgstr ""
+
+#: src/3128-io-safety.md:22
+msgid ""
+"However, there's a loophole. Many library APIs use [`AsRawFd`](https://doc."
+"rust-lang.org/stable/std/os/fd/trait.AsRawFd.html)/[`IntoRawFd`](https://doc."
+"rust-lang.org/stable/std/os/fd/trait.IntoRawFd.html) to accept values to do "
+"I/O operations with:"
+msgstr ""
+
+#: src/3128-io-safety.md:31
+msgid ""
+"`AsRawFd` doesn't restrict `as_raw_fd`'s return value, so `do_some_io` can "
+"end up doing I/O on arbitrary `RawFd` values. One can even write "
+"`do_some_io(&7)`, since [`RawFd`](https://doc.rust-lang.org/stable/std/os/fd/"
+"type.RawFd.html) itself implements `AsRawFd`."
+msgstr ""
+
+#: src/3128-io-safety.md:35
+msgid ""
+"This can cause programs to [access the wrong resources](https://cwe.mitre."
+"org/data/definitions/910.html), or even break encapsulation boundaries by "
+"creating aliases to raw handles held privately elsewhere, causing [spooky "
+"action at a distance](https://en.wikipedia.org/wiki/"
+"Action_at_a_distance_(computer_programming))."
+msgstr ""
+
+#: src/3128-io-safety.md:39
+msgid ""
+"And in specialized circumstances, violating I/O safety could even lead to "
+"violating memory safety. For example, in theory it should be possible to "
+"make a safe wrapper around an `mmap` of a file descriptor created by Linux's "
+"[`memfd_create`](https://man7.org/linux/man-pages/man2/memfd_create.2.html) "
+"system call and pass `&[u8]`s to safe Rust, since it's an anonymous open "
+"file which other processes wouldn't be able to access. However, without I/O "
+"safety, and without permanently sealing the file, other code in the program "
+"could accidentally call `write` or `ftruncate` on the file descriptor, "
+"breaking the memory-safety invariants of `&[u8]`."
+msgstr ""
+
+#: src/3128-io-safety.md:48
+msgid ""
+"This RFC introduces a path to gradually closing this loophole by introducing:"
+msgstr ""
+
+#: src/3128-io-safety.md:50
+msgid ""
+"A new concept, I/O safety, to be documented in the standard library "
+"documentation."
+msgstr ""
+
+#: src/3128-io-safety.md:52
+msgid "A new set of types and traits."
+msgstr ""
+
+#: src/3128-io-safety.md:53
+msgid ""
+"New documentation for [`from_raw_fd`](https://doc.rust-lang.org/stable/std/"
+"os/fd/trait.FromRawFd.html#tymethod.from_raw_fd)/[`from_raw_handle`](https://"
+"doc.rust-lang.org/stable/std/os/windows/io/trait.FromRawHandle.html#tymethod."
+"from_raw_handle)/[`from_raw_socket`](https://doc.rust-lang.org/stable/std/os/"
+"windows/io/trait.FromRawSocket.html#tymethod.from_raw_socket) explaining why "
+"they're unsafe in terms of I/O safety, addressing a question that has come "
+"up a [few](https://github.com/rust-lang/rust/issues/72175) [times](https://"
+"users.rust-lang.org/t/why-is-fromrawfd-unsafe/39670)."
+msgstr ""
+
+#: src/3128-io-safety.md:63
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3128-io-safety.md:66 src/3128-io-safety.md:201
+msgid "The I/O safety concept"
+msgstr ""
+
+#: src/3128-io-safety.md:68
+msgid ""
+"Rust's standard library has low-level types, [`RawFd`](https://doc.rust-lang."
+"org/stable/std/os/fd/type.RawFd.html) on Unix-like platforms, and "
+"[`RawHandle`](https://doc.rust-lang.org/stable/std/os/windows/io/type."
+"RawHandle.html)/[`RawSocket`](https://doc.rust-lang.org/stable/std/os/"
+"windows/io/type.RawSocket.html) on Windows, which represent raw OS resource "
+"handles. These don't provide any behavior on their own, and just represent "
+"identifiers which can be passed to low-level OS APIs."
+msgstr ""
+
+#: src/3128-io-safety.md:73
+msgid ""
+"These raw handles can be thought of as raw pointers, with similar hazards. "
+"While it's safe to _obtain_ a raw pointer, _dereferencing_ a raw pointer "
+"could invoke undefined behavior if it isn't a valid pointer or if it "
+"outlives the lifetime of the memory it points to. Similarly, it's safe to "
+"_obtain_ a raw handle, via [`AsRawFd::as_raw_fd`](https://doc.rust-lang.org/"
+"stable/std/os/fd/trait.AsRawFd.html#tymethod.as_raw_fd) and similar, but "
+"using it to do I/O could lead to corrupted output, lost or leaked input "
+"data, or violated encapsulation boundaries, if it isn't a valid handle or "
+"it's used after the `close` of its resource. And in both cases, the effects "
+"can be non-local, affecting otherwise unrelated parts of a program. "
+"Protection from raw pointer hazards is called memory safety, so protection "
+"from raw handle hazards is called _I/O safety_."
+msgstr ""
+
+#: src/3128-io-safety.md:84
+msgid ""
+"Rust's standard library also has high-level types such as [`File`](https://"
+"doc.rust-lang.org/stable/std/fs/struct.File.html) and [`TcpStream`](https://"
+"doc.rust-lang.org/stable/std/net/struct.TcpStream.html) which are wrappers "
+"around these raw handles, providing high-level interfaces to OS APIs."
+msgstr ""
+
+#: src/3128-io-safety.md:88
+msgid ""
+"These high-level types also implement the traits [`FromRawFd`](https://doc."
+"rust-lang.org/stable/std/os/fd/trait.FromRawFd.html) on Unix-like platforms, "
+"and [`FromRawHandle`](https://doc.rust-lang.org/stable/std/os/windows/io/"
+"trait.FromRawHandle.html)/[`FromRawSocket`](https://doc.rust-lang.org/stable/"
+"std/os/windows/io/trait.FromRawSocket.html) on Windows, which provide "
+"functions which wrap a low-level value to produce a high-level value. These "
+"functions are unsafe, since they're unable to guarantee I/O safety. The type "
+"system doesn't constrain the handles passed in:"
+msgstr ""
+
+#: src/3128-io-safety.md:98
+msgid "// Create a file.\n"
+msgstr ""
+
+#: src/3128-io-safety.md:99
+msgid "\"data.txt\""
+msgstr ""
+
+#: src/3128-io-safety.md:101
+msgid ""
+"// Construct a `File` from an arbitrary integer value. This type checks,\n"
+"    // however 7 may not identify a live resource at runtime, or it may\n"
+"    // accidentally alias encapsulated raw handles elsewhere in the program. "
+"An\n"
+"    // `unsafe` block acknowledges that it's the caller's responsibility to\n"
+"    // avoid these hazards.\n"
+msgstr ""
+
+#: src/3128-io-safety.md:108
+msgid "// Obtain a copy of `file`'s inner raw handle.\n"
+msgstr ""
+
+#: src/3128-io-safety.md:111
+msgid "// Close `file`.\n"
+msgstr ""
+
+#: src/3128-io-safety.md:114
+msgid "// Open some unrelated file.\n"
+msgstr ""
+
+#: src/3128-io-safety.md:115
+msgid "\"another.txt\""
+msgstr ""
+
+#: src/3128-io-safety.md:117
+msgid ""
+"// Further uses of `raw_fd`, which was `file`'s inner raw handle, would be\n"
+"    // outside the lifetime the OS associated with it. This could lead to "
+"it\n"
+"    // accidentally aliasing other otherwise encapsulated `File` instances,\n"
+"    // such as `another`. Consequently, an `unsafe` block acknowledges that\n"
+"    // it's the caller's responsibility to avoid these hazards.\n"
+msgstr ""
+
+#: src/3128-io-safety.md:125
+msgid ""
+"Callers must ensure that the value passed into `from_raw_fd` is explicitly "
+"returned from the OS, and that `from_raw_fd`'s return value won't outlive "
+"the lifetime the OS associates with the handle."
+msgstr ""
+
+#: src/3128-io-safety.md:129
+msgid ""
+"I/O safety is new as an explicit concept, but it reflects common practices. "
+"Rust's `std` will require no changes to stable interfaces, beyond the "
+"introduction of some new types and traits and new impls for them. Initially, "
+"not all of the Rust ecosystem will support I/O safety though; adoption will "
+"be gradual."
+msgstr ""
+
+#: src/3128-io-safety.md:135 src/3128-io-safety.md:218
+msgid "`OwnedFd` and `BorrowedFd<'fd>`"
+msgstr ""
+
+#: src/3128-io-safety.md:137
+msgid ""
+"These two types are conceptual replacements for `RawFd`, and represent owned "
+"and borrowed handle values. `OwnedFd` owns a file descriptor, including "
+"closing it when it's dropped. `BorrowedFd`'s lifetime parameter says for how "
+"long access to this file descriptor has been borrowed. These types enforce "
+"all of their I/O safety invariants automatically."
+msgstr ""
+
+#: src/3128-io-safety.md:143
+msgid "For Windows, similar types, but in `Handle` and `Socket` forms."
+msgstr ""
+
+#: src/3128-io-safety.md:145
+msgid ""
+"These types play a role for I/O which is analogous to what existing types in "
+"Rust play for memory:"
+msgstr ""
+
+#: src/3128-io-safety.md:148
+msgid "Type"
+msgstr ""
+
+#: src/3128-io-safety.md:148
+msgid "Analogous to"
+msgstr ""
+
+#: src/3128-io-safety.md:150
+msgid "`OwnedFd`"
+msgstr ""
+
+#: src/3128-io-safety.md:150
+msgid "`Box<_>`"
+msgstr ""
+
+#: src/3128-io-safety.md:151
+msgid "`BorrowedFd<'a>`"
+msgstr ""
+
+#: src/3128-io-safety.md:151
+msgid "`&'a _`"
+msgstr ""
+
+#: src/3128-io-safety.md:152
+msgid "`RawFd`"
+msgstr ""
+
+#: src/3128-io-safety.md:152
+msgid "`*const _`"
+msgstr ""
+
+#: src/3128-io-safety.md:154
+msgid ""
+"One difference is that I/O types don't make a distinction between mutable "
+"and immutable. OS resources can be shared in a variety of ways outside of "
+"Rust's control, so I/O can be thought of as using [interior mutability]"
+"(https://doc.rust-lang.org/reference/interior-mutability.html)."
+msgstr ""
+
+#: src/3128-io-safety.md:160 src/3128-io-safety.md:230
+msgid "`AsFd`, `Into<OwnedFd>`, and `From<OwnedFd>`"
+msgstr ""
+
+#: src/3128-io-safety.md:162
+msgid ""
+"These three are conceptual replacements for `AsRawFd::as_raw_fd`, "
+"`IntoRawFd::into_raw_fd`, and `FromRawFd::from_raw_fd`, respectively, for "
+"most use cases. They work in terms of `OwnedFd` and `BorrowedFd`, so they "
+"automatically enforce their I/O safety invariants."
+msgstr ""
+
+#: src/3128-io-safety.md:167
+msgid ""
+"Using these, the `do_some_io` example in the [motivation](#motivation) can "
+"avoid the original problems. Since `AsFd` is only implemented for types "
+"which properly own or borrow their file descriptors, this version of "
+"`do_some_io` doesn't have to worry about being passed bogus or dangling file "
+"descriptors:"
+msgstr ""
+
+#: src/3128-io-safety.md:178
+msgid "For Windows, similar traits, but in `Handle` and `Socket` forms."
+msgstr ""
+
+#: src/3128-io-safety.md:180
+msgid "Gradual adoption"
+msgstr ""
+
+#: src/3128-io-safety.md:182
+msgid ""
+"I/O safety and the new types and traits wouldn't need to be adopted "
+"immediately; adoption could be gradual:"
+msgstr ""
+
+#: src/3128-io-safety.md:185
+msgid ""
+"First, `std` adds the new types and traits with impls for all the relevant "
+"`std` types. This is a backwards-compatible change."
+msgstr ""
+
+#: src/3128-io-safety.md:188
+msgid ""
+"After that, crates could begin to use the new types and implement the new "
+"traits for their own types. These changes would be small and semver-"
+"compatible, without special coordination."
+msgstr ""
+
+#: src/3128-io-safety.md:192
+msgid ""
+"Once the standard library and enough popular crates implement the new "
+"traits, crates could start to switch to using the new traits as bounds when "
+"accepting generic arguments, at their own pace. These would be semver-"
+"incompatible changes, though most users of APIs switching to these new "
+"traits wouldn't need any changes."
+msgstr ""
+
+#: src/3128-io-safety.md:198
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3128-io-safety.md:203
+msgid ""
+"In addition to the Rust language's memory safety, Rust's standard library "
+"also guarantees I/O safety. An I/O operation is _valid_ if the raw handles "
+"([`RawFd`](https://doc.rust-lang.org/stable/std/os/fd/type.RawFd.html), "
+"[`RawHandle`](https://doc.rust-lang.org/stable/std/os/windows/io/type."
+"RawHandle.html), and [`RawSocket`](https://doc.rust-lang.org/stable/std/os/"
+"windows/io/type.RawSocket.html)) it operates on are values explicitly "
+"returned from the OS, and the operation occurs within the lifetime the OS "
+"associates with them. Rust code has _I/O safety_ if it's not possible for "
+"that code to cause invalid I/O operations."
+msgstr ""
+
+#: src/3128-io-safety.md:210
+msgid ""
+"While some OS's document their file descriptor allocation algorithms, a "
+"handle value predicted with knowledge of these algorithms isn't considered "
+"\"explicitly returned from the OS\"."
+msgstr ""
+
+#: src/3128-io-safety.md:214
+msgid ""
+"Functions accepting arbitrary raw I/O handle values ([`RawFd`](https://doc."
+"rust-lang.org/stable/std/os/fd/type.RawFd.html), [`RawHandle`](https://doc."
+"rust-lang.org/stable/std/os/windows/io/type.RawHandle.html), or [`RawSocket`]"
+"(https://doc.rust-lang.org/stable/std/os/windows/io/type.RawSocket.html)) "
+"should be `unsafe` if they can lead to any I/O being performed on those "
+"handles through safe APIs."
+msgstr ""
+
+#: src/3128-io-safety.md:220
+msgid ""
+"`OwnedFd` and `BorrowedFd` are both `repr(transparent)` with a `RawFd` value "
+"on the inside, and both can use niche optimizations so that "
+"`Option<OwnedFd>` and `Option<BorrowedFd<'_>>` are the same size, and can be "
+"used in FFI declarations for functions like `open`, `read`, `write`, "
+"`close`, and so on. When used this way, they ensure I/O safety all the way "
+"out to the FFI boundary."
+msgstr ""
+
+#: src/3128-io-safety.md:226
+msgid ""
+"These types also implement the existing `AsRawFd`, `IntoRawFd`, and "
+"`FromRawFd` traits, so they can interoperate with existing code that works "
+"with `RawFd` types."
+msgstr ""
+
+#: src/3128-io-safety.md:232
+msgid ""
+"These types provide `as_fd`, `into`, and `from` functions similar to "
+"`AsRawFd::as_raw_fd`, `IntoRawFd::into_raw_fd`, and `FromRawFd::"
+"from_raw_fd`, respectively."
+msgstr ""
+
+#: src/3128-io-safety.md:236
+msgid "Prototype implementation"
+msgstr ""
+
+#: src/3128-io-safety.md:238
+msgid "All of the above is prototyped here:"
+msgstr ""
+
+#: src/3128-io-safety.md:240
+msgid "<https://github.com/sunfishcode/io-lifetimes>"
+msgstr ""
+
+#: src/3128-io-safety.md:242
+msgid ""
+"The README.md has links to documentation, examples, and a survey of existing "
+"crates providing similar features."
+msgstr ""
+
+#: src/3128-io-safety.md:245
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3128-io-safety.md:248
+msgid ""
+"Crates with APIs that use file descriptors, such as [`nix`](https://crates."
+"io/crates/nix) and [`mio`](https://crates.io/crates/mio), would need to "
+"migrate to types implementing `AsFd`, or change such functions to be unsafe."
+msgstr ""
+
+#: src/3128-io-safety.md:252
+msgid ""
+"Crates using `AsRawFd` or `IntoRawFd` to accept \"any file-like type\" or "
+"\"any socket-like type\", such as [`socket2`](https://crates.io/crates/"
+"socket2)'s [`SockRef::from`](https://docs.rs/socket2/0.4.0/socket2/struct."
+"SockRef.html#method.from), would need to either switch to `AsFd` or "
+"`Into<OwnedFd>`, or make these functions unsafe."
+msgstr ""
+
+#: src/3128-io-safety.md:256
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3128-io-safety.md:259
+msgid "Concerning \"unsafe is for memory safety\""
+msgstr ""
+
+#: src/3128-io-safety.md:261
+msgid ""
+"Rust historically drew a line in the sand, stating that `unsafe` would only "
+"be for memory safety. A famous example is [`std::mem::forget`](https://doc."
+"rust-lang.org/stable/std/mem/fn.forget.html), which was once `unsafe`, and "
+"was [changed to safe](https://rust-lang.github.io/rfcs/1066-safe-mem-forget."
+"html). The conclusion stating that unsafe only be for memory safety observed "
+"that unsafe should not be for “footguns” or for being “a general deterrent "
+"for \"should be avoided\" APIs”."
+msgstr ""
+
+#: src/3128-io-safety.md:267
+msgid ""
+"Memory safety is elevated above other programming hazards because it isn't "
+"just about avoiding unintended behavior, but about avoiding situations where "
+"it's impossible to bound the set of things that a piece of code might do."
+msgstr ""
+
+#: src/3128-io-safety.md:271
+msgid "I/O safety is also in this category, for two reasons."
+msgstr ""
+
+#: src/3128-io-safety.md:273
+msgid ""
+"I/O safety errors can lead to memory safety errors in the presence of safe "
+"wrappers around `mmap` (on platforms with OS-specific APIs allowing them to "
+"otherwise be safe)."
+msgstr ""
+
+#: src/3128-io-safety.md:277
+msgid ""
+"I/O safety errors can also mean that a piece of code can read, write, or "
+"delete data used by other parts of the program, without naming them or being "
+"given a reference to them. It becomes impossible to bound the set of things "
+"a crate can do without knowing the implementation details of all other "
+"crates linked into the program."
+msgstr ""
+
+#: src/3128-io-safety.md:283
+msgid ""
+"Raw handles are much like raw pointers into a separate address space; they "
+"can dangle or be computed in bogus ways. I/O safety is similar to memory "
+"safety; both prevent spooky-action-at-a-distance, and in both, ownership is "
+"the main foundation for robust abstractions, so it's natural to use similar "
+"safety concepts."
+msgstr ""
+
+#: src/3128-io-safety.md:292
+msgid "I/O Handles as plain data"
+msgstr ""
+
+#: src/3128-io-safety.md:294
+msgid ""
+"The main alternative would be to say that raw handles are plain data, with "
+"no concept of I/O safety and no inherent relationship to OS resource "
+"lifetimes. On Unix-like platforms at least, this wouldn't ever lead to "
+"memory unsafety or undefined behavior."
+msgstr ""
+
+#: src/3128-io-safety.md:299
+msgid ""
+"However, most Rust code doesn't interact with raw handles directly. This is "
+"a good thing, independently of this RFC, because resources ultimately do "
+"have lifetimes, so most Rust code will always be better off using higher-"
+"level types which manage these lifetimes automatically and which provide "
+"better ergonomics in many other respects. As such, the plain-data approach "
+"would at best make raw handles marginally more ergonomic for relatively "
+"uncommon use cases. This would be a small benefit, and may even be a "
+"downside, if it ends up encouraging people to write code that works with raw "
+"handles when they don't need to."
+msgstr ""
+
+#: src/3128-io-safety.md:308
+msgid ""
+"The plain-data approach also wouldn't need any code changes in any crates. "
+"The I/O safety approach will require changes to Rust code in crates such as "
+"[`socket2`](https://crates.io/crates/socket2), [`nix`](https://crates.io/"
+"crates/nix), and [`mio`](https://crates.io/crates/mio) which have APIs "
+"involving [`AsRawFd`](https://doc.rust-lang.org/stable/std/os/fd/trait."
+"AsRawFd.html) and [`RawFd`](https://doc.rust-lang.org/stable/std/os/fd/type."
+"RawFd.html), though the changes can be made gradually across the ecosystem "
+"rather than all at once."
+msgstr ""
+
+#: src/3128-io-safety.md:314
+msgid "The `IoSafe` trait (and `OwnsRaw` before it)"
+msgstr ""
+
+#: src/3128-io-safety.md:316
+msgid ""
+"Earlier versions of this RFC proposed an `IoSafe` trait, which was meant as "
+"a minimally intrusive fix. Feedback from the RFC process led to the "
+"development of a new set of types and traits. This has a much larger API "
+"surface area, which will take more work to design and review. And it and "
+"will require more extensive changes in the crates ecosystem over time. "
+"However, early indications are that the new types and traits are easier to "
+"understand, and easier and safer to use, and so are a better foundation for "
+"the long term."
+msgstr ""
+
+#: src/3128-io-safety.md:324
+msgid ""
+"Earlier versions of `IoSafe` were called `OwnsRaw`. It was difficult to find "
+"a name for this trait which described exactly what it does, and arguably "
+"this is one of the signs that it wasn't the right trait."
+msgstr ""
+
+#: src/3128-io-safety.md:328
+msgid "Prior art"
+msgstr ""
+
+#: src/3128-io-safety.md:331
+msgid ""
+"Most memory-safe programming languages have safe abstractions around raw "
+"handles. Most often, they simply avoid exposing the raw handles altogether, "
+"such as in [C#](https://docs.microsoft.com/en-us/dotnet/api/system.io.file?"
+"view=net-5.0), [Java](https://docs.oracle.com/javase/7/docs/api/java/io/File."
+"html?is-external=true), and others. Making it `unsafe` to perform I/O "
+"through a given raw handle would let safe Rust have the same guarantees as "
+"those effectively provided by such languages."
+msgstr ""
+
+#: src/3128-io-safety.md:337
+msgid ""
+"There are several crates on crates.io providing owning and borrowing file "
+"descriptor wrappers. The [io-lifetimes README.md's Prior Art section]"
+"(https://github.com/sunfishcode/io-lifetimes#prior-art) describes these and "
+"details how io-lifetimes' similarities and differences with these existing "
+"crates in detail. At a high level, these existing crates share the same "
+"basic concepts that io-lifetimes uses. All are built around Rust's lifetime "
+"and ownership concepts, and confirm that these concepts are a good fit for "
+"this problem."
+msgstr ""
+
+#: src/3128-io-safety.md:345
+msgid ""
+"Android has special APIs for detecting improper `close`s; see rust-lang/"
+"rust#74860 for details. The motivation for these APIs also applies to I/O "
+"safety here. Android's special APIs use dynamic checks, which enable them to "
+"enforce rules across source language boundaries. The I/O safety types and "
+"traits proposed here are only aiming to enforce rules within Rust code, so "
+"they're able to use Rust's type system to enforce rules at compile time "
+"rather than run time."
+msgstr ""
+
+#: src/3128-io-safety.md:357
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3128-io-safety.md:360
+msgid "Formalizing ownership"
+msgstr ""
+
+#: src/3128-io-safety.md:362
+msgid ""
+"This RFC doesn't define a formal model for raw handle ownership and "
+"lifetimes. The rules for raw handles in this RFC are vague about their "
+"identity. What does it mean for a resource lifetime to be associated with a "
+"handle if the handle is just an integer type? Do all integer types with the "
+"same value share that association?"
+msgstr ""
+
+#: src/3128-io-safety.md:368
+msgid ""
+"The Rust [reference](https://doc.rust-lang.org/reference/behavior-considered-"
+"undefined.html) defines undefined behavior for memory in terms of [LLVM's "
+"pointer aliasing rules](http://llvm.org/docs/LangRef.html#pointer-aliasing-"
+"rules); I/O could conceivably need a similar concept of handle aliasing "
+"rules. This doesn't seem necessary for present practical needs, but it could "
+"be explored in the future."
+msgstr ""
+
+#: src/3128-io-safety.md:375
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3128-io-safety.md:378
+msgid "Some possible future ideas that could build on this RFC include:"
+msgstr ""
+
+#: src/3128-io-safety.md:380
+msgid "Clippy lints warning about common I/O-unsafe patterns."
+msgstr ""
+
+#: src/3128-io-safety.md:382
+msgid ""
+"A formal model of ownership for raw handles. One could even imagine "
+"extending Miri to catch \"use after close\" and \"use of bogus computed "
+"handle\" bugs."
+msgstr ""
+
+#: src/3128-io-safety.md:386
+msgid ""
+"A fine-grained capability-based security model for Rust, built on the fact "
+"that, with this new guarantee, the high-level wrappers around raw handles "
+"are unforgeable in safe Rust."
+msgstr ""
+
+#: src/3128-io-safety.md:390
+msgid ""
+"There are a few convenience features which can be implemented for types that "
+"implement `AsFd`, `Into<OwnedFd>`, and/or `From<OwnedFd>`:"
+msgstr ""
+
+#: src/3128-io-safety.md:392
+msgid ""
+"A `from_into_fd` function which takes a `Into<OwnedFd>` and converts it into "
+"a `From<OwnedFd>`, allowing users to perform this common sequence in a "
+"single step."
+msgstr ""
+
+#: src/3128-io-safety.md:395
+msgid ""
+"A `as_filelike_view::<T>()` function returns a `View`, which contains a "
+"temporary instance of T constructed from the contained file descriptor, "
+"allowing users to \"view\" a raw file descriptor as a `File`, `TcpStream`, "
+"and so on."
+msgstr ""
+
+#: src/3128-io-safety.md:400
+msgid ""
+"Portability for simple use cases. Portability in this space isn't easy, "
+"since Windows has two different handle types while Unix has one. However, "
+"some use cases can treat `AsFd` and `AsHandle` similarly, while some other "
+"uses can treat `AsFd` and `AsSocket` similarly. In these two cases, trivial "
+"`Filelike` and `Socketlike` abstractions could allow code which works in "
+"this way to be generic over Unix and Windows."
+msgstr ""
+
+#: src/3128-io-safety.md:407
+msgid ""
+"Similar portability abstractions could apply to `From<OwnedFd>` and "
+"`Into<OwnedFd>`."
+msgstr ""
+
+#: src/3128-io-safety.md:410
+msgid "Thanks"
+msgstr ""
+
+#: src/3128-io-safety.md:413
+msgid ""
+"Thanks to Ralf Jung ([@RalfJung](https://github.com/RalfJung)) for leading "
+"me to my current understanding of this topic, for encouraging and reviewing "
+"drafts of this RFC, and for patiently answering my many questions!"
+msgstr ""

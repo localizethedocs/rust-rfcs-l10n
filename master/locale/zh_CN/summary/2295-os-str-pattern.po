@@ -1,0 +1,714 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2295-os-str-pattern.md:1
+msgid "Feature Name: `os_str_pattern`"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:2
+msgid "Start Date: 2018-01-16"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2295](https://github.com/rust-lang/rfcs/pull/2295)"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#49802](https://github.com/rust-lang/rust/"
+"issues/49802)"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:9
+msgid ""
+"Generalize the WTF-8 encoding to allow `OsStr` to use the pattern API "
+"methods."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:14
+msgid ""
+"`OsStr` is missing many common string methods compared to the standard `str` "
+"or even `[u8]`. There have been numerous attempts to expand the API surface, "
+"the latest one being [RFC #1309](https://github.com/rust-lang/rfcs/"
+"pull/1309), which leads to an attempt to [revamp the `std::pattern::Pattern` "
+"API](https://github.com/Kimundi/rust_pattern_api_v2), but eventually closed "
+"due to inactivity and lack of resource."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:19
+msgid ""
+"Over the past several years, there has been numerous requests and attempts "
+"to implement these missing functions in particular `OsStr::starts_with` ([1]"
+"(https://github.com/rust-lang/rust/issues/22741), [2](https://github.com/"
+"rust-lang/rust/issues/26499), [3](https://github.com/rust-lang/rust/"
+"issues/40300), [4](https://users.rust-lang.org/t/comparing-osstr-for-"
+"prefixes-and-suffixes/10403), [5](https://internals.rust-lang.org/t/make-std-"
+"os-unix-ffi-osstrext-cross-platform/6277), [6](https://docs.rs/os-str-"
+"generic))."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:23
+msgid ""
+"The main difficulty applying `str` APIs to `OsStr` is [WTF-8](https://"
+"simonsapin.github.io/wtf-8/). A surrogate pair (e.g. U+10000 = `d800 dc00`) "
+"is encoded as a 4-byte sequence (`f0 90 80 80`) similar to UTF-8, but an "
+"unpaired surrogate (e.g. U+D800 alone) is encoded as a completely distinct 3-"
+"byte sequence (`ed a0 80`). Naively extending the slice-based pattern API "
+"will not work, e.g. you cannot find any `ed a0 80` inside `f0 90 80 80`, so "
+"`.starts_with()` is going to be more complex, and `.split()` certainly "
+"cannot borrow a well-formed WTF-8 slice from it."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:30
+msgid ""
+"The solution proposed by RFC #1309 is to create two sets of APIs. One, `."
+"contains_os()`, `.starts_with_os()`, `.ends_with_os()` and `.replace()` "
+"which do not require borrowing, will support using `&OsStr` as input. The "
+"rest like `.split()`, `.matches()` and `.trim()` which require borrowing, "
+"will only accept UTF-8 strings as input."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:35
+msgid ""
+"The “pattern 2.0” API does not split into two sets of APIs, but will panic "
+"when the search string starts with or ends with an unpaired surrogate."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:38
+msgid ""
+"We feel that these designs are not elegant enough. This RFC attempts to fix "
+"the problem by going one level lower, by generalizing WTF-8 so that "
+"splitting a surrogate pair is allowed, so we could search an `OsStr` with an "
+"`OsStr` using a single Pattern API without panicking."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:52
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:55
+msgid ""
+"The following new methods are now available to `OsStr`. They behave the same "
+"as their counterpart in `str`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:82
+msgid ""
+"/// Finds the first range of this string which contains the pattern.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```rust\n"
+"    /// let path = OsStr::new(\"/usr/bin/bash\");\n"
+"    /// let range = path.find_range(\"/b\");\n"
+"    /// assert_eq!(range, Some(4..6));\n"
+"    /// assert_eq!(path[range.unwrap()], OsStr::new(\"/b\"));\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:96
+msgid ""
+"/// Finds the last range of this string which contains the pattern.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```rust\n"
+"    /// let path = OsStr::new(\"/usr/bin/bash\");\n"
+"    /// let range = path.rfind_range(\"/b\");\n"
+"    /// assert_eq!(range, Some(8..10));\n"
+"    /// assert_eq!(path[range.unwrap()], OsStr::new(\"/b\"));\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:111
+msgid ""
+"// (Note: these should return a concrete iterator type instead of `impl "
+"Trait`.\n"
+"    //  For ease of explanation the concrete type is not listed here.)\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:158 src/2295-os-str-pattern.md:163
+msgid "// this is new\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:193
+msgid "We also allow slicing an `OsStr`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:202
+msgid "Example:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:205
+msgid "// (assume we are on Windows)\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:207
+msgid "r\"C:\\Users\\Admin\\😀\\😁😂😃😄.txt\""
+msgstr ""
+
+#: src/2295-os-str-pattern.md:207
+msgid "// can use starts_with, ends_with\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:209
+msgid "r\"C:\\\""
+msgstr ""
+
+#: src/2295-os-str-pattern.md:210
+msgid "\".txt\""
+msgstr ""
+
+#: src/2295-os-str-pattern.md:210
+msgid "// can use rfind_range to get the range of substring\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:212
+msgid "r\"\\\""
+msgstr ""
+
+#: src/2295-os-str-pattern.md:213
+msgid "// can perform slicing.\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:215
+msgid "// can perform splitting, even if it results in invalid Unicode!\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:218
+msgid "\"\""
+msgstr ""
+
+#: src/2295-os-str-pattern.md:226
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:229
+msgid ""
+"It is trivial to apply the pattern API to `OsStr` on platforms where it is "
+"just an `[u8]`. The main difficulty is on Windows where it is an `[u16]` "
+"encoded as WTF-8. This RFC thus focuses on Windows."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:232
+msgid ""
+"We will generalize the encoding of `OsStr` to “[OMG-WTF-8](https://github."
+"com/kennytm/omgwtf8)” which specifies these two capabilities:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:234
+msgid "Slicing a surrogate pair in half:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:237 src/2295-os-str-pattern.md:246
+#: src/2295-os-str-pattern.md:521
+msgid "\"\\u{10000}\""
+msgstr ""
+
+#: src/2295-os-str-pattern.md:242
+msgid "Finding a surrogate code point, no matter paired or unpaired:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:250
+msgid ""
+"These allow us to implement the “Pattern 1.5” API for all `OsStr` without "
+"panicking. Implementation detail can be found in the [`omgwtf8` package]"
+"(https://github.com/kennytm/omgwtf8)."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:255
+msgid "Slicing"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:257
+msgid ""
+"A surrogate pair is a 4-byte sequence in both UTF-8 and WTF-8. We support "
+"slicing it in half by representing the high surrogate by the first 3 bytes, "
+"and the low surrogate by the last 3 bytes."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:260 src/2295-os-str-pattern.md:512
+msgid ""
+"```\n"
+"\"\\u{10000}\"      = f0 90 80 80\n"
+"\"\\u{10000}\"[..2] = f0 90 80\n"
+"\"\\u{10000}\"[2..] =    90 80 80\n"
+"```"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:266
+msgid ""
+"The index splitting the surrogate pair will be positioned at the middle of "
+"the 4-byte sequence (index \"2\" in the above example)."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:269
+msgid "Note that this means:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:271
+msgid ""
+"`x[..i]` and `x[i..]` will have overlapping parts. This makes `OsStr::"
+"split_at_mut` (if exists) unable to split a surrogate pair in half. This "
+"also means `Pattern<&mut OsStr>` cannot be implemented for `&OsStr`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:274
+msgid "The length of `x[..n]` may be longer than `n`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:276
+msgid "Platform-agnostic guarantees"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:278
+msgid ""
+"If an index points to an invalid position (e.g. `\\u{1000}[1..]` or "
+"`\"\\u{10000}\"[1..]` or `\"\\u{10000}\"[3..]`), a panic will be raised, "
+"similar to that of `str`. The following are guaranteed to be valid positions "
+"on all platforms:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:282
+msgid "`0`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:283
+msgid "`self.len()`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:284
+msgid ""
+"The returned indices from `find()`, `rfind()`, `match_indices()` and "
+"`rmatch_indices()`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:285
+msgid ""
+"The returned ranges from `find_range()`, `rfind_range()`, `match_ranges()` "
+"and `rmatch_ranges()`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:287
+msgid ""
+"Index arithmetic is wrong for `OsStr`, i.e. `i + n` may not produce the "
+"correct index (see [Drawbacks](#drawbacks))."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:290
+msgid "For WTF-8 encoding on Windows, we define:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:292
+msgid "boundary of a character or surrogate byte sequence is Valid."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:293
+msgid "middle (byte 2) of a 4-byte sequence is Valid."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:294
+msgid "interior of a 2- or 3-byte sequence is Invalid."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:295
+msgid "byte 1 or 3 of a 4-byte sequence is Invalid."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:297
+msgid ""
+"Outside of Windows where the `OsStr` consists of arbitrary bytes, all "
+"numbers within `0 ..= self.len()` are considered a valid index. This is "
+"because we want to allow `os_str.find(OsStr::from_bytes(b\"\\xff\"))`, and "
+"thus cannot use UTF-8 to reason with a Unix `OsStr`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:301
+msgid ""
+"Note that we have never guaranteed the actual `OsStr` encoding, these should "
+"only be considered an implementation detail."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:304
+msgid "Comparison and storage"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:306
+msgid ""
+"All `OsStr` strings with sliced 4-byte sequence can be converted back to "
+"proper WTF-8 with an O(1) transformation:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:309
+msgid ""
+"If the string starts with `[\\x80-\\xbf]{3}`, replace these 3 bytes with the "
+"canonical low surrogate encoding."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:311
+msgid ""
+"If the string ends with `[\\xf0-\\xf4][\\x80-\\xbf]{2}`, replace these 3 "
+"bytes with the canonical high surrogate encoding."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:314
+msgid "We can this transformation “_canonicalization_”."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:316
+msgid ""
+"All owned `OsStr` should be canonicalized to contain well-formed WTF-8 only: "
+"`Box<OsStr>`, `Rc<OsStr>`, `Arc<OsStr>` and `OsString`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:319
+msgid ""
+"Two `OsStr` are compared equal if they have the same canonicalization. This "
+"may slightly reduce the performance with a constant overhead, since there "
+"would be more checking involving the first and last three bytes."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:323
+msgid "Matching"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:325
+msgid ""
+"When an `OsStr` is used for matching, an unpaired low surrogate at the "
+"beginning and unpaired high surrogate at the end must be replaced by regular "
+"expressions that match all pre-canonicalization possibilities. For instance, "
+"matching for `xxxx\\u{d9ab}` would create the following regex:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:337
+msgid "and matching for `\\u{dcef}xxxx` with create the following regex:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:347
+msgid ""
+"After finding a match, if the end points to the middle of a 4-byte sequence, "
+"the search engine should move backward by 2 bytes before continuing. This "
+"ensure searching for `\\u{dc00}\\u{d800}` in `\\u{10000}\\u{10000}\\u{10000}"
+"` will properly yield 2 matches."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:351
+msgid "Pattern API"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:353
+msgid ""
+"As of Rust 1.25, we can search a `&str` using a character, a character set "
+"or another string, powered by [RFC #528](https://github.com/rust-lang/rfcs/"
+"pull/528) a.k.a. “Pattern API 1.0”."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:356
+msgid ""
+"There are some drafts to generalize this so that we could retain mutability "
+"and search in more types such as `&[T]` and `&OsStr`, as described in "
+"various comments (“[v1.5](https://github.com/rust-lang/rust/"
+"issues/27721#issuecomment-185405392)” and “[v2.0](https://github.com/rust-"
+"lang/rfcs/pull/1309#issuecomment-214030263)”). A proper RFC has not been "
+"proposed so far."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:362
+msgid ""
+"This RFC assumes the target of generalizing the Pattern API beyond `&str` is "
+"accepted, enabling us to provide a uniform search API between different "
+"types of haystack and needles. However, this RFC does not rely on a "
+"generalized Pattern API. If this RFC is stabilized without a generalized "
+"Pattern API, the new methods described in the [Guide-level explanation]"
+"(#guide-level-explanation) section can take `&OsStr` instead of `impl "
+"Pattern<&OsStr>`, but this may hurt future compatibility due to inference "
+"breakage if generalized Pattern API is indeed implemented."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:369
+msgid ""
+"Assuming we do want to generalize Pattern API, the implementor should note "
+"the issue of splitting a surrogate pair:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:372
+msgid ""
+"A match which starts with a low surrogate will point to byte 1 of the 4-byte "
+"sequence"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:373
+msgid "An index always point to byte 2 of the 4-byte sequence"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:374
+msgid ""
+"A match which ends with a high surrogate will point to byte 3 of the 4-byte "
+"sequence"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:376
+msgid ""
+"Implementation should note these different offsets when converting between "
+"different kinds of cursors. In the [`omgwtf8::pattern` module](https://docs."
+"rs/omgwtf8/*/omgwtf8/pattern/index.html), based on the “v1.5” draft, this "
+"behavior is enforced in the API design by using distinct types for the start "
+"and end cursors."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:381
+msgid ""
+"The following outlines the generalized Pattern API which could work for "
+"`&OsStr`:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:384
+msgid "// in module `core::pattern`:\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:406
+msgid ""
+"// equivalent to SearchPtrs in \"Pattern API 1.5\"\n"
+"// and PatternHaystack in \"Pattern API 2.0\"\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:413
+msgid ""
+"// The following 5 methods are same as those in \"Pattern API 1.5\"\n"
+"    // except the cursor type is split into two.\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:421
+msgid "// And then we want to swap between the two cursor types\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:427
+msgid ""
+"For the `&OsStr` haystack, we define both `StartCursor` and `EndCursor` as "
+"`*const u8`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:429
+msgid ""
+"The `start_to_end_cursor` function will return `cur + 2` if we find that "
+"`cur` points to the middle of a 4-byte sequence."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:432
+msgid ""
+"The `start_cursor_to_offset` function will return `cur - hs + 1` if we find "
+"that `cur` points to the middle of a 4-byte sequenced."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:435
+msgid ""
+"These type safety measures ensure functions utilizing a generic `Pattern` "
+"can get the correctly overlapping slices when splitting a surrogate pair."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:439
+msgid "// (actual code implementing `.split()`)\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:446
+msgid ""
+"// ^ without `start_to_end_cursor`, the slice `elt` may be short by 2 bytes\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:448
+msgid ""
+"// ^ without `end_to_start_cursor`, the next starting position may skip 2 "
+"bytes\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:455
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:458
+msgid "**It breaks the invariant `x[..n].len() == n`.**"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:460
+msgid ""
+"Note that `OsStr` did not provide a slicing operator, and it already "
+"violated the invariant `(x + y).len() == x.len() + y.len()`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:463
+msgid ""
+"**A surrogate code point may be 2 or 3 indices long depending on context.**"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:465
+msgid "This means code using `x[i..(i+n)]` may give wrong result."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:469
+msgid "\"\\u{10000}a\""
+msgstr ""
+
+#: src/2295-os-str-pattern.md:472
+msgid "// `matched` will contain \"\\u{dc00}a\" instead of \"\\u{dc00}\".\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:475
+msgid ""
+"As a workaround, we introduced `find_range` and `match_ranges`. Note that "
+"this is already a problem to solve if we want to make `Regex` a pattern of "
+"strings."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:478
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:481
+msgid "Indivisible surrogate pair"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:483
+msgid ""
+"This RFC is the only design which allows borrowing a sub-slice of a "
+"surrogate code point from a surrogate pair."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:486
+msgid ""
+"An alternative is keep using the vanilla WTF-8, and treat a surrogate pair "
+"as an atomic entity: makes it impossible to split a surrogate pair after it "
+"is formed. The advantages are that"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:489
+msgid "The pattern API becomes a simple substring search."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:490
+msgid "Slicing behavior is consistent with `str`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:492
+msgid ""
+"There are two potential implementations when we want to match with an "
+"unpaired surrogate:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:494
+msgid ""
+"**Declare that a surrogate pair does not contain the unpaired surrogate**, i."
+"e. make `\"\\u{10000}\".find(\"\\u{d800}\")` return `None`. An unpaired "
+"surrogate can only be used to match another unpaired surrogate."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:498
+msgid ""
+"If we choose this, it means `x.find(z).is_some()` does not imply `(x + y)."
+"find(z).is_some()`."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:500
+msgid ""
+"**Disallow matching when the pattern contains an unpaired surrogate at the "
+"boundary**, i.e. make `\"\\u{10000}\".find(\"\\u{d800}\")` panic. This is "
+"the approach chosen by “Pattern API 2.0”."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:503
+msgid ""
+"Note that, for consistency, we need to make `\"\\u{10000}\"."
+"starts_with(\"\\u{d800}\")` return `false` or panic."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:506
+msgid "Slicing at real byte offset"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:508
+msgid ""
+"The current RFC defines the index that splits a surrogate pair into half at "
+"byte 2 of the 4-byte sequence. This has the drawback of `\"\\u{10000}\"[..2]."
+"len() == 3`, and caused index arithmetic to be wrong."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:518
+msgid ""
+"The main advantage of this scheme is we could use the same number as the "
+"start and end index."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:523
+msgid "'\\u{dc00}'"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:524
+msgid "// [90 80 80]\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:525
+msgid "// [f0 90 80]\n"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:528
+msgid "An alternative make the index refer to the real byte offsets:"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:530
+msgid ""
+"```\n"
+"\"\\u{10000}\"      = f0 90 80 80\n"
+"\"\\u{10000}\"[..3] = f0 90 80\n"
+"\"\\u{10000}\"[1..] =    90 80 80\n"
+"```"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:536
+msgid "However the question would be, what should `s[..1]` do?"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:538
+msgid ""
+"**Panic** — But this means we cannot get `left`. We could inspect the raw "
+"bytes of `s` itself and perform `&s[..(index + 2)]`, but we never explicitly "
+"exposed the encoding of `OsStr`, so we cannot read a single byte and thus "
+"impossible to do this."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:542
+msgid ""
+"**Treat as same as `s[..3]`** — But then this inherits all the disadvantages "
+"of using 2 as valid index, plus we need to consider whether `s[1..3]` and "
+"`s[3..1]` should be valid."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:545
+msgid ""
+"Given these, we decided not to treat the real byte offsets as valid indices."
+msgstr ""
+
+#: src/2295-os-str-pattern.md:547
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2295-os-str-pattern.md:550
+msgid "None yet."
+msgstr ""

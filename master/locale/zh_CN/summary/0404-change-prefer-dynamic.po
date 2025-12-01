@@ -1,0 +1,223 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0404-change-prefer-dynamic.md:1
+msgid "Start Date: 2014-11-01"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:2
+msgid "RFC PR: [\\#404](https://github.com/rust-lang/rfcs/pull/404)"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:3
+msgid "Rust Issue: [\\#18499](https://github.com/rust-lang/rust/issues/18499)"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:7
+msgid ""
+"When the compiler generates a dynamic library, alter the default behavior to "
+"favor linking all dependencies statically rather than maximizing the number "
+"of dynamic libraries. This behavior can be disabled with the existing `-C "
+"prefer-dynamic` flag."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:14
+msgid ""
+"Long ago rustc used to only be able to generate dynamic libraries and as a "
+"consequence all Rust libraries were distributed/used in a dynamic form. Over "
+"time the compiler learned to create static libraries (dubbed rlibs). With "
+"this ability the compiler had to grow the ability to choose between linking "
+"a library either statically or dynamically depending on the available "
+"formats available to the compiler."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:21
+msgid ""
+"Today's heuristics and algorithm are [documented in the compiler](https://"
+"github.com/rust-lang/rust/blob/master/src/librustc/middle/dependency_format."
+"rs), and the general idea is that as soon as \"statically link all "
+"dependencies\" fails then the compiler maximizes the number of dynamic "
+"dependencies. Today there is also not a method of instructing the compiler "
+"precisely what form intermediate libraries should be linked in the source "
+"code itself. The linkage can be \"controlled\" by passing `--extern` flags "
+"with only one per dependency where the desired format is passed."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:31
+msgid ""
+"While functional, these heuristics do not allow expressing an important use "
+"case of building a dynamic library as a final product (as opposed to an "
+"intermediate Rust library) while having all dependencies statically linked "
+"to the final dynamic library. This use case has been seen in the wild a "
+"number of times, and the current workaround is to generate a `staticlib` and "
+"then invoke the linker directly to convert that to a `dylib` (which relies "
+"on rustc generating PIC objects by default)."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:39
+msgid ""
+"The purpose of this RFC is to remedy this use case while largely retaining "
+"the current abilities of the compiler today."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:42
+msgid "Detailed design"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:44
+msgid ""
+"In english, the compiler will change its heuristics for when a dynamic "
+"library is being generated. When doing so, it will attempt to link all "
+"dependencies statically, and failing that, will continue to maximize the "
+"number of dynamic libraries which are linked in."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:49
+msgid ""
+"The compiler will also repurpose the `-C prefer-dynamic` flag to indicate "
+"that this behavior is not desired, and the compiler should maximize dynamic "
+"dependencies regardless."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:53
+msgid "In terms of code, the following patch will be applied to the compiler:"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:79
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:81
+msgid ""
+"None currently, but the next section of alternatives lists a few other "
+"methods of possibly achieving the same goal."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:84
+msgid "Alternatives"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:86
+msgid "Disallow intermediate dynamic libraries"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:88
+msgid ""
+"One possible solution to this problem is to completely disallow dynamic "
+"libraries as a possible intermediate format for rust libraries. This would "
+"solve the above problem in the sense that the compiler never has to make a "
+"choice. This would also additionally cut the distribution size in roughly "
+"half because only rlibs would be shipped, not dylibs."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:94
+msgid ""
+"Another point in favor of this approach is that the story for dynamic "
+"libraries in Rust (for Rust) is also somewhat lacking with today's compiler. "
+"The ABI of a library changes quite frequently for unrelated changes, and it "
+"is thus infeasible to expect to ship a dynamic Rust library to later be "
+"updated in-place without recompiling downstream consumers. By disallowing "
+"dynamic libraries as intermediate formats in Rust, it is made quite obvious "
+"that a Rust library cannot depend on another dynamic Rust library. This "
+"would be codifying the convention today of \"statically link all Rust code\" "
+"in the compiler itself."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:103
+msgid ""
+"The major downside of this approach is that it would then be impossible to "
+"write a plugin for Rust in Rust. For example compiler plugins would cease to "
+"work because the standard library would be statically linked to both the "
+"`rustc` executable as well as the plugin being loaded."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:108
+msgid ""
+"In the common case duplication of a library in the same process does not "
+"tend to have adverse side effects, but some of the more flavorful features "
+"tend to interact adversely with duplication such as:"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:112
+msgid ""
+"Globals with significant addresses (`static`s). These globals would all be "
+"duplicated and have different addresses depending on what library you're "
+"talking to."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:115
+msgid ""
+"TLS/TLD. Any \"thread local\" or \"task local\" notion will be duplicated "
+"across each library in the process."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:118
+msgid ""
+"Today's design of the runtime in the standard library causes dynamically "
+"loaded plugins with a statically linked standard library to fail very "
+"quickly as soon as any runtime-related operations is performed. Note, "
+"however, that the runtime of the standard library will likely be phased out "
+"soon, but this RFC considers the cons listed above to be reasons to not take "
+"this course of action."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:124
+msgid "Allow fine-grained control of linkage"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:126
+msgid ""
+"Another possible alternative is to allow fine-grained control in the "
+"compiler to explicitly specify how each library should be linked (as opposed "
+"to a blanked prefer dynamic or not)."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:130
+msgid ""
+"Recent forays with native libraries in Cargo has led to the conclusion that "
+"hardcoding linkage into source code is often a hazard and a source of pain "
+"down the line. The ultimate decision of how a library is linked is often not "
+"up to the author, but rather the developer or builder of a library itself."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:135
+msgid ""
+"This leads to the conclusion that linkage control of this form should be "
+"controlled through the command line instead, which is essentially already "
+"possible today (via `--extern`). Cargo essentially does this, but the "
+"standard libraries are shipped in dylib/rlib formats, causing the pain "
+"points listed in the motivation."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:141
+msgid ""
+"As a result, this RFC does not recommend pursuing this alternative too far, "
+"but rather considers the alteration above to the compiler's heuristics to be "
+"satisfactory for now."
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:145
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0404-change-prefer-dynamic.md:147
+msgid "None yet!"
+msgstr ""

@@ -1,0 +1,311 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1559-attributes-with-literals.md:1
+msgid "Feature Name: attributes_with_literals"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:2
+msgid "Start Date: 2016-03-28"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1559](https://github.com/rust-lang/rfcs/pull/1559)"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#34981](https://github.com/rust-lang/rust/"
+"issues/34981)"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:9
+msgid ""
+"This RFC proposes accepting literals in attributes by defining the grammar "
+"of attributes as:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:19
+msgid ""
+"Note that `LIT` is a valid Rust literal and `IDENT` is a valid Rust "
+"identifier. The following attributes, among others, would be accepted by "
+"this grammar:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:26
+msgid "\"true\""
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:26
+#: src/1559-attributes-with-literals.md:30
+msgid "\"hello\""
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:35
+msgid "Motivation"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:38
+msgid ""
+"At present, literals are only accepted as the value of a key-value pair in "
+"attributes. What's more, only _string_ literals are accepted. This means "
+"that literals can only appear in forms of `#[attr(name = \"value\")]` or "
+"`#[attr = \"value\"]`."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:42
+msgid ""
+"This forces non-string literal values to be awkwardly stringified. For "
+"example, while it is clear that something like alignment should be an "
+"integer value, the following are disallowed: `#[align(4)]`, `#[align = 4]`. "
+"Instead, we must use something akin to `#[align = \"4\"]`. Even "
+"`#[align(\"4\")]` and `#[name(\"name\")]` are disallowed, forcing key-value "
+"pairs or identifiers to be used instead: `#[align(size = \"4\")]` or "
+"`#[name(name)]`."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:48
+msgid ""
+"In short, the current design forces users to use values of a single type, "
+"and thus occasionally the _wrong_ type, in attributes."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:51
+msgid "Cleaner Attributes"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:53
+msgid ""
+"Implementation of this RFC can clean up the following attributes in the "
+"standard library:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:55
+msgid ""
+"`#![recursion_limit = \"64\"]` **=>** `#![recursion_limit = 64]` or `#!"
+"[recursion_limit(64)]`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:56
+msgid ""
+"`#[cfg(all(unix, target_pointer_width = \"32\"))]` **=>** `#[cfg(all(unix, "
+"target_pointer_width = 32))]`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:58
+msgid ""
+"If `align` were to be added as an attribute, the following are now valid "
+"options for its syntax:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:60
+msgid "`#[repr(align(4))]`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:61
+msgid "`#[repr(align = 4)]`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:62
+msgid "`#[align = 4]`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:63
+msgid "`#[align(4)]`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:65
+msgid "Syntax Extensions"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:67
+msgid ""
+"As syntax extensions mature and become more widely used, being able to use "
+"literals in a variety of positions becomes more important."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:70
+msgid "Detailed design"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:73
+msgid "To clarify, _literals_ are:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:75
+msgid "**Strings:** `\"foo\"`, `r##\"foo\"##`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:76
+msgid "**Byte Strings:** `b\"foo\"`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:77
+msgid "**Byte Characters:** `b'f'`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:78
+#: src/1559-attributes-with-literals.md:138
+msgid "**Characters:** `'a'`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:79
+msgid "**Integers:** `1`, `1{i,u}{8,16,32,64,size}`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:80
+msgid "**Floats:** `1.0`, `1.0f{32,64}`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:81
+#: src/1559-attributes-with-literals.md:141
+msgid "**Booleans:** `true`, `false`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:83
+msgid ""
+"They are defined in the [manual](https://doc.rust-lang.org/reference."
+"html#literals) and by implementation in the [AST](http://manishearth.github."
+"io/rust-internals-docs/syntax/ast/enum.LitKind.html)."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:88
+msgid "Implementation of this RFC requires the following changes:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:90
+msgid ""
+"The `MetaItemKind` structure would need to allow literals as top-level "
+"entities:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:101
+msgid ""
+"`libsyntax` (`libsyntax/parse/attr.rs`) would need to be modified to allow "
+"literals as values in k/v pairs and as top-level entities of a list."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:104
+msgid ""
+"Crate metadata encoding/decoding would need to encode and decode literals in "
+"attributes."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:106
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:109
+msgid ""
+"This RFC requires a change to the AST and is likely to break syntax "
+"extensions using attributes in the wild."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:112
+msgid "Alternatives"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:115
+msgid "Token trees"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:117
+msgid ""
+"An alternative is to allow any tokens inside of an attribute. That is, the "
+"grammar could be:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:123
+msgid ""
+"where `TOKEN` is any valid Rust token. The drawback to this approach is that "
+"attributes lose any sense of structure. This results in more difficult and "
+"verbose attribute parsing, although this could be ameliorated through "
+"libraries. Further, this would require almost all of the existing attribute "
+"parsing code to change."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:128
+msgid ""
+"The advantage, of course, is that it allows any syntax and is rather future "
+"proof. It is also more inline with `macro!`s."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:131
+msgid "Allow only unsuffixed literals"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:133
+msgid ""
+"This RFC proposes allowing _any_ valid Rust literals in attributes. Instead, "
+"the use of literals could be restricted to only those that are unsuffixed. "
+"That is, only the following literals could be allowed:"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:137
+msgid "**Strings:** `\"foo\"`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:139
+msgid "**Integers:** `1`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:140
+msgid "**Floats:** `1.0`"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:143
+msgid ""
+"This cleans up the appearance of attributes will still increasing "
+"flexibility."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:145
+msgid "Allow literals only as values in k/v pairs"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:147
+msgid ""
+"Instead of allowing literals in top-level positions, i.e. `#[attr(4)]`, only "
+"allow them as values in key value pairs: `#[attr = 4]` or `#[attr(ident = "
+"4)]`. This has the nice advantage that it was the initial idea for "
+"attributes, and so the AST types already reflect this. As such, no changes "
+"would have to be made to existing code. The drawback, of course, is the lack "
+"of flexibility. `#[repr(C, align(4))]` would no longer be valid."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:153
+msgid "Do nothing"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:155
+msgid ""
+"Of course, the current design could be kept. Although it seems that the "
+"initial intention was for a form of literals to be allowed. Unfortunately, "
+"this idea was [scrapped due to release pressure](https://github.com/rust-"
+"lang/rust/issues/623) and never revisited. Even [the reference](https://doc."
+"rust-lang.org/reference.html#attributes) alludes to allowing all literals as "
+"values in k/v pairs."
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:162
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1559-attributes-with-literals.md:165
+msgid "None that I can think of."
+msgstr ""

@@ -1,0 +1,1127 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0550-macro-future-proofing.md:1
+msgid "Start Date: 2014-12-21"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:2
+msgid "RFC PR: [550](https://github.com/rust-lang/rfcs/pull/550)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:3
+msgid "Rust Issues:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:4
+msgid "[20563](https://github.com/rust-lang/rust/pull/20563)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:5
+msgid "[31135](https://github.com/rust-lang/rust/issues/31135)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:9
+msgid ""
+"Future-proof the allowed forms that input to an MBE can take by requiring "
+"certain delimiters following NTs in a matcher. In the future, it will be "
+"possible to lift these restrictions backwards compatibly if desired."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:13
+msgid "Key Terminology"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:15
+msgid "`macro`: anything invocable as `foo!(...)` in source code."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:16
+msgid "`MBE`: macro-by-example, a macro defined by `macro_rules`."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:17
+msgid ""
+"`matcher`: the left-hand-side of a rule in a `macro_rules` invocation, or a "
+"subportion thereof."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:18
+msgid ""
+"`macro parser`: the bit of code in the Rust parser that will parse the input "
+"using a grammar derived from all of the matchers."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:19
+msgid ""
+"`fragment`: The class of Rust syntax that a given matcher will accept (or "
+"\"match\")."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:20
+msgid "`repetition` : a fragment that follows a regular repeating pattern"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:21
+msgid ""
+"`NT`: non-terminal, the various \"meta-variables\" or repetition matchers "
+"that can appear in a matcher, specified in MBE syntax with a leading `$` "
+"character."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:22
+msgid ""
+"`simple NT`: a \"meta-variable\" non-terminal (further discussion below)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:23
+msgid ""
+"`complex NT`: a repetition matching non-terminal, specified via Kleene "
+"closure operators (`*`, `+`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:24
+msgid ""
+"`token`: an atomic element of a matcher; i.e. identifiers, operators, open/"
+"close delimiters, _and_ simple NT's."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:25
+msgid ""
+"`token tree`: a tree structure formed from tokens (the leaves), complex "
+"NT's, and finite sequences of token trees."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:26
+msgid ""
+"`delimiter token`: a token that is meant to divide the end of one fragment "
+"and the start of the next fragment."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:27
+msgid ""
+"`separator token`: an optional delimiter token in an complex NT that "
+"separates each pair of elements in the matched repetition."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:28
+msgid "`separated complex NT`: a complex NT that has its own separator token."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:29
+msgid ""
+"`delimited sequence`: a sequence of token trees with appropriate open- and "
+"close-delimiters at the start and end of the sequence."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:30
+msgid ""
+"`empty fragment`: The class of invisible Rust syntax that separates tokens, "
+"i.e. whitespace, or (in some lexical contexts), the empty token sequence."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:31
+msgid ""
+"`fragment specifier`: The identifier in a simple NT that specifies which "
+"fragment the NT accepts."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:32
+msgid "`language`: a context-free language."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:34
+msgid "Example:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:42
+msgid ""
+"`(start $foo:expr $($i:ident),* end)` is a matcher. The whole matcher is a "
+"delimited sequence (with open- and close-delimiters `(` and `)`), and `$foo` "
+"and `$i` are simple NT's with `expr` and `ident` as their respective "
+"fragment specifiers."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:47
+msgid ""
+"`$(i:ident),*` is _also_ an NT; it is a complex NT that matches a comma-"
+"separated repetition of identifiers. The `,` is the separator token for the "
+"complex NT; it occurs in between each pair of elements (if any) of the "
+"matched fragment."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:52
+msgid ""
+"Another example of a complex NT is `$(hi $e:expr ;)+`, which matches any "
+"fragment of the form `hi <expr>; hi <expr>; ...` where `hi <expr>;` occurs "
+"at least once. Note that this complex NT does not have a dedicated separator "
+"token."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:57
+msgid ""
+"(Note that Rust's parser ensures that delimited sequences always occur with "
+"proper nesting of token tree structure and correct matching of open- and "
+"close-delimiters.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:61
+msgid "Motivation"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:63
+msgid ""
+"In current Rust (version 0.12; i.e. pre 1.0), the `macro_rules` parser is "
+"very liberal in what it accepts in a matcher. This can cause problems, "
+"because it is possible to write an MBE which corresponds to an ambiguous "
+"grammar. When an MBE is invoked, if the macro parser encounters an ambiguity "
+"while parsing, it will bail out with a \"local ambiguity\" error. As an "
+"example for this, take the following MBE:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:71 src/0550-macro-future-proofing.md:86
+msgid "/*...*/"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:75
+msgid ""
+"Attempts to invoke this MBE will never succeed, because the macro parser "
+"will always emit an ambiguity error rather than make a choice when presented "
+"an ambiguity. In particular, it needs to decide when to stop accepting "
+"expressions for `foo` and look for a block for `bar` (noting that blocks are "
+"valid expressions). Situations like this are inherent to the macro system. "
+"On the other hand, it's possible to write an unambiguous matcher that "
+"becomes ambiguous due to changes in the syntax for the various fragments. As "
+"a concrete example:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:90
+msgid ""
+"When the type syntax was extended to include the unboxed closure traits, an "
+"input such as `FnMut(i8, u8) -> i8;` became ambiguous. The goal of this "
+"proposal is to prevent such scenarios in the future by requiring certain "
+"\"delimiter tokens\" after an NT. When extending Rust's syntax in the "
+"future, ambiguity need only be considered when combined with these sets of "
+"delimiters, rather than any possible arbitrary matcher."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:99
+msgid ""
+"Another example of a potential extension to the language that motivates a "
+"restricted set of \"delimiter tokens\" is ([postponed](https://github.com/"
+"rust-lang/rfcs/issues/961)) [RFC 352](https://github.com/rust-lang/rfcs/"
+"pull/352), \"Allow loops to return values other than `()`\", where the "
+"`break` expression would now accept an optional input expression: `break "
+"<expr>`."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:105
+msgid ""
+"This proposed extension to the language, combined with the facts that "
+"`break` and `{ <stmt> ... <expr>? }` are Rust expressions, implies that `{` "
+"should not be in the follow set for the `expr` fragment specifier."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:109
+msgid ""
+"Thus in a slightly more ideal world the following program would not be "
+"accepted, because the interpretation of the macro could change if we were to "
+"accept RFC 352:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:115
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:123
+msgid ""
+"(in our non-ideal world, the program is legal in Rust versions 1.0 through "
+"at least 1.4)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:130
+msgid "Detailed design"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:132
+msgid ""
+"We will tend to use the variable \"M\" to stand for a matcher, variables "
+"\"t\" and \"u\" for arbitrary individual tokens, and the variables \"tt\" "
+"and \"uu\" for arbitrary token trees. (The use of \"tt\" does present "
+"potential ambiguity with its additional role as a fragment specifier; but it "
+"will be clear from context which interpretation is meant.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:139
+msgid ""
+"\"SEP\" will range over separator tokens, \"OP\" over the Kleene operators "
+"`*` and `+`, and \"OPEN\"/\"CLOSE\" over matching token pairs surrounding a "
+"delimited sequence (e.g. `[` and `]`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:143
+msgid ""
+"We also use Greek letters \"α\" \"β\" \"γ\" \"δ\" to stand for potentially "
+"empty token-tree sequences. (However, the Greek letter \"ε\" (epsilon) has a "
+"special role in the presentation and does not stand for a token-tree "
+"sequence.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:148
+msgid ""
+"This Greek letter convention is usually just employed when the presence of a "
+"sequence is a technical detail; in particular, when I wish to _emphasize_ "
+"that we are operating on a sequence of token-trees, I will use the notation "
+"\"tt ...\" for the sequence, not a Greek letter"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:154
+msgid ""
+"Note that a matcher is merely a token tree. A \"simple NT\", as mentioned "
+"above, is an meta-variable NT; thus it is a non-repetition. For example, "
+"`$foo:ty` is a simple NT but `$($foo:ty)+` is a complex NT."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:159
+msgid ""
+"Note also that in the context of this RFC, the term \"token\" generally "
+"_includes_ simple NTs."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:162
+msgid ""
+"Finally, it is useful for the reader to keep in mind that according to the "
+"definitions of this RFC, no simple NT matches the empty fragment, and "
+"likewise no token matches the empty fragment of Rust syntax. (Thus, the "
+"_only_ NT that can match the empty fragment is a complex NT.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:168
+msgid "The Matcher Invariant"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:170
+msgid ""
+"This RFC establishes the following two-part invariant for valid matchers"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:172
+msgid ""
+"For any two successive token tree sequences in a matcher `M` (i.e. `M = ... "
+"tt uu ...`), we must have FOLLOW(`... tt`) ⊇ FIRST(`uu ...`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:176
+msgid ""
+"For any separated complex NT in a matcher, `M = ... $(tt ...) SEP OP ...`, "
+"we must have `SEP` ∈ FOLLOW(`tt ...`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:180
+msgid ""
+"The first part says that whatever actual token that comes after a matcher "
+"must be somewhere in the predetermined follow set.  This ensures that a "
+"legal macro definition will continue to assign the same determination as to "
+"where `... tt` ends and `uu ...` begins, even as new syntactic forms are "
+"added to the language."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:186
+msgid ""
+"The second part says that a separated complex NT must use a separator token "
+"that is part of the predetermined follow set for the internal contents of "
+"the NT. This ensures that a legal macro definition will continue to parse an "
+"input fragment into the same delimited sequence of `tt ...`'s, even as new "
+"syntactic forms are added to the language."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:192
+msgid ""
+"(This is assuming that all such changes are appropriately restricted, by the "
+"definition of FOLLOW below, of course.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:195
+msgid ""
+"The above invariant is only formally meaningful if one knows what FIRST and "
+"FOLLOW denote. We address this in the following sections."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:198
+msgid "FIRST and FOLLOW, informally"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:200
+msgid "FIRST and FOLLOW are defined as follows."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:202
+msgid "A given matcher M maps to three sets: FIRST(M), LAST(M) and FOLLOW(M)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:204
+msgid ""
+"Each of the three sets is made up of tokens. FIRST(M) and LAST(M) may also "
+"contain a distinguished non-token element ε (\"epsilon\"), which indicates "
+"that M can match the empty fragment. (But FOLLOW(M) is always just a set of "
+"tokens.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:209
+msgid "Informally:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:211
+msgid ""
+"FIRST(M): collects the tokens potentially used first when matching a "
+"fragment to M."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:213
+msgid ""
+"LAST(M): collects the tokens potentially used last when matching a fragment "
+"to M."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:215
+msgid ""
+"FOLLOW(M): the set of tokens allowed to follow immediately after some "
+"fragment matched by M."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:218
+msgid ""
+"In other words: t ∈ FOLLOW(M) if and only if there exists (potentially "
+"empty) token sequences α, β, γ, δ where:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:219
+msgid "M matches β,"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:220
+msgid "t matches γ, and"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:221
+msgid "The concatenation α β γ δ is a parseable Rust program."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:223
+msgid ""
+"We use the shorthand ANYTOKEN to denote the set of all tokens (including "
+"simple NTs)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:225
+msgid ""
+"(For example, if any token is legal after a matcher M, then FOLLOW(M) = "
+"ANYTOKEN.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:227
+msgid ""
+"(To review one's understanding of the above informal descriptions, the "
+"reader at this point may want to jump ahead to the [examples of FIRST/LAST]"
+"(#examples-of-first-and-last) before reading their formal definitions.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:232
+msgid "FIRST, LAST"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:234
+msgid "Below are formal inductive definitions for FIRST and LAST."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:236
+msgid ""
+"\"A ∪ B\" denotes set union, \"A ∩ B\" denotes set intersection, and \"A \\ "
+"B\" denotes set difference (i.e. all elements of A that are not present in "
+"B)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:240
+msgid ""
+"FIRST(M), defined by case analysis on the sequence M and the structure of "
+"its first token-tree (if any):"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:243
+msgid "if M is the empty sequence, then FIRST(M) = { ε },"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:245
+msgid "if M starts with a token t, then FIRST(M) = { t },"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:247
+msgid ""
+"(Note: this covers the case where M starts with a delimited token-tree "
+"sequence, `M = OPEN tt ... CLOSE ...`, in which case `t = OPEN` and thus "
+"FIRST(M) = { `OPEN` }.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:251
+msgid ""
+"(Note: this critically relies on the property that no simple NT matches the "
+"empty fragment.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:254
+msgid ""
+"Otherwise, M is a token-tree sequence starting with a complex NT: `M = "
+"$( tt ... ) OP α`, or `M = $( tt ... ) SEP OP α`, (where `α` is the "
+"(potentially empty) sequence of token trees for the rest of the matcher)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:258 src/0550-macro-future-proofing.md:292
+#: src/0550-macro-future-proofing.md:301
+msgid "Let sep_set = { SEP } if SEP present; otherwise sep_set = {}."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:260
+msgid ""
+"If ε ∈ FIRST(`tt ...`), then FIRST(M) = (FIRST(`tt ...`) \\ { ε }) ∪ sep_set "
+"∪ FIRST(`α`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:262
+msgid "Else if OP = `*`, then FIRST(M) = FIRST(`tt ...`) ∪ FIRST(`α`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:264
+msgid "Otherwise (OP = `+`), FIRST(M) = FIRST(`tt ...`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:266
+msgid "Note: The ε-case above,"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:268
+msgid "FIRST(M) = (FIRST(`tt ...`) \\ { ε }) ∪ sep_set ∪ FIRST(`α`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:270
+msgid ""
+"may seem complicated, so lets take a moment to break it down. In the ε case, "
+"the sequence `tt ...` may be empty. Therefore our first token may be `SEP` "
+"itself (if it is present), or it may be the first token of `α`); that's why "
+"the result is including \"sep_set ∪ FIRST(`α`)\". Note also that if `α` "
+"itself may match the empty fragment, then FIRST(`α`) will ensure that ε is "
+"included in our result, and conversely, if `α` cannot match the empty "
+"fragment, then we must _ensure_ that ε is _not_ included in our result; "
+"these two facts together are why we can and should unconditionally remove ε "
+"from FIRST(`tt ...`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:283
+msgid ""
+"LAST(M), defined by case analysis on M itself (a sequence of token-trees):"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:285
+msgid "if M is the empty sequence, then LAST(M) = { ε }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:287
+msgid "if M is a singleton token t, then LAST(M) = { t }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:289
+msgid ""
+"if M is the singleton complex NT repeating zero or more times, `M = "
+"$( tt ... ) *`, or `M = $( tt ... ) SEP *`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:294 src/0550-macro-future-proofing.md:303
+msgid "if ε ∈ LAST(`tt ...`) then LAST(M) = LAST(`tt ...`) ∪ sep_set"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:296
+msgid ""
+"otherwise, the sequence `tt ...` must be non-empty; LAST(M) = LAST(`tt ...`) "
+"∪ { ε }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:298
+msgid ""
+"if M is the singleton complex NT repeating one or more times, `M = "
+"$( tt ... ) +`, or `M = $( tt ... ) SEP +`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:305
+msgid ""
+"otherwise, the sequence `tt ...` must be non-empty; LAST(M) = LAST(`tt ...`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:307
+msgid ""
+"if M is a delimited token-tree sequence `OPEN tt ... CLOSE`, then LAST(M) = "
+"{ `CLOSE` }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:309
+msgid "if M is a non-empty sequence of token-trees `tt uu ...`,"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:311
+msgid ""
+"If ε ∈ LAST(`uu ...`), then LAST(M) = LAST(`tt`) ∪ (LAST(`uu ...`) \\ { ε })."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:313
+msgid ""
+"Otherwise, the sequence `uu ...` must be non-empty; then LAST(M) = "
+"LAST(`uu ...`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:315
+msgid ""
+"NOTE: The presence or absence of SEP _is_ relevant to the above definitions, "
+"but solely in the case where the interior of the complex NT could be empty "
+"(i.e. ε ∈ FIRST(interior)). (I overlooked this fact in my first round of "
+"prototyping.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:320
+msgid ""
+"NOTE: The above definition for LAST assumes that we keep our pre-existing "
+"rule that the separator token in a complex NT is _solely_ for separating "
+"elements; i.e. that such NT's do not match fragments that _end with_ the "
+"separator token. If we choose to lift this restriction in the future, the "
+"above definition will need to be revised accordingly."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:327
+msgid "Examples of FIRST and LAST"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:330
+msgid ""
+"Below are some examples of FIRST and LAST. (Note in particular how the "
+"special ε element is introduced and eliminated based on the interaction "
+"between the pieces of the input.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:334
+msgid ""
+"Our first example is presented in a tree structure to elaborate on how the "
+"analysis of the matcher composes. (Some of the simpler subtrees have been "
+"elided.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:360
+msgid "Thus:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:362
+msgid ""
+"FIRST(`$($d:ident $e:expr );* $( $(h)* );* $( f ;)+ g`) = { `$d:ident`, `h`, "
+"`;`, `f` }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:364
+msgid "Note however that:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:366
+msgid ""
+"FIRST(`$($d:ident $e:expr );* $( $(h)* );* $($( f ;)+ g)*`) = { `$d:ident`, "
+"`h`, `;`, `f`, ε }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:368
+msgid "Here are similar examples but now for LAST."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:370
+msgid "LAST(`$d:ident $e:expr`) = { `$e:expr` }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:371
+msgid "LAST(`$( $d:ident $e:expr );*`) = { `$e:expr`, ε }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:372
+msgid "LAST(`$( $d:ident $e:expr );* $(h)*`) = { `$e:expr`, ε, `h` }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:373
+msgid "LAST(`$( $d:ident $e:expr );* $(h)* $( f ;)+`) = { `;` }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:374
+msgid "LAST(`$( $d:ident $e:expr );* $(h)* $( f ;)+ g`) = { `g` }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:376
+msgid ""
+"and again, changing the end part of matcher changes its last set "
+"considerably:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:378
+msgid ""
+"LAST(`$( $d:ident $e:expr );* $(h)* $($( f ;)+ g)*`) = { `$e:expr`, ε, `h`, "
+"`g` }"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:380
+msgid "FOLLOW(M)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:382
+msgid ""
+"Finally, the definition for `FOLLOW(M)` is built up incrementally atop more "
+"primitive functions."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:385
+msgid ""
+"We first assume a primitive mapping, `FOLLOW(NT)` (defined [below]"
+"(#follownt)) from a simple NT to the set of allowed tokens for the fragment "
+"specifier for that NT."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:389
+msgid ""
+"Second, we generalize FOLLOW to tokens: FOLLOW(t) = FOLLOW(NT) if t is (a "
+"simple) NT. Otherwise, t must be some other (non NT) token; in this case "
+"FOLLOW(t) = ANYTOKEN."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:392
+msgid ""
+"Finally, we generalize FOLLOW to arbitrary matchers by composing the "
+"primitive functions above:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:400
+msgid ""
+"Examples of FOLLOW (expressed as equality relations between sets, to avoid "
+"incorporating details of FOLLOW(NT) in these examples):"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:403
+msgid "FOLLOW(`$( $d:ident $e:expr )*`) = FOLLOW(`$e:expr`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:404
+msgid ""
+"FOLLOW(`$( $d:ident $e:expr )* $(;)*`) = FOLLOW(`$e:expr`) ∩ ANYTOKEN = "
+"FOLLOW(`$e:expr`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:405
+msgid "FOLLOW(`$( $d:ident $e:expr )* $(;)* $( f |)+`) = ANYTOKEN"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:407
+msgid "FOLLOW(NT)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:410
+msgid ""
+"Here is the definition for FOLLOW(NT), which maps every simple NT to the set "
+"of tokens that are allowed to follow it, based on the fragment specifier for "
+"the NT."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:414
+msgid ""
+"The current legal fragment specifiers are: `item`, `block`, `stmt`, `pat`, "
+"`expr`, `ty`, `ident`, `path`, `meta`, and `tt`."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:417
+msgid "`FOLLOW(pat)` = `{FatArrow, Comma, Eq, Or, Ident(if), Ident(in)}`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:418
+msgid "`FOLLOW(expr)` = `{FatArrow, Comma, Semicolon}`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:419
+msgid ""
+"`FOLLOW(ty)` = `{OpenDelim(Brace), Comma, FatArrow, Colon, Eq, Gt, Semi, Or, "
+"Ident(as), Ident(where), OpenDelim(Bracket), Nonterminal(Block)}`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:420
+msgid "`FOLLOW(stmt)` = `FOLLOW(expr)`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:421
+msgid "`FOLLOW(path)` = `FOLLOW(ty)`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:422
+msgid "`FOLLOW(block)` = any token"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:423
+msgid "`FOLLOW(ident)` = any token"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:424
+msgid "`FOLLOW(tt)` = any token"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:425
+msgid "`FOLLOW(item)` = any token"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:426
+msgid "`FOLLOW(meta)` = any token"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:428
+msgid "(Note that close delimiters are valid following any NT.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:430
+msgid "Examples of valid and invalid matchers"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:432
+msgid ""
+"With the above specification in hand, we can present arguments for why "
+"particular matchers are legal and others are not."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:435
+msgid ""
+"`($ty:ty < foo ,)` : illegal, because FIRST(`< foo ,`) = { `<` } ⊈ "
+"FOLLOW(`ty`)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:437
+msgid ""
+"`($ty:ty , foo <)` :   legal, because FIRST(`, foo <`) = { `,` }  is ⊆ "
+"FOLLOW(`ty`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:439
+msgid ""
+"`($pa:pat $pb:pat $ty:ty ,)` : illegal, because FIRST(`$pb:pat $ty:ty ,`) = "
+"{ `$pb:pat` } ⊈ FOLLOW(`pat`), and also FIRST(`$ty:ty ,`) = { `$ty:ty` } ⊈ "
+"FOLLOW(`pat`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:441
+msgid ""
+"`( $($a:tt $b:tt)* ; )` : legal, because FIRST(`$b:tt`) = { `$b:tt` } is ⊆ "
+"FOLLOW(`tt`) = ANYTOKEN, as is FIRST(`;`) = { `;` }."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:443
+msgid ""
+"`( $($t:tt),* , $(t:tt),* )` : legal (though any attempt to actually use "
+"this macro will signal a local ambiguity error during expansion)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:445
+msgid ""
+"`($ty:ty $(; not sep)* -)` : illegal, because FIRST(`$(; not sep)* -`) = { `;"
+"`, `-` } is not in FOLLOW(`ty`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:447
+msgid ""
+"`($($ty:ty)-+)` : illegal, because separator `-` is not in FOLLOW(`ty`)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:450
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:452
+msgid ""
+"It does restrict the input to a MBE, but the choice of delimiters provides "
+"reasonable freedom and can be extended in the future."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:455
+msgid "Alternatives"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:457
+msgid ""
+"Fix the syntax that a fragment can parse. This would create a situation "
+"where a future MBE might not be able to accept certain inputs because the "
+"input uses newer features than the fragment that was fixed at 1.0. For "
+"example, in the `bar` MBE above, if the `ty` fragment was fixed before the "
+"unboxed closure sugar was introduced, the MBE would not be able to accept "
+"such a type. While this approach is feasible, it would cause unnecessary "
+"confusion for future users of MBEs when they can't put certain perfectly "
+"valid Rust code in the input to an MBE. Versioned fragments could avoid this "
+"problem but only for new code."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:466
+msgid ""
+"Keep `macro_rules` unstable. Given the great syntactical abstraction that "
+"`macro_rules` provides, it would be a shame for it to be unusable in a "
+"release version of Rust. If ever `macro_rules` were to be stabilized, this "
+"same issue would come up."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:470
+msgid ""
+"Do nothing. This is very dangerous, and has the potential to essentially "
+"freeze Rust's syntax for fear of accidentally breaking a macro."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:473
+msgid "Edit History"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:475
+msgid ""
+"Updated by https://github.com/rust-lang/rfcs/pull/1209, which added "
+"semicolons into the follow set for types."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:478
+msgid "Updated by https://github.com/rust-lang/rfcs/pull/1384:"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:479
+msgid ""
+"replaced detailed design with a specification-oriented presentation rather "
+"than an implementation-oriented algorithm."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:480
+msgid ""
+"fixed some oversights in the specification that led to matchers like `$e:"
+"expr { stuff }` being accepted (which match fragments like `break { stuff }"
+"`, significantly limiting future language extensions),"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:481
+msgid ""
+"expanded the follows sets for `ty` to include `OpenDelim(Brace), "
+"Ident(where), Or` (since Rust's grammar already requires all of `|foo:TY| {}"
+"`, `fn foo() -> TY {}` and `fn foo() -> TY where {}` to work)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:482
+msgid ""
+"expanded the follow set for `pat` to include `Or` (since Rust's grammar "
+"already requires `match (true,false) { PAT | PAT => {} }` and `|PAT| {}` to "
+"work); see also [RFC issue 1336](https://github.com/rust-lang/rfcs/"
+"issues/1336). Also added `If` and `In` to follow set for `pat` (to make the "
+"specification match the old implementation)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:486
+msgid ""
+"Updated by https://github.com/rust-lang/rfcs/pull/1462, which added open "
+"square bracket into the follow set for types."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:489
+msgid ""
+"Updated by https://github.com/rust-lang/rfcs/pull/1494, which adjusted the "
+"follow set for types to include block nonterminals."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:492
+msgid "Appendices"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:494
+msgid "Appendix A: Algorithm for recognizing valid matchers."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:496
+msgid ""
+"The detailed design above only sought to provide a _specification_ for what "
+"a correct matcher is (by defining FIRST, LAST, and FOLLOW, and specifying "
+"the invariant relating FIRST and FOLLOW for all valid matchers."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:501
+msgid ""
+"The above specification can be implemented efficiently; we here give one "
+"example algorithm for recognizing valid matchers."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:504
+msgid ""
+"This is not the only possible algorithm; for example, one could precompute a "
+"table mapping every suffix of every token-tree sequence to its FIRST set, by "
+"augmenting `FirstSet` below accordingly."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:509
+msgid ""
+"Or one could store a subset of such information during the precomputation, "
+"such as just the FIRST sets for complex NT's, and then use that table to "
+"inform a _forward scan_ of the input."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:513
+msgid ""
+"The latter is in fact what my prototype implementation does; I must "
+"emphasize the point that the algorithm here is not prescriptive."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:516
+msgid ""
+"The intent of this RFC is that the specifications of FIRST and FOLLOW above "
+"will take precedence over this algorithm if the two are found to be "
+"producing inconsistent results."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:520
+msgid "The algorithm for recognizing valid matchers `M` is named ValidMatcher."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:522
+msgid ""
+"To define it, we will need a mapping from submatchers of M to the FIRST set "
+"for that submatcher; that is handled by `FirstSet`."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:525
+msgid "Procedure FirstSet(M)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:527
+msgid "_input_: a token tree `M` representing a matcher"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:529
+msgid "_output_: `FIRST(M)`"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:555
+msgid ""
+"(Note: If we were precomputing a full table in this procedure, we would need "
+"a recursive invocation on (uu ...) in step 2 of the for-loop.)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:558
+msgid "Predicate ValidMatcher(M)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:560
+msgid ""
+"To simplify the specification, we assume in this presentation that all "
+"simple NT's have a valid fragment specifier (i.e., one that has an entry in "
+"the FOLLOW(NT) table above."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:564
+msgid ""
+"This algorithm works by scanning forward across the matcher M = α β, (where "
+"α is the prefix we have scanned so far, and β is the suffix that remains to "
+"be scanned). We maintain LAST(α) as we scan, and use it to compute FOLLOW(α) "
+"and compare that to FIRST(β)."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:569
+msgid ""
+"_input_: a token tree, `M`, and a set of tokens that could follow it, `F`."
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:571
+msgid "_output_: LAST(M) (and also signals failure whenever M is invalid)"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:573
+msgid ""
+"```\n"
+"Let last_of_prefix = { ε }\n"
+"\n"
+"Let M = tts[1] tts[2] ... tts[n].\n"
+"\n"
+"For i in 1 up to n (inclusive):\n"
+"  // For reference:\n"
+"  // α = tts[1] .. tts[i]\n"
+"  // β = tts[i+1] .. tts[n]\n"
+"  // γ is some outer token sequence; the input F represents FIRST(γ)\n"
+"\n"
+"  1. Let tt = tts[i].\n"
+"\n"
+"  2. Let first_of_suffix; // aka FIRST(β γ)\n"
+"\n"
+"  3. let S = FirstSet(tts[i+1] .. tts[n]);\n"
+"\n"
+"  4. if ε ∈ S then\n"
+"     // (include the follow information if necessary)\n"
+"\n"
+"     first_of_suffix := S ∪ F\n"
+"\n"
+"  5. else\n"
+"\n"
+"     first_of_suffix := S\n"
+"\n"
+"  6. Update last_of_prefix via case analysis on tt:\n"
+"\n"
+"     a. If tt is a token:\n"
+"        last_of_prefix := { tt }\n"
+"\n"
+"     b. Else if tt is a delimited sequence `OPEN uu ... CLOSE`:\n"
+"\n"
+"        i.  run ValidMatcher( M = `uu ...`, F = { `CLOSE` })\n"
+"\n"
+"       ii. last_of_prefix := { `CLOSE` }\n"
+"\n"
+"     c. Else, tt must be a complex NT,\n"
+"        in other words, `NT = $( uu .. ) SEP OP` or `NT = $( uu .. ) OP`:\n"
+"\n"
+"        i. If SEP present,\n"
+"          let sublast = ValidMatcher( M = `uu ...`, F = first_of_suffix ∪ "
+"{ `SEP` })\n"
+"\n"
+"       ii. else:\n"
+"          let sublast = ValidMatcher( M = `uu ...`, F = first_of_suffix)\n"
+"\n"
+"      iii. If ε in sublast then:\n"
+"           last_of_prefix := last_of_prefix ∪ (sublast \\ ε)\n"
+"\n"
+"       iv. Else:\n"
+"           last_of_prefix := sublast\n"
+"\n"
+"  7. At this point, last_of_prefix == LAST(α) and first_of_suffix == FIRST(β "
+"γ).\n"
+"\n"
+"     For each simple NT token t in last_of_prefix:\n"
+"\n"
+"     a. If first_of_suffix ⊆ FOLLOW(t), then we are okay so far. </li>\n"
+"\n"
+"     b. Otherwise, we have found a token t whose follow set is not "
+"compatible\n"
+"        with the FIRST(β γ), and must signal failure.\n"
+"\n"
+"// After running the above for loop on all of `M`, last_of_prefix == "
+"LAST(M)\n"
+"\n"
+"Return last_of_prefix\n"
+"```"
+msgstr ""
+
+#: src/0550-macro-future-proofing.md:639
+msgid ""
+"This algorithm should be run on every matcher in every `macro_rules` "
+"invocation, with `F` = { `EOF` }. If it rejects a matcher, an error should "
+"be emitted and compilation should not complete."
+msgstr ""

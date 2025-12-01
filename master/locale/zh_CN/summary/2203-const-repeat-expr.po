@@ -1,0 +1,239 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2203-const-repeat-expr.md:1
+msgid "Feature Name: `const_repeat_expr`"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:2
+msgid "Start Date: 2017-10-20"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2203](https://github.com/rust-lang/rfcs/pull/2203)"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#49147](https://github.com/rust-lang/rust/"
+"issues/49147)"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:6
+msgid "⚠ This RFC has mostly been superseded ⚠"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:8
+msgid ""
+"This turned out to be more complicated than expected to detect while being "
+"intuitive to the programmer.  As such, it's expected that this problem space "
+"will be addressed with the _inline consts_ from [RFC 2920](https://github."
+"com/rust-lang/rfcs/blob/master/text/2920-inline-const.md) instead, which "
+"have syntax to opt-in to the behaviour."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:10
+msgid ""
+"However, the simpler case of `[SOME_CONST_ITEM; N]` was kept (stabilized in "
+"[rust-lang/rust#49147](https://github.com/rust-lang/rust/issues/49147))."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:15
+msgid "Summary"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:18
+msgid ""
+"Relaxes the rules for repeat expressions, `[x; N]` such that `x` may also be "
+"`const` _(strictly speaking rvalue promotable)_, in addition to `typeof(x): "
+"Copy`. The result of `[x; N]` where `x` is `const` is itself also `const`."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:22
+msgid "Motivation"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:28
+msgid ""
+"[RFC 2000, `const_generics`](https://github.com/rust-lang/rfcs/blob/master/"
+"text/2000-const-generics.md) introduced the ability to have generically "
+"sized arrays. Even with that RFC, it is currently impossible to create such "
+"an array that is also `const`. Creating an array that is `const` may for "
+"example be useful for the [`const_default` RFC](https://github.com/Centril/"
+"rfcs/blob/rfc/const-default/text/0000-const-default.md) which proposes the "
+"following trait:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:37
+msgid ""
+"To add an implementation of this trait for an array of any size where the "
+"elements of type `T` are `ConstDefault`, as in:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:48
+msgid ""
+"In the example given by [`mem::uninitialized()`](https://doc.rust-lang.org/"
+"nightly/std/mem/fn.uninitialized.html), a value of type `[Vec<u32>; 1000]` "
+"is created and filled. With this RFC, and when `Vec::new()` becomes const, "
+"the user can simply write:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:54
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:57
+msgid ""
+"this removes one common reason to use `uninitialized()` which **\"is "
+"incredibly dangerous\"**."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:60
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:63
+msgid "You have a variable or expression `X` which is const, for example:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:70
+msgid ""
+"Now, you'd like to use array repeat expressions `[X; N]` to create an array "
+"containing a bunch of `X`es. Sorry, you are out of luck!"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:73
+msgid "But with this RFC, you can now write:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:80
+msgid "or, if you wish to modify the array later:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:88
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:91
+msgid ""
+"Values which are `const` are freely duplicatable as seen in the following "
+"example which compiles today. This is also the case with `Copy`. Therefore, "
+"the value `X` in the repeat expression may be simply treated as if it were "
+"of a `Copy` type."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:105
+msgid "Thus, the compiler may rewrite the following:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:116
+msgid "internally as:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:122
+msgid ""
+"// This is the value to be repeated.\n"
+"    // In this case, a panic won't happen, but if it did, that panic\n"
+"    // would happen during compile time at this point and not later.\n"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:135
+msgid ""
+"// ptr::write does not run destructor of elem already in array.\n"
+"                // Since X is const, it can not panic at this point.\n"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:148
+msgid ""
+"Additionally, the pass that checks `const`ness must treat `[expr; N]` as a "
+"`const` value such that `[expr; N]` is assignable to a `const` item as well "
+"as permitted inside a `const fn`."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:152
+msgid ""
+"Strictly speaking, the set of values permitted in the expression `[expr; N]` "
+"are those where `is_rvalue_promotable(expr)` or `typeof(expr): Copy`. "
+"Specifically, in `[expr; N]` the expression `expr` is evaluated:"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:155
+msgid "never, if `N == 0`,"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:156
+msgid "one time, if `N == 1`,"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:157
+msgid "`N` times, otherwise."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:159
+msgid ""
+"For values that are not freely duplicatable, evaluating `expr` will result "
+"in a move, which results in an error if `expr` is moved more than once "
+"(including moves outside of the repeat expression). These semantics are "
+"intentionally conservative and intended to be forward-compatible with a more "
+"expansive `is_const(expr)` check."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:165
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:168
+msgid ""
+"It might make the semantics of array initializers more fuzzy. The RFC, "
+"however, argues that the change is quite intuitive."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:171
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:176
+msgid ""
+"The alternative, in addition to simply not doing this, is to modify a host "
+"of other constructs such as [`mem::uninitialized()`](https://doc.rust-lang."
+"org/nightly/std/mem/fn.uninitialized.html), for loops over iterators, "
+"\\[`ptr::write`\\] to be `const`, which is a larger change. The design "
+"offered by this RFC is therefore the simplest and most non-intrusive design. "
+"It is also the most consistent."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:182
+msgid ""
+"Another alternative is to allow a more expansive set of values "
+"`is_const(expr)` rather than `is_rvalue_promotable(expr)`. A consequence of "
+"this is that checking constness would be done earlier on the HIR. Instead, "
+"checking if `expr` is rvalue promotable can be done on the MIR and does not "
+"require significant changes to the compiler. If we decide to expand to "
+"`is_const(expr)` in the future, we may still do so as the changes proposed "
+"in this RFC are compatible with such future changes."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:190
+msgid ""
+"The impact of not doing this change is to not enable generically sized "
+"arrays to be `const` as well as encouraging the use of `mem::uninitialized`."
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:193
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2203-const-repeat-expr.md:196
+msgid "There are no unresolved questions."
+msgstr ""

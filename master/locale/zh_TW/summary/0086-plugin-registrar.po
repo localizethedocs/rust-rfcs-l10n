@@ -1,0 +1,205 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0086-plugin-registrar.md:1
+msgid "Start Date: 2014-05-22"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:2
+msgid "RFC PR: [rust-lang/rfcs#86](https://github.com/rust-lang/rfcs/pull/86)"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#14637](https://github.com/rust-lang/rust/"
+"issues/14637)"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:7
+msgid ""
+"Generalize the `#[macro_registrar]` feature so it can register other kinds "
+"of compiler plugins."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:9
+msgid "Motivation"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:11
+msgid ""
+"I want to implement [loadable lints](https://github.com/mozilla/rust/"
+"issues/14067) and use them for project-specific static analysis passes in "
+"Servo.  Landing this first will allow more evolution of the plugin system "
+"without breaking source compatibility for existing users."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:13
+msgid "Detailed design"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:15
+msgid "To register a procedural macro in current Rust:"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:17
+msgid ""
+"```.rs\n"
+"use syntax::ast::Name;\n"
+"use syntax::parse::token;\n"
+"use syntax::ext::base::{SyntaxExtension, BasicMacroExpander, NormalTT};\n"
+"\n"
+"#[macro_registrar]\n"
+"pub fn macro_registrar(register: |Name, SyntaxExtension|) {\n"
+"    register(token::intern(\"named_entities\"),\n"
+"        NormalTT(box BasicMacroExpander {\n"
+"            expander: named_entities::expand,\n"
+"            span: None\n"
+"        },\n"
+"        None));\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:33
+msgid "I propose an interface like"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:35
+msgid ""
+"```.rs\n"
+"use syntax::parse::token;\n"
+"use syntax::ext::base::{BasicMacroExpander, NormalTT};\n"
+"\n"
+"use rustc::plugin::Registry;\n"
+"\n"
+"#[plugin_registrar]\n"
+"pub fn plugin_registrar(reg: &mut Registry) {\n"
+"    reg.register_macro(token::intern(\"named_entities\"),\n"
+"        NormalTT(box BasicMacroExpander {\n"
+"            expander: named_entities::expand,\n"
+"            span: None\n"
+"        },\n"
+"        None));\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:52
+msgid ""
+"Then the struct `Registry` could provide additional methods such as "
+"`register_lint` as those features are implemented."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:54
+msgid "It could also provide convenience methods:"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:56
+msgid ""
+"```.rs\n"
+"use rustc::plugin::Registry;\n"
+"\n"
+"#[plugin_registrar]\n"
+"pub fn plugin_registrar(reg: &mut Registry) {\n"
+"    reg.register_simple_macro(\"named_entities\", named_entities::expand);\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:65
+msgid ""
+"`phase(syntax)` becomes `phase(plugin)`, with the former as a deprecated "
+"synonym that warns.  This is to avoid silent breakage of the very common "
+"`#[phase(syntax)] extern crate log`."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:67
+msgid ""
+"We only need one phase of loading plugin crates, even though the plugins we "
+"load may be used at different points (or not at all)."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:69
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:71
+msgid "Breaking change for existing procedural macros."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:73
+msgid "More moving parts."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:75
+msgid ""
+"`Registry` is provided by `librustc`, because it will have methods for "
+"registering lints and other `librustc` things.  This means that syntax "
+"extensions must link `librustc`, when before they only needed `libsyntax` "
+"(but could link `librustc` anyway if desired).  This was discussed [on the "
+"RFC PR](https://github.com/rust-lang/rfcs/pull/86) and [the Rust PR](https://"
+"github.com/mozilla/rust/pull/14554) and [on IRC](https://botbot.me/mozilla/"
+"rust-internals/2014-05-22/?msg=15075433&page=5)."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:77
+msgid ""
+"`#![feature(macro_registrar)]` becomes unknown, contradicting a comment in "
+"`feature_gate.rs`:"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:79
+msgid ""
+"This list can never shrink, it may only be expanded (in order to prevent old "
+"programs from failing to compile)"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:81
+msgid ""
+"Since when do we ensure that old programs will compile? ;)  The "
+"`#[macro_registrar]` attribute wouldn't work anyway."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:83
+msgid "Alternatives"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:85
+msgid ""
+"We could add `#[lint_registrar]` etc. alongside `#[macro_registrar]`.  This "
+"seems like it will produce more duplicated effort all around.  It doesn't "
+"provide convenience methods, and it won't support API evolution as well."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:87
+msgid ""
+"We could support the old `#[macro_registrar]` by injecting an adapter shim.  "
+"This is significant extra work to support a feature with no stability "
+"guarantee."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:89
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0086-plugin-registrar.md:91
+msgid "Naming bikeshed."
+msgstr ""
+
+#: src/0086-plugin-registrar.md:93
+msgid "What set of convenience methods should we provide?"
+msgstr ""

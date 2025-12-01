@@ -1,0 +1,536 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2005-match-ergonomics.md:1
+msgid "Feature Name: pattern-binding-modes"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:2
+msgid "Start Date: 2016-08-12"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2005](https://github.com/rust-lang/rfcs/pull/2005)"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#42640](https://github.com/rust-lang/rust/"
+"issues/42640)"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:9
+msgid "Better ergonomics for pattern-matching on references."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:11
+msgid ""
+"Currently, matching on references requires a bit of a dance using `ref` and "
+"`&` patterns:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:21
+msgid "// or using `*`:\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:30
+msgid ""
+"After this RFC, the above form still works, but now we also allow a simpler "
+"form:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:36
+msgid "// `y` is a reference to `0`\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:41
+msgid ""
+"This is accomplished through automatic dereferencing and the introduction of "
+"default binding modes."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:44
+msgid "Motivation"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:47
+msgid ""
+"Rust is usually strict when distinguishing between value and reference "
+"types. In particular, distinguishing borrowed and owned data. However, there "
+"is often a trade-off between [explicit-ness and ergonomics](https://blog."
+"rust-lang.org/2017/03/02/lang-ergonomics.html), and Rust errs on the side of "
+"ergonomics in some carefully selected places. Notably when using the dot "
+"operator to call methods and access fields, and when declaring closures."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:54
+msgid ""
+"The match expression is an extremely common expression and arguably, the "
+"most important control flow mechanism in Rust. Borrowed data is probably the "
+"most common form in the language. However, using match expressions and "
+"borrowed data together can be frustrating: getting the correct combination "
+"of `*`, `&`, and `ref` to satisfy the type and borrow checkers is a common "
+"problem, and one which is often encountered early by Rust beginners. It is "
+"especially frustrating since it seems that the compiler can guess what is "
+"needed but gives you error messages instead of helping."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:63
+msgid "For example, consider the following program:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:74
+msgid ""
+"It is clear what we want to do here - we want to check which variant `e` is "
+"a reference to. Annoyingly, we have two valid choices:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:84
+msgid "and"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:93
+msgid ""
+"The former is more obvious, but requires more noisey syntax (an `&` on every "
+"arm). The latter can appear a bit magical to newcomers - the type checker "
+"treats `*e` as a value, but the borrow checker treats the data as borrowed "
+"for the duration of the match. It also does not work with nested types, "
+"`match (*e,) ...` for example is not allowed."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:99
+msgid ""
+"In either case if we further bind variables, we must ensure that we do not "
+"attempt to move data, e.g.,"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:109
+msgid ""
+"If the type of `x` does not have the `Copy` bound, then this will give a "
+"borrow check error. We must use the `ref` keyword to take a reference: `E::"
+"Foo(ref x)` (or `&E::Foo(ref x)` if we match `e` rather than `*e`)."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:113
+msgid ""
+"The `ref` keyword is a pain for Rust beginners, and a bit of a wart for "
+"everyone else. It violates the rule of patterns matching declarations, it is "
+"not found anywhere outside of patterns, and it is often confused with `&`. "
+"(See for example, https://github.com/rust-lang/rust-by-example/issues/390)."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:118
+msgid ""
+"Match expressions are an area where programmers often end up playing 'type "
+"Tetris': adding operators until the compiler stops complaining, without "
+"understanding the underlying issues. This serves little benefit - we can "
+"make match expressions much more ergonomic without sacrificing safety or "
+"readability."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:123
+msgid ""
+"Match ergonomics has been highlighted as an area for improvement in 2017: "
+"[internals thread](https://internals.rust-lang.org/t/roadmap-2017-"
+"productivity-learning-curve-and-expressiveness/4097) and [Rustconf keynote]"
+"(https://www.youtube.com/watch?"
+"v=pTQxHIzGqFI&list=PLE7tQUdRKcybLShxegjn0xyTTDJeYwEkI&index=1)."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:128
+msgid "Detailed design"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:131
+msgid ""
+"This RFC is a refinement of [the match ergonomics RFC](https://github.com/"
+"rust-lang/rfcs/pull/1944). Rather than using auto-deref and auto-"
+"referencing, this RFC introduces _default binding modes_ used when a "
+"reference value is matched by a non-reference pattern."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:136
+msgid ""
+"In other words, we allow auto-dereferencing values during pattern-matching. "
+"When an auto-dereference occurs, the compiler will automatically treat the "
+"inner bindings as `ref` or `ref mut` bindings."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:140 src/2005-match-ergonomics.md:392
+msgid "Example:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:147
+msgid "// `y` is dereferenced, and `a` is bound like `ref a`.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:153
+msgid ""
+"Note that this RFC applies to all instances of pattern-matching, not just "
+"`match` expressions:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:160
+msgid "// `foo_ref` is dereferenced, and `x` is bound like `ref x`.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:166
+msgid "Definitions"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:168
+msgid ""
+"A reference pattern is any pattern which can match a reference without "
+"coercion. Reference patterns include bindings, wildcards (`_`), `const`s of "
+"reference types, and patterns beginning with `&` or `&mut`. All other "
+"patterns are _non-reference patterns_."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:173
+msgid ""
+"_Default binding mode_: this mode, either `move`, `ref`, or `ref mut`, is "
+"used to determine how to bind new pattern variables. When the compiler sees "
+"a variable binding not explicitly marked `ref`, `ref mut`, or `mut`, it uses "
+"the _default binding mode_ to determine how the variable should be bound. "
+"Currently, the _default binding mode_ is always `move`. Under this RFC, "
+"matching a reference with a _non-reference pattern_, would shift the default "
+"binding mode to `ref` or `ref mut`."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:182
+msgid "Binding mode rules"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:184
+msgid ""
+"The _default binding mode_ starts out as `move`. When matching a pattern, "
+"the compiler starts from the outside of the pattern and works inwards. Each "
+"time a reference is matched using a _non-reference pattern_, it will "
+"automatically dereference the value and update the default binding mode:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:189
+msgid ""
+"If the reference encountered is `&val`, set the default binding mode to "
+"`ref`."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:190
+msgid ""
+"If the reference encountered is `&mut val`: if the current default binding "
+"mode is `ref`, it should remain `ref`. Otherwise, set the current binding "
+"mode to `ref mut`."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:194
+msgid ""
+"If the automatically dereferenced value is still a reference, it is "
+"dereferenced and this process repeats."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:218
+msgid ""
+"Note that there is no exit from the `ref` binding mode. This is because an "
+"`&mut` inside of a `&` is still a shared reference, and thus cannot be used "
+"to mutate the underlying value."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:222
+msgid ""
+"Also note that no transitions are taken when using an explicit `ref` or `ref "
+"mut` binding. The _default binding mode_ only changes when matching a "
+"reference with a non-reference pattern."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:226
+msgid ""
+"The above rules and the examples that follow are drawn from @nikomatsakis's "
+"[comment proposing this design](https://github.com/rust-lang/rfcs/"
+"pull/1944#issuecomment-296133645)."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:229
+msgid "Examples"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:231
+msgid "No new behavior:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:235
+msgid ""
+"// `p` is a variable binding. Hence, this is **not** a ref-defaulting\n"
+"        // match, and `p` is bound with `move` semantics\n"
+"        // (and has type `&Option<i32>`).\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:242
+msgid "One match arm with new behavior:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:246
+msgid ""
+"// This pattern is not a `const` reference, `_`, or `&`-pattern,\n"
+"        // so this is a \"non-reference pattern.\"\n"
+"        // We dereference the `&` and shift the\n"
+"        // default binding mode to `ref`. `p` is read as `ref p` and given\n"
+"        // type `&i32`.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:253
+msgid ""
+"// In this arm, we are still in `move`-mode by default, so `x` has type\n"
+"        // `&Option<i32>`\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:257 src/2005-match-ergonomics.md:277
+#: src/2005-match-ergonomics.md:299 src/2005-match-ergonomics.md:317
+#: src/2005-match-ergonomics.md:335 src/2005-match-ergonomics.md:354
+#: src/2005-match-ergonomics.md:372
+msgid "// Desugared:\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:269
+msgid "`match` with \"or\" (`|`) patterns:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:273
+msgid "// Here, each of the patterns are treated independently\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:286
+msgid "Multiple nested patterns with new and old behavior, respectively:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:290
+msgid ""
+"// Here, the `a` will be `&i32`, because in the first half of the tuple\n"
+"        // we hit a non-reference pattern and shift into `ref` mode.\n"
+"        //\n"
+"        // In the second half of the tuple there's no non-reference "
+"pattern,\n"
+"        // so `b` will be `i32` (bound with `move` mode). Moreover, `b` is\n"
+"        // mutable.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:309
+msgid "Example with multiple dereferences:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:327
+msgid "Example with nested references:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:345
+msgid "Example of new mutable reference behavior:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:350
+msgid "// `y` is an `&mut` reference here, equivalent to `ref mut` before\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:364
+msgid "Example using `let`:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:367
+msgid ""
+"// Note that these rules apply to any pattern matching\n"
+"// whether it be in a `match` or a `let`.\n"
+"// For example, `x` here is a `ref` binding:\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:378
+msgid "Backwards compatibility"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:380
+msgid ""
+"In order to guarantee backwards-compatibility, this proposal only modifies "
+"pattern-matching when a reference is matched with a non-reference pattern, "
+"which is an error today."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:384
+msgid ""
+"This reasoning requires that the compiler knows if the type being matched is "
+"a reference, which isn't always true for inference variables. If the type "
+"being matched may or may not be a reference _and_ it is being matched by a "
+"_non-reference pattern_, then the compiler will default to assuming that it "
+"is not a reference, in which case the binding mode will default to `move` "
+"and it will behave exactly as it does today."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:397
+msgid "// This will panic, but that doesn't matter for this example\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:399
+msgid ""
+"// When matching here, we don't know whether `x[0]` is `Option<_>` or\n"
+"    // `&Option<_>`. `Some(y)` is a non-reference pattern, so we assume "
+"that\n"
+"    // `x[0]` is not a reference\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:404
+msgid ""
+"// Since we know `Vec::contains` takes `&T`, `x` must be of type\n"
+"        // `Vec<Option<usize>>`. However, we couldn't have known that "
+"before\n"
+"        // analyzing the match body.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:415
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:418
+msgid ""
+"This RFC makes matching on references easier and less error-prone. The "
+"documentation for matching references should be updated to use the style "
+"outlined in this RFC. Eventually, documentation and error messages should be "
+"updated to phase-out `ref` and `ref mut` in favor of the new, simpler syntax."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:423
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:426
+msgid ""
+"The major downside of this proposal is that it complicates the pattern-"
+"matching logic. However, doing so allows common cases to \"just work\", "
+"making the beginner experience more straightforward and requiring fewer "
+"manual reference gymnastics."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:430
+msgid "Future Extensions"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:432
+msgid ""
+"In the future, this RFC could be extended to add support for "
+"autodereferencing custom smart-pointer types using the `Deref` and "
+"`DerefMut` traits."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:438
+msgid "// y: &i32\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:443
+msgid ""
+"This feature has been omitted from this RFC. A few of the details of this "
+"feature are unclear, especially when considering interactions with a future "
+"`DerefMove` trait or similar."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:447
+msgid ""
+"Nevertheless, a followup RFC should be able to backwards-compatibly add "
+"support for custom autodereferencable types."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:450
+msgid "Alternatives"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:453
+msgid ""
+"We could only infer `ref`, leaving users to manually specify the `mut` in "
+"`ref mut` bindings. This has the advantage of keeping mutability explicit. "
+"Unfortunately, it also has some unintuitive results. `ref mut` doesn't "
+"actually produce mutable bindings-- it produces immutably-bound mutable "
+"references."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:458 src/2005-match-ergonomics.md:488
+msgid "// Today's behavior:\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:462
+msgid ""
+"// `y` here is actually an immutable binding.\n"
+"    // `y` can be used to mutate the value of `x`, but `y` can't be rebound "
+"to\n"
+"    // a new reference.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:465 src/2005-match-ergonomics.md:473
+#: src/2005-match-ergonomics.md:482
+msgid "//~ ERROR: re-assignment of immutable variable `y`\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:467
+msgid "// With this RFC's behavior:\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:472
+msgid "// The error is the same as above-- `y` is an immutable binding.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:475
+msgid "// If we modified this RFC to require explicit `mut` annotations:\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:480
+msgid ""
+"// The error is the same, but is now horribly confusing.\n"
+"    // `y` is clearly labeled `mut`, but it can't be modified.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:485
+msgid ""
+"Additionally, we don't require `mut` when declaring immutable reference "
+"bindings today:"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:489
+msgid ""
+"// `y` here isn't declared as `mut`, even though it can be used to mutate "
+"`x`.\n"
+msgstr ""
+
+#: src/2005-match-ergonomics.md:494
+msgid ""
+"Forcing users to manually specify `mut` in reference bindings would be "
+"inconsistent with Rust's current semantics, and would result in confusing "
+"errors."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:498
+msgid ""
+"We could support auto-ref / deref as suggested in [the original match "
+"ergonomics RFC.](https://github.com/rust-lang/rfcs/pull/1944) This approach "
+"has troublesome interaction with backwards-compatibility, and it becomes "
+"more difficult for the user to reason about whether they've borrowed or "
+"moved a value."
+msgstr ""
+
+#: src/2005-match-ergonomics.md:503
+msgid ""
+"We could allow writing `move` in patterns. Without this, `move`, unlike "
+"`ref` and `ref mut`, would always be implicit, leaving no way override a "
+"default binding mode of `ref` or `ref mut` and move the value out from "
+"behind a reference. However, moving a value out from behind a shared or "
+"mutable reference is only possible for `Copy` types, so this would not be "
+"particularly useful in practice, and would add unnecessary complexity to the "
+"language."
+msgstr ""

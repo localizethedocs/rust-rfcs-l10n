@@ -1,0 +1,1259 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3550-new-range.md:1
+msgid "Feature Name: `new_range`"
+msgstr ""
+
+#: src/3550-new-range.md:2
+msgid "Start Date: 2023-12-18"
+msgstr ""
+
+#: src/3550-new-range.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3550](https://github.com/rust-lang/rfcs/pull/3550)"
+msgstr ""
+
+#: src/3550-new-range.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#123741](https://github.com/rust-lang/rust/"
+"issues/123741)"
+msgstr ""
+
+#: src/3550-new-range.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3550-new-range.md:9
+msgid ""
+"Change the range operators `a..b`, `a..`, and `a..=b` to resolve to new "
+"types `std::range::Range`, `std::range::RangeFrom`, and `std::range::"
+"RangeInclusive` in Edition 2024. These new types will not implement "
+"`Iterator`, instead implementing `Copy` and `IntoIterator`."
+msgstr ""
+
+#: src/3550-new-range.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3550-new-range.md:14
+msgid ""
+"The current iterable range types ([`Range`](https://doc.rust-lang.org/stable/"
+"core/ops/struct.Range.html), [`RangeFrom`](https://doc.rust-lang.org/stable/"
+"core/ops/struct.RangeFrom.html), [`RangeInclusive`](https://doc.rust-lang."
+"org/stable/core/ops/struct.RangeInclusive.html)) implement `Iterator` "
+"directly. This is now widely considered to be a mistake, because it makes "
+"implementing `Copy` for those types hazardous due to how the two traits "
+"interact."
+msgstr ""
+
+#: src/3550-new-range.md:17
+msgid ""
+"// a *copy* of the iterator is used here\n"
+"    // ..\n"
+msgstr ""
+
+#: src/3550-new-range.md:21
+msgid ""
+"// the original iterator (not advanced) is used here\n"
+"    // ..\n"
+msgstr ""
+
+#: src/3550-new-range.md:30
+msgid ""
+"However, there is considerable demand for `Copy` range types for multiple "
+"reasons:"
+msgstr ""
+
+#: src/3550-new-range.md:31
+msgid ""
+"ergonomic use without needing explicit `.clone()`s or rewriting the `a..b` "
+"syntax repeatedly"
+msgstr ""
+
+#: src/3550-new-range.md:32
+msgid ""
+"use in `Copy` types (currently people work around this by using a tuple "
+"instead)"
+msgstr ""
+
+#: src/3550-new-range.md:34
+msgid ""
+"Another primary motivation is the extra size of `RangeInclusive`. It uses an "
+"extra `bool` field to keep track of when the upper bound has been yielded by "
+"the iterator, but this extra size is useless when the type is not used as an "
+"iterator."
+msgstr ""
+
+#: src/3550-new-range.md:36
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3550-new-range.md:39
+msgid ""
+"Rust has several different types of \"range\" syntax, including the "
+"following:"
+msgstr ""
+
+#: src/3550-new-range.md:41
+msgid ""
+"`a..b` denotes a range from `a` (inclusive) to `b` (exclusive). It resolves "
+"to the type `std::range::Range`. The iterator for `Range` will yield values "
+"from `a` (inclusive) to `b` (exclusive) in steps of one."
+msgstr ""
+
+#: src/3550-new-range.md:44
+msgid ""
+"`a..=b` denotes a range from `a` (inclusive) to `b` (inclusive). It resolve "
+"to the type `std::range::RangeInclusive`. The iterator for `RangeInclusive` "
+"will yield values from `a` (inclusive) to `b` (inclusive) in steps of one."
+msgstr ""
+
+#: src/3550-new-range.md:47
+msgid ""
+"`a..` denotes a range from `a` (inclusive) with no upper bound. It resolves "
+"to the type `std::range::RangeFrom`. The iterator for `RangeFrom` will yield "
+"values starting with `a` and increasing in steps of one."
+msgstr ""
+
+#: src/3550-new-range.md:50
+msgid ""
+"These types implement the `IntoIterator` trait, enabling their use directly "
+"in a `for` loop:"
+msgstr ""
+
+#: src/3550-new-range.md:53
+msgid "// `n` = 0, 1, 2, 3, 4\n"
+msgstr ""
+
+#: src/3550-new-range.md:57
+msgid ""
+"All range types are `Copy` when the bounds are `Copy`, allowing easy reuse:"
+msgstr ""
+
+#: src/3550-new-range.md:62 src/3550-new-range.md:65
+msgid "// ...\n"
+msgstr ""
+
+#: src/3550-new-range.md:69
+msgid ""
+"For convenience, several commonly-used methods from `Iterator` are present "
+"as inherent functions on the range types:"
+msgstr ""
+
+#: src/3550-new-range.md:72
+msgid "// n = 2, 4, 6, 8, 10, ...\n"
+msgstr ""
+
+#: src/3550-new-range.md:75
+msgid "// n = 4, 3, 2, 1, 0\n"
+msgstr ""
+
+#: src/3550-new-range.md:79
+msgid "Legacy Range Types"
+msgstr ""
+
+#: src/3550-new-range.md:81
+msgid ""
+"In Rust editions prior to 2024, `a..b`, `a..=b`, and `a..` resolved to a "
+"different set of types (now found in `std::range::legacy`). These legacy "
+"range types did not implement `Copy`, and implemented `Iterator` directly "
+"(rather than `IntoIterator`)."
+msgstr ""
+
+#: src/3550-new-range.md:83
+msgid ""
+"This meant that any `Iterator` method could be called on those range types:"
+msgstr ""
+
+#: src/3550-new-range.md:88 src/3550-new-range.md:127 src/3550-new-range.md:133
+msgid "// n = 1, 2, 3, 4\n"
+msgstr ""
+
+#: src/3550-new-range.md:92
+msgid ""
+"There exist `From` impls for converting from the new range types to the "
+"legacy range types."
+msgstr ""
+
+#: src/3550-new-range.md:94
+msgid "Migrating"
+msgstr ""
+
+#: src/3550-new-range.md:97
+msgid ""
+"In many cases, no changes need to be made at all. This includes most places "
+"where a `RangeBounds` or `IntoIterator` is expected:"
+msgstr ""
+
+#: src/3550-new-range.md:100 src/3550-new-range.md:103
+#: src/3550-new-range.md:108 src/3550-new-range.md:109
+msgid "// No changes necessary\n"
+msgstr ""
+
+#: src/3550-new-range.md:106
+msgid ""
+"And most places where `Iterator` methods were used directly on the range:"
+msgstr ""
+
+#: src/3550-new-range.md:112
+msgid ""
+"In other cases, `cargo fix --edition` will insert `.into_iter()` as "
+"necessary:"
+msgstr ""
+
+#: src/3550-new-range.md:116 src/3550-new-range.md:121
+msgid "// Add `.into_iter()`\n"
+msgstr ""
+
+#: src/3550-new-range.md:117 src/3550-new-range.md:122
+#: src/3550-new-range.md:140 src/3550-new-range.md:158
+#: src/3550-new-range.md:174 src/3550-new-range.md:202
+msgid "// Before\n"
+msgstr ""
+
+#: src/3550-new-range.md:119 src/3550-new-range.md:128
+#: src/3550-new-range.md:142 src/3550-new-range.md:160
+#: src/3550-new-range.md:185 src/3550-new-range.md:205
+msgid "// After\n"
+msgstr ""
+
+#: src/3550-new-range.md:137
+msgid "Or fall back to converting to the legacy types:"
+msgstr ""
+
+#: src/3550-new-range.md:148
+msgid "Migrating Libraries"
+msgstr ""
+
+#: src/3550-new-range.md:150
+msgid ""
+"Some libraries have range types in their public interface. To use the new "
+"range types with such a library, users will need to add explicit conversions."
+msgstr ""
+
+#: src/3550-new-range.md:152
+msgid ""
+"To reduce the burden of explicit conversions, libraries should make the "
+"following backwards-compatible changes:"
+msgstr ""
+
+#: src/3550-new-range.md:154
+msgid ""
+"Change any function parameters from legacy `Range*` types to `impl "
+"Into<Range*>` Or if applicable, `impl RangeBounds<_>`"
+msgstr ""
+
+#: src/3550-new-range.md:162
+msgid "// Or\n"
+msgstr ""
+
+#: src/3550-new-range.md:167
+msgid ""
+"Change any trait bounds that assume `Range*: Iterator` to use `IntoIterator` "
+"instead This is fully backwards-compatible, thanks to the [blanket `impl<I: "
+"Iterator> IntoIterator for I`](https://doc.rust-lang.org/stable/std/iter/"
+"trait.IntoIterator.html#impl-IntoIterator-for-I)"
+msgstr ""
+
+#: src/3550-new-range.md:199
+msgid ""
+"When your library implements a trait involving ranges, such as `std::ops::"
+"Index`, add impls for the new range types"
+msgstr ""
+
+#: src/3550-new-range.md:212
+msgid "**Note**"
+msgstr ""
+
+#: src/3550-new-range.md:213
+msgid ""
+"These changes to libraries should happen when _users_ of a given library "
+"transition to the new edition"
+msgstr ""
+
+#: src/3550-new-range.md:214
+msgid ""
+"These changes do not require the library itself to transition to the new "
+"edition"
+msgstr ""
+
+#: src/3550-new-range.md:216
+msgid "Diagnostics"
+msgstr ""
+
+#: src/3550-new-range.md:218
+msgid ""
+"There is a substantial amount of educational material in the wild which "
+"assumes the range types implement `Iterator`. If a user references this "
+"outdated material, it is important that compiler errors guide them to the "
+"new solution."
+msgstr ""
+
+#: src/3550-new-range.md:233
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3550-new-range.md:236
+msgid ""
+"**Note:** The exact names and module paths in this RFC are for demonstration "
+"purposes only, and can be finalized by _T-libs-api_ after the proposal is "
+"accepted."
+msgstr ""
+
+#: src/3550-new-range.md:238
+msgid ""
+"Add replacement types only for the current `Range`, `RangeFrom`, and "
+"`RangeInclusive`."
+msgstr ""
+
+#: src/3550-new-range.md:240
+msgid ""
+"The [**Range Expressions** page in the Reference](https://doc.rust-lang.org/"
+"reference/expressions/range-expr.html) will change to read as follows"
+msgstr ""
+
+#: src/3550-new-range.md:242
+msgid "Edition 2024 and later"
+msgstr ""
+
+#: src/3550-new-range.md:244
+msgid ""
+"The `..` and `..=` operators will construct an object of one of the `std::"
+"range::Range` (or `core::range::Range`) variants, according to the following "
+"table:"
+msgstr ""
+
+#: src/3550-new-range.md:246 src/3550-new-range.md:281
+msgid "Production"
+msgstr ""
+
+#: src/3550-new-range.md:246 src/3550-new-range.md:281
+msgid "Syntax"
+msgstr ""
+
+#: src/3550-new-range.md:246 src/3550-new-range.md:281
+msgid "Type"
+msgstr ""
+
+#: src/3550-new-range.md:246 src/3550-new-range.md:281
+msgid "Range"
+msgstr ""
+
+#: src/3550-new-range.md:248 src/3550-new-range.md:283
+msgid "_RangeExpr_"
+msgstr ""
+
+#: src/3550-new-range.md:248 src/3550-new-range.md:283
+msgid "start`..`end"
+msgstr ""
+
+#: src/3550-new-range.md:248
+msgid "std::range::Range"
+msgstr ""
+
+#: src/3550-new-range.md:248 src/3550-new-range.md:283
+msgid "start ≤ x \\< end"
+msgstr ""
+
+#: src/3550-new-range.md:249 src/3550-new-range.md:284
+msgid "_RangeFromExpr_"
+msgstr ""
+
+#: src/3550-new-range.md:249 src/3550-new-range.md:284
+msgid "start`..`"
+msgstr ""
+
+#: src/3550-new-range.md:249
+msgid "std::range::RangeFrom"
+msgstr ""
+
+#: src/3550-new-range.md:249 src/3550-new-range.md:284
+msgid "start ≤ x"
+msgstr ""
+
+#: src/3550-new-range.md:250 src/3550-new-range.md:285
+msgid "_RangeToExpr_"
+msgstr ""
+
+#: src/3550-new-range.md:250 src/3550-new-range.md:285
+msgid "`..`end"
+msgstr ""
+
+#: src/3550-new-range.md:250 src/3550-new-range.md:285
+msgid "std::range::RangeTo"
+msgstr ""
+
+#: src/3550-new-range.md:250 src/3550-new-range.md:285
+msgid "x \\< end"
+msgstr ""
+
+#: src/3550-new-range.md:251 src/3550-new-range.md:286
+msgid "_RangeFullExpr_"
+msgstr ""
+
+#: src/3550-new-range.md:251 src/3550-new-range.md:286
+msgid "`..`"
+msgstr ""
+
+#: src/3550-new-range.md:251 src/3550-new-range.md:286
+msgid "std::range::RangeFull"
+msgstr ""
+
+#: src/3550-new-range.md:251 src/3550-new-range.md:286
+msgid "\\-"
+msgstr ""
+
+#: src/3550-new-range.md:252 src/3550-new-range.md:287
+msgid "_RangeInclusiveExpr_"
+msgstr ""
+
+#: src/3550-new-range.md:252 src/3550-new-range.md:287
+msgid "start`..=`end"
+msgstr ""
+
+#: src/3550-new-range.md:252
+msgid "std::range::RangeInclusive"
+msgstr ""
+
+#: src/3550-new-range.md:252 src/3550-new-range.md:287
+msgid "start ≤ x ≤ end"
+msgstr ""
+
+#: src/3550-new-range.md:253 src/3550-new-range.md:288
+msgid "_RangeToInclusiveExpr_"
+msgstr ""
+
+#: src/3550-new-range.md:253 src/3550-new-range.md:288
+msgid "`..=`end"
+msgstr ""
+
+#: src/3550-new-range.md:253 src/3550-new-range.md:288
+msgid "std::range::RangeToInclusive"
+msgstr ""
+
+#: src/3550-new-range.md:253 src/3550-new-range.md:288
+msgid "x ≤ end"
+msgstr ""
+
+#: src/3550-new-range.md:255
+msgid ""
+"**Note:** While `std::ops::RangeTo`, `std::ops::RangeFull`, and `std::ops::"
+"RangeToInclusive` are re-exports of `std::range::RangeTo`, `std::range::"
+"RangeFull`, and `std::ops::Range::RangeToInclusive` respectively, `std::ops::"
+"Range`, `std::ops::RangeFrom`, and `std::ops::RangeInclusive` are re-exports "
+"of the types under `std::range::legacy::` (NOT those directly under `std::"
+"range::`) for backwards-compatibility reasons."
+msgstr ""
+
+#: src/3550-new-range.md:257 src/3550-new-range.md:292
+msgid "Examples:"
+msgstr ""
+
+#: src/3550-new-range.md:260
+msgid "// std::range::Range\n"
+msgstr ""
+
+#: src/3550-new-range.md:261
+msgid "// std::range::RangeFrom\n"
+msgstr ""
+
+#: src/3550-new-range.md:262 src/3550-new-range.md:297
+msgid "// std::range::RangeTo\n"
+msgstr ""
+
+#: src/3550-new-range.md:263 src/3550-new-range.md:298
+msgid "// std::range::RangeFull\n"
+msgstr ""
+
+#: src/3550-new-range.md:264
+msgid "// std::range::RangeInclusive\n"
+msgstr ""
+
+#: src/3550-new-range.md:265 src/3550-new-range.md:300
+msgid "// std::range::RangeToInclusive\n"
+msgstr ""
+
+#: src/3550-new-range.md:268 src/3550-new-range.md:303
+msgid "The following expressions are equivalent."
+msgstr ""
+
+#: src/3550-new-range.md:277
+msgid "Prior to Edition 2024"
+msgstr ""
+
+#: src/3550-new-range.md:279
+msgid ""
+"The `..` and `..=` operators will construct an object of one of the `std::"
+"range::legacy::Range` (or `core::range::legacy::Range`) variants, according "
+"to the following table:"
+msgstr ""
+
+#: src/3550-new-range.md:283
+msgid "std::range::legacy::Range"
+msgstr ""
+
+#: src/3550-new-range.md:284
+msgid "std::range::legacy::RangeFrom"
+msgstr ""
+
+#: src/3550-new-range.md:287
+msgid "std::range::legacy::RangeInclusive"
+msgstr ""
+
+#: src/3550-new-range.md:290
+msgid ""
+"**Note:** `std::ops::Range`, `std::ops::RangeFrom`, and `std::ops::"
+"RangeInclusive` are re-exports of the respective types under `std::range::"
+"legacy::`. `std::ops::RangeTo`, `std::ops::RangeFull`, and `std::ops::"
+"RangeToInclusive` are re-exports of the respective types under `std::range::"
+"`."
+msgstr ""
+
+#: src/3550-new-range.md:295
+msgid "// std::range::legacy::Range\n"
+msgstr ""
+
+#: src/3550-new-range.md:296
+msgid "// std::range::legacy::RangeFrom\n"
+msgstr ""
+
+#: src/3550-new-range.md:299
+msgid "// std::range::legacy::RangeInclusive\n"
+msgstr ""
+
+#: src/3550-new-range.md:314
+msgid "New paths"
+msgstr ""
+
+#: src/3550-new-range.md:316
+msgid ""
+"There is no language support for edition-dependent path resolution, so these "
+"types must continue to be accessible under their current paths. However, "
+"their canonical paths will change to live under `std::range::legacy`:"
+msgstr ""
+
+#: src/3550-new-range.md:318
+msgid "`std::ops::Range` will be a re-export of `std::range::legacy::Range`"
+msgstr ""
+
+#: src/3550-new-range.md:319
+msgid ""
+"`std::ops::RangeFrom` will be a re-export of `std::range::legacy::RangeFrom`"
+msgstr ""
+
+#: src/3550-new-range.md:320
+msgid ""
+"`std::ops::RangeInclusive` will be a re-export of `std::range::legacy::"
+"RangeFrom`"
+msgstr ""
+
+#: src/3550-new-range.md:322
+msgid ""
+"In order to not break existing links to the documentation for these types, "
+"the re-exports must remain `doc(inline)`."
+msgstr ""
+
+#: src/3550-new-range.md:324
+msgid "The replacement types will live under `range`:"
+msgstr ""
+
+#: src/3550-new-range.md:326
+msgid ""
+"`std::range::Range` will be the Edition 2024 replacement for `std::range::"
+"legacy::Range`"
+msgstr ""
+
+#: src/3550-new-range.md:327
+msgid ""
+"`std::range::RangeFrom` will be the Edition 2024 replacement for `std::"
+"range::legacy::RangeFrom`"
+msgstr ""
+
+#: src/3550-new-range.md:328
+msgid ""
+"`std::range::RangeInclusive` will be the Edition 2024 replacement for `std::"
+"range::legacy::RangeFrom`"
+msgstr ""
+
+#: src/3550-new-range.md:330
+msgid ""
+"The `RangeFull`, `RangeTo`, and `RangeToInclusive` types will remain "
+"unchanged. But for consistency, their canonical paths will be changed to "
+"live under `range`:"
+msgstr ""
+
+#: src/3550-new-range.md:332
+msgid "`std::ops::RangeFull` will be a re-export of `std::range::RangeFull`"
+msgstr ""
+
+#: src/3550-new-range.md:333
+msgid "`std::ops::RangeTo` will be a re-export of `std::range::RangeTo`"
+msgstr ""
+
+#: src/3550-new-range.md:334
+msgid ""
+"`std::ops::RangeToInclusive` will be a re-export of `std::range::"
+"RangeToInclusive`"
+msgstr ""
+
+#: src/3550-new-range.md:336
+msgid "Iterator types"
+msgstr ""
+
+#: src/3550-new-range.md:338
+msgid ""
+"Because the three new types will implement `IntoIterator` directly, they "
+"need three new respective `IntoIter` types:"
+msgstr ""
+
+#: src/3550-new-range.md:340
+msgid ""
+"`std::range::IterRange` will be `<range::Range<_> as IntoIterator>::IntoIter`"
+msgstr ""
+
+#: src/3550-new-range.md:341
+msgid ""
+"`std::range::IterRangeFrom` will be `<range::RangeFrom<_> as IntoIterator>::"
+"IntoIter`"
+msgstr ""
+
+#: src/3550-new-range.md:342
+msgid ""
+"`std::range::IterRangeInclusive` will be `<range::RangeInclusive<_> as "
+"IntoIterator>::IntoIter`"
+msgstr ""
+
+#: src/3550-new-range.md:344
+msgid ""
+"These iterator types will implement the same iterator traits "
+"(`DoubleEndedIterator`, `FusedIterator`, etc) as the legacy range types, "
+"with the following exceptions:"
+msgstr ""
+
+#: src/3550-new-range.md:345
+msgid ""
+"`std::range::IterRange` will not implement `ExactSizeIterator` for `u32` or "
+"`i32`"
+msgstr ""
+
+#: src/3550-new-range.md:346
+msgid ""
+"`std::range::IterRangeInclusive` will not implement `ExactSizeIterator` for "
+"`u16` or `i16`"
+msgstr ""
+
+#: src/3550-new-range.md:348
+msgid ""
+"Those `ExactSizeIterator` impls on the legacy range types are [known to be "
+"incorrect](https://github.com/rust-lang/rust/"
+"blob/495203bf61efabecc2c460be38e1eb0f9952601b/library/core/src/iter/range."
+"rs#L903-L936)."
+msgstr ""
+
+#: src/3550-new-range.md:350
+msgid ""
+"These iterator types should each feature an associated function for getting "
+"the remaining range back:"
+msgstr ""
+
+#: src/3550-new-range.md:360
+msgid "// `None` if the iterator was exhausted\n"
+msgstr ""
+
+#: src/3550-new-range.md:365
+msgid "Changed structure and API"
+msgstr ""
+
+#: src/3550-new-range.md:367
+msgid ""
+"`std::range::Range` and `std::range::RangeFrom` will have identical "
+"structure to the existing types, with public fields for the bounds. However, "
+"`std::range::RangeInclusive` will be changed:"
+msgstr ""
+
+#: src/3550-new-range.md:368
+msgid "`start` and `end` will be changed to public fields"
+msgstr ""
+
+#: src/3550-new-range.md:369
+msgid "`exhausted` field will be removed entirely"
+msgstr ""
+
+#: src/3550-new-range.md:371
+msgid "This makes the new `RangeInclusive` the same size as `Range`."
+msgstr ""
+
+#: src/3550-new-range.md:373
+msgid ""
+"All three new types will have the same trait implementations as the legacy "
+"types, with the following exceptions:"
+msgstr ""
+
+#: src/3550-new-range.md:374
+msgid "NOT implement `Iterator`"
+msgstr ""
+
+#: src/3550-new-range.md:375
+msgid "implement `IntoIterator` directly (when `Idx: Step`)"
+msgstr ""
+
+#: src/3550-new-range.md:376
+msgid "implement `Copy` (when `Idx: Copy`)"
+msgstr ""
+
+#: src/3550-new-range.md:378
+msgid ""
+"The following conversions between the new and legacy types will be "
+"implemented:"
+msgstr ""
+
+#: src/3550-new-range.md:385
+msgid "// Fallible because legacy RangeInclusive can be exhausted\n"
+msgstr ""
+
+#: src/3550-new-range.md:390
+msgid ""
+"The new types should have inherent methods to match the most common usages "
+"of `Iterator` methods. `map` and `rev` are the bare minimum; we leave the "
+"exact set to be finalized by _T-libs-api_ after the proposal is accepted."
+msgstr ""
+
+#: src/3550-new-range.md:394
+msgid "/// Shorthand for `.into_iter().map(...)`\n"
+msgstr ""
+
+#: src/3550-new-range.md:403
+msgid "/// Shorthand for `.into_iter().rev()`\n"
+msgstr ""
+
+#: src/3550-new-range.md:414
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3550-new-range.md:417
+msgid ""
+"This change has the potential to cause a significant amount of churn in the "
+"ecosystem. There are two main sources of churn:"
+msgstr ""
+
+#: src/3550-new-range.md:418
+msgid "where ranges are assumed to be `Iterator`"
+msgstr ""
+
+#: src/3550-new-range.md:419
+msgid "trait impls involving ranges, such as `Index<legacy::Range<_>>`"
+msgstr ""
+
+#: src/3550-new-range.md:421
+msgid ""
+"Changes will be required to support the new range types, even on older "
+"editions. See the [migrating section](#migrating) for specifics."
+msgstr ""
+
+#: src/3550-new-range.md:423
+msgid "Ranges assumed to be `Iterator`"
+msgstr ""
+
+#: src/3550-new-range.md:425
+msgid ""
+"This is not uncommon in the ecosystem. For instance, both [`rustc-rayon`]"
+"(https://github.com/pitaj/rustc-rayon/commit/"
+"e76e554512ce25abb48f4118576ede5d7a457918) and [`quote`](https://github.com/"
+"pitaj/quote/commit/44feebf0594b255a511ff20890a7acbf4d6aeed1) needed patches "
+"for this during experimentation."
+msgstr ""
+
+#: src/3550-new-range.md:427
+msgid "`impl Index<Range<_>> for X`"
+msgstr ""
+
+#: src/3550-new-range.md:429
+msgid ""
+"A [Github search for this pattern](https://github.com/search?"
+"type=code&q=language%3Arust+NOT+is%3Afork+%28%22Index%3CRange%3C%22+OR+"
+"%22Index%3Cops%3A%3ARange%3C%22+OR+"
+"%22Index%3Cstd%3A%3Aops%3A%3ARange%3C%22+OR+"
+"%22Index%3Ccore%3A%3Aops%3A%3ARange%3C%22+OR+"
+"%22Index%3CRangeInclusive%3C%22+OR+"
+"%22Index%3Cops%3A%3ARangeInclusive%3C%22+OR+"
+"%22Index%3Cstd%3A%3Aops%3A%3ARangeInclusive%3C%22+OR+"
+"%22Index%3Ccore%3A%3Aops%3A%3ARangeInclusive%3C%22+OR+"
+"%22Index%3CRangeFrom%3C%22+OR+%22Index%3Cops%3A%3ARangeFrom%3C%22+OR+"
+"%22Index%3Cstd%3A%3Aops%3A%3ARangeFrom%3C%22+OR+"
+"%22Index%3Ccore%3A%3Aops%3A%3ARangeFrom%3C%22%29) yields 784 files, almost "
+"all of which appear to be true matches. It's hard to say how many of those "
+"are published libraries, but it does indicate that this could have a "
+"significant impact."
+msgstr ""
+
+#: src/3550-new-range.md:431
+msgid "Mitigation"
+msgstr ""
+
+#: src/3550-new-range.md:433
+msgid ""
+"To mitigate these drawbacks, we recommend introducing and stabilizing an MVP "
+"of the new types as soon as possible, well before Edition 2024 releases "
+"(even before the implementation of the syntax feature is complete). This "
+"will give libraries time to issue updates supporting the new range types."
+msgstr ""
+
+#: src/3550-new-range.md:435
+msgid ""
+"Some users may depend on libraries that are not updated before Edition 2024. "
+"These users do not just have to accept adding explicit conversions to their "
+"code. They also have the option to stay on a prior edition."
+msgstr ""
+
+#: src/3550-new-range.md:437
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3550-new-range.md:440
+msgid "Just implement `Copy` on the types as-is"
+msgstr ""
+
+#: src/3550-new-range.md:442
+msgid ""
+"`Copy` iterators are a large footgun. It was decided to [remove `Copy` from "
+"all iterators back in 2015](https://github.com/rust-lang/rust/pull/21809), "
+"and that decision is unlikely to be reversed."
+msgstr ""
+
+#: src/3550-new-range.md:444
+msgid "That said, there are a few possibilities:"
+msgstr ""
+
+#: src/3550-new-range.md:445
+msgid "Sophisticated lint to catch when an iterator is problematically copied"
+msgstr ""
+
+#: src/3550-new-range.md:446
+msgid ""
+"Language or library feature to allow `Copy` structs to have certain non-"
+"`Copy` fields"
+msgstr ""
+
+#: src/3550-new-range.md:447
+msgid ""
+"Specialize `IntoIterator` on these range types and lint whenever the "
+"`Iterator` impl is used"
+msgstr ""
+
+#: src/3550-new-range.md:449
+msgid "None of these approaches would resolve the following serious issues:"
+msgstr ""
+
+#: src/3550-new-range.md:450
+msgid "`RangeInclusive` being larger than necessary for range purposes"
+msgstr ""
+
+#: src/3550-new-range.md:451
+msgid "Incorrect `ExactSizeIterator` implementations"
+msgstr ""
+
+#: src/3550-new-range.md:453
+msgid "Name the new types something besides `Range`"
+msgstr ""
+
+#: src/3550-new-range.md:455
+msgid ""
+"We could choose to introduce these new types with a name other than `Range`. "
+"Some alternatives that have been proposed:"
+msgstr ""
+
+#: src/3550-new-range.md:456
+msgid "Interval"
+msgstr ""
+
+#: src/3550-new-range.md:457
+msgid "Span"
+msgstr ""
+
+#: src/3550-new-range.md:458
+msgid "Bounds"
+msgstr ""
+
+#: src/3550-new-range.md:460
+msgid ""
+"We believe that it is best to keep the `Range` naming for several reasons:"
+msgstr ""
+
+#: src/3550-new-range.md:461
+msgid ""
+"Existing `Range*` types that implement `Copy` and not `Iterator` that won't "
+"be touched by this change"
+msgstr ""
+
+#: src/3550-new-range.md:462
+msgid ""
+"Large amount of legacy educational material and code using the `Range` naming"
+msgstr ""
+
+#: src/3550-new-range.md:463
+msgid ""
+"It's best to match the name of the syntax ([\"range expressions\"](https://"
+"doc.rust-lang.org/reference/expressions/range-expr.html))"
+msgstr ""
+
+#: src/3550-new-range.md:465
+msgid "Use legacy range types as the iterators for the new range types"
+msgstr ""
+
+#: src/3550-new-range.md:467
+msgid ""
+"We could choose to make `new_range.into_iter()` resolve to a legacy range "
+"type. This would reduce the number of new types we need to add to the "
+"standard library."
+msgstr ""
+
+#: src/3550-new-range.md:469
+msgid ""
+"But the legacy range types have a much larger API surface than other "
+"`Iterator`s in the standard library, which typically only implement the "
+"various iterator traits and maybe have a `remainder` method. Specifically, "
+"there are no iterator types in the standard library which have public "
+"fields. Nor do any implement `PartialEq`, `Eq`, `Hash`, `Index`, or "
+"`IndexMut`."
+msgstr ""
+
+#: src/3550-new-range.md:471
+msgid ""
+"`RangeInclusive` especially must take care with equality, hashing, and "
+"indexing because it can be exhausted. By removing those impls from the "
+"iterator for it, we can prevent that misuse entirely."
+msgstr ""
+
+#: src/3550-new-range.md:473
+msgid ""
+"One of the strongest arguments for new types is the incorrect "
+"`ExactSizeIterator` implementations for `Range<u32 | i32>` and "
+"`RangeInclusive<u16 | i16>`. These can be excluded if new iterator types are "
+"introduced."
+msgstr ""
+
+#: src/3550-new-range.md:475
+msgid ""
+"Finally, the cost of adding these iterator types is extremely low, given "
+"we're already adding a set of new types for the ranges themselves."
+msgstr ""
+
+#: src/3550-new-range.md:477
+msgid "Inherent `map` should map the bounds, not return an iterator"
+msgstr ""
+
+#: src/3550-new-range.md:479
+msgid ""
+"Some argue that inherent `map` should not return an iterator. Some say that "
+"they may expect it to map each bound individually (`(1..11).map(|x| x*2)` -> "
+"`2..22`). Others say these methods should return `IntoIterator` types "
+"instead."
+msgstr ""
+
+#: src/3550-new-range.md:481
+msgid "However, making them return an iterator has many benefits:"
+msgstr ""
+
+#: src/3550-new-range.md:482
+msgid "Matches existing behavior"
+msgstr ""
+
+#: src/3550-new-range.md:483
+msgid "Reduces code churn"
+msgstr ""
+
+#: src/3550-new-range.md:484
+msgid "Act as an entry point for other iterator methods"
+msgstr ""
+
+#: src/3550-new-range.md:486
+msgid ""
+"Adding these convenience methods is unlikely to cause confusion because of "
+"how common this pattern already is (if anything, the opposite is true). "
+"Plus, it's pretty easy to tell based on the function signature what is going "
+"on, and it's simple to document."
+msgstr ""
+
+#: src/3550-new-range.md:488
+msgid ""
+"Changing the meaning of `(1..11).map(...)` is a huge hazard. There is a lot "
+"of existing code, documentation, etc that uses it in the `Iterator` sense. "
+"It would be incredibly confusing, especially to a newcomer, to have it do "
+"something totally different between editions. Especially since in many cases "
+"it could silently change meaning:"
+msgstr ""
+
+#: src/3550-new-range.md:491
+msgid "// Edition 2021\n"
+msgstr ""
+
+#: src/3550-new-range.md:493
+msgid "// n = 2, 4, 6, ...., 16, 18, 20\n"
+msgstr ""
+
+#: src/3550-new-range.md:494
+msgid "// Edition 2024?\n"
+msgstr ""
+
+#: src/3550-new-range.md:497
+msgid "// n = 2, 3, 4, 5, 6, 7, ...., 15, 16, 17, 18, 19, 20, 21\n"
+msgstr ""
+
+#: src/3550-new-range.md:501
+msgid ""
+"If there is demand for a method that maps the bounds, it should be added "
+"under a different name, such as `map_bounds` , perhaps even as a method on "
+"`RangeBounds`."
+msgstr ""
+
+#: src/3550-new-range.md:503
+msgid "Implicit conversions (coercions)"
+msgstr ""
+
+#: src/3550-new-range.md:505
+msgid ""
+"This proposal specifically avoids involving any form of implicit conversion. "
+"Adding coercions from the new to legacy types would have a few benefits:"
+msgstr ""
+
+#: src/3550-new-range.md:507
+msgid "Avoid explicit conversions when migrating automatically to Edition 2024"
+msgstr ""
+
+#: src/3550-new-range.md:508
+msgid "Few (if any) library changes needed to support the new types"
+msgstr ""
+
+#: src/3550-new-range.md:510
+msgid ""
+"Coercions would effectively eliminate the main drawback of this RFC. "
+"However, adding implicit conversions has severe drawbacks of its own:"
+msgstr ""
+
+#: src/3550-new-range.md:512
+msgid "Makes it harder to reason about code"
+msgstr ""
+
+#: src/3550-new-range.md:513
+msgid "Further blurs the line between language and library"
+msgstr ""
+
+#: src/3550-new-range.md:514
+msgid "Affects type inference"
+msgstr ""
+
+#: src/3550-new-range.md:516
+msgid ""
+"In this specific case, the coercion would also need to be considered during "
+"trait resolution to be significantly useful, which is not currently done in "
+"other cases like deref coercion."
+msgstr ""
+
+#: src/3550-new-range.md:518
+msgid "Range literal"
+msgstr ""
+
+#: src/3550-new-range.md:520
+msgid ""
+"We could treat range expressions as a kind of literal, and only \"coerce\" "
+"them into the legacy range types at the point of the range syntax. Similar "
+"to integer literals, the concrete type would be chosen based on context, "
+"like how `4` can be used anywhere expecting any integer type."
+msgstr ""
+
+#: src/3550-new-range.md:522
+msgid ""
+"This would have fewer serious downsides than coercions, but both approaches "
+"add a large cost for implementation in the compiler."
+msgstr ""
+
+#: src/3550-new-range.md:524
+msgid ""
+"We don't consider the downsides of either approach to be justified given the "
+"relative rarity of libraries needing changes in the first place, the ease of "
+"adding explicit conversions when necessary, and the option for users to "
+"continue to use prior editions while waiting for library support."
+msgstr ""
+
+#: src/3550-new-range.md:526
+msgid "Prior art"
+msgstr ""
+
+#: src/3550-new-range.md:529
+msgid ""
+"The [copy-range](https://docs.rs/copy-range) crate provides types similar to "
+"those proposed here."
+msgstr ""
+
+#: src/3550-new-range.md:531
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3550-new-range.md:534
+msgid "Ecosystem Disruption"
+msgstr ""
+
+#: src/3550-new-range.md:536
+msgid ""
+"We must take into account the ecosystem impact of this change before "
+"stabilization."
+msgstr ""
+
+#: src/3550-new-range.md:538
+msgid "How do we properly document and execute the ecosystem transition?"
+msgstr ""
+
+#: src/3550-new-range.md:539
+msgid ""
+"How much time will it take to propagate this change throughout the ecosystem?"
+msgstr ""
+
+#: src/3550-new-range.md:540
+msgid "What degree of ecosystem saturation would we be satisfied with?"
+msgstr ""
+
+#: src/3550-new-range.md:541
+msgid ""
+"How much time do we need with stable library types before making the lang "
+"change?"
+msgstr ""
+
+#: src/3550-new-range.md:542
+msgid "What about libraries that wish to maintain a certain MSRV?"
+msgstr ""
+
+#: src/3550-new-range.md:543
+msgid ""
+"Taking into account all of the mitigations (diagnostics, migrations, and "
+"lints but NOT language-level changes), is the level of ecosystem disruption "
+"acceptable?"
+msgstr ""
+
+#: src/3550-new-range.md:544
+msgid ""
+"What is expected of new libraries? Should they continue to support both sets "
+"of ranges or only the new ones?"
+msgstr ""
+
+#: src/3550-new-range.md:545
+msgid ""
+"Will new Rust users need to learn about older editions because of downstream "
+"users of their code?"
+msgstr ""
+
+#: src/3550-new-range.md:547
+msgid "API"
+msgstr ""
+
+#: src/3550-new-range.md:549
+msgid ""
+"We leave the following items to be decided by the **libs-api** team after "
+"this proposal is accepted and before stabilization:"
+msgstr ""
+
+#: src/3550-new-range.md:551
+msgid ""
+"The set of inherent methods copied from `Iterator` present on the new range "
+"types"
+msgstr ""
+
+#: src/3550-new-range.md:552
+msgid "The exact module paths and type names"
+msgstr ""
+
+#: src/3550-new-range.md:553
+msgid "Should the new types live at `std::ops::range::` instead?"
+msgstr ""
+
+#: src/3550-new-range.md:554
+msgid ""
+"`IterRange`, `IterRangeInclusive` or just `Iter`, `IterInclusive`? Or "
+"`RangeIter`, `RangeInclusiveIter`, ...?"
+msgstr ""
+
+#: src/3550-new-range.md:555
+msgid ""
+"Should other range-related items (like `RangeBounds`) also be moved under "
+"the `range` module?"
+msgstr ""
+
+#: src/3550-new-range.md:556
+msgid ""
+"Should `RangeFrom` even implement `IntoIterator`, or should it require an "
+"explicit `.iter()` call? Using it as an iterator [can be a footgun](https://"
+"github.com/rust-lang/libs-team/issues/304), usually people want `start.."
+"=MAX` instead. Also, it is inconsistent with `RangeTo`, which doesn't "
+"implement `IntoIterator` either."
+msgstr ""
+
+#: src/3550-new-range.md:557
+msgid ""
+"Should there be a way to get an iterator that modifies the range in place, "
+"rather than taking the range by value? That would allow things like `range."
+"by_ref().next()`."
+msgstr ""
+
+#: src/3550-new-range.md:558
+msgid ""
+"Should there be an infallible conversion from legacy to new `RangeInclusive`?"
+msgstr ""
+
+#: src/3550-new-range.md:561
+msgid "// How do we handle the `exhausted` case, set `end < start`?\n"
+msgstr ""
+
+#: src/3550-new-range.md:565
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3550-new-range.md:568
+msgid ""
+"Hide or deprecate range-related items directly under `ops` (without breaking "
+"existing links or triggering deprecation warnings on previous editions)."
+msgstr ""
+
+#: src/3550-new-range.md:569
+msgid "`RangeTo(Inclusive)::rev()` that returns an iterator?"
+msgstr ""
+
+#: src/3550-new-range.md:570
+msgid ""
+"`IterRangeInclusive` can be optimized to take advantage of the case where "
+"the bounds don't occupy the full domain of the index type:"
+msgstr ""
+
+#: src/3550-new-range.md:574
+msgid ""
+"// Used when `end < Idx::MAX`\n"
+"    // Works like `start..(end + 1)`\n"
+msgstr ""
+
+#: src/3550-new-range.md:577
+msgid ""
+"// Used when `end == Idx::MAX && start > Idx::MIN`\n"
+"    // Works like `((start - 1)..end).map(|i| i + 1)`\n"
+msgstr ""
+
+#: src/3550-new-range.md:580
+msgid ""
+"// Only used when `start == Idx::MIN` and `end == Idx::MAX`\n"
+"    // Works like `start..=end` does now\n"
+"    // No need for `exhausted` flag, uses `start < end` instead\n"
+msgstr ""
+
+#: src/3550-new-range.md:591
+msgid ""
+"[playground](https://play.rust-lang.org/?"
+"version=stable&mode=debug&edition=2021&gist=dc5a5009cd311a86d54d258a8471cf88)"
+msgstr ""

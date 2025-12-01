@@ -1,0 +1,257 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3052-optional-authors-field.md:1
+msgid "RFC: Make the authors field optional"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:3
+msgid "Feature Name: `optional_authors_field`"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:4
+msgid "Start Date: 2021-01-07"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#3052](https://github.com/rust-lang/rfcs/pull/3052)"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:6
+msgid ""
+"Rust Issue: [rust-lang/rust#83227](https://github.com/rust-lang/rust/"
+"issues/83227)"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:8
+msgid "Summary"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:11
+msgid ""
+"This RFC proposes to make the `package.authors` field of `Cargo.toml` "
+"optional. This RFC also proposes preventing Cargo from auto-filling it, "
+"allowing crates to be published to crates.io without the field being "
+"present, and avoiding displaying its contents on the crates.io and docs.rs "
+"UI."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:16
+msgid "Motivation"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:19
+msgid ""
+"The crates.io registry does not allow users to change the contents of "
+"already published versions: this is highly desirable to ensure working "
+"builds don't break in the future, but it also has the unfortunate side-"
+"effect of preventing people from updating the list of crate authors defined "
+"in `Cargo.toml`'s `package.authors` field."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:25
+msgid ""
+"This is especially problematic when people change their name or want to "
+"remove their name from the Internet, and the crates.io team doesn't have any "
+"way to address that at the moment except for deleting the affected crates or "
+"versions altogether. We don't do that lightly, but there were a few cases "
+"where we were forced to do so."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:31
+msgid ""
+"The contents of the field also tend to scale poorly as the size of a project "
+"grows, with projects either making the field useless by just stating \"The "
+"$PROJECT developers\" or only naming the original authors without mentioning "
+"other major contributors."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:36
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:39
+msgid ""
+"crates.io will allow publishing crates without the `package.authors` field, "
+"and it will stop showing the contents of the field in its UI (the current "
+"owners will still be shown). docs.rs will also replace that data with the "
+"crate owners."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:44
+msgid ""
+"`cargo init` will stop pre-populating the field when running the command, "
+"and it will not include the field at all in the default `Cargo.toml`. Crate "
+"authors will still be able to manually include the field before publishing "
+"if they so choose."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:49
+msgid ""
+"Crates that currently rely on the field being present (for example by "
+"reading the `CARGO_PKG_AUTHORS` environment variable) will have to handle "
+"the field being missing (for example by switching from the `env!` macro to "
+"`option_env!`)."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:54
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:57
+msgid ""
+"The implementation of this RFC spans multiple parts of the Rust project:"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:59
+msgid "Cargo"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:61
+msgid ""
+"Cargo will stop fetching the current user's name and email address when "
+"running `cargo init`, and it will not include the field in the default "
+"template for `Cargo.toml`."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:65
+msgid "crates.io"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:67
+msgid ""
+"crates.io will allow publishing versions without the field and with the "
+"field empty. The Web UI will remove the authors section, while retaining the "
+"current owners section."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:71
+msgid ""
+"The API will continue returning the `authors` field in every endpoint which "
+"currently includes it, but the field will always be empty (even if the crate "
+"author manually adds data to it). The database dumps will also stop "
+"including the field."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:76
+msgid "docs.rs"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:78
+msgid "docs.rs will replace the authors with the current owners in its UI."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:80
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:83
+msgid ""
+"Cargo currently provides author information to the crate via "
+"`CARGO_PKG_AUTHORS`, and some crates (such as `clap`) use this information. "
+"Making the authors field optional will require crates to account for a "
+"missing field if they want to work out of the box in projects without the "
+"field."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:88
+msgid ""
+"This RFC will make it harder for third-party tools to query the author "
+"information of crates published to crates.io."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:91
+msgid ""
+"By design, this RFC discourages adding the metadata allowing to know "
+"historical crate authors and makes it harder to retrieve it. In some cases, "
+"crate authors may have wanted that information preserved. After this RFC, "
+"crate authors who want to display historical authors who are not current "
+"crate owners will have to present that information in some other way."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:97
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:100
+msgid ""
+"This RFC reduces the problems related to changing the names in the authors "
+"field significantly, as people will now have to explicitly want to add that "
+"data instead of it being there by default."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:104
+msgid ""
+"We could do nothing, but that would increase the support load of the crates."
+"io team and would result in more crates being removed from the registry due "
+"to this issue."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:108
+msgid "Prior art"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:111
+msgid ""
+"**JavaScript:** `package.json` has an optional `authors` field, but it's not "
+"required and the interactive `npm init` command does not prepopulate the "
+"field, leaving it empty by default. The npm Web UI does not show the "
+"contents of the field."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:115
+msgid ""
+"**Python:** `setup.py` does not require the `authors` field. The PyPI Web UI "
+"shows its contents when present."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:117
+msgid ""
+"**Ruby:** `*.gemspec` requires the `authors` field, and the RubyGems Web UI "
+"shows its contents."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:119
+msgid ""
+"**PHP:** `composer.json` has an optional `authors` field. While it's not "
+"required, the interactive `composer init` command allows you to choose "
+"whether to pre-populate it based on the current environment or skip it. The "
+"Packagist Web UI does not show the contents of the field."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:124
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:127
+msgid "What should we do about the metadata in already published crates?"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:129
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3052-optional-authors-field.md:132
+msgid ""
+"The `package.authors` field could be deprecated and removed in a future "
+"edition."
+msgstr ""
+
+#: src/3052-optional-authors-field.md:135
+msgid ""
+"A future RFC could propose separating metadata fields that could benefit "
+"from being mutable out of `Cargo.toml` and the crate tarball, allowing them "
+"to be changed without having to publish a new version. Such RFC should also "
+"propose a standardized way to update and distribute the extracted metadata."
+msgstr ""

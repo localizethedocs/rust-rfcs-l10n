@@ -1,0 +1,168 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3228-process-process_group.md:1
+msgid "Feature Name: `process_set_process_group`"
+msgstr ""
+
+#: src/3228-process-process_group.md:2
+msgid "Start Date: 2022-02-02"
+msgstr ""
+
+#: src/3228-process-process_group.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3228](https://github.com/rust-lang/rfcs/pull/3228)"
+msgstr ""
+
+#: src/3228-process-process_group.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#93857](https://github.com/rust-lang/rust/"
+"issues/93857)"
+msgstr ""
+
+#: src/3228-process-process_group.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3228-process-process_group.md:9
+msgid ""
+"Add a `process_group` method to `std::os::unix::process::CommandExt` that "
+"allows setting the process group id (i.e. calling `setpgid`) in the child, "
+"thus enabling users to set process groups while leveraging the `posix_spawn` "
+"fast path."
+msgstr ""
+
+#: src/3228-process-process_group.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/3228-process-process_group.md:17
+msgid ""
+"The Unix process spawn code has two paths: a fast path that uses "
+"`posix_spawn`, and a slow path that uses `fork` and `exec`."
+msgstr ""
+
+#: src/3228-process-process_group.md:20
+msgid ""
+"The performance between the two APIs has been shown to be very noticeable:"
+msgstr ""
+
+#: src/3228-process-process_group.md:22
+msgid ""
+"https://github.com/rust-lang/rust/"
+"commit/8fe61546696b626ecf68ef838d5d82e393719e80"
+msgstr ""
+
+#: src/3228-process-process_group.md:24
+msgid ""
+"Currently, users can set the process group on the commands they spawn via:"
+msgstr ""
+
+#: src/3228-process-process_group.md:33
+msgid "This approach forces the slow path because of the usage of `pre_exec`."
+msgstr ""
+
+#: src/3228-process-process_group.md:35
+msgid ""
+"However, `posix_spawn` supports setting the process group "
+"(`posix_spawnattr_setpgroup`). This RFC proposes exposing that "
+"functionality, which allows users to set the process group id without "
+"forcing the slow path."
+msgstr ""
+
+#: src/3228-process-process_group.md:39
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3228-process-process_group.md:42
+msgid ""
+"`std::os::unix::process::CommandExt::process_group` allows you to set the "
+"process group ID of the child process. This translates to a `setpgid` call "
+"in the child."
+msgstr ""
+
+#: src/3228-process-process_group.md:46
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3228-process-process_group.md:49
+msgid "The changes needed are:"
+msgstr ""
+
+#: src/3228-process-process_group.md:51
+msgid ""
+"Expose a `CommandExt` a `process_group` method on `CommandExt` that takes a "
+"PID as argument."
+msgstr ""
+
+#: src/3228-process-process_group.md:53
+msgid "Add a call to `posix_spawnattr_setpgroup` on the fast path."
+msgstr ""
+
+#: src/3228-process-process_group.md:54
+msgid "Add a call to `setpgid` on the slow path."
+msgstr ""
+
+#: src/3228-process-process_group.md:56
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3228-process-process_group.md:59
+msgid "This marginally expands the API surface on `CommandExt`."
+msgstr ""
+
+#: src/3228-process-process_group.md:61
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3228-process-process_group.md:64
+msgid ""
+"Using `pre_exec` this is a viable alternative for programs where `fork` is "
+"either sufficiently fast or infrequent."
+msgstr ""
+
+#: src/3228-process-process_group.md:66
+msgid ""
+"Not using `std::process`, and rolling your own instead, is an alternative. "
+"This would however break interoperability with e.g. Tokio's `tokio::process::"
+"Command`, which currently can be created using a `Command` from the std lib."
+msgstr ""
+
+#: src/3228-process-process_group.md:71
+msgid "Prior art"
+msgstr ""
+
+#: src/3228-process-process_group.md:74
+msgid ""
+"The primary prior art here is all the other calls that already exist on "
+"`CommandExt` that translate to parameterizing `posix_spawn`, such as "
+"configuring groups, signal mask, current working directory, open pipes."
+msgstr ""
+
+#: src/3228-process-process_group.md:78
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3228-process-process_group.md:81
+msgid "None known at this point."
+msgstr ""
+
+#: src/3228-process-process_group.md:83
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3228-process-process_group.md:86
+msgid ""
+"There are a few other `posix_spawn` options that are not supported, such as "
+"`setsid` (which is a GNU extension). Those might warrant inclusion as well."
+msgstr ""

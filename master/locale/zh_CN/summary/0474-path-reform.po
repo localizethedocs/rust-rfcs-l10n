@@ -1,0 +1,605 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0474-path-reform.md:1
+msgid "Start Date: 2014-11-12"
+msgstr ""
+
+#: src/0474-path-reform.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#474](https://github.com/rust-lang/rfcs/pull/474)"
+msgstr ""
+
+#: src/0474-path-reform.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#20034](https://github.com/rust-lang/rust/"
+"issues/20034)"
+msgstr ""
+
+#: src/0474-path-reform.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0474-path-reform.md:7
+msgid ""
+"This RFC reforms the design of the `std::path` module in preparation for API "
+"stabilization. The path API must deal with many competing demands, and the "
+"current design handles many of them, but suffers from some significant "
+"problems given in \"Motivation\" below. The RFC proposes a redesign modeled "
+"loosely on the current API that addresses these problems while maintaining "
+"the advantages of the current design."
+msgstr ""
+
+#: src/0474-path-reform.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/0474-path-reform.md:16
+msgid ""
+"The design of a path abstraction is surprisingly hard. Paths work radically "
+"differently on different platforms, so providing a cross-platform "
+"abstraction is challenging. On some platforms, paths are not required to be "
+"in Unicode, posing ergonomic and semantic difficulties for a Rust API. These "
+"difficulties are compounded if one also tries to provide efficient path "
+"manipulation that does not, for example, require extraneous copying. And, of "
+"course, the API should be easy and pleasant to use."
+msgstr ""
+
+#: src/0474-path-reform.md:24
+msgid ""
+"The current `std::path` module makes a strong effort to balance these design "
+"constraints, but over time a few key shortcomings have emerged."
+msgstr ""
+
+#: src/0474-path-reform.md:27
+msgid "Semantic problems"
+msgstr ""
+
+#: src/0474-path-reform.md:29
+msgid ""
+"Most importantly, the current `std::path` module makes some semantic "
+"assumptions about paths that have turned out to be incorrect."
+msgstr ""
+
+#: src/0474-path-reform.md:32
+msgid "Normalization"
+msgstr ""
+
+#: src/0474-path-reform.md:34
+msgid ""
+"Paths in `std::path` are always _normalized_, meaning that `a/../b` is "
+"treated like `b` (among other things). Unfortunately, this kind of "
+"normalization changes the meaning of paths when symbolic links are present: "
+"if `a` is a symbolic link, then the relative paths `a/../b` and `b` may "
+"refer to completely different locations. See [this issue](https://github.com/"
+"rust-lang/rust/issues/14028) for more detail."
+msgstr ""
+
+#: src/0474-path-reform.md:41
+msgid ""
+"For this reason, most path libraries do _not_ perform full normalization of "
+"paths, though they may normalize paths like `a/./b` to `a/b`. Instead, they "
+"offer (1) methods to optionally normalize and (2) methods to normalize based "
+"on the contents of the underlying file system."
+msgstr ""
+
+#: src/0474-path-reform.md:46
+msgid ""
+"Since our current normalization scheme can silently and incorrectly alter "
+"the meaning of paths, it needs to be changed."
+msgstr ""
+
+#: src/0474-path-reform.md:49
+msgid "Unicode and Windows"
+msgstr ""
+
+#: src/0474-path-reform.md:51
+msgid ""
+"In the original `std::path` design, it was assumed that all paths on Windows "
+"were Unicode. However, it [turns out](https://github.com/rust-lang/rust/"
+"issues/12056) that the Windows filesystem APIs actually work with [UCS-2]"
+"(http://en.wikipedia.org/wiki/UTF-16), which roughly means that they accept "
+"arbitrary sequences of `u16` values but interpret them as UTF-16 when it is "
+"valid to do so."
+msgstr ""
+
+#: src/0474-path-reform.md:58
+msgid ""
+"The current `std::path` implementation is built around the assumption that "
+"Windows paths can be represented as Rust string slices, and will need to be "
+"substantially revised."
+msgstr ""
+
+#: src/0474-path-reform.md:62
+msgid "Ergonomic problems"
+msgstr ""
+
+#: src/0474-path-reform.md:64
+msgid ""
+"Because paths in general are not in Unicode, the `std::path` module cannot "
+"rely on an internal string or string slice representation. That in turn "
+"causes trouble for methods like `dirname` that are intended to extract a "
+"subcomponent of a path \\-- what should it return?"
+msgstr ""
+
+#: src/0474-path-reform.md:69
+msgid ""
+"There are basically three possible options, and today's `std::path` module "
+"chooses _all_ of them:"
+msgstr ""
+
+#: src/0474-path-reform.md:72
+msgid "Yield a byte sequence: `dirname` yields an `&[u8]`"
+msgstr ""
+
+#: src/0474-path-reform.md:73
+msgid ""
+"Yield a string slice, accounting for potential non-UTF-8 values: "
+"`dirname_str` yields an `Option<&str>`"
+msgstr ""
+
+#: src/0474-path-reform.md:75
+msgid "Yield another path: `dir_path` yields a `Path`"
+msgstr ""
+
+#: src/0474-path-reform.md:77
+msgid ""
+"This redundancy is present for most of the decomposition methods. The saving "
+"grace is that, in general, path methods consume `BytesContainer` values, so "
+"one can use the `&[u8]` variant but continue to work with other path "
+"methods. But in general `&[u8]` values are not ergonomic to work with, and "
+"the explosion in methods makes the module more (superficially) complex than "
+"one might expect."
+msgstr ""
+
+#: src/0474-path-reform.md:83
+msgid ""
+"You might be tempted to provide only the third option, but `Path` values are "
+"_owned_ and _mutable_, so that would imply cloning on every decomposition "
+"operation. For applications like Cargo that work heavily with paths, this "
+"would be an unfortunate (and seemingly unnecessary) overhead."
+msgstr ""
+
+#: src/0474-path-reform.md:88
+msgid "Organizational problems"
+msgstr ""
+
+#: src/0474-path-reform.md:90
+msgid ""
+"Finally, the `std::path` module presents a somewhat complex API organization:"
+msgstr ""
+
+#: src/0474-path-reform.md:92
+msgid "The `Path` type is a direct alias of a platform-specific path type."
+msgstr ""
+
+#: src/0474-path-reform.md:93
+msgid ""
+"The `GenericPath` trait provides most of the common API expected on both "
+"platforms."
+msgstr ""
+
+#: src/0474-path-reform.md:94
+msgid ""
+"The `GenericPathUnsafe` trait provides a few unsafe/unchecked functions for "
+"performance reasons."
+msgstr ""
+
+#: src/0474-path-reform.md:96
+msgid ""
+"The `posix` and `windows` submodules provide their own `Path` types and a "
+"handful of platform-specific functionality (in particular, `windows` "
+"provides support for working with volumes and \"verbatim\" paths prefixed "
+"with `\\\\?\\`)"
+msgstr ""
+
+#: src/0474-path-reform.md:100
+msgid ""
+"This organization needs to be updated to match current conventions and "
+"simplified if possible."
+msgstr ""
+
+#: src/0474-path-reform.md:103
+msgid ""
+"One thing to note: with the current organization, it is possible to work "
+"with non-native paths, which can sometimes be useful for interoperation. The "
+"new design should retain this functionality."
+msgstr ""
+
+#: src/0474-path-reform.md:107
+msgid "Detailed design"
+msgstr ""
+
+#: src/0474-path-reform.md:109
+msgid ""
+"Note: this design is influenced by the [Boost filesystem library](www.boost."
+"org/doc/libs/1_57_0/libs/filesystem/doc/reference.html) and [Scheme48]"
+"(http://s48.org/1.8/manual/manual-Z-H-6.html#node_sec_5.15) and [Racket's]"
+"(http://plt.eecs.northwestern.edu/snapshots/current/doc/reference/"
+"windowspaths.html#%28part._windowspathrep%29) approach to encoding issues on "
+"windows."
+msgstr ""
+
+#: src/0474-path-reform.md:115
+msgid "Overview"
+msgstr ""
+
+#: src/0474-path-reform.md:117
+msgid ""
+"The basic design uses DST to follow the same pattern as `Vec<T>/[T]` and "
+"`String/str`: there is a `PathBuf` type for owned, mutable paths and an "
+"unsized `Path` type for slices. The various \"decomposition\" methods for "
+"extracting components of a path all return slices, and `PathBuf` itself "
+"derefs to `Path`."
+msgstr ""
+
+#: src/0474-path-reform.md:122
+msgid ""
+"The result is an API that is both efficient and ergonomic: there is no need "
+"to allocate/copy when decomposing a path, but there is also no need to "
+"provide multiple variants of methods to extract bytes versus Unicode "
+"strings. For example, the `Path` slice type provides a _single_ method for "
+"converting to a `str` slice (when applicable)."
+msgstr ""
+
+#: src/0474-path-reform.md:128
+msgid ""
+"A key aspect of the design is that there is no internal normalization of "
+"paths at all. Aside from solving the symbolic link problem, this choice also "
+"has useful ramifications for the rest of the API, described below."
+msgstr ""
+
+#: src/0474-path-reform.md:132
+msgid ""
+"The proposed API deals with the other problems mentioned above, and also "
+"brings the module in line with current Rust patterns and conventions. These "
+"details will be discussed after getting a first look at the core API."
+msgstr ""
+
+#: src/0474-path-reform.md:136
+msgid "The cross-platform API"
+msgstr ""
+
+#: src/0474-path-reform.md:138
+msgid ""
+"The proposed core, cross-platform API provided by the new `std::path` is as "
+"follows:"
+msgstr ""
+
+#: src/0474-path-reform.md:141
+msgid "// A sized, owned type akin to String:\n"
+msgstr ""
+
+#: src/0474-path-reform.md:143
+msgid "// An unsized slice type akin to str:\n"
+msgstr ""
+
+#: src/0474-path-reform.md:146
+msgid ""
+"// Some ergonomics and generics, following the pattern in String/str and "
+"Vec<T>/[T]\n"
+msgstr ""
+
+#: src/0474-path-reform.md:150
+msgid ""
+"// A replacement for BytesContainer; used to cut down on explicit coercions\n"
+msgstr ""
+
+#: src/0474-path-reform.md:165
+msgid "// These will ultimately replace the need for `push_many`\n"
+msgstr ""
+
+#: src/0474-path-reform.md:174
+msgid "// Cow will replace MaybeOwned\n"
+msgstr ""
+
+#: src/0474-path-reform.md:177
+msgid "// iterate over the components of a path\n"
+msgstr ""
+
+#: src/0474-path-reform.md:188
+msgid "// The \"root\" part of the path, if absolute\n"
+msgstr ""
+
+#: src/0474-path-reform.md:191
+msgid "// The \"non-root\" part of the path\n"
+msgstr ""
+
+#: src/0474-path-reform.md:194
+msgid "// The \"directory\" portion of the path\n"
+msgstr ""
+
+#: src/0474-path-reform.md:217
+msgid ""
+"There is plenty of overlap with today's API, and the methods being retained "
+"here largely have the same semantics."
+msgstr ""
+
+#: src/0474-path-reform.md:220
+msgid ""
+"But there are also a few potentially surprising aspects of this design that "
+"merit comment:"
+msgstr ""
+
+#: src/0474-path-reform.md:223
+msgid ""
+"**Why does `PathBuf::new` take `IntoString`?** It needs an owned buffer "
+"internally, and taking a string means that Unicode input is guaranteed, "
+"which works on all platforms. (In general, the assumption is that non-"
+"Unicode paths are most commonly produced by _reading_ a path from the "
+"filesystem, rather than creating now ones. As we'll see below, there are "
+"_platform-specific_ ways to crate non-Unicode paths.)"
+msgstr ""
+
+#: src/0474-path-reform.md:230
+msgid ""
+"**Why no `Path::as_bytes` method?** There is no cross-platform way to expose "
+"paths directly in terms of byte sequences, because each platform extends "
+"beyond Unicode in its own way. In particular, Unix platforms accept "
+"arbitrary u8 sequences, while Windows accepts arbitrary _u16_ sequences "
+"(both modulo disallowing interior 0s). The u16 sequences provided by Windows "
+"do not have a canonical encoding as bytes; this RFC proposed to use [WTF-8]"
+"(http://simonsapin.github.io/wtf-8/) (see below), but does not reveal that "
+"choice."
+msgstr ""
+
+#: src/0474-path-reform.md:239
+msgid ""
+"**What about interior nulls?** Currently various Rust system APIs will panic "
+"when given strings containing interior null values because, while these are "
+"valid UTF-8, it is not possible to send them as-is to C APIs that expect "
+"null-terminated strings. The API here follows the same approach, panicking "
+"if given a path with an interior null."
+msgstr ""
+
+#: src/0474-path-reform.md:245
+msgid ""
+"**Why do `file_name` and `extension` operations work with `Path` rather than "
+"some other type?** In particular, it may seem strange to view an extension "
+"as a path. But doing so allows us to not reveal platform differences about "
+"the various character sets used in paths. By and large, extensions in "
+"practice will be valid Unicode, so the various methods going to and from "
+"`str` will suffice. But as with paths in general, there are platform-"
+"specific ways of working with non-Unicode data, explained below."
+msgstr ""
+
+#: src/0474-path-reform.md:253
+msgid ""
+"**Where did `push_many` and friends go?** They're replaced by implementing "
+"`FromIterator` and `Extend`, following a similar pattern with the `Vec` "
+"type. (Some work will be needed to retain full efficiency when doing so.)"
+msgstr ""
+
+#: src/0474-path-reform.md:257
+msgid ""
+"**How does `Path::new` work?** The ability to directly get a `&Path` from an "
+"`&str` (i.e., with no allocation or other work) is a key part of the "
+"representation choices, which are described below."
+msgstr ""
+
+#: src/0474-path-reform.md:261
+msgid ""
+"**Where is the `normalize` method?** Since the path type no longer "
+"internally normalizes, it may be useful to explicitly request normalization. "
+"This can be done by writing `let normalized: PathBuf = p.iter().collect()` "
+"for a path `p`, because the iterator performs some on-the-fly normalization "
+"(see below). \\*_NOTE_ this normalization does _not_ include removing `..`, "
+"for the reasons explained at the beginning of the RFC."
+msgstr ""
+
+#: src/0474-path-reform.md:268
+msgid ""
+"**What does the iterator yield?** Unlike today's `components`, the `iter` "
+"method here will begin with `root_path` if there is one. Thus, `a/b/c` will "
+"yield `a`, `b` and `c`, while `/a/b/c` will yield `/`, `a`, `b` and `c`."
+msgstr ""
+
+#: src/0474-path-reform.md:272
+msgid "Important semantic rules"
+msgstr ""
+
+#: src/0474-path-reform.md:274
+msgid ""
+"The path API is designed to satisfy several semantic rules described below. "
+"**Note that `==` here is _lazily_ normalizing**, treating `./b` as `b` and "
+"`a//b` as `a/b`; see the next section for more details."
+msgstr ""
+
+#: src/0474-path-reform.md:278
+msgid "Suppose `p` is some `&Path` and `dot == Path::new(\".\")`:"
+msgstr ""
+
+#: src/0474-path-reform.md:313
+msgid "Representation choices, Unicode, and normalization"
+msgstr ""
+
+#: src/0474-path-reform.md:315
+msgid ""
+"A lot of the design in this RFC depends on a key property: both Unix and "
+"Windows paths can be easily represented as a flat byte sequence "
+"\"compatible\" with UTF-8. For Unix platforms, this is trivial: they accept "
+"any byte sequence, and will generally interpret the byte sequences as UTF-8 "
+"when valid to do so. For Windows, this representation involves a clever hack "
+"-- proposed formally as [WTF-8](http://simonsapin.github.io/wtf-8/) -- that "
+"encodes its native UCS-2 in a generalization of UTF-8. This RFC will not go "
+"into the details of that hack; please read Simon's excellent writeup if "
+"you're interested."
+msgstr ""
+
+#: src/0474-path-reform.md:324
+msgid ""
+"The upshot of all of this is that we can uniformly represent path slices as "
+"newtyped byte slices, and any UTF-8 encoded data will \"do the right thing\" "
+"on all platforms."
+msgstr ""
+
+#: src/0474-path-reform.md:328
+msgid ""
+"Furthermore, by not doing any internal, up-front normalization, it's "
+"possible to provide a `Path::new` that goes from `&str` to `&Path` with no "
+"intermediate allocation or validation. In the common case that you're "
+"working with Rust strings to construct paths, there is zero overhead. It "
+"also means that `Path::new(some_str).as_str = Some(some_str)`."
+msgstr ""
+
+#: src/0474-path-reform.md:334
+msgid ""
+"The main downside of this choice is that some of the path functionality must "
+"cope with non-normalized paths. So, for example, the iterator must skip `.` "
+"path components (unless it is the entire path), and similarly for methods "
+"like `pop`. In general, methods that yield new path slices are expected to "
+"work as if:"
+msgstr ""
+
+#: src/0474-path-reform.md:339
+msgid "`./b` is just `b`"
+msgstr ""
+
+#: src/0474-path-reform.md:340
+msgid "`a//b` is just `a/b`"
+msgstr ""
+
+#: src/0474-path-reform.md:342
+msgid ""
+"and comparisons between paths should also behave as if the paths had been "
+"normalized in this way."
+msgstr ""
+
+#: src/0474-path-reform.md:345
+msgid "Organization and platform-specific APIs"
+msgstr ""
+
+#: src/0474-path-reform.md:347
+msgid ""
+"Finally, the proposed API is organized as `std::path` with `unix` and "
+"`windows` submodules, as today. However, there is no `GenericPath` or "
+"`GenericPathUnsafe`; instead, the API given above is implemented as a "
+"trivial wrapper around path implementations provided by either the `unix` or "
+"the `windows` submodule (based on `#[cfg]`). In other words:"
+msgstr ""
+
+#: src/0474-path-reform.md:353
+msgid "`std::path::windows::Path` works with Windows-style paths"
+msgstr ""
+
+#: src/0474-path-reform.md:354
+msgid "`std::path::unix::Path` works with Unix-style paths"
+msgstr ""
+
+#: src/0474-path-reform.md:355
+msgid ""
+"`std::path::Path` is a thin newtype wrapper around the current platform's "
+"path implementation"
+msgstr ""
+
+#: src/0474-path-reform.md:357
+msgid ""
+"This organization makes it possible to manipulate foreign paths by working "
+"with the appropriate submodule."
+msgstr ""
+
+#: src/0474-path-reform.md:360
+msgid ""
+"In addition, each submodule defines some extension traits, explained below, "
+"that supplement the path API with functionality relevant to its variant of "
+"path."
+msgstr ""
+
+#: src/0474-path-reform.md:363
+msgid ""
+"But what if you're writing a platform-specific application and wish to use "
+"the extended functionality directly on `std::path::Path`? In this case, you "
+"will be able to import the appropriate extension trait via `os::unix` or "
+"`os::windows`, depending on your platform. This is part of a new, general "
+"strategy for explicitly \"opting-in\" to platform-specific features by "
+"importing from `os::some_platform` (where the `some_platform` submodule is "
+"available only on that platform.)"
+msgstr ""
+
+#: src/0474-path-reform.md:371
+msgid "Unix"
+msgstr ""
+
+#: src/0474-path-reform.md:373
+msgid ""
+"On Unix platforms, the only additional functionality is to let you work "
+"directly with the underlying byte representation of various path types:"
+msgstr ""
+
+#: src/0474-path-reform.md:388
+msgid ""
+"This is acceptable because the platform supports arbitrary byte sequences "
+"(usually interpreted as UTF-8)."
+msgstr ""
+
+#: src/0474-path-reform.md:391
+msgid "Windows"
+msgstr ""
+
+#: src/0474-path-reform.md:393
+msgid ""
+"On Windows, the additional APIs allow you to convert to/from UCS-2 (roughly, "
+"arbitrary `u16` sequences interpreted as UTF-16 when applicable); because "
+"the name \"UCS-2\" does not have a clear meaning, these APIs use `u16_slice` "
+"and will be carefully documented. They also provide the remaining Windows-"
+"specific path decomposition functionality that today's path module supports."
+msgstr ""
+
+#: src/0474-path-reform.md:423
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0474-path-reform.md:425
+msgid ""
+"The DST/slice approach is conceptually more complex than today's API, but in "
+"practice seems to yield a much tighter API surface."
+msgstr ""
+
+#: src/0474-path-reform.md:428
+msgid "Alternatives"
+msgstr ""
+
+#: src/0474-path-reform.md:430
+msgid ""
+"Due to the known semantic problems, it is not really an option to retain the "
+"current path implementation. As explained above, supporting UCS-2 also means "
+"that the various byte-slice methods in the current API are untenable, so the "
+"API also needs to change."
+msgstr ""
+
+#: src/0474-path-reform.md:435
+msgid ""
+"Probably the main alternative to the proposed API would be to _not_ use DST/"
+"slices, and instead use owned paths everywhere (probably doing some "
+"normalization of `.` at the same time). While the resulting API would be "
+"simpler in some respects, it would also be substantially less efficient for "
+"common operations."
+msgstr ""
+
+#: src/0474-path-reform.md:440
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0474-path-reform.md:442
+msgid ""
+"It is not clear how best to incorporate the [WTF-8 implementation](https://"
+"github.com/SimonSapin/rust-wtf8) (or how much to incorporate) into `libstd`."
+msgstr ""
+
+#: src/0474-path-reform.md:446
+msgid ""
+"There has been a long debate over whether paths should implement `Show` "
+"given that they may contain non-UTF-8 data. This RFC does not take a stance "
+"on that (the API may include something like today's `display` adapter), but "
+"a follow-up RFC will address the question more generally."
+msgstr ""

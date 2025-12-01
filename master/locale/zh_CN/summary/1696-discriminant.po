@@ -1,0 +1,221 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1696-discriminant.md:1
+msgid "Feature Name: discriminant"
+msgstr ""
+
+#: src/1696-discriminant.md:2
+msgid "Start Date: 2016-08-01"
+msgstr ""
+
+#: src/1696-discriminant.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1696](https://github.com/rust-lang/rfcs/pull/1696)"
+msgstr ""
+
+#: src/1696-discriminant.md:4
+msgid ""
+"Rust Issue: [\\#24263](https://github.com/rust-lang/rust/pull/24263), "
+"[\\#34785](https://github.com/rust-lang/rust/pull/34785)"
+msgstr ""
+
+#: src/1696-discriminant.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1696-discriminant.md:9
+msgid ""
+"Add a function that extracts the discriminant from an enum variant as a "
+"comparable, hashable, printable, but (for now) opaque and unorderable type."
+msgstr ""
+
+#: src/1696-discriminant.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1696-discriminant.md:14
+msgid ""
+"When using an ADT enum that contains data in some of the variants, it is "
+"sometimes desirable to know the variant but ignore the data, in order to "
+"compare two values by variant or store variants in a hash map when the data "
+"is either unhashable or unimportant."
+msgstr ""
+
+#: src/1696-discriminant.md:16
+msgid ""
+"The motivation for this is mostly identical to [RFC 639](https://github.com/"
+"rust-lang/rfcs/blob/master/text/0639-discriminant-intrinsic.md#motivation)."
+msgstr ""
+
+#: src/1696-discriminant.md:18
+msgid "Detailed design"
+msgstr ""
+
+#: src/1696-discriminant.md:21
+msgid ""
+"The proposed design has been implemented at [\\#34785](https://github.com/"
+"rust-lang/rust/pull/34785) (after some back-and-forth). That implementation "
+"is copied at the end of this section for reference."
+msgstr ""
+
+#: src/1696-discriminant.md:23
+msgid ""
+"A struct `Discriminant<T>` and a free function `fn discriminant<T>(v: &T) -> "
+"Discriminant<T>` are added to `std::mem` (for lack of a better home, and "
+"noting that `std::mem` already contains similar parametricity escape hatches "
+"such as `size_of`). For now, the `Discriminant` struct is simply a newtype "
+"over `u64`, because that's what the `discriminant_value` intrinsic returns, "
+"and a `PhantomData` to allow it to be generic over `T`."
+msgstr ""
+
+#: src/1696-discriminant.md:25
+msgid "Making `Discriminant` generic provides several benefits:"
+msgstr ""
+
+#: src/1696-discriminant.md:27
+msgid ""
+"`discriminant(&EnumA::Variant) == discriminant(&EnumB::Variant)` is "
+"statically prevented."
+msgstr ""
+
+#: src/1696-discriminant.md:28
+msgid ""
+"In the future, we can implement different behavior for different kinds of "
+"enums. For example, if we add a way to distinguish C-like enums at the type "
+"level, then we can add a method like `Discriminant::into_inner` for only "
+"those enums. Or enums with certain kinds of discriminants could become "
+"orderable."
+msgstr ""
+
+#: src/1696-discriminant.md:30
+msgid ""
+"The function no longer requires a `Reflect` bound on its argument even "
+"though discriminant extraction is a partial violation of parametricity, in "
+"that a generic function with no bounds on its type parameters can "
+"nonetheless find out some information about the input types, or perform a "
+"\"partial equality\" comparison. This is debatable (see [this comment]"
+"(https://github.com/rust-lang/rfcs/pull/639#issuecomment-86441840), [this "
+"comment](https://github.com/rust-lang/rfcs/pull/1696#issuecomment-236669066) "
+"and open question #2), especially in light of specialization. The situation "
+"is comparable to `TypeId::of` (which requires the bound) and `mem::"
+"size_of_val` (which does not). Note that including a bound is the "
+"conservative decision, because it can be backwards-compatibly removed."
+msgstr ""
+
+#: src/1696-discriminant.md:33
+msgid ""
+"/// Returns a value uniquely identifying the enum variant in `v`.\n"
+"///\n"
+"/// If `T` is not an enum, calling this function will not result in "
+"undefined behavior, but the\n"
+"/// return value is unspecified.\n"
+"///\n"
+"/// # Stability\n"
+"///\n"
+"/// Discriminants can change if enum variants are reordered, if a new "
+"variant is added\n"
+"/// in the middle, or (in the case of a C-like enum) if explicitly set "
+"discriminants are changed.\n"
+"/// Therefore, relying on the discriminants of enums outside of your crate "
+"may be a poor decision.\n"
+"/// However, discriminants of an identical enum should not change between "
+"minor versions of the\n"
+"/// same compiler.\n"
+"///\n"
+"/// # Examples\n"
+"///\n"
+"/// This can be used to compare enums that carry data, while disregarding\n"
+"/// the actual data:\n"
+"///\n"
+"/// ```\n"
+"/// #![feature(discriminant_value)]\n"
+"/// use std::mem;\n"
+"///\n"
+"/// enum Foo { A(&'static str), B(i32), C(i32) }\n"
+"///\n"
+"/// assert!(mem::discriminant(&Foo::A(\"bar\")) == mem::discriminant(&Foo::"
+"A(\"baz\")));\n"
+"/// assert!(mem::discriminant(&Foo::B(1))     == mem::discriminant(&Foo::"
+"B(2)));\n"
+"/// assert!(mem::discriminant(&Foo::B(3))     != mem::discriminant(&Foo::"
+"C(3)));\n"
+"/// ```\n"
+msgstr ""
+
+#: src/1696-discriminant.md:66
+msgid ""
+"/// Opaque type representing the discriminant of an enum.\n"
+"///\n"
+"/// See the `discriminant` function in this module for more information.\n"
+msgstr ""
+
+#: src/1696-discriminant.md:101
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1696-discriminant.md:104
+msgid ""
+"Anytime we reveal more details about the memory representation of a "
+"`repr(rust)` type, we add back-compat guarantees. The author is of the "
+"opinion that the proposed `Discriminant` newtype still hides enough to "
+"mitigate this drawback. (But see open question #1.)"
+msgstr ""
+
+#: src/1696-discriminant.md:105
+msgid ""
+"Adding another function and type to core implies an additional maintenance "
+"burden, especially when more enum layout optimizations come around (however, "
+"there is hardly any burden on top of that associated with the extant "
+"`discriminant_value` intrinsic)."
+msgstr ""
+
+#: src/1696-discriminant.md:107
+msgid "Alternatives"
+msgstr ""
+
+#: src/1696-discriminant.md:110
+msgid ""
+"Do nothing: there is no stable way to extract the discriminant from an enum "
+"variant. Users who need such a feature will need to write (or generate) big "
+"match statements and hope they optimize well (this has been servo's "
+"approach)."
+msgstr ""
+
+#: src/1696-discriminant.md:111
+msgid ""
+"Directly stabilize the `discriminant_value` intrinsic, or a wrapper that "
+"doesn't use an opaque newtype. This more drastically precludes future enum "
+"representation optimizations, and won't be able to take advantage of future "
+"type system improvements that would let `discriminant` return a type "
+"dependent on the enum."
+msgstr ""
+
+#: src/1696-discriminant.md:113
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1696-discriminant.md:116
+msgid ""
+"Can the return value of `discriminant(&x)` be considered stable between "
+"subsequent compilations of the same code? How about if the enum in question "
+"is changed by modifying a variant's name? by adding a variant?"
+msgstr ""
+
+#: src/1696-discriminant.md:117
+msgid "Is the `T: Reflect` bound necessary?"
+msgstr ""
+
+#: src/1696-discriminant.md:118
+msgid "Can `Discriminant` implement `PartialOrd`?"
+msgstr ""

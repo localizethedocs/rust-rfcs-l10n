@@ -1,0 +1,393 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2306-convert-id.md:1
+msgid "Feature Name: `convert_identity`"
+msgstr ""
+
+#: src/2306-convert-id.md:2
+msgid "Start Date: 2018-01-19"
+msgstr ""
+
+#: src/2306-convert-id.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2306](https://github.com/rust-lang/rfcs/pull/2306)"
+msgstr ""
+
+#: src/2306-convert-id.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#53500](https://github.com/rust-lang/rust/"
+"issues/53500)"
+msgstr ""
+
+#: src/2306-convert-id.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2306-convert-id.md:9
+msgid ""
+"Adds an identity function `pub const fn identity<T>(x: T) -> T { x }` as "
+"`core::convert::identity`. The function is also re-exported to `std::"
+"convert::identity`."
+msgstr ""
+
+#: src/2306-convert-id.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2306-convert-id.md:16
+msgid "The identity function is useful"
+msgstr ""
+
+#: src/2306-convert-id.md:18
+msgid ""
+"While it might seem strange to have a function that just returns back the "
+"input, there are some cases where the function is useful."
+msgstr ""
+
+#: src/2306-convert-id.md:21
+msgid "Using `identity` to do nothing among a collection of mappers"
+msgstr ""
+
+#: src/2306-convert-id.md:23
+msgid ""
+"When you have collections such as maps or arrays of mapping functions like "
+"below and you watch to dispatch to those you sometimes need the identity "
+"function as a way of not transforming the input. You can use the identity "
+"function to achieve this."
+msgstr ""
+
+#: src/2306-convert-id.md:29
+msgid ""
+"// Let's assume that this and other functions do something non-trivial.\n"
+msgstr ""
+
+#: src/2306-convert-id.md:31
+msgid "// A dispatch-map of mapping functions:\n"
+msgstr ""
+
+#: src/2306-convert-id.md:34
+msgid "\"foo\""
+msgstr ""
+
+#: src/2306-convert-id.md:35
+msgid "\"bar\""
+msgstr ""
+
+#: src/2306-convert-id.md:36
+msgid "\"baz\""
+msgstr ""
+
+#: src/2306-convert-id.md:39
+msgid "Using `identity` as a no-op function in a conditional"
+msgstr ""
+
+#: src/2306-convert-id.md:41
+msgid "This reasoning also applies to simpler yes/no dispatch as below:"
+msgstr ""
+
+#: src/2306-convert-id.md:45
+msgid "// do more interesting stuff inbetween..\n"
+msgstr ""
+
+#: src/2306-convert-id.md:51
+msgid "Using `identity` to concatenate an iterator of iterators"
+msgstr ""
+
+#: src/2306-convert-id.md:53
+msgid ""
+"We can use the identity function to concatenate an iterator of iterators "
+"into a single iterator."
+msgstr ""
+
+#: src/2306-convert-id.md:63
+msgid ""
+"While the standard library has recently added `Iterator::flatten`, which you "
+"should use instead, to achieve the same semantics, similar situations are "
+"likely in the wild and the `identity` function can be used in those cases."
+msgstr ""
+
+#: src/2306-convert-id.md:67
+msgid ""
+"Using `identity` to keep the `Some` variants of an iterator of `Option<T>`"
+msgstr ""
+
+#: src/2306-convert-id.md:69
+msgid ""
+"We can keep all the maybe variants by simply `iter.filter_map(identity)`."
+msgstr ""
+
+#: src/2306-convert-id.md:77
+msgid "To be clear that you intended to use an identity conversion"
+msgstr ""
+
+#: src/2306-convert-id.md:79
+msgid ""
+"If you instead use a closure as in `|x| x` when you need an identity "
+"conversion, it is less clear that this was intentional. With `identity`, "
+"this intent becomes clearer."
+msgstr ""
+
+#: src/2306-convert-id.md:83
+msgid "The `drop` function as a precedent"
+msgstr ""
+
+#: src/2306-convert-id.md:85
+msgid ""
+"The `drop` function in `core::mem` is defined as `pub fn drop<T>(_x: T) { }"
+"`. The same effect can be achieved by writing `{ _x; }`. This presents us "
+"with a precedent that such trivial functions are considered useful and "
+"includable inside the standard library even though they can be written "
+"easily inside a user's crate."
+msgstr ""
+
+#: src/2306-convert-id.md:91
+msgid "Avoiding repetition in user crates"
+msgstr ""
+
+#: src/2306-convert-id.md:93
+msgid ""
+"Here are a few examples of the identity function being defined and used:"
+msgstr ""
+
+#: src/2306-convert-id.md:95
+msgid "https://docs.rs/functils/0.0.2/functils/fn.identity.html"
+msgstr ""
+
+#: src/2306-convert-id.md:96
+msgid "https://docs.rs/tool/0.2.0/tool/fn.id.html"
+msgstr ""
+
+#: src/2306-convert-id.md:97
+msgid ""
+"https://github.com/hephex/api/blob/ef67b209cd88d0af40af10b4a9f3e0e61a5924da/"
+"src/lib.rs"
+msgstr ""
+
+#: src/2306-convert-id.md:99
+msgid ""
+"There's a smattering of more examples. To reduce duplication, it should be "
+"provided in the standard library as a common place it is defined."
+msgstr ""
+
+#: src/2306-convert-id.md:102
+msgid "Precedent from other languages"
+msgstr ""
+
+#: src/2306-convert-id.md:104
+msgid ""
+"There are other languages that include an identity function in their "
+"standard libraries, among these are:"
+msgstr ""
+
+#: src/2306-convert-id.md:107
+msgid ""
+"[Haskell](http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude."
+"html#v:id), which also exports this to the prelude."
+msgstr ""
+
+#: src/2306-convert-id.md:108
+msgid ""
+"[Scala](https://www.scala-lang.org/api/current/scala/Predef$.html#identity[A]"
+"(x:A):A), which also exports this to the prelude."
+msgstr ""
+
+#: src/2306-convert-id.md:109
+msgid ""
+"[Java](https://docs.oracle.com/javase/8/docs/api/java/util/function/Function."
+"html#identity--), which is a widely used language."
+msgstr ""
+
+#: src/2306-convert-id.md:110
+msgid ""
+"[Idris](https://www.idris-lang.org/docs/1.0/prelude_doc/docs/Prelude.Basics."
+"html), which also exports this to the prelude."
+msgstr ""
+
+#: src/2306-convert-id.md:111
+msgid ""
+"[Ruby](http://ruby-doc.org/core-2.5.0/Object.html#method-i-itself), which "
+"exports it to what amounts to the top type."
+msgstr ""
+
+#: src/2306-convert-id.md:112
+msgid "[Racket](http://docs.racket-lang.org/reference/values.html)"
+msgstr ""
+
+#: src/2306-convert-id.md:113
+msgid ""
+"[Julia](https://docs.julialang.org/en/release-0.4/stdlib/base/#Base.identity)"
+msgstr ""
+
+#: src/2306-convert-id.md:114
+msgid ""
+"[R](https://stat.ethz.ch/R-manual/R-devel/library/base/html/identity.html)"
+msgstr ""
+
+#: src/2306-convert-id.md:115
+msgid ""
+"[F#](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/operators."
+"id%5B%27t%5D-function-%5Bfsharp%5D)"
+msgstr ""
+
+#: src/2306-convert-id.md:116
+msgid "[Clojure](https://clojuredocs.org/clojure.core/identity)"
+msgstr ""
+
+#: src/2306-convert-id.md:117
+msgid "[Agda](http://www.cse.chalmers.se/~nad/repos/lib/src/Function.agda)"
+msgstr ""
+
+#: src/2306-convert-id.md:118
+msgid ""
+"[Elm](http://package.elm-lang.org/packages/elm-lang/core/latest/"
+"Basics#identity)"
+msgstr ""
+
+#: src/2306-convert-id.md:120
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2306-convert-id.md:123
+msgid ""
+"An identity function is a mapping of one type onto itself such that the "
+"output is the same as the input. In other words, a function `identity : T -> "
+"T` for some type `T` defined as `identity(x) = x`. This RFC adds such a "
+"function for all `Sized` types in Rust into libcore at the module `core::"
+"convert` and defines it as:"
+msgstr ""
+
+#: src/2306-convert-id.md:133
+msgid "This function is also re-exported to `std::convert::identity`."
+msgstr ""
+
+#: src/2306-convert-id.md:135
+msgid ""
+"It is important to note that the input `x` passed to the function is moved "
+"since Rust uses move semantics by default."
+msgstr ""
+
+#: src/2306-convert-id.md:138
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2306-convert-id.md:141
+msgid ""
+"An identity function defined as `pub const fn identity<T>(x: T) -> T { x }` "
+"exists as `core::convert::identity`. The function is also re-exported as "
+"`std::convert::identity`\\-"
+msgstr ""
+
+#: src/2306-convert-id.md:145
+msgid ""
+"Note that the identity function is not always equivalent to a closure such "
+"as `|x| x` since the closure may coerce `x` into a different type while the "
+"identity function never changes the type."
+msgstr ""
+
+#: src/2306-convert-id.md:149
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2306-convert-id.md:152
+msgid "It is already possible to do this in user code by:"
+msgstr ""
+
+#: src/2306-convert-id.md:154
+msgid "using an identity closure: `|x| x`."
+msgstr ""
+
+#: src/2306-convert-id.md:155
+msgid "writing the `identity` function as defined in the RFC yourself."
+msgstr ""
+
+#: src/2306-convert-id.md:157
+msgid ""
+"These are contrasted with the [motivation](#motivation) for including the "
+"function in the standard library."
+msgstr ""
+
+#: src/2306-convert-id.md:160
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2306-convert-id.md:163
+msgid ""
+"The rationale for including this in `convert` and not `mem` is that the "
+"former generally deals with conversions, and identity conversion\" is a used "
+"phrase. Meanwhile, `mem` does not relate to `identity` other than that both "
+"deal with move semantics. Therefore, `convert` is the better choice. "
+"Including it in `mem` is still an alternative, but as explained, it isn't "
+"fitting."
+msgstr ""
+
+#: src/2306-convert-id.md:169
+msgid ""
+"Naming the function `id` instead of `identity` is a possibility. This name "
+"is however ambiguous with _\"identifier\"_ and less clear wherefore "
+"`identifier` was opted for."
+msgstr ""
+
+#: src/2306-convert-id.md:173
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2306-convert-id.md:176
+msgid "There are no unresolved questions."
+msgstr ""
+
+#: src/2306-convert-id.md:178
+msgid "Possible future work"
+msgstr ""
+
+#: src/2306-convert-id.md:180
+msgid ""
+"A previous iteration of this RFC proposed that the `identity` function "
+"should be added to prelude of both libcore and libstd. However, the library "
+"team decided that for the time being, it was not sold on this inclusion. As "
+"we gain usage experience with using this function, it is possible to revisit "
+"this in the future if the team chances its mind."
+msgstr ""
+
+#: src/2306-convert-id.md:186
+msgid ""
+"The section below details, for posterity, the argument for inclusion that "
+"was previously in the [motivation](#motivation)."
+msgstr ""
+
+#: src/2306-convert-id.md:189
+msgid "The case for inclusion in the prelude"
+msgstr ""
+
+#: src/2306-convert-id.md:191
+msgid ""
+"Let's compare the effort required, assuming that each letter typed has a "
+"uniform cost with respect to effort."
+msgstr ""
+
+#: src/2306-convert-id.md:204
+msgid ""
+"Comparing the length of these lines, we see that there's not much difference "
+"in length when defining the function yourself or when importing or using an "
+"absolute path. But the prelude-using variant is considerably shorter. To "
+"encourage the use of the function, exporting to the prelude is therefore a "
+"good idea."
+msgstr ""
+
+#: src/2306-convert-id.md:209
+msgid ""
+"In addition, there's an argument to be made from similarity to other things "
+"in `core::convert` as well as `drop` all of which are in the prelude. This "
+"is especially relevant in the case of `drop` which is also a trivial "
+"function."
+msgstr ""

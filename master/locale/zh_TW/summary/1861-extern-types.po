@@ -1,0 +1,260 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1861-extern-types.md:1
+msgid "Feature Name: extern_types"
+msgstr ""
+
+#: src/1861-extern-types.md:2
+msgid "Start Date: 2017-01-18"
+msgstr ""
+
+#: src/1861-extern-types.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1861](https://github.com/rust-lang/rfcs/pull/1861)"
+msgstr ""
+
+#: src/1861-extern-types.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#43467](https://github.com/rust-lang/rust/"
+"issues/43467)"
+msgstr ""
+
+#: src/1861-extern-types.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1861-extern-types.md:9
+msgid ""
+"Add an `extern type` syntax for declaring types which are opaque to Rust's "
+"type system."
+msgstr ""
+
+#: src/1861-extern-types.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1861-extern-types.md:15
+msgid ""
+"When interacting with external libraries we often need to be able to handle "
+"pointers to data that we don't know the size or layout of."
+msgstr ""
+
+#: src/1861-extern-types.md:17
+msgid ""
+"In C it's possible to declare a type but not define it. These incomplete "
+"types can only be used behind pointers, a compilation error will result if "
+"the user tries to use them in such a way that the compiler would need to "
+"know their layout."
+msgstr ""
+
+#: src/1861-extern-types.md:20
+msgid ""
+"In Rust, we don't have this feature. Instead, a couple of problematic hacks "
+"are used in its place."
+msgstr ""
+
+#: src/1861-extern-types.md:22
+msgid "One is, we define the type as an uninhabited type. eg."
+msgstr ""
+
+#: src/1861-extern-types.md:28
+msgid ""
+"Another is, we define the type with a private field and no methods to "
+"construct it."
+msgstr ""
+
+#: src/1861-extern-types.md:36
+msgid ""
+"The point of both these constructions is to prevent the user from being able "
+"to create or deal directly with instances of the type. Neither of these "
+"types accurately reflect the reality of the situation. The first definition "
+"is logically problematic as it defines a type which can never exist. This "
+"means that references to the type can also—logically—never exist and raw "
+"pointers to the type are guaranteed to be invalid. The second definition "
+"says that the type is a ZST, that we can store it on the stack and that we "
+"can call `ptr::read`, `mem::size_of` etc. on it. None of this is of course "
+"valid."
+msgstr ""
+
+#: src/1861-extern-types.md:44
+msgid ""
+"The controversies on how to represent foreign types even extend to the "
+"standard library too; see the discussion in the [libc_types RFC PR](https://"
+"github.com/rust-lang/rfcs/pull/1783)."
+msgstr ""
+
+#: src/1861-extern-types.md:46
+msgid ""
+"This RFC instead proposes a way to directly express that a type exists but "
+"is unknown to Rust."
+msgstr ""
+
+#: src/1861-extern-types.md:48
+msgid ""
+"Finally, In the 2017 roadmap, [integration with other languages](https://"
+"github.com/rust-lang/rfcs/blob/master/text/1774-roadmap-2017.md#integration-"
+"with-other-languages), is listed as a priority. Just like unions, this is an "
+"unsafe feature necessary for dealing with legacy code in a correct and "
+"understandable manner."
+msgstr ""
+
+#: src/1861-extern-types.md:51
+msgid "Detailed design"
+msgstr ""
+
+#: src/1861-extern-types.md:54
+msgid "Add a new kind of type declaration, an extern type:"
+msgstr ""
+
+#: src/1861-extern-types.md:62
+msgid ""
+"These types are FFI-safe. They are also DSTs, meaning that they do not "
+"implement `Sized`. Being DSTs, they cannot be kept on the stack, can only be "
+"accessed through pointers and references and cannot be moved from."
+msgstr ""
+
+#: src/1861-extern-types.md:64
+msgid ""
+"In Rust, pointers to DSTs carry metadata about the object being pointed to. "
+"For strings and slices this is the length of the buffer, for trait objects "
+"this is the object's vtable. For extern types the metadata is simply `()`. "
+"This means that a pointer to an extern type has the same size as a `usize` "
+"(ie. it is not a \"fat pointer\"). It also means that if we store an extern "
+"type at the end of a container (such as a struct or tuple) pointers to that "
+"container will also be identical to raw pointers (despite the container as a "
+"whole being unsized). This is useful to support a pattern found in some C "
+"APIs where structs are passed around which have arbitrary data appended to "
+"the end of them: eg."
+msgstr ""
+
+#: src/1861-extern-types.md:84
+msgid ""
+"As a DST, `size_of` and `align_of` do not work, but we must also be careful "
+"that `size_of_val` and `align_of_val` do not work either, as there is not "
+"necessarily a way at run-time to get the size of extern types either. For an "
+"initial implementation, those methods can just panic, but before this is "
+"stabilized there should be some trait bound or similar on them that prevents "
+"their use statically. The exact mechanism is more the domain of the custom "
+"DST RFC, [RFC 1524](https://github.com/rust-lang/rfcs/pull/1524), and so "
+"figuring that mechanism out will be delegated to it."
+msgstr ""
+
+#: src/1861-extern-types.md:88
+msgid ""
+"C's \"pointer `void`\" (not `()`, but the `void` used in `void*` and "
+"similar) is currently defined in two official places: [`std::os::raw::"
+"c_void`](https://doc.rust-lang.org/stable/std/os/raw/enum.c_void.html) and "
+"[`libc::c_void`](https://doc.rust-lang.org/libc/x86_64-unknown-linux-gnu/"
+"libc/enum.c_void.html). Unifying these is out of scope for this RFC, but "
+"this feature should be used in their definition instead of the current "
+"tricks. Strictly speaking, this is a breaking change, but the `std` docs "
+"explicitly say that `void` shouldn't be used without indirection. And `libc` "
+"can, in the worst-case, make a breaking change."
+msgstr ""
+
+#: src/1861-extern-types.md:93
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1861-extern-types.md:96
+msgid ""
+"Really, the question is \"how do we teach _without_ this\". As described "
+"above, the current tricks for doing this are wrong. Furthermore, they are "
+"quite advanced touching upon many advanced corners of the language: zero-"
+"sized and uninhabited types are phenomena few programmer coming from "
+"mainstream languages have encountered. From reading around other RFCs, "
+"issues, and internal threads, one gets a sense of two issues: First, even "
+"among the group of Rust programmers enthusiastic enough to participate in "
+"these fora, the semantics of foreign types are not widely understood. "
+"Second, there is annoyance that none of the current tricks, by nature of "
+"them all being flawed in different ways, would become standard."
+msgstr ""
+
+#: src/1861-extern-types.md:103
+msgid ""
+"By contrast, `extern type` does exactly what one wants, with an obvious and "
+"guessable syntax, without forcing the user to immediately understand all the "
+"nuance about why _these_ semantics are indeed the right ones. As they see "
+"various options fail: moves, stack variables, they can discover these "
+"semantics incrementally. The benefits are such that this would soon displace "
+"the current hacks, making code in the wild more readable through consistent "
+"use of a pattern."
+msgstr ""
+
+#: src/1861-extern-types.md:107
+msgid ""
+"This should be taught in the foreign function interface chapter of the rust "
+"book in place of where it currently tells people to use uninhabited enums "
+"(ack!)."
+msgstr ""
+
+#: src/1861-extern-types.md:109
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1861-extern-types.md:112
+msgid "Very slight addition of complexity to the language."
+msgstr ""
+
+#: src/1861-extern-types.md:114
+msgid ""
+"The syntax has the potential to be confused with introducing a type alias, "
+"rather than a new nominal type. The use of `extern` here is also a bit of a "
+"misnomer as the name of the type does not refer to anything external to Rust."
+msgstr ""
+
+#: src/1861-extern-types.md:117
+msgid "Alternatives"
+msgstr ""
+
+#: src/1861-extern-types.md:120
+msgid "Not do this."
+msgstr ""
+
+#: src/1861-extern-types.md:122
+msgid ""
+"Alternatively, rather than provide a way to create opaque types, we could "
+"just offer one distinguished type (`std::mem::OpaqueData` or something like "
+"that). Then, to create new opaque types, users just declare a struct with a "
+"member of type `OpaqueData`. This has the advantage of introducing no new "
+"syntax, and issues like FFI-compatibility would fall out of existing rules."
+msgstr ""
+
+#: src/1861-extern-types.md:126
+msgid ""
+"Another alternative is to drop the `extern` and allow a declaration to be "
+"written `type A;`. This removes the (arguably disingenuous) use of the "
+"`extern` keyword although it makes the syntax look even more like a type "
+"alias."
+msgstr ""
+
+#: src/1861-extern-types.md:129
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1861-extern-types.md:132
+msgid ""
+"Should we allow generic lifetime and type parameters on extern types? If so, "
+"how do they effect the type in terms of variance?"
+msgstr ""
+
+#: src/1861-extern-types.md:135
+msgid ""
+"[In std's source](https://github.com/rust-lang/rust/"
+"blob/164619a8cfe6d376d25bd3a6a9a5f2856c8de64d/src/libstd/os/raw.rs#L59-L64), "
+"it is mentioned that LLVM expects `i8*` for C's `void*`. We'd need to "
+"continue to hack this for the two `c_void`s in std and libc. But perhaps "
+"this should be done across-the-board for all extern types? Somebody should "
+"check what Clang does."
+msgstr ""

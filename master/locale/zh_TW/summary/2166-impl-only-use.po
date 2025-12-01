@@ -1,0 +1,195 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2166-impl-only-use.md:1
+msgid "Feature Name: impl-only-use"
+msgstr ""
+
+#: src/2166-impl-only-use.md:2
+msgid "Start Date: 2017-10-01"
+msgstr ""
+
+#: src/2166-impl-only-use.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2166](https://github.com/rust-lang/rfcs/pull/2166)"
+msgstr ""
+
+#: src/2166-impl-only-use.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#48216](https://github.com/rust-lang/rust/"
+"issues/48216)"
+msgstr ""
+
+#: src/2166-impl-only-use.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2166-impl-only-use.md:9
+msgid ""
+"The `use …::{… as …}` syntax can now accept `_` as alias to a trait to only "
+"import the implementations of such a trait."
+msgstr ""
+
+#: src/2166-impl-only-use.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2166-impl-only-use.md:15
+msgid ""
+"Sometimes, we might need to `use` a trait to be able to use its methods on a "
+"type in our code. However, we might also not want to import the trait symbol "
+"(because we redefine it, for instance):"
+msgstr ""
+
+#: src/2166-impl-only-use.md:19
+msgid "// in zoo.rs\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:23
+msgid ""
+"// several impls here\n"
+"// …\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:29 src/2166-impl-only-use.md:43
+msgid "// in main.rs\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:31
+msgid "// …\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:35 src/2166-impl-only-use.md:51
+msgid "\"foo\""
+msgstr ""
+
+#: src/2166-impl-only-use.md:36
+msgid "// won’t compile because `zoo::Zoo` not in scope\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:40
+msgid "To solve this, we need to import the trait:"
+msgstr ""
+
+#: src/2166-impl-only-use.md:46
+msgid ""
+"// wait, what happens here?\n"
+"  // …\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:56
+msgid ""
+"However, you can see that we’ll hit a problem here, because we define an "
+"ambiguous symbol. We have two solutions:"
+msgstr ""
+
+#: src/2166-impl-only-use.md:59
+msgid "Change the name of the `struct` to something else."
+msgstr ""
+
+#: src/2166-impl-only-use.md:60
+msgid "Qualify the `use`."
+msgstr ""
+
+#: src/2166-impl-only-use.md:62
+msgid ""
+"The problem is that if we qualify the `use`, what name do we give the trait? "
+"We’re not even referring to it directly."
+msgstr ""
+
+#: src/2166-impl-only-use.md:69
+msgid ""
+"This will work but seems a bit like a hack because rustc forces us to give a "
+"name to something we won’t use in our types."
+msgstr ""
+
+#: src/2166-impl-only-use.md:72
+msgid ""
+"This RFC suggests to solve this by adding the possibility to explicitly "
+"state that we won’t directly refer to that trait, but we want the impls:"
+msgstr ""
+
+#: src/2166-impl-only-use.md:79
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2166-impl-only-use.md:82
+msgid ""
+"Qualifying a `use` with `_` on a trait imports the trait’s `impl`s but not "
+"the symbol directly. It’s handy if you don’t use the trait’s symbol in your "
+"type and if you redefine the symbol to something else."
+msgstr ""
+
+#: src/2166-impl-only-use.md:86
+msgid ""
+"The `_` means that you “don’t care about the name rustc will use for that "
+"qualified `use`“."
+msgstr ""
+
+#: src/2166-impl-only-use.md:88
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2166-impl-only-use.md:91
+msgid ""
+"`use Trait as _` needs to desugar into `use Trait as SomeGenSym`. With this "
+"scheme, global imports and exports can work properly with such items, i.e. "
+"import / re-export them."
+msgstr ""
+
+#: src/2166-impl-only-use.md:98
+msgid "// `Trait` is in scope\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:102
+msgid "// `Trait` is in scope too\n"
+msgstr ""
+
+#: src/2166-impl-only-use.md:106
+msgid ""
+"In the case where the symbol is not a _trait_, it works the exact same way. "
+"However, a warning must be emitted by the compiler to state the unused "
+"import (as types don’t have `impl`!)."
+msgstr ""
+
+#: src/2166-impl-only-use.md:109
+msgid ""
+"In the same way, it’s possible to use the same mechanism with `extern crate` "
+"for linking-only crates:"
+msgstr ""
+
+#: src/2166-impl-only-use.md:116
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2166-impl-only-use.md:119
+msgid ""
+"This RFC tries to solve a very specific problem (when you _must_ alias a "
+"trait use). It’s just a nit to make the syntax more _“rust-ish”_ (it’s very "
+"easy to think such a thing would work given the way `_` works pretty much "
+"everywhere else)."
+msgstr ""
+
+#: src/2166-impl-only-use.md:123
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2166-impl-only-use.md:126
+msgid ""
+"The simple alternative is to let the programmer give a name to the qualified "
+"import, which is not a big deal, but is a bit ugly."
+msgstr ""
+
+#: src/2166-impl-only-use.md:129
+msgid "Unresolved questions"
+msgstr ""

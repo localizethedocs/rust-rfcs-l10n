@@ -1,0 +1,1398 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1951-expand-impl-trait.md:1
+msgid "Feature Name: expanded_impl_trait"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:2
+msgid "Start Date: 2017-03-12"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1951](https://github.com/rust-lang/rfcs/pull/1951)"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#42183](https://github.com/rust-lang/rust/"
+"issues/42183)"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:9
+msgid "This RFC proposes several steps forward for `impl Trait`:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:11
+msgid ""
+"Settling on a particular syntax design, resolving questions around the "
+"`some`/`any` proposal and others."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:14
+msgid ""
+"Resolving questions around which type and lifetime parameters are considered "
+"in scope for an `impl Trait`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:17
+msgid "Adding `impl Trait` to argument position."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:19
+msgid ""
+"The first two proposals, in particular, put us into a position to stabilize "
+"the current version of the feature in the near future."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:22
+msgid "Motivation"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:25
+msgid ""
+"To recap, the current `impl Trait` feature allows functions to write a "
+"return type like `impl Iterator<Item = u64>` or `impl Fn(u64) -> bool`, "
+"which says that the function's return type satisfies the given trait bounds, "
+"but nothing more about it can be assumed. It's useful to impose an "
+"abstraction barrier and to avoid writing down complex (or un-nameable) "
+"types. The current feature was designed very conservatively, and only allows "
+"`impl Trait` to be used in function return position on inherent or free "
+"functions."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:33
+msgid ""
+"The core motivation for this RFC is to pave the way toward stabilization of "
+"`impl Trait`; from that perspective, it inherits the motivation of [the "
+"previous RFC](https://github.com/rust-lang/rfcs/pull/1522). Making progress "
+"on this front falls clearly under the rubric of the productivity and "
+"learnability goals for [the 2017 roadmap](https://github.com/rust-lang/rfcs/"
+"pull/1774)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:40
+msgid "Stabilization is currently blocked on three inter-related questions:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:42
+msgid ""
+"Will `impl Trait` ever be usable in argument position? With what semantics?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:44
+msgid ""
+"Will we want to distinguish between `some` and `any`, that is, between "
+"existential types (where the callee chooses the type) and universal types "
+"(where the caller chooses)? Or is it enough to deduce the desired meaning "
+"from context?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:48
+msgid ""
+"When you use `impl Trait`, what lifetime and type parameters are in scope "
+"for the hidden, concrete type that will be returned? Can you customize this "
+"set?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:51
+msgid ""
+"This RFC is aimed squarely at resolving these questions. However, by "
+"resolving some of them, it also unlocks the door to an expansion of the "
+"feature to new locations (arguments, traits, trait impls), as we'll see."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:55
+msgid "Motivation for expanding to argument position"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:57
+msgid ""
+"This RFC proposes to allow `impl Trait` to be used in argument position, "
+"with \"universal\" (aka generics-style) semantics. There are three lines of "
+"argument in favor of doing so, given here along with rebuttals from the lang "
+"team."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:61
+msgid "Argument from learnability"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:63
+msgid ""
+"There's been a lot of discussion around universals vs. existentials (in "
+"today's Rust, generics vs `impl Trait`). The RFC makes a few assumptions:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:66
+msgid ""
+"Most programmers won't come to Rust with a crisp understanding of the "
+"distinction."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:67
+msgid ""
+"Even when people learn the distinction, it's often confusing and hard to "
+"remember with precision."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:68
+msgid ""
+"But, on the other hand, programmers have a very deep intuition around the "
+"difference between arguments and return values, and \"who\" provides which "
+"(amongst caller and callee)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:72
+msgid "Now, consider a new Rust programmer, who has learned about generics:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:78
+msgid ""
+"What happens when they want to return an unstated iterator instead? It's "
+"pretty natural to reach for:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:84
+msgid ""
+"if you don't have a crisp understanding of the unversal/existential "
+"distinction. If we only allowed `impl Trait` in return position, we'd have "
+"to say: when returning an unknown type, please use a completely different "
+"mechanism."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:89
+msgid "By contrast, a programmer who first learned:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:95
+msgid "and then tried:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:101
+msgid ""
+"would be successful, without any rigorous understanding that they just "
+"transitioned from a universal to an existential."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:104
+msgid ""
+"What's at play here is **who gets to pick a type**? And as above, "
+"programmers have a strong intuition about callers providing arguments, and "
+"callees providing return values. The proposed `impl Trait` extension to "
+"argument aligns with this intuition (and with what is most definitely the "
+"common case in practice), so that:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:110
+msgid "If you pick the value, you also pick the type"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:112
+msgid ""
+"Thus in `fn f(x: impl Foo) -> impl Bar`, the caller picks the value of `x` "
+"and so picks the type for `impl Foo`, but the function picks the return "
+"value, so it picks the type for `impl Bar`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:116
+msgid ""
+"This intuitive basis lets you get a lot of work done without learning the "
+"deeper distinction; you can fake it 'til you make it. If we, in addition, "
+"have an explicit syntax, you can eventually come to a fully rigorous "
+"understanding in terms of that syntax. And then you can go back to mostly "
+"operating intuitively with `impl Trait`, reaching for the fine distinctions "
+"only when you need them ([the \"post-rigorous\" stage of learning](https://"
+"terrytao.wordpress.com/career-advice/there%E2%80%99s-more-to-mathematics-"
+"than-rigour-and-proofs/))."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:123
+msgid ""
+"[@solson did a great job of laying this kind of argument out.](https://"
+"github.com/rust-lang/rfcs/pull/1951#issuecomment-287493061)"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:125
+msgid "Argument from ergonomics"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:127
+msgid ""
+"[Ergonomics is rarely about raw character count](https://blog.rust-lang."
+"org/2017/03/02/lang-ergonomics.html), and the argument here isn't about "
+"shaving off a few characters. Rather, it's about how much you have to hold "
+"in your head."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:131
+msgid ""
+"Generic syntax requires you to introduce a name for an argument's type, and "
+"to separate information about that type from the argument itself:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:138
+msgid ""
+"To read this signature, you have to first parse the type parameters and "
+"bounds, then remember which ones applied to `F`, and then see where `F` "
+"shows up in the argument."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:142
+msgid "By contrast:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:148
+msgid ""
+"Here, there are no additional names or indirections to hold in your head, "
+"and the relevant information about the argument type is located right next "
+"to the argument's name. Even better:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:156
+msgid ""
+"Also, when programming at speed, the fact that you can use the same `impl "
+"Trait` syntax in argument and return position -- and it almost always has "
+"the meaning you want -- means less pausing to think \"hm, am I dealing with "
+"an existential here?\""
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:161
+msgid "Argument from familiarity"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:163
+msgid ""
+"Finally, there's an argument from familiarity, which was given eloquently by "
+"@withoutboats:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:165
+msgid ""
+"The proposal is (syntactically) more like Java. In Java, non-static methods "
+"aren't parametric; generics are used at the type level, and you just use "
+"interfaces at the method level."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:169
+msgid "We'd end up with APIs that look very similar to Java or C#:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:177
+msgid ""
+"I think this is a good thing from the pre-rigorous/rigourous/post-rigourous "
+"sense: you have this incremental onboarding experience in which at first "
+"blush it is quite similar to what you're used to. What I like even more, "
+"though, is that under the hood its all parametric polymorphism. In Java you "
+"actually have inheritance, and interfaces, and generics, and they all "
+"interact but not in a very unified way. In Rust, this is just a syntactic "
+"easement into a unitary polymorphism system which is fundamentally one idea: "
+"parametric polymorphism with trait constraints."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:186
+msgid "Critique from the lang team"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:188
+msgid ""
+"@nrc argued that there's also a learnability downside, because Rust "
+"programmers now have one additional syntax for generic arguments to learn."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:191
+msgid ""
+"**Rebuttal**: I agree that there's an additional syntax to learn, but a key "
+"here is that there's no _genuine_ complexity addition: it's pure sugar. In "
+"other words, it's not a new _concept_, and learning that there's an "
+"alternative, more verbose and expressive syntax tends to be a relatively "
+"easy step to take in practice. In addition, treating it as \"anonymous "
+"generics\" (for arguments) makes it pretty easy to understand the "
+"relationship."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:200
+msgid ""
+"@nrc argued that there would also be stylistic overhead: when to use `impl "
+"Trait` vs generics vs where clauses? And won't you often end up having to "
+"use `where` clauses anyway, when things get longer?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:204
+msgid ""
+"**Rebuttal**: @withoutboats pointed out that `impl Trait` can actually help "
+"ease such style questions:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:214 src/1951-expand-impl-trait.md:220
+msgid "// vs\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:229
+msgid ""
+"It seems plausible that `impl Trait` syntax should simply _always_ be used "
+"whenever it can be, since expanding out an argument list into multiple lines "
+"tends to be preferable to expanding out a `where` clause to multiple lines "
+"(and even more so, expanding out a generics list)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:236
+msgid ""
+"@joshtriplett raised concerns about the purported learnability benefits "
+"absent having an explicit syntax for the \"rigorous\" stage."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:239
+msgid ""
+"**Rebuttal**: the RFC takes as a basic assumption that we will eventually "
+"have such a syntax. But I think it's worth diving into greater detail on the "
+"learnability tradeoffs here. I think that if we offered an explicit syntax "
+"that was similar to today's generic syntax, it could help tell a coherent, "
+"intuitive story."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:247
+msgid ""
+"@nrc raised [his point about auto traits](https://github.com/rust-lang/rfcs/"
+"pull/1951#issuecomment-290522499)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:249
+msgid ""
+"**Rebuttal**: the auto trait story here is essentially the same as with "
+"generics:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:256
+msgid ""
+"In both of these functions, if you pass in an argument that is `Send`, you "
+"will be able to rely on `Send` in the return value."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:259
+msgid "Detailed design"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:262
+msgid "The proposal in a nutshell"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:264
+msgid ""
+"Expand `impl Trait` to allow use in arguments, where it behaves like an "
+"anonymous generic parameter. **This will be separately feature-gated**."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:267
+msgid ""
+"Stick with the `impl Trait` syntax, rather than introducing a `some`/`any` "
+"distinction."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:270
+msgid ""
+"Treat all type parameters as in scope for the concrete \"witness\" type "
+"underlying a use of `impl Trait`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:273
+msgid ""
+"Treat any explicit lifetime bounds (as in `impl Trait + 'a`) as bringing "
+"those lifetimes into scope, and no other lifetime parameters are explicitly "
+"in scope. However, type parameters may mention lifetimes which are hence "
+"_indirectly_ in scope."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:278
+msgid "Background"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:280
+msgid ""
+"Before diving more deeply into the design, let's recap some of the "
+"background that's emerged over time for this corner of the language."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:283
+msgid "Universals (`any`) versus existentials (`some`)"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:285
+msgid ""
+"There are basically two ways to talk about an \"unknown type\" in something "
+"like a function signature:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:288
+msgid ""
+"**Universal quantification**, i.e. \"for any type T\", i.e. \"caller "
+"chooses\". This is how generics work today. When you write `fn foo<T>(t: "
+"T)`, you're saying that the function will work for _any_ choice of `T`, and "
+"leaving it to your caller to choose the `T`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:293
+msgid ""
+"**Existential quantification**, i.e. \"for some type T\", i.e. \"callee "
+"chooses\". This is how `impl Trait` works today (which is in return position "
+"only). When you write `fn foo() -> impl Iterator`, you're saying that the "
+"function will produce _some_ type `T` that implements `Iterator`, but the "
+"caller is not allowed to assume anything else about that type."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:299
+msgid ""
+"When it comes to functions, we _usually_ want `any T` for arguments, and "
+"`some T` for return values. However, consider the following function:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:308
+msgid ""
+"The `thin_air` function says it can produce a value of type `T` for _any_ "
+"`T` the caller chooses---so long as `T: Default`. The `collect` function "
+"works similarly. But this pattern is relatively uncommon."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:312
+msgid ""
+"As we'll see later, there are also considerations for _higher-order_ "
+"functions, i.e. when you take another function as an argument."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:315
+msgid ""
+"In any case, one longstanding proposal for `impl Trait` is to split it into "
+"two distinct features: `some Trait` and `any Trait`. Then you'd have:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:319 src/1951-expand-impl-trait.md:322
+#: src/1951-expand-impl-trait.md:326 src/1951-expand-impl-trait.md:570
+msgid "// These two are equivalent\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:332
+msgid "Scoping for lifetime and type parameters"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:334
+msgid ""
+"There's a subtle issue for the semantics of `impl Trait`: what lifetime and "
+"type parameters are considered \"in scope\" for the underlying concrete type "
+"that implements `Trait`?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:338
+msgid "Type parameters and type equalities"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:340
+msgid ""
+"It's easiest to understand this issue through examples where it matters. "
+"Suppose we have the following function:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:347
+msgid ""
+"Here we're saying that the function will yield _some_ type back, whose "
+"identity we don't know, but which implements `MyTrait`. But, in addition, we "
+"have the type parameter `T`. The question is: can the return type of the "
+"function depend on `T`?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:352
+msgid "Concretely, we expect at least the following to work:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:361
+msgid ""
+"because we expect both expressions to have the same type, and hence be "
+"eligible to place into a single vector. That's because, although we don't "
+"know the identity of the return type, everything it could depend on is the "
+"same in both cases: `T` is instantiated with `u8`. (Note: there are "
+"\"generative\" variants of existentials for which this is not the case; see "
+"[Unresolved questions](#unresolved-questions));"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:368
+msgid "But what about the following:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:377
+msgid ""
+"Here, we're making different choices of `T` in the two expressions; can that "
+"affect what return type we get? The `impl Trait` semantics needs to give an "
+"answer to that question."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:381
+msgid ""
+"Clearly there are cases where the return type very much depends on type "
+"parameters, for example the following:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:390
+msgid ""
+"But there are also cases where there isn't a dependency, and tracking that "
+"information may be important for type equalities like the vectors above. And "
+"this applies equally to lifetime parameters as well."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:394
+msgid "Lifetime parameters"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:396
+msgid ""
+"It's vital to know what lifetime parameters might be used in the concrete "
+"type underlying an `impl Trait`, because that information will affect "
+"lifetime inference."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:400
+msgid ""
+"For concrete types, we're pretty used to thinking about this. Let's take "
+"slices:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:409
+msgid ""
+"A seasoned Rustacean can read the ownership story directly from these two "
+"signatures. In the case of `len`, the fact that the return type does not "
+"involve any borrowed data means that the borrow of `self` is only used "
+"within `len`, and doesn't need to persist afterwards. For `first`, by "
+"contrast, the return value contains `&T`, which will extend the borrow of "
+"`self` for at least as long as that return value is kept around by the "
+"caller."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:416
+msgid "As a caller, this difference is quite apparent:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:420
+msgid "// the borrow of `my_slice` lasts only for this line\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:421
+msgid "// ... so this mutable borrow is allowed\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:425
+msgid "// the borrow of `my_slice` lasts for the rest of this scope\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:426
+msgid "// ... so this mutable borrow is *NOT* allowed\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:430
+msgid ""
+"Now, the issue is that for `impl Trait`, we're not writing down the concrete "
+"return type, _so it's not obvious what borrows might be active within it_. "
+"In other words, if we write:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:440
+msgid ""
+"it's not clear whether the function is more like `len` or more like `first`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:442
+msgid ""
+"This is again a question of _what lifetime parameters are in scope_ for the "
+"actual return type. It's a question that needs a clear answer (and some "
+"flexibility) for the `impl Trait` design."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:446
+msgid "Core assumptions"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:448
+msgid ""
+"The design in this RFC is guided by several assumptions which are worth "
+"laying out explicitly."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:451
+msgid ""
+"Assumption 1: we will eventually have a fully expressive and explicit syntax "
+"for existentials"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:453
+msgid ""
+"The `impl Trait` syntax can be considered an \"implicit\" or \"sugary\" "
+"syntax in that it (1) does not introduce a name for the existential type and "
+"(2) does not allow you to control the scope in which the underlying concrete "
+"type is known."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:457
+msgid ""
+"Moreover, some versions of the design (including in this RFC) impose further "
+"limitations on the power of the feature for the sake of simplicity."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:460
+msgid ""
+"This is done under the assumption that we will eventually introduce a fully "
+"expressive, explicit syntax for existentials. Such a syntax is sketched in "
+"an appendix to this RFC."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:464
+msgid ""
+"Assumption 2: treating all _type_ variables as in scope for `impl Trait` "
+"suffices for the vast majority of cases"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:466
+msgid ""
+"The background section discussed scoping issues for `impl Trait`, and the "
+"main implication for _type_ parameters (as opposed to lifetimes) is what "
+"type equalities you get for an `impl Trait` return type. We're making two "
+"assumptions about that:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:470
+msgid ""
+"In practice, you usually need to close over most of all of the type "
+"parameters."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:471
+msgid ""
+"In practice, you usually don't care much about type equalities with `impl "
+"Trait`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:473
+msgid ""
+"This latter point means, for example, that it's relatively unusual to do "
+"things like construct the vectors described in the background section."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:476
+msgid ""
+"Assumption 3: there should be an explicit marker when a lifetime could be "
+"embedded in a return type"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:478
+msgid ""
+"As mentioned in a [recent blog post](https://blog.rust-lang.org/2017/03/02/"
+"lang-ergonomics.html), one regret we have around lifetime elision is the "
+"fact that it applies when leaving off a lifetime for a non-`&` type "
+"constructor that expects one. For example, consider:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:490
+msgid ""
+"To know whether the borrow of `self` persists in the return value, you have "
+"to know that `Ref` takes a lifetime parameter that's being left out here. "
+"This is a tad too implicit for something as central as ownership."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:494
+msgid ""
+"Now, we also don't want to force you to write an explicit lifetime. We'd "
+"instead prefer a notation that says \"there _is_ a lifetime here; it's the "
+"usual one from elision\". As a purely strawman syntax (an actual RFC on the "
+"topic is upcoming), we might write:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:505
+msgid ""
+"In any case, to avoid compounding the mistake around elision, there should "
+"be _some_ marker when using `impl Trait` that a lifetime is being captured."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:508
+msgid ""
+"Assumption 4: existentials are vastly more common in return position, and "
+"universals in argument position"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:510
+msgid ""
+"As discussed in the background section, it's possible to make sense of `some "
+"Trait` and `any Trait` in arbitrary positions in a function signature. But "
+"experience with the language strongly suggests that `some Trait` semantics "
+"is virtually never wanted in argument position, and `any Trait` semantics is "
+"rarely used in return position."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:516
+msgid ""
+"Assumption 5: we may be interested in eventually pursuing a bare `fn foo() -"
+"> Trait` syntax rather than `fn foo() -> impl Trait`"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:518
+msgid ""
+"Today, traits can be used directly as (unsized) types, so that you can write "
+"things like `Box<MyTrait>` to designate a trait object. However, with the "
+"advent of `impl Trait`, there's been a desire to repurpose that syntax, and "
+"[instead write `Box<dyn Trait>`](https://github.com/rust-lang/rfcs/"
+"pull/1603) or some such to designate trait objects."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:524
+msgid ""
+"That would, in particular, allow syntax like the following when taking a "
+"closure:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:530
+msgid ""
+"The pros, cons, and logistics of such a change are out of scope for this "
+"RFC. However, it's taken as an assumption that we want to keep the door open "
+"to such a syntax, and so shouldn't stabilize any variant of `impl Trait` "
+"that lacks a good story for evolving into a bare `Trait` syntax later on."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:535
+msgid "Sticking with the `impl Trait` syntax"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:537
+msgid ""
+"This RFC proposes to stabilize the `impl Trait` feature with its current "
+"syntax, while also expanding it to encompass argument position. That means, "
+"in particular, _not_ introducing an explicit `some`/`any` distinction."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:541
+msgid "This choice is based partly on the core assumptions:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:543
+msgid "Assumption 1, we'll have a fully expressive syntax later."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:544
+msgid ""
+"Assumption 4, we can use the `some` semantics in return position and `any` "
+"in argument position, and almost always be right."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:545
+msgid ""
+"Assumption 5, we may want bare `Trait` syntax, which would not give "
+"\"syntactic space\" for a `some`/`any` distinction."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:547
+msgid ""
+"One important question is: will people find it easier to understand and use "
+"`impl Trait`, or something like `some Trait` and `any Trait`? Having an "
+"explicit split may make it easier to understand what's going on. But on the "
+"other hand, it's a somewhat complicated distinction to make, and while you "
+"usually know _intuitively_ what you want, being forced to spell it out by "
+"choosing the correct choice of `some` or `any` seems like an unnecessary "
+"burden, especially if the choice is almost always dictated by the position."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:555
+msgid ""
+"Pedagogically, if we have an explicit syntax, we retain the option of "
+"explaining what's going on with `impl Trait` by \"desugaring\" it into that "
+"syntax. From that standpoint, `impl Trait` is meant purely for ergonomics, "
+"which means [not just what you type, but also what you have to remember]"
+"(https://blog.rust-lang.org/2017/03/02/lang-ergonomics.html). Having `impl "
+"Trait` \"just do the right thing\" seems pretty clearly to be the right "
+"choice ergonomically."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:563
+msgid "Expansion to arguments"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:565
+msgid ""
+"This RFC proposes to allow `impl Trait` in function arguments, in addition "
+"to return position, with the `any Trait` semantics (as per assumption 4). In "
+"other words:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:575
+msgid ""
+"However, this RFC also proposes to _disallow_ use of `impl Trait` within "
+"`Fn` trait sugar or higher-ranked bounds, i.e. to disallow examples like the "
+"following:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:583
+msgid ""
+"While we will eventually want to allow such uses, it's likely that we'll "
+"want to introduce nested universal quantifications (i.e., higher-ranked "
+"bounds) in at least some cases; we don't yet have the ability to do so. We "
+"can revisit this question later on, once higher-ranked bounds have gained "
+"full expressiveness."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:588
+msgid "Explicit instantiation"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:590
+msgid ""
+"This RFC does _not_ propose any means of explicitly instantiating an `impl "
+"Trait` in argument position. In other words:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:597
+msgid "// this is allowed\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:598
+msgid "// this is not\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:601
+msgid ""
+"Thus, while `impl Trait` in argument position in some sense \"desugars\" to "
+"a generic parameter, the parameter is treated fully anonymously."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:604
+msgid "Scoping for type and lifetime parameters"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:606
+msgid ""
+"In argument position, the type fulfilling an `impl Trait` is free to "
+"reference any types or lifetimes whatsoever. So in a signature like:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:613
+msgid ""
+"the actual argument type may contain arbitrary lifetimes and mention "
+"arbitrary types. This follows from the desugaring to \"anonymous\" generic "
+"parameters."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:616
+msgid "For return position, things are more nuanced."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:618
+msgid ""
+"This RFC proposes that _all_ type parameters are considered in scope for "
+"`impl Trait` in return position, as per Assumption 2 (which claims that this "
+"suffices for most use-cases) and Assumption 1 (which claims that we'll "
+"eventually provide an explicit syntax with finer-grained control)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:623
+msgid ""
+"The lifetimes in scope include only those mentioned \"explicitly\" in a "
+"bound on the `impl Trait`. That is:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:626
+msgid ""
+"For `impl SomeTrait + 'a`, the `'a` is in scope for the concrete witness "
+"type."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:627
+msgid ""
+"For `impl SomeTrait + '_`, the lifetime that elision would imply is in scope "
+"(this is again using the strawman shorthand syntax for an elided lifetime)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:630
+msgid ""
+"Note, however, that the witness type can freely mention type parameters, "
+"which may themselves involve embedded lifetimes. Consider, for example:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:637
+msgid ""
+"Here, if the actual argument type was `SomeIter<'a>`, the return type can "
+"mention `SomeIter<'a>`, and therefore can _indirectly_ mention `'a`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:640
+msgid ""
+"In terms of Assumption 3 -- the constraint that lifetime embedding must be "
+"explicitly marked -- we clearly get that for the explicitly in-scope "
+"variables. For _indirect_ mentions of lifetimes, it follows from whatever is "
+"provided for the type parameters, much like the following:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:649
+msgid ""
+"In this example, the return type can of course reference any lifetimes that "
+"`T` does, but this is apparent from the signature. Likewise with `impl "
+"Trait`, where you should assume that _all_ type parameters could appear in "
+"the return type."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:653
+msgid "Relationship to trait objects"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:655
+msgid ""
+"It's worth noting that this treatment of lifetimes is related but not "
+"identical to the way they're handled for trait objects."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:658
+msgid ""
+"In particular, `Box<SomeTrait>` imposes a `'static` requirement on the "
+"underlying object, while `Box<SomeTrait + 'a>` only imposes a `'a` "
+"constraint. The key difference is that, for `impl Trait`, in-scope type "
+"parameters can appear, which indirectly mention additional lifetimes, so "
+"`impl SomeTrait` imposes `'static` only if those type parameters do:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:665
+msgid "// In these cases, we know that the concrete return type is 'static\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:669
+msgid ""
+"// In the following case, the concrete return type may embed lifetimes that "
+"appear in T:\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:672
+msgid "// ... whereas with Box, the 'static constraint is imposed\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:677
+msgid ""
+"This difference is a natural one when you consider the difference between "
+"generics and trait objects in general -- which is precisely that with "
+"generics, the actual types are _not_ erased, and hence auto traits like "
+"`Send` work transparently, as do lifetime constraints."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:682
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:685
+msgid ""
+"Generics and traits are a fundamental aspect of Rust, so the pedagogical "
+"approach here is really important. We'll outline the basic contours below, "
+"but in practice it's going to take some trial and error to find the best "
+"approach."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:689
+msgid ""
+"One of the hopes for `impl Trait`, as extended by this RFC, is that it "
+"_aids_ learnability along several dimensions:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:692
+msgid ""
+"It makes it possible to meaningfully work with traits without visibly using "
+"generics, which can provide a gentler learning curve. In particular, "
+"signatures involving closures are _much_ easier to understand. This effect "
+"would be further heightened if we eventually dropped the need for `impl`, so "
+"that you could write `fn map<U>(self, f: FnOnce(T) -> U) -> Option<U>`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:698
+msgid ""
+"It provides a greater degree of analogy between static and dynamic dispatch "
+"when working with traits. Introducing trait objects is easier when they can "
+"be understood as a variant of `impl Trait`, rather than a completely "
+"different approach. This effect would be further heightened if we moved to "
+"`dyn Trait` syntax for trait objects."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:704
+msgid ""
+"It provides a more intuitive way of working with traits and static dispatch "
+"in an \"object\" style, smoothing the transition to Rust's take on the topic."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:707
+msgid ""
+"It provides a more uniform story for static dispatch, allowing it to work in "
+"both argument and return position."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:710
+msgid "There are two ways of teaching `impl Trait`:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:712
+msgid ""
+"Introduce it _prior_ to bounded generics, as the first way you learn to "
+"\"consume\" traits. That works particularly well with teaching `Iterator` as "
+"one of the first real traits you see, since `impl Trait` is a strong match "
+"for working with iterators. As mentioned above, this approach also provides "
+"a more intuitive stepping stone for those coming from OO-ish languages. "
+"Later, bounded generics can be introduced as a more powerful, explicit "
+"syntax, which can also reveal a bit more about the underlying semantic model "
+"of `impl Trait`.  In this approach, the existential use case doesn't need a "
+"great deal of ceremony---it just follows naturally from the basic feature."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:722
+msgid ""
+"Alternatively, introduce it _after_ bounded generics, as (1) a sugar for "
+"generics and (2) a separate mechanism for existentials. This is, of course, "
+"the way all existing Rust users will come to learn `impl Trait`. And it's "
+"ultimately important to understand the mechanism in this way. But it's "
+"likely _not_ the ideal way to introduce it at first."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:728
+msgid ""
+"In either case, people should learn `impl Trait` early (since it will appear "
+"often) and in particular prior to learning trait objects. As mentioned "
+"above, trait objects can then be taught using intuitions from `impl Trait`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:732
+msgid ""
+"There's also some ways in which `impl Trait` can introduce confusion, which "
+"we'll cover in the drawbacks section below."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:735
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:738
+msgid ""
+"It's widely recognized that we need _some_ form of static existentials for "
+"return position, both to be able to return closures (which have un-nameable "
+"types) and to ergonomically return things like iterator chains."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:742
+msgid ""
+"However, there are two broad classes of drawbacks to the approach taken in "
+"this RFC."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:744
+msgid "Relatively inexpressive sugary syntax"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:746
+msgid ""
+"This RFC is built on the idea that we'll eventually have a fully expressive "
+"explicit syntax, and so we should tailor the \"sugary\" `impl Trait` syntax "
+"to the most common use cases and intuitions."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:750
+msgid ""
+"That means, however, that we give up an opportunity to provide more "
+"expressive but still sugary syntax like `some Trait` and `any Trait`\\---we "
+"certainly don't want all three."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:754
+msgid "That syntax is further discussed in Alternatives below."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:756
+msgid "Potential for confusion"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:758
+msgid "There are two main avenues for confusion around `impl Trait`:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:760
+msgid ""
+"Because it's written where a type would normally go, one might expect it to "
+"be usable _everywhere_ a type is accepted (e.g., within `struct` definitions "
+"and `impl` headers). While it's feasible to allow the feature to be used in "
+"more locations, the semantics is tricky, and in any case it doesn't behave "
+"like a normal type, since it's introducing an existential. The approach in "
+"this RFC is to have a very clear line: `impl Trait` is a notation for "
+"function signatures only, and there's a separate explicit notation (TBD) "
+"that can be used to provide more general existentials (which can then be "
+"used as if they were normal types)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:770
+msgid ""
+"You can use `impl Trait` in both argument and return position, but the "
+"meaning is different in the two cases. On the one hand, the meaning is "
+"generally the intuitive one---it behaves as one would likely expect. But it "
+"blurs the line a bit between the `some` and `any` meanings, which could lead "
+"to people trying to use generics for existentials. We may be able to provide "
+"some help through errors, or eventually provide a syntax like `<out T>` for "
+"named existentials."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:777
+msgid ""
+"There's also the fact that `impl Trait` introduces \"yet another\" way to "
+"take a bounded generic argument (in addition to `<T: Trait>` and `<T> where "
+"T: Trait`). However, these ways of writing a signature are not "
+"_semantically_ distinct ways; they're just _stylistically_ different. It's "
+"feasible that rustfmt could even make the choice automatically."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:783
+msgid "Alternatives"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:786
+msgid ""
+"There's been a _lot_ of discussion about the `impl Trait` feature and "
+"various alternatives. Let's look at some of the most prominent of them."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:789
+msgid ""
+"**Limiting to return position forever**. A particularly conservative "
+"approach would be to treat `impl Trait` as used purely for existentials and "
+"limit its use to return position in functions (and perhaps some other places "
+"where we want to allow for existentials). Limiting the feature in this way, "
+"however, loses out on some significant ergonomic and pedagogical wins "
+"(previously discussed in the RFC), and risks confusion around the \"special "
+"case\" treatment of return types."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:797
+msgid ""
+"**Finer grained sugary syntax**. There are a couple options for making the "
+"sugary syntax more powerful:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:799
+msgid ""
+"`some`/`any` notation, which allows selecting between universals and "
+"existentials at will. The RFC has already made some argument for why it does "
+"not seem so important to permit this distinction for `impl Trait`. And doing "
+"so has some significant downsides: it demands a more sophisticated "
+"understanding of the underlying type theory, which precludes using `impl "
+"Trait` as an early teaching tool; it seems easy to get confused and choose "
+"the wrong variant; and we'd almost certainly need different keywords (that "
+"don't mirror the existing `Some` and `Any` names), but it's not clear that "
+"there are good choices."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:808
+msgid ""
+"`impl<...> Trait` syntax, as a way of giving more precise control over which "
+"type and lifetime parameters are in scope. The idea is that the parameters "
+"listed in the `<...>` are in scope, and nothing else is. This syntax, "
+"however, is not forward-compatible with a bare `Trait` syntax. It's also not "
+"clear how to get the right _defaults_ without introducing some "
+"inconsistency; if you leave off the `<>` altogether, we'd presumably like "
+"something like the defaults proposed in this RFC (otherwise, the feature "
+"would be very unergonomic). But that would mean that, when transitioning "
+"from no `<>` to including a `<>` section, you go from including _all_ type "
+"parameters to including only the listed set, which is a bit counterintuitive."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:819
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:822
+msgid ""
+"**Full evidence for core assumptions**. The assumptions in this RFC are "
+"stated with anecdotal and intuitive evidence, but the argument would be "
+"stronger with more empirical evidence. It's not entirely clear how best to "
+"gather that, though many of the assumptions could be validated by using an "
+"unstable version of the proposed feature."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:828
+msgid ""
+"**The precedence rules around `impl Trait + 'a` need to be nailed down.**"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:830
+msgid ""
+"**The RFC assumes that we only want \"applicative\" existentials**, which "
+"always resolve to the same type when in-scope parameters are the same:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:837
+msgid ""
+"// valid, because we know the underlying return type will be the same in "
+"both cases:\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:842
+msgid ""
+"However, it's also possible to provide \"generative\" existentials, which "
+"give you a _fresh_ type whenever they are unpacked, even when their "
+"arguments are the same---which would rule out the example above. That's a "
+"powerful feature, because it means in effect that you can generate a fresh "
+"type _for every dynamic invocation of a function_, thereby giving you a way "
+"to hoist dynamic information into the type system."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:849
+msgid ""
+"As one example, generative existentials can be used to \"bless\" integers as "
+"being in bounds for a particular slice, so that bounds checks can be safely "
+"elided. This is currently possible to encode in Rust by using callbacks with "
+"fresh lifetimes (see Section 6.3 of [@Gankro's thesis](https://github.com/"
+"Gankro/thesis/raw/master/thesis.pdf), but generative existentials would "
+"provide a much more natural mechanism."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:856
+msgid ""
+"We may want to consider adding some form of generative existentials in the "
+"future, but would almost certainly want to do so via the fully expressive/"
+"explicit syntax, rather than through `impl Trait`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:860
+msgid "Appendix: a sketch of a fully-explicit syntax"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:862
+msgid ""
+"This section contains a **brief sketch** of a fully-explicit syntax for "
+"existentials. It's a strawman proposal based on many previously-discussed "
+"ideas, and should not be bikeshedded as part of this RFC. The goal is just "
+"to give a flavor of how the full system could eventually fit together."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:867
+msgid ""
+"The basic idea is to introduce an `abstype` item for declaring abstract "
+"types:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:873
+msgid ""
+"This construct would be usable anywhere items currently are. It would "
+"declare an existential type whose concrete implementation is known **within "
+"the item scope in which it is declared**, and that concrete type would be "
+"determined by inference based on the same scope. Outside of that scope, the "
+"type would be opaque in the same way as `impl Trait`."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:879
+msgid "So, for example:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:896
+msgid ""
+"// fails to compile, because in this scope we don't know that `Token` is "
+"`u64`\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:901
+msgid ""
+"Of course, in this particular example we could just as well have used `fn "
+"fresh() -> impl Eq`, but `abstype` allows us to use the _same_ existential "
+"type in multiple locations in an API:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:913
+msgid "// ...\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:918
+msgid ""
+"Already `abstype` gives greater expressiveness than `impl Trait` in several "
+"respects:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:921
+msgid ""
+"It allows existentials to be named, so that the same one can be referred to "
+"multiple times within an API."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:924
+msgid "It allows existentials to appear within structs."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:926
+msgid "It allows existentials to appear within function arguments."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:928
+msgid ""
+"It gives tight control over the \"scope\" of the existential---what portion "
+"of the code is allowed to know what the concrete witness type for the "
+"existential is. For `impl Trait`, it's always just a single function."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:933
+msgid ""
+"But we also wanted more control over scoping of type and lifetime "
+"parameters. For this, we can introduce existential _type constructors_:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:940
+msgid "// we know that 'a is in scope for the return type, but *not* `T`\n"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:945
+msgid ""
+"(These type constructors raise various issues around inference, which I "
+"believe are tractable, but are out of scope for this sketch)."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:948
+msgid ""
+"It's worth noting that there's some relationship between `abstype` and the "
+"\"newtype deriving\" concept: from an external perspective, `abstype` "
+"introduces a new type but automatically delegates any of the listed trait "
+"bounds to the underlying witness type."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:953
+msgid "Finally, a word on syntax:"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:955
+msgid "Why `abstype Foo: Trait;` rather than `type Foo = impl Trait;`?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:956
+msgid ""
+"Two reasons. First, to avoid confusion about `impl Trait` seeming to be like "
+"a type, when it is actually an existential. Second, for forward "
+"compatibility with bare `Trait` syntax."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:960
+msgid "Why not `type Foo: Trait`?"
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:961
+msgid ""
+"That may be a fine syntax, but for clarity in presenting the idea I "
+"preferred to introduce a new keyword."
+msgstr ""
+
+#: src/1951-expand-impl-trait.md:964
+msgid ""
+"There are many detailed questions that would need to be resolved to fully "
+"specify this more expressive syntax, but the hope here is to show that (1) "
+"there's a plausible direction to take here and (2) give a sense for how "
+"`impl Trait` and a more expressive form could fit together."
+msgstr ""

@@ -1,0 +1,331 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0385-module-system-cleanup.md:1
+msgid "Module system cleanups"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:3
+msgid "Start Date: 2014-10-10"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:4
+msgid ""
+"RFC PR: [rust-lang/rfcs#385](https://github.com/rust-lang/rfcs/pull/385)"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:5
+msgid ""
+"Rust Issue: [rust-lang/rust#18219](https://github.com/rust-lang/rust/"
+"issues/18219)"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:9
+msgid ""
+"Lift the hard ordering restriction between `extern crate`, `use` and other "
+"items."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:10 src/0385-module-system-cleanup.md:77
+msgid "Allow `pub extern crate` as opposed to only private ones."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:11 src/0385-module-system-cleanup.md:99
+msgid "Allow `extern crate` in blocks/functions, and not just in modules."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:15
+msgid ""
+"The main motivation is consistency and simplicity: None of the changes "
+"proposed here change the module system in any meaningful way, they just "
+"remove weird forbidden corner cases that are all already possible to express "
+"today with workarounds."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:19
+msgid ""
+"Thus, they make it easier to learn the system for beginners, and easier to "
+"for developers to evolve their module hierarchies"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:21
+msgid ""
+"Lifting the ordering restriction between `extern crate`, `use` and other "
+"items."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:23
+msgid ""
+"Currently, certain items need to be written in a fixed order: First all "
+"`extern crate`, then all `use` and then all other items. This has "
+"historically reasons, due to the older, more complex resolution algorithm, "
+"which included that shadowing was allowed between those items in that order, "
+"and usability reasons, as it makes it easy to locate imports and library "
+"dependencies."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:27
+msgid ""
+"However, after [RFC 50](https://github.com/rust-lang/rfcs/blob/master/"
+"complete/0050-no-module-shadowing.md) got accepted there is only ever one "
+"item name in scope from any given source so the historical \"hard\" reasons "
+"loose validity: Any resolution algorithm that used to first process all "
+"`extern crate`, then all `use` and then all items can still do so, it just "
+"has to filter out the relevant items from the whole module body, rather then "
+"from sequential sections of it. And any usability reasons for keeping the "
+"order can be better addressed with conventions and lints, rather than hard "
+"parser rules."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:33
+msgid ""
+"(The exception here are the special cased prelude, and globs and macros, "
+"which are feature gated and out of scope for this proposal)"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:35
+msgid ""
+"As it is, today the ordering rule is a unnecessary complication, as it "
+"routinely causes beginner to stumble over things like this:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:39
+msgid "// ERROR: Imports have to precede items\n"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:42
+msgid ""
+"In addition, it doesn't even prevent certain patterns, as it is possible to "
+"work around the order restriction by using a submodule:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:45
+msgid "// One of many ways to expose the crate out of order:\n"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:50
+msgid "Which with this RFC implemented would be identical to"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:57
+msgid ""
+"Another use case are item macros/attributes that want to automatically "
+"include their their crate dependencies. This is possible by having the macro "
+"expand to an item that links to the needed crate, eg like this:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:65
+msgid "Expands to:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:69
+msgid "\"MyCrate\""
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:73
+msgid ""
+"With the order restriction still in place, this requires the sub module "
+"workaround, which is unnecessary verbose."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:75
+msgid ""
+"As an example, [gfx-rs](https://github.com/gfx-rs/gfx-rs) currently employs "
+"this strategy."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:79
+msgid ""
+"`extern crate` semantically is somewhere between `use`ing a module, and "
+"declaring one with `mod`, and is identical to both as far as as the module "
+"path to it is considered. As such, its surprising that its not possible to "
+"declare a `extern crate` as public, even though you can still make it so "
+"with an reexport:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:87
+msgid "\"bar\""
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:93
+msgid ""
+"While its generally not necessary to export a extern library directly, the "
+"need for it does arise occasionally during refactorings of huge crate "
+"collections, generally if a public module gets turned into its own crate."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:97
+msgid ""
+"As an example,the author recalls stumbling over it during a refactoring of "
+"gfx-rs."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:101
+msgid ""
+"Similar to the point above, its currently possible to both import and "
+"declare a module in a block expression or function body, but not to link to "
+"an library:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:107
+msgid "// ERROR: Extern crate not allowed here\n"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:108 src/0385-module-system-cleanup.md:109
+msgid "// OK\n"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:115
+msgid ""
+"This is again a unnecessary restriction considering that you can declare "
+"modules and imports there, and thus can make an extern library reachable at "
+"that point:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:121
+msgid "\"qux\""
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:127
+msgid ""
+"This again benefits macros and gives the developer the power to place "
+"external dependencies only needed for a single function lexically near it."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:130
+msgid "General benefits"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:132
+msgid ""
+"In general, the simplification and freedom added by these changes would "
+"positively effect the docs of Rusts module system (which is already often "
+"regarded as too complex by outsiders), and possibly admit other "
+"simplifications or RFCs based on the now-equality of view items and items in "
+"the module system."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:136
+msgid ""
+"(As an example, the author is considering an RFC about merging the `use` and "
+"`type` features; by lifting the ordering restriction they become more "
+"similar and thus more redundant)"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:139
+msgid ""
+"This also does not have to be a 1.0 feature, as it is entirely backwards "
+"compatible to implement, and strictly allows more programs to compile than "
+"before. However, as alluded to above it might be a good idea for 1.0 "
+"regardless"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:143
+msgid "Detailed design"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:145
+msgid "Remove the ordering restriction from resolve"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:146
+msgid ""
+"If necessary, change resolve to look in the whole scope block for view "
+"items, not just in a prefix of it."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:147
+msgid "Make `pub extern crate` parse and teach privacy about it"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:148
+msgid "Allow `extern crate` view items in blocks"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:150
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:152
+msgid "The source of names in scope might be harder to track down"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:153
+msgid ""
+"Similarly, it might become confusing to see when a library dependency exist."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:155
+msgid ""
+"However, these issues already exist today in one form or another, and can be "
+"addressed by proper docs that make library dependencies clear, and by the "
+"fact that definitions are generally greppable in a file."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:158
+msgid "Alternatives"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:160
+msgid ""
+"As this just cleans up a few aspects of the module system, there isn't "
+"really an alternative apart from not or only partially implementing it."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:163
+msgid ""
+"By not implementing this proposal, the module system remains more complex "
+"for the user than necessary."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:165
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:167
+msgid ""
+"Inner attributes occupy the same syntactic space as items and view items, "
+"and are currently also forced into a given order by needing to be written "
+"first. This is also potentially confusing or restrictive for the same "
+"reasons as for the view items mentioned above, especially in regard to the "
+"build-in crate attributes, and has one big issue: It is currently not "
+"possible to load a syntax extension that provides an crate-level attribute, "
+"as with the current macro system this would have to be written like this:"
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:180
+msgid ""
+"Which is impossible to write due to the ordering restriction. However, as "
+"attributes and the macro system are also not finalized, this has not been "
+"included in this RFC directly."
+msgstr ""
+
+#: src/0385-module-system-cleanup.md:183
+msgid ""
+"This RFC does also explicitly not talk about wildcard imports and macros in "
+"regard to resolution, as those are feature gated today and likely subject to "
+"change. In any case, it seems unlikely that they will conflict with the "
+"changes proposed here, as macros would likely follow the same module system "
+"rules where possible, and wildcard imports would either be removed, or "
+"allowed in a way that doesn't conflict with explicitly imported names to "
+"prevent compilation errors on upstream library changes (new public item may "
+"not conflict with downstream items)."
+msgstr ""

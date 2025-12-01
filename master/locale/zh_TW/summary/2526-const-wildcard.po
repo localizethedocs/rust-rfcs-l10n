@@ -1,0 +1,205 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2526-const-wildcard.md:1
+msgid "Feature Name: `const_wildcard`"
+msgstr ""
+
+#: src/2526-const-wildcard.md:2
+msgid "Start Date: 2018-08-18"
+msgstr ""
+
+#: src/2526-const-wildcard.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2526](https://github.com/rust-lang/rfcs/pull/2526)"
+msgstr ""
+
+#: src/2526-const-wildcard.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#54912](https://github.com/rust-lang/rust/"
+"issues/54912)"
+msgstr ""
+
+#: src/2526-const-wildcard.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2526-const-wildcard.md:9
+msgid ""
+"Allow assigning constants to `_`, as in `const _: TYPE = VALUE`, analogous "
+"to `let _ = VALUE`."
+msgstr ""
+
+#: src/2526-const-wildcard.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2526-const-wildcard.md:15
+msgid ""
+"The ability to ensure that code type checks while discarding the result is "
+"useful, especially in custom derives. For example, the following code will "
+"not compile if the type `MyType` doesn't implement the trait `MyTrait`:"
+msgstr ""
+
+#: src/2526-const-wildcard.md:23
+msgid "// type checking error if MyType: !MyTrait\n"
+msgstr ""
+
+#: src/2526-const-wildcard.md:28
+msgid ""
+"Unfortunately, this requires coming up with a unique identifier to assign "
+"to. This is error-prone because no matter what identifier is chosen, there's "
+"always a possibility that a user will have already used the same identifier "
+"in their code. If writing `const _: () = { ... }` were valid, then this "
+"would be a non-issue - the `const _` could be repeated many times without "
+"conflicting with any other identifier in scope."
+msgstr ""
+
+#: src/2526-const-wildcard.md:35
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2526-const-wildcard.md:38
+msgid ""
+"Allow assigning to `_` when defining a new constant. Just like `let _`, this "
+"doesn't introduce any new bindings, but still evaluates the rvalue at "
+"compile time like any other constant."
+msgstr ""
+
+#: src/2526-const-wildcard.md:42
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2526-const-wildcard.md:45
+msgid "The following changes are made to the language:"
+msgstr ""
+
+#: src/2526-const-wildcard.md:47
+msgid "Grammar"
+msgstr ""
+
+#: src/2526-const-wildcard.md:49
+msgid "The grammar of `item_const` is changed from:"
+msgstr ""
+
+#: src/2526-const-wildcard.md:55
+msgid "to:"
+msgstr ""
+
+#: src/2526-const-wildcard.md:61
+msgid "Type checking"
+msgstr ""
+
+#: src/2526-const-wildcard.md:63
+msgid ""
+"When type checking an associated `const` item, the token `_` may not occur "
+"as the name of the item."
+msgstr ""
+
+#: src/2526-const-wildcard.md:66
+msgid ""
+"When type checking a `const` item not inside an `impl` item, the token `_` "
+"is permitted as the name of such an item. When that token does occur, it is "
+"replaced with a freshly generated and unique identifier."
+msgstr ""
+
+#: src/2526-const-wildcard.md:70
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2526-const-wildcard.md:73
+msgid ""
+"The rules around constant identifiers are made somewhat more complicated, as "
+"is the compiler logic for handling them. A distinction is introduced between "
+"associated `const` items (inside `impl`s) and non-associated `const` items."
+msgstr ""
+
+#: src/2526-const-wildcard.md:77
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2526-const-wildcard.md:80
+msgid "Rationale"
+msgstr ""
+
+#: src/2526-const-wildcard.md:82
+msgid ""
+"This would allow more ergonomic uses of a number of patterns used today:"
+msgstr ""
+
+#: src/2526-const-wildcard.md:83
+msgid ""
+"Ensuring that types have certain trait bounds in custom derives, as "
+"explained in the [Motivation](#motivation) section."
+msgstr ""
+
+#: src/2526-const-wildcard.md:85
+msgid ""
+"[`const_assert!`](https://docs.rs/static_assertions/0.2.5/static_assertions/"
+"macro.const_assert.html) and other macros in the [`static_assertions`]"
+"(https://docs.rs/static_assertions/0.2.5/static_assertions/index.html) "
+"crate, which currently work only in a scope (so that they can use a `let` "
+"binding) or requires the user to specify a scope-unique name for a function "
+"which will be used to contain the expression that is the meat of the macro."
+msgstr ""
+
+#: src/2526-const-wildcard.md:92
+msgid ""
+"Eventually, we will likely want to support fully general pattern matching "
+"just like in `let` bindings (e.g., `const (a, b): (u8, u8) = (1, 1)`) to not "
+"have `const _` be a special case in the language. However, this RFC leaves "
+"the details of such a design up to a future RFC."
+msgstr ""
+
+#: src/2526-const-wildcard.md:97
+msgid "Alternatives"
+msgstr ""
+
+#: src/2526-const-wildcard.md:99
+msgid ""
+"We could provide procedural macros with an API that fetches a new, globally-"
+"unique identifier."
+msgstr ""
+
+#: src/2526-const-wildcard.md:101
+msgid "We could support anonymous modules (`mod { ... }` or `mod _ { ... }`)."
+msgstr ""
+
+#: src/2526-const-wildcard.md:102
+msgid "We could support anonymous top-level functions (`fn _() { ... }`)."
+msgstr ""
+
+#: src/2526-const-wildcard.md:104
+msgid "Prior art"
+msgstr ""
+
+#: src/2526-const-wildcard.md:107
+msgid ""
+"Go allows unnamed constants using the syntax `const _ = ...`. It also allows "
+"top-level variable bindings which are evaluated at init time, before `main` "
+"is run - `var _ = ...`. This latter syntax is often used to ensure that a "
+"particular type implements a particular interface, as in this example [from "
+"the standard library](https://golang.org/src/math/big/ftoa.go#L379):"
+msgstr ""
+
+#: src/2526-const-wildcard.md:114
+msgid "// *Float must implement fmt.Formatter\n"
+msgstr ""
+
+#: src/2526-const-wildcard.md:117
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2526-const-wildcard.md:120
+msgid "None."
+msgstr ""

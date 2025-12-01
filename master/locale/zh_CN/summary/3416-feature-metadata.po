@@ -1,0 +1,258 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3416-feature-metadata.md:1
+msgid "Feature Name: feature-metadata"
+msgstr ""
+
+#: src/3416-feature-metadata.md:2
+msgid "Start Date: 2023-04-14"
+msgstr ""
+
+#: src/3416-feature-metadata.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3416](https://github.com/rust-lang/rfcs/pull/3416)"
+msgstr ""
+
+#: src/3416-feature-metadata.md:4
+msgid ""
+"Rust Issue: [rust-lang/cargo#14157](https://github.com/rust-lang/cargo/"
+"issues/14157)"
+msgstr ""
+
+#: src/3416-feature-metadata.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/3416-feature-metadata.md:11
+msgid "This RFC adds a \"detailed\" feature definition:"
+msgstr ""
+
+#: src/3416-feature-metadata.md:18
+msgid "This is to unblock the following RFCs:"
+msgstr ""
+
+#: src/3416-feature-metadata.md:20 src/3416-feature-metadata.md:166
+msgid ""
+"[Cargo feature descriptions](https://github.com/rust-lang/rfcs/pull/3485)"
+msgstr ""
+
+#: src/3416-feature-metadata.md:21 src/3416-feature-metadata.md:167
+msgid ""
+"[Cargo feature deprecation](https://github.com/rust-lang/rfcs/pull/3486)"
+msgstr ""
+
+#: src/3416-feature-metadata.md:22 src/3416-feature-metadata.md:168
+msgid "[Cargo feature visibility](https://github.com/rust-lang/rfcs/pull/3487)"
+msgstr ""
+
+#: src/3416-feature-metadata.md:24
+msgid "Motivation"
+msgstr ""
+
+#: src/3416-feature-metadata.md:28
+msgid ""
+"Features are widely used as a way to do things like reduce dependency count, "
+"gate `std` or `alloc`\\-dependent parts of code, or hide unstable API. Use "
+"is so common that many larger crates wind up with tens of feature gates, "
+"such as [`tokio`](https://docs.rs/crate/tokio/latest/features) with 24. "
+"Despite being a first class component of crate structure, there are some "
+"limitations that don't have elegant solutions:"
+msgstr ""
+
+#: src/3416-feature-metadata.md:34
+msgid ""
+"Documentation is difficult, often requiring library authors to manually "
+"manage a table of descriptions"
+msgstr ""
+
+#: src/3416-feature-metadata.md:36
+msgid ""
+"There is no way to deprecate old features, as a way to help crates maintain "
+"semvar compliance"
+msgstr ""
+
+#: src/3416-feature-metadata.md:38
+msgid "Features cannot be hidden from use in any way"
+msgstr ""
+
+#: src/3416-feature-metadata.md:40
+msgid ""
+"This RFC proposes a plan that add that information to `Cargo.toml`, solving "
+"these problems."
+msgstr ""
+
+#: src/3416-feature-metadata.md:43
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3416-feature-metadata.md:47
+msgid ""
+"Usage is simple: features will be able to be specified as a table, instead "
+"of just a dependency array. This sample section of `Cargo.toml` shows new "
+"possibilities:"
+msgstr ""
+
+#: src/3416-feature-metadata.md:51
+msgid ""
+"```toml\n"
+"[features]\n"
+"# Current configuration will continue to work\n"
+"foo = []\n"
+"# New configurations\n"
+"bar = { enables = [\"foo\"], doc = \"simple docstring here\"}\n"
+"baz = { enables = [\"foo\"], public = false}\n"
+"qux = { enables = [], deprecated = true }\n"
+"quux = { enables = [], deprecated = { since = \"1.2.3\", note = \"don't use "
+"this!\" } }\n"
+"\n"
+"# Features can also be full tables if descriptions are longer\n"
+"[features.corge]\n"
+"enables = [\"bar\", \"baz\"]\n"
+"doc = \"\"\"\n"
+"# corge\n"
+"\n"
+"This could be a longer description of this feature\n"
+"\"\"\"\n"
+"```"
+msgstr ""
+
+#: src/3416-feature-metadata.md:71
+msgid ""
+"The `enables` key is synonymous with the existing array, describing what "
+"other features are enabled by a given feature. For example, `foo = [\"dep:"
+"serde\", \"otherfeat\"]` will be identical to `foo = { enables = [\"dep:"
+"serde\", \"otherfeat\"] }`"
+msgstr ""
+
+#: src/3416-feature-metadata.md:76
+msgid "All other keys are described in their individual RFCs."
+msgstr ""
+
+#: src/3416-feature-metadata.md:78
+msgid "General Implementation & Usage"
+msgstr ""
+
+#: src/3416-feature-metadata.md:80
+msgid ""
+"Use cases for these new keys will likely develop with time, but one of the "
+"simplest applications is for information output with `cargo add`:"
+msgstr ""
+
+#: src/3416-feature-metadata.md:103
+msgid ""
+"Features like `aho-corasick`, `memchr`, or `use_std` would likely be `public "
+"= false` since they aren't listed on the crate landing page."
+msgstr ""
+
+#: src/3416-feature-metadata.md:106
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3416-feature-metadata.md:110
+msgid ""
+"`enables` will take the place of the feature dependency array that currently "
+"exists. Semantics will remain unchanged."
+msgstr ""
+
+#: src/3416-feature-metadata.md:113
+msgid ""
+"This is a required key. If there are no requirements, an empty list should "
+"be provided (`enables = []`). This content is already in the index."
+msgstr ""
+
+#: src/3416-feature-metadata.md:116
+msgid ""
+"The availability of this new syntax should not require an MSRV bump. This "
+"means we need to make sure that if you use `feature_name = []` in your "
+"`Cargo.toml`, then the published `Cargo.toml` should as well. However, we "
+"leave it as an implementation detail whether using `feature_name = { enables "
+"=[] }` requires an MSRV bump for users of your published package as we have "
+"not been actively streamlining the workflow for maintaining separate "
+"development and published MSRVs."
+msgstr ""
+
+#: src/3416-feature-metadata.md:124
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3416-feature-metadata.md:128
+msgid ""
+"Added complexity to Cargo. Parsing is trivial, but exact implementation "
+"details do add test surface area"
+msgstr ""
+
+#: src/3416-feature-metadata.md:130
+msgid ""
+"Extending the `Cargo.toml` schema, particularly having a field support "
+"additional types, is disruptive to third-party parsers"
+msgstr ""
+
+#: src/3416-feature-metadata.md:133
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3416-feature-metadata.md:137
+msgid ""
+"This RFC has no impact on the Index Summaries. Future RFCs will need to work "
+"with that."
+msgstr ""
+
+#: src/3416-feature-metadata.md:140
+msgid "Naming"
+msgstr ""
+
+#: src/3416-feature-metadata.md:142
+msgid "`enables` reads better on the line than `enable`"
+msgstr ""
+
+#: src/3416-feature-metadata.md:143
+msgid ""
+"`enables` is likely an easier word for non-native speakers than `activates`"
+msgstr ""
+
+#: src/3416-feature-metadata.md:144
+msgid ""
+"`required` is used elsewhere to say \"this should automatically be available "
+"if requirements are met\""
+msgstr ""
+
+#: src/3416-feature-metadata.md:146
+msgid "Schema"
+msgstr ""
+
+#: src/3416-feature-metadata.md:148
+msgid ""
+"We could split the special feature syntax (`dep:`, etc) as distinct fields "
+"but we'd prefer trivial conversion from the \"simple\" schema to the "
+"\"detailed\" schema, like `dependencies`. However, we likely would want to "
+"prefer using new fields over adding more syntax, like with [disabling "
+"default features](https://github.com/rust-lang/cargo/issues/3126)."
+msgstr ""
+
+#: src/3416-feature-metadata.md:154
+msgid "Prior art"
+msgstr ""
+
+#: src/3416-feature-metadata.md:158
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3416-feature-metadata.md:162
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3416-feature-metadata.md:169
+msgid ""
+"[Cargo feature stability](https://github.com/rust-lang/cargo/issues/10881)"
+msgstr ""

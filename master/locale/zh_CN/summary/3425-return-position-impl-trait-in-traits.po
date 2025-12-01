@@ -1,0 +1,1110 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3425-return-position-impl-trait-in-traits.md:1
+msgid "Feature Name: return_position_impl_trait_in_traits"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:2
+msgid "Start Date: 2023-04-27"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3425](https://github.com/rust-lang/rfcs/pull/3425)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#91611](https://github.com/rust-lang/rust/"
+"issues/91611)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:5
+msgid ""
+"Initiative: [impl trait initiative](https://github.com/rust-lang/impl-trait-"
+"initiative)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:10
+msgid ""
+"Permit `impl Trait` in fn return position within traits and trait impls."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:11
+msgid ""
+"Allow `async fn` in traits and trait impls to be used interchangeably with "
+"its equivalent `impl Trait` desugaring."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:12
+msgid ""
+"Allow trait impls to `#[refine]` an `impl Trait` return type with added "
+"bounds or a concrete type.[^refine]"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:17
+msgid ""
+"The `impl Trait` syntax is currently accepted in a variety of places within "
+"the Rust language to mean \"some type that implements `Trait`\" (for an "
+"overview, see the [explainer](https://rust-lang.github.io/impl-trait-"
+"initiative/explainer.html) from the impl trait initiative). For function "
+"arguments, `impl Trait` is [equivalent to a generic parameter](https://rust-"
+"lang.github.io/impl-trait-initiative/explainer/apit.html) and it is accepted "
+"in all kinds of functions (free functions, inherent impls, traits, and trait "
+"impls)."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:19
+msgid ""
+"In return position, `impl Trait` [corresponds to an opaque type whose value "
+"is inferred](https://rust-lang.github.io/impl-trait-initiative/explainer/"
+"rpit.html). This is necessary for returning unnameable types, like those "
+"created by closures and `async` blocks, and also a convenient way to avoid "
+"naming complicated types like nested iterators. In return position, `impl "
+"Trait` is currently accepted only in free functions and inherent impls. This "
+"RFC extends the support to traits and trait impls."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:25
+msgid "Example use case"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:27
+msgid ""
+"The use case for `-> impl Trait` in trait functions is similar to its use in "
+"other contexts: traits often wish to return \"some type\" without specifying "
+"the exact type. As a simple example that we will use through the RFC, "
+"consider the `NewIntoIterator` trait, which is a variant of the existing "
+"`IntoIterator` that uses `impl Iterator` as the return type:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:36
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:39
+msgid ""
+"_This section assumes familiarity with the [basic semantics of impl trait in "
+"return position](https://rust-lang.github.io/impl-trait-initiative/explainer/"
+"rpit.html)._"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:41
+msgid ""
+"When you use `impl Trait` as the return type for a function within a trait "
+"definition or trait impl, the intent is the same: impls that implement this "
+"trait return \"some type that implements `Trait`\", and users of the trait "
+"can only rely on that."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:45
+msgid "Consider the following trait:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:53
+msgid ""
+"The semantics of this are analogous to introducing a new associated type "
+"within the surrounding trait;"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:56
+msgid "// desugared\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:62
+msgid ""
+"When using `-> impl Trait`, however, there is no associated type that users "
+"can name."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:64
+msgid ""
+"By default, the impl for a trait like `IntoNumIterator` must also use `impl "
+"Trait` in return position."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:74
+msgid "It can, however, give a more specific type with `#[refine]`:[^refine]"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:83
+msgid "// ..or even..\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:92
+msgid ""
+"Users of this impl are then able to rely on the refined return type, as long "
+"as the compiler can prove this impl specifically is being used. Conversely, "
+"in this example, code that is generic over the trait can only rely on the "
+"fact that the return type implements `Iterator<Item = u32>`."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:94
+msgid "async fn desugaring"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:96
+msgid ""
+"`async fn` always desugars to a regular function returning `-> impl Future`. "
+"When used in a trait, the `async fn` syntax can be used interchangeably with "
+"the equivalent desugaring in the trait and trait impl:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:100
+msgid ""
+"// Equivalent to:\n"
+"    // fn do_something(&self) -> impl Future<Output = ()> + '_;\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:104
+msgid "// OK!\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:114
+msgid ""
+"// Equivalent to:\n"
+"    // async fn do_something(&self);\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:118
+msgid "// Also OK!\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:125
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:128
+msgid "Equivalent desugaring for traits"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:130
+msgid ""
+"Each `-> impl Trait` notation appearing in a trait fn return type is "
+"effectively desugared to an anonymous associated type. In this RFC, we will "
+"use the placeholder name `$` when illustrating desugarings and the like."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:132
+msgid ""
+"As a simple example, consider the following (more complex examples follow):"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:139
+#: src/3425-return-position-impl-trait-in-traits.md:163
+msgid "// becomes\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:151
+msgid "Equivalent desugaring for trait impls"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:153
+msgid ""
+"Each `impl Trait` notation appearing in a trait impl fn return type is "
+"desugared to the same anonymous associated type `$` defined in the trait "
+"along with a function that returns it. The value of this associated type `$` "
+"is an `impl Trait`."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:177
+msgid "The desugaring works the same for provided methods of traits."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:179
+msgid "Scoping rules for generic parameters"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:181
+msgid ""
+"We say a generic parameter is \"in scope\" for an `impl Trait` type if the "
+"actual revealed type is allowed to name that parameter. The scoping rules "
+"for return position `impl Trait` in traits are the same as [those for return "
+"position `impl Trait` generally](https://rust-lang.github.io/rfcs/1951-"
+"expand-impl-trait.html#scoping-for-type-and-lifetime-parameters): All type "
+"and const parameters are considered in-scope, while lifetime parameters are "
+"only considered in-scope if they are mentioned in the `impl Trait` type "
+"directly."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:183
+msgid ""
+"Formally, given a trait method with a return type like `-> impl A + ... + Z` "
+"and an implementation of that trait, the hidden type for that implementation "
+"is allowed to reference:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:185
+msgid "Concrete types, constant expressions, and `'static`"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:186
+msgid "Any generic type and const parameters in scope, including:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:187
+msgid "Type and const parameters on the impl"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:188
+msgid "Explicit type and const parameters on the method"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:189
+msgid ""
+"Implicit type parameters on the method (argument-position `impl Trait` types)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:190
+msgid ""
+"Lifetime parameters that appear anywhere in the `impl A + ... + Z` type, "
+"including elided lifetimes"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:194
+msgid ""
+"Lifetime parameters not in scope may still be indirectly named by one of the "
+"type parameters in scope."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:196
+msgid ""
+"_Note_: The term \"captured\" is sometimes used as an alternative to \"in "
+"scope\"."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:198
+msgid ""
+"When desugaring, captured parameters from the method are reflected as "
+"generic parameters on the `$` associated type. Furthermore, the `$` "
+"associated type brings whatever where clauses are declared on the method "
+"into scope, excepting those which reference parameters that are not captured."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:200
+msgid ""
+"This transformation is precisely the same as the one which is applied to "
+"other forms of `-> impl Trait`, except that it applies to an associated type "
+"and not a top-level type alias."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:202
+msgid "Example:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:212
+msgid ""
+"// Since 'a is named in the bounds, it is captured.\n"
+"// `RefIterator` thus becomes:\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:223
+msgid "// Implied bound from fn\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:229
+msgid "Validity constraint on impls"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:231
+msgid "Given a trait method where `impl Trait` appears in return position,"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:239
+msgid ""
+"where `T_0 + ... + T_m` are bounds, for any impl of that trait to be valid, "
+"the following conditions must hold:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:241
+msgid ""
+"The return type named in the corresponding impl method must implement all "
+"bounds `T_0 + ... + T_m` specified in the trait."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:242
+msgid ""
+"This must be proven using only the information in the signature, with the "
+"exception that if the impl uses `impl Trait` syntax for the return type, the "
+"usual auto trait leakage rules apply."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:243
+msgid "Either the impl method must have `#[refine]`,[^refine] OR"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:244
+msgid ""
+"The impl must use `impl Trait` syntax to name the corresponding type, and"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:245
+msgid ""
+"The return type in the trait must implement all bounds `I_0 + ... + I_n` "
+"specified in the impl return type. (Taken with the first outer bullet point, "
+"we can say that the bounds in the trait and the bounds in the impl imply "
+"each other.)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:247
+msgid ""
+"`#[refine]` was added in [RFC 3245: Refined trait implementations](https://"
+"rust-lang.github.io/rfcs/3245-refined-impls.html). This feature is not yet "
+"stable. Examples in this RFC requiring the use of `#[refine]` will not work "
+"until that feature is stabilized."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:254
+#: src/3425-return-position-impl-trait-in-traits.md:262
+#: src/3425-return-position-impl-trait-in-traits.md:271
+#: src/3425-return-position-impl-trait-in-traits.md:331
+msgid "// OK:\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:280
+msgid "// Not OK (requires `#[refine]`):\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:290
+msgid ""
+"Additionally, using `-> impl Trait` notation in an impl is only legal if the "
+"trait also uses that notation. Each occurrence of `impl Trait` in an impl "
+"must unify with an occurrence of `impl Trait` in the trait."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:299
+#: src/3425-return-position-impl-trait-in-traits.md:302
+msgid "// Not OK\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:307
+msgid ""
+"An interesting consequence of auto trait leakage is that a trait is allowed "
+"to specify an auto trait in its return type bounds, but the impl does not "
+"have to _repeat_ that auto trait in its signature, as long as its return "
+"type actually implements the required bound. For example:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:310
+msgid "/// Converts `self` into an iterator that is always `Send`.\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:315
+msgid "// OK (signatures match exactly):\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:323
+msgid "// OK (auto traits leak, so adding `+ Send` here is NOT required):\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:334
+msgid "//  ^^^^ Required for our iterator to be Send!\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:340
+msgid "// Not OK (returned iterator is not known to be `Send`):\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:350
+msgid "Interaction with `async fn` in trait"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:352
+msgid ""
+"This RFC modifies the “Static async fn in traits” RFC so that async fn in "
+"traits may be satisfied by implementations that return `impl Future<Output "
+"= ...>` as long as the return-position impl trait type matches the async "
+"fn's desugared impl trait with the same rules as above."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:369
+msgid ""
+"Similarly, the equivalent `-> impl Future` signature in a trait can be "
+"satisfied by using `async fn` in an impl of that trait."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:371
+msgid "Legal positions for `impl Trait` to appear"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:373
+msgid ""
+"`impl Trait` can appear in the return type of a trait method in all the same "
+"positions as it can in a free function."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:375
+msgid ""
+"For example, return position impl trait in traits may be nested in "
+"associated types bounds:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:381
+#: src/3425-return-position-impl-trait-in-traits.md:399
+msgid "// This desugars into:\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:393
+msgid ""
+"It may also be used in type argument position of a generic type, including "
+"tuples:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:410
+msgid ""
+"But following the same rules as the allowed positions for return-position "
+"impl trait, it is not allowed to be nested in trait generics:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:414
+msgid "// ❌\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:418
+msgid "Dyn safety"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:420
+msgid ""
+"To start, traits that use `-> impl Trait` will not be considered dyn safe, "
+"_unless the method has a `where Self: Sized` bound_. This is because dyn "
+"types currently require that all associated types are named, and the `$` "
+"type cannot be named. The other reason is that the value of `impl Trait` is "
+"often a type that is unique to a specific impl, so even if the `$` type "
+"_could_ be named, specifying its value would defeat the purpose of the `dyn` "
+"type, since it would effectively identify the dynamic type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:422
+msgid ""
+"On the other hand, if the method has a `where Self: Sized` bound, the method "
+"will not exist on `dyn Trait` and therefore there will be no type to name."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:424
+msgid "Dyn safety for `async fn` in trait"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:426
+msgid ""
+"This RFC modifies the \"Static async fn in traits\" RFC to allow traits with "
+"`async fn` to be dyn-safe if the method has a `where Self: Sized` bound. "
+"This is consistent with how `async fn foo()` desugars to `fn foo() -> impl "
+"Future`."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:428
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:431
+msgid ""
+"This section discusses known drawbacks of the proposal as presently designed "
+"and (where applicable) plans for mitigating them in the future."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:433
+msgid "Cannot migrate off of impl Trait"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:435
+msgid ""
+"In this RFC, if you use `-> impl Trait` in a trait definition, you cannot "
+"\"migrate away\" from that without changing all impls. In other words, we "
+"cannot evolve:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:444
+msgid "into"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:454
+msgid ""
+"without breaking semver compatibility for your trait. The [future "
+"possibilities](#future-possibilities) section discusses one way to resolve "
+"this, by permitting impls to elide the definition of associated types whose "
+"values can be inferred from a function return type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:456
+msgid ""
+"Clients of the trait cannot name the resulting associated type, limiting "
+"extensibility"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:458
+msgid ""
+"[As @Gankra highlighted in a comment on a previous RFC](https://github.com/"
+"rust-lang/rfcs/pull/3193#issuecomment-965505149), the traditional "
+"`IntoIterator` trait permits clients of the trait to name the resulting "
+"iterator type and apply additional bounds:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:470
+msgid ""
+"The `NewIntoIterator` trait used as an example in this RFC, however, doesn't "
+"support this kind of usage, because there is no way for users to name the "
+"`IntoIter` type (and, as discussed in the previous section, there is no way "
+"for users to migrate to a named associated type, either!). The same problem "
+"applies to async functions in traits, which sometimes wish to be able to "
+"[add `Send` bounds to the resulting futures](https://rust-lang.github.io/"
+"async-fundamentals-initiative/evaluation/challenges/bounding_futures.html)."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:472
+msgid ""
+"The [future possibilities](#future-possibilities) section discusses a "
+"planned extension to support naming the type returned by an impl trait, "
+"which could work to overcome this limitation for clients."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:474
+msgid "Difference in scoping rules from `async fn`"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:476
+msgid ""
+"`async fn` behaves [slightly differently](https://doc.rust-lang.org/"
+"reference/items/functions.html#async-functions) than return-position `impl "
+"Trait` when it comes to the scoping rules defined above. It considers _all_ "
+"lifetime parameters in-scope for the returned future."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:480
+msgid ""
+"In the case of there being one lifetime in scope (usually for `self`), the "
+"desugaring we've shown above is exactly equivalent:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:492
+msgid ""
+"It's worth taking a moment to discuss _why_ this works. The `+ '_` syntax "
+"here does two things:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:494
+msgid ""
+"It brings the lifetime of the `self` borrow into scope for the return type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:495
+msgid "It promises that the return type will outlive the borrow of `self`."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:497
+msgid ""
+"In reality, the second point is not part of the `async fn` desugaring, but "
+"it does not matter: We can already reason that because our return type has "
+"only one lifetime in scope, it must outlive that lifetime."
+"[^OutlivesProjectionComponents]"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:499
+msgid ""
+"After all, the return type cannot possibly reference any lifetimes _shorter_ "
+"than the one lifetime it is allowed to reference. This behavior is specified "
+"as the rule `OutlivesProjectionComponents` in [RFC 1214](https://rust-lang."
+"github.io/rfcs/1214-projections-lifetimes-and-wf.html#outlives-for-"
+"projections). Note that it only works when there are no type parameters in "
+"scope."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:501
+msgid ""
+"When there are multiple lifetimes however, writing an equivalent desugaring "
+"becomes awkward."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:509
+msgid "We might be tempted to add another outlives bound:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:517
+msgid ""
+"But this signature actually promises _more_ than the original trait does, "
+"and would require `#[refine]`. The `async fn` desugaring allows the returned "
+"future to name both lifetimes, but does not promise that it _outlives_ both "
+"lifetimes.[^intersection]"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:519
+msgid ""
+"Technically speaking, we can reason that the returned future outlives the "
+"_intersection_ of all named lifetimes. In other words, when all lifetimes "
+"the future is allowed to name are valid, we can reason that the future must "
+"also be valid. But at the time of this RFC, Rust has no syntax for "
+"intersection lifetimes."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:521
+msgid "One way to get around this is to \"collapse\" the lifetimes together:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:529
+msgid ""
+"In most cases[^lifetime-collapse] the type system actually recognizes these "
+"signatures as equivalent. This means it should be possible to write this "
+"trait with RPITIT now and move to async fn in the future. In the general "
+"case where these are not equivalent, it is possible to write an equivalent "
+"desugaring with a bit of a hack:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:531
+msgid ""
+"Both lifetimes must be [late-bound](https://rust-lang.github.io/rfcs/0387-"
+"higher-ranked-trait-bounds.html#distinguishing-early-vs-late-bound-lifetimes-"
+"in-impls) and the type checker must be able to pick a lifetime that is the "
+"intersection of all input lifetimes, which is the case when either both are "
+"[covariant](https://doc.rust-lang.org/reference/subtyping.html#variance) or "
+"both are contravariant. The reason for this is described in more detail in "
+"[this comment](https://github.com/rust-lang/rust/"
+"issues/32330#issuecomment-202536977). In practice the equivalence can be "
+"checked [using the compiler](https://play.rust-lang.org/?"
+"version=nightly&mode=debug&edition=2021&gist=56faadfc236bb9acfb4af1b51a214a79). "
+"(Note that at the time of writing, a bug in the nightly compiler prevents it "
+"from accepting the example.)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:539
+msgid ""
+"//                                     ^^^^\n"
+"    // The lifetime of this inner reference is invariant!\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:544
+msgid ""
+"// Let's say we do not want to use `async fn` here.\n"
+"    // We cannot use the `+ 'a` syntax in this case,\n"
+"    // so we use `Captures` to bring the lifetimes in scope.\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:555
+msgid ""
+"Note that the `Captures` trait doesn't promise anything at all; its sole "
+"purpose is to give you a place to name lifetime parameters you would like to "
+"be in scope for the return type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:557
+msgid ""
+"This difference is pre-existing, but it's worth highlighting in this RFC the "
+"implications for the adoption of this feature. If we stabilize this feature "
+"first, people will use it to emulate `async fn` in traits. Care will be "
+"needed not to create forward-compatibility hazards for traits that want to "
+"migrate to `async fn` later. The best strategy for someone in that situation "
+"might be to simulate such a migration with the nightly compiler."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:559
+msgid ""
+"We leave open the question of whether to stabilize these two features "
+"together. In the future we can provide a nicer syntax for dealing with these "
+"cases, or remove the difference in scoping rules altogether."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:561
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:564
+msgid "Does auto trait leakage still occur for `-> impl Trait` in traits?"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:566
+msgid ""
+"Yes, so long as the compiler has enough type information to figure out which "
+"impl you are using. In other words, given a trait function `SomeTrait::foo`, "
+"if you invoke a function `<T as SomeTrait>::foo()` where the self type is "
+"some generic parameter `T`, then the compiler doesn't really know what impl "
+"is being used, so no auto trait leakage can occur. But if you were to invoke "
+"`<u32 as SomeTrait>::foo()`, then the compiler could resolve to a specific "
+"impl, and hence a specific [impl trait type alias](https://rust-lang.github."
+"io/impl-trait-initiative/explainer/tait.html), and auto trait leakage would "
+"occur as normal."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:570
+msgid "Can traits migrate from a named associated type to `impl Trait`?"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:572
+msgid ""
+"Not compatibly, no, because they would no longer have a named associated "
+"type. The \"future directions\" section discusses the possibility of "
+"allowing users to explicitly give a name for the associated type created, "
+"which would enable this use case."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:574
+msgid "Can traits migrate from `impl Trait` to a named associated type?"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:576
+msgid ""
+"Generally yes, but all impls would have to be rewritten to include the "
+"definition of the associated type. In many cases, some form of type-alias "
+"impl trait (or impl trait in associated type values) would also be required."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:578
+msgid ""
+"For example, if we changed the `IntoNumIterator` trait from the motivation "
+"to use an explicit associated type.."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:587
+msgid "...then impls like..."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:597
+msgid ""
+"...would no longer compile, because they are not specifying the value of the "
+"`IntIter` associated type. Moreover, the value for this type would be "
+"impossible to express without `impl Trait` notation, as it embeds a closure "
+"type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:599
+msgid ""
+"Would there be any way to make it possible to migrate from `impl Trait` to a "
+"named associated type compatibly?"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:601
+msgid ""
+"Potentially! There have been proposals to allow the values of associated "
+"types that appear in function return types to be inferred from the function "
+"declaration. So, using the example from the previous question, the impl for "
+"`IntoNumIterator` could infer the value of `IntIter` based on the return "
+"type of `into_int_iter`. This may be a good idea, but it is not proposed as "
+"part of this RFC."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:603
+msgid "What about using an implicitly-defined associated type?"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:605
+msgid ""
+"One alternative under consideration was to use a named associated type "
+"instead of the anonymous `$` type. The name could be derived by converting "
+"\"snake case\" methods to \"camel case\", for example. This has the "
+"advantage that users of the trait can refer to the return type by name."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:607
+msgid "We decided against this proposal:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:609
+msgid ""
+"Introducing a name by converting to camel-case feels surprising and "
+"inelegant."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:610
+msgid ""
+"Return position impl Trait in other kinds of functions doesn't introduce any "
+"sort of name for the return type, so it is not analogous."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:611
+msgid ""
+"We would like to allow `-> impl Trait` methods to work with dynamic dispatch "
+"(see [Future possibilities](#future-possibilities)). `dyn` types typically "
+"require naming all associated types of a trait. That would not be desirable "
+"for this feature, and these associated types would therefore not be "
+"consistent with other named associated types."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:613
+msgid ""
+"There is a need to introduce a mechanism for naming the return type for "
+"functions that use `-> impl Trait`; we plan to introduce a second RFC "
+"addressing this need uniformly across all kinds of functions."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:615
+msgid ""
+"As a backwards compatibility note, named associated types could likely be "
+"introduced later, although there is always the possibility of users having "
+"introduced associated types with the same name."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:617
+msgid "What about using a normal associated type?"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:619
+msgid ""
+"Giving users the ability to write an explicit `type Foo = impl Bar;` is "
+"already covered as part of the `type_alias_impl_trait` feature, which is not "
+"yet stable at the time of writing, and which represents an extension to the "
+"Rust language both inside and outside of traits. This RFC is about making "
+"trait methods consistent with normal free functions and inherent methods."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:621
+msgid ""
+"There are different situations where you would want to use an explicit "
+"associated type:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:623
+msgid "The type is central to the trait and deserves to be named."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:624
+msgid ""
+"You want to give users the ability to use concrete types without `#[refine]`."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:625
+msgid ""
+"You want to give generic users of your trait the ability specify a "
+"particular type, instead of just bounding it."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:626
+msgid ""
+"You want to give users the ability to easily name and bound the type without "
+"using (to-be-RFC'd) special syntax to name the type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:627
+msgid "You want the trait to work with dynamic dispatch today."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:628
+msgid ""
+"In the future, you want the associated type to be specified as part of `dyn "
+"Trait`, instead of using dynamic dispatch itself."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:630
+msgid ""
+"Using our hypothetical `NewIntoIterator` example, most of these are not met "
+"for the `IntoIter` type:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:632
+msgid ""
+"While the `Item` type is pretty central to users of the trait, the specific "
+"iterator type `IntoIter` is usually not."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:633
+msgid ""
+"The concrete type of an impl may or may not be useful, but usually what's "
+"important is the specific extra bounds like `ExactSizeIterator` that a user "
+"can use. Using `#[refine]` to explicitly choose to expose this (or a fully "
+"concrete type) is not overly burdensome."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:634
+msgid ""
+"Rarely does a function taking `impl IntoIterator` specify a particular "
+"iterator type; it would be rare to see a function like this, for example:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:640
+msgid ""
+"Bounding the iterator by adding extra bounds like `DoubleEndedIterator` is "
+"useful, but not the common case for `IntoIterator`. It therefore shouldn't "
+"be overly burdensome to use a (reasonably ergonomic) special syntax in the "
+"cases where it's needed."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:641
+msgid ""
+"Using `IntoIterator` with dynamic dispatch would be surprising; more common "
+"would be to call `.into_iter()` using static dispatch and then pass the "
+"resulting iterator to a function that uses dynamic dispatch."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:642
+msgid ""
+"If we did use `IntoIterator` with dynamic dispatch, the resulting iterator "
+"being dynamically dispatched would make the most sense."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:644
+msgid ""
+"Therefore, if we were writing `IntoIterator` today, it would probably use `-"
+"> impl Trait` in return position instead of having an explicit `IntoIter` "
+"type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:646
+msgid ""
+"The same is not true for `Iterator::Item`: because `Item` is so central to "
+"what an `Iterator` is, and because it rarely makes sense to use an opaque "
+"type for the item, it would remain an explicit associated type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:648
+msgid "Prior art"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:650
+msgid "Should library traits migrate to use `impl Trait`?"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:652
+msgid ""
+"Potentially, but not necessarily. Using `impl Trait` in traits imposes some "
+"limitations on generic code referencing those traits. While `impl Trait "
+"`desugars internally to an associated type, that associated type is "
+"anonymous and cannot be directly referenced by users, which prevents them "
+"from putting bounds on it or naming it for use in struct declarations. This "
+"is similar to `-> impl Trait` in free and inherent functions, which also "
+"returns an anonymous type that cannot be directly named. Just as in those "
+"cases, this likely means that widely used libraries should avoid the use of "
+"`-> impl Trait` and prefer to use an explicit named associated type, at "
+"least until some of the \"future possibilities\" are completed. However, "
+"this decision is best reached on a case-by-case basis: the real question is "
+"whether the bounds named in the trait will be sufficient, or whether users "
+"will wish to put additional bounds. In a trait like `IntoIterator`, for "
+"example, it is common to wish to bound the resulting iterator with "
+"additional traits, like `ExactLenIterator`. But given a trait that returns `-"
+"> impl Debug`, this concern may not apply. \\[prior-art\\]: #prior-art"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:655
+msgid ""
+"There are a number of crates that do desugaring like this manually or with "
+"procedural macros. One notable example is [real-async-trait](https://crates."
+"io/crates/real-async-trait)."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:657
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:660
+msgid ""
+"Should we stabilize this feature together with `async fn` to mitigate "
+"hazards of writing a trait that is not forwards-compatible with its "
+"desugaring? (See [drawbacks](#drawbacks).)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:661
+msgid ""
+"Resolution of [\\#112194: RPITIT is allowed to name any in-scope lifetime "
+"parameter, unlike inherent RPIT methods](https://github.com/rust-lang/rust/"
+"issues/112194)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:662
+msgid ""
+"Should we limit the legal positions for `impl Trait` to positions that are "
+"nameable using upcoming features like return-type notation (RTN)? (See [this "
+"comment](https://github.com/rust-lang/rfcs/"
+"pull/3425#pullrequestreview-1467880633) for an example.)"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:664
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:667
+msgid "Naming return types"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:669
+msgid ""
+"This RFC does not include a way for generic code to name or bound the result "
+"of `-> impl Trait` return types. This means, for example, that for the "
+"`IntoNumIterator` trait introduced in the motivation, it is not possible to "
+"write a function that takes a `T: IntoNumIterator` which returns an "
+"`ExactLenIterator`; for async functions, the most common time this comes up "
+"is code that wishes to take an async function that returns a `Send` future. "
+"We expect future RFCs will address these use cases."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:671
+msgid "Dynamic dispatch"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:673
+msgid ""
+"Similarly, we expect to introduce language extensions to address the "
+"inability to use `-> impl Trait` types with dynamic dispatch. These "
+"mechanisms are needed for async fn as well. A good writeup of the challenges "
+"can be found on the \"challenges\" page of the [async fundamentals "
+"initiative](https://rust-lang.github.io/async-fundamentals-initiative/"
+"evaluation/challenges/dyn_traits.html)."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:675
+msgid "Migration to associated type"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:677
+msgid ""
+"It would be possible to introduce a mechanism that allows users to migrate "
+"from an `impl Trait` to a named associated type."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:679
+msgid ""
+"Existing users of the trait won't specify an associated type bound for the "
+"new associated type, nor will existing implementers of the trait specify the "
+"type. This can be fixed with [associated type defaults](https://github.com/"
+"rust-lang/rfcs/blob/master/text/2532-associated-type-defaults.md). So given "
+"a trait like `NewIntoIterator`, we could choose to introduce an associated "
+"type for the iterator like so:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:682
+msgid "// Now old again!\n"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:690
+msgid ""
+"The only problem remaining is with `#[refine]`. If an existing "
+"implementation refined its return value of an RPITIT method, we would need "
+"the existing `#[refine]` attribute to stand in for an overriding of the "
+"associated type default."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:692
+msgid ""
+"Whatever rules we decide to make this work, they will interact with some "
+"ongoing discussions of proposals for `#[defines]` or `#[defined_by]` "
+"attributes on `type_alias_impl_trait`. We therefore leave the details of "
+"this to a future RFC."
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:694
+msgid "Adding new occurrences of `impl Trait` in refinements"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:696
+msgid "We may want to allow the following pattern:"
+msgstr ""
+
+#: src/3425-return-position-impl-trait-in-traits.md:709
+msgid ""
+"Then uses of `impl Trait` in a trait impl would not necessarily correspond "
+"to a use of `impl Trait` in the trait."
+msgstr ""

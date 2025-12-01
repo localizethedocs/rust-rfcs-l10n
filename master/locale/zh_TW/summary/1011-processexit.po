@@ -1,0 +1,167 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1011-process.exit.md:1
+msgid "Feature Name: exit"
+msgstr ""
+
+#: src/1011-process.exit.md:2
+msgid "Start Date: 2015-03-24"
+msgstr ""
+
+#: src/1011-process.exit.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1011](https://github.com/rust-lang/rfcs/pull/1011)"
+msgstr ""
+
+#: src/1011-process.exit.md:4
+msgid "Rust Issue: (leave this empty)"
+msgstr ""
+
+#: src/1011-process.exit.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1011-process.exit.md:8
+msgid ""
+"Add a function to the `std::process` module to exit the process immediately "
+"with a specified exit code."
+msgstr ""
+
+#: src/1011-process.exit.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1011-process.exit.md:13
+msgid ""
+"Currently there is no stable method to exit a program in Rust with a nonzero "
+"exit code without panicking. The current unstable method for doing so is by "
+"using the `exit_status` feature with the `std::env::set_exit_status` "
+"function."
+msgstr ""
+
+#: src/1011-process.exit.md:17
+msgid ""
+"This function has not been stabilized as it diverges from the system APIs "
+"(there is no equivalent) and it represents an odd piece of global state for "
+"a Rust program to have. One example of odd behavior that may arise is that "
+"if a library calls `env::set_exit_status`, then the process is not "
+"guaranteed to exit with that status (e.g. Rust was called from C)."
+msgstr ""
+
+#: src/1011-process.exit.md:23
+msgid ""
+"The purpose of this RFC is to provide at least one method on the path to "
+"stabilization which will provide a method to exit a process with an "
+"arbitrary exit code."
+msgstr ""
+
+#: src/1011-process.exit.md:27
+msgid "Detailed design"
+msgstr ""
+
+#: src/1011-process.exit.md:29
+msgid "The following function will be added to the `std::process` module:"
+msgstr ""
+
+#: src/1011-process.exit.md:32
+msgid ""
+"/// Terminates the current process with the specified exit code.\n"
+"///\n"
+"/// This function will never return and will immediately terminate the "
+"current\n"
+"/// process. The exit code is passed through to the underlying OS and will "
+"be\n"
+"/// available for consumption by another process.\n"
+"///\n"
+"/// Note that because this function never returns, and that it terminates "
+"the\n"
+"/// process, no destructors on the current stack or any other thread's "
+"stack\n"
+"/// will be run. If a clean shutdown is needed it is recommended to only "
+"call\n"
+"/// this function at a known point where there are no more destructors left\n"
+"/// to run.\n"
+msgstr ""
+
+#: src/1011-process.exit.md:46
+msgid ""
+"Implementation-wise this will correspond to the [`exit` function](http://"
+"pubs.opengroup.org/onlinepubs/000095399/functions/exit.html) on unix and the "
+"[`ExitProcess` function](https://msdn.microsoft.com/en-us/library/windows/"
+"desktop/ms682658%28v=vs.85%29.aspx) on windows."
+msgstr ""
+
+#: src/1011-process.exit.md:52
+msgid ""
+"This function is also not marked `unsafe`, despite the risk of leaking "
+"allocated resources (e.g. destructors may not be run). It is already "
+"possible to safely create memory leaks in Rust, however, (with `Rc` + "
+"`RefCell`), so this is not considered a strong enough threshold to mark the "
+"function as `unsafe`."
+msgstr ""
+
+#: src/1011-process.exit.md:58
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1011-process.exit.md:60
+msgid ""
+"This API does not solve all use cases of exiting with a nonzero exit status. "
+"It is sometimes more convenient to simply return a code from the `main` "
+"function instead of having to call a separate function in the standard "
+"library."
+msgstr ""
+
+#: src/1011-process.exit.md:65
+msgid "Alternatives"
+msgstr ""
+
+#: src/1011-process.exit.md:67
+msgid ""
+"One alternative would be to stabilize `set_exit_status` as-is today. The "
+"semantics of the function would be clearly documented to prevent against "
+"surprises, but it would arguably not prevent all surprises from arising. "
+"Some reasons for not pursuing this route, however, have been outlined in the "
+"motivation."
+msgstr ""
+
+#: src/1011-process.exit.md:73
+msgid ""
+"The `main` function of binary programs could be altered to require an `i32` "
+"return value. This would greatly lessen the need to stabilize this function "
+"as-is today as it would be possible to exit with a nonzero code by returning "
+"a nonzero value from `main`. This is a backwards-incompatible change, "
+"however."
+msgstr ""
+
+#: src/1011-process.exit.md:79
+msgid ""
+"The `main` function of binary programs could optionally be typed as `fn() -> "
+"i32` instead of just `fn()`. This would be a backwards-compatible change, "
+"but does somewhat add complexity. It may strike some as odd to be able to "
+"define the `main` function with two different signatures in Rust. "
+"Additionally, it's likely that the `exit` functionality proposed will be "
+"desired regardless of whether the main function can return a code or not."
+msgstr ""
+
+#: src/1011-process.exit.md:86
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1011-process.exit.md:88
+msgid ""
+"To what degree should the documentation imply that `rt::at_exit` handlers "
+"are run? Implementation-wise their execution is guaranteed, but we may not "
+"wish for this to always be so."
+msgstr ""

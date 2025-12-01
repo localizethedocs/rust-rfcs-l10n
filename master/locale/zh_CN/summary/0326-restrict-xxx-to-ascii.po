@@ -1,0 +1,606 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0326-restrict-xXX-to-ascii.md:1
+msgid "Start Date: 2014-09-26"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#326](https://github.com/rust-lang/rfcs/pull/326)"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#18062](https://github.com/rust-lang/rust/"
+"issues/18062)"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:7
+msgid ""
+"In string literal contexts, restrict `\\xXX` escape sequences to just the "
+"range of ASCII characters, `\\x00` -- `\\x7F`.  `\\xXX` inputs in string "
+"literals with higher numbers are rejected (with an error message suggesting "
+"that one use an `\\uNNNN` escape)."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:15
+msgid ""
+"In a string literal context, the current `\\xXX` character escape sequence "
+"is potentially confusing when given inputs greater than `0x7F`, because it "
+"does not encode that byte literally, but instead encodes whatever the escape "
+"sequence `\\u00XX` would produce."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:20
+msgid ""
+"Thus, for inputs greater than `0x7F`, `\\xXX` will encode multiple bytes "
+"into the generated string literal, as illustrated in the [Rust example]"
+"(#rust-example) appendix."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:24
+msgid ""
+"This is different from what C/C++ programmers might expect (see [Behavior of "
+"xXX in C](#behavior-of-xxx-in-c) appendix)."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:27
+msgid ""
+"(It would not be legal to encode the single byte literally into the string "
+"literal, since then the string would not be well-formed UTF-8.)"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:30
+msgid ""
+"It has been suggested that the `\\xXX` character escape should be removed "
+"entirely (at least from string literal contexts).  This RFC is taking a "
+"slightly less aggressive stance: keep `\\xXX`, but only for ASCII inputs "
+"when it occurs in string literals.  This way, people can continue using this "
+"escape format (which shorter than the `\\uNNNN` format) when it makes sense."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:37
+msgid ""
+"Here are some links to discussions on this topic, including direct comments "
+"that suggest exactly the strategy of this RFC."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:40
+msgid "https://github.com/rust-lang/rfcs/issues/312"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:41
+msgid "https://github.com/rust-lang/rust/issues/12769"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:42
+msgid "https://github.com/rust-lang/rust/issues/2800#issuecomment-31477259"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:43
+msgid "https://github.com/rust-lang/rfcs/pull/69#issuecomment-43002505"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:44
+msgid "https://github.com/rust-lang/rust/issues/12769#issuecomment-43574856"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:45
+msgid ""
+"https://github.com/rust-lang/meeting-minutes/blob/master/weekly-"
+"meetings/2014-01-21.md#xnn-escapes-in-strings"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:46
+msgid "https://mail.mozilla.org/pipermail/rust-dev/2012-July/002025.html"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:48
+msgid ""
+"Note in particular the meeting minutes bullet, where the team explicitly "
+"decided to keep things \"as they are\"."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:51
+msgid ""
+"However, at the time of that meeting, Rust did not have byte string "
+"literals; people were converting string-literals into byte arrays via the "
+"`bytes!` macro.  (Likewise, the rust-dev post is also from a time, summer "
+"2012, when we did not have byte-string literals.)"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:56
+msgid ""
+"We are in a different world now.  The fact that now `\\xXX` denotes a code "
+"unit in a byte-string literal, but in a string literal denotes a codepoint, "
+"does not seem elegant; it rather seems like a source of confusion.  (Caveat: "
+"While Felix does believe this assertion, this context-dependent "
+"interpretation of `\\xXX` does have precedent in both Python and Racket; see "
+"[Racket example](#racket-example) and [Python example](#python-example) "
+"appendices.)"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:64
+msgid ""
+"By restricting `\\xXX` to the range `0x00`\\--`0x7F`, we side-step the "
+"question of \"is it a code unit or a code point?\" entirely (which was the "
+"_real_ context of both the rust-dev thread and the meeting minutes bullet).  "
+"This RFC is a far more conservative choice that we can safely make for the "
+"short term (i.e. for the 1.0 release) than it would have been to switch to a "
+"\"`\\xXX` is a code unit\" interpretation."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:71
+msgid ""
+"The expected outcome is reduced confusion for C/C++ programmers (which is, "
+"after all, our primary target audience for conversion), and any other "
+"language where `\\xXX` never results in more than one byte. The error "
+"message will point them to the syntax they need to adopt."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:76
+msgid "Detailed design"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:78
+msgid ""
+"In string literal contexts, `\\xXX` inputs with `XX > 0x7F`  are rejected "
+"(with an error message that mentions either, or both, of `\\uNNNN` escapes "
+"and the byte-string literal format `b\"..\"`)."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:82
+msgid ""
+"The full byte range remains supported when `\\xXX` is used in byte-string "
+"literals, `b\"...\"`"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:85
+msgid ""
+"Raw strings by design do not offer escape sequences, so they are unchanged."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:88
+msgid ""
+"Character and string escaping routines (such as `core::char::"
+"escape_unicode`, and such as used by the `\"{:?}\"` formatter) are updated "
+"so that string inputs that previously would previously have printed `\\xXX` "
+"with `XX > 0x7F` are updated to use `\\uNNNN` escapes instead."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:94
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:96
+msgid "Some reasons not to do this:"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:98
+msgid "we think that the current behavior is intuitive,"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:100
+msgid "it is consistent with language X (and thus has precedent),"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:102
+msgid "existing libraries are relying on this behavior, or"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:104
+msgid ""
+"we want to optimize for inputting characters with codepoints in the range "
+"above `0x7F` in string-literals, rather than optimizing for ASCII."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:108
+msgid "The thesis of this RFC is that the first bullet is a falsehood."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:110
+msgid ""
+"While there is some precedent for the \"`\\xXX` is code point\" "
+"interpretation in some languages, the [majority](https://mail.mozilla.org/"
+"pipermail/rust-dev/2012-July/002025.html) do seem to favor the \"`\\xXX` is "
+"code unit\" point of view.  The proposal of this RFC is side-stepping the "
+"distinction by limiting the input range for `\\xXX`."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:117
+msgid ""
+"The third bullet is a strawman since we have not yet released 1.0, and thus "
+"everything is up for change."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:120
+msgid "This RFC makes no comment on the validity of the fourth bullet."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:122
+msgid "Alternatives"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:124
+msgid ""
+"We could remove `\\xXX` entirely from string literals.  This would require "
+"people to use the `\\uNNNN` escape format even for bytes in the range "
+"`00`\\--`0x7F`, which seems annoying."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:128
+msgid ""
+"We could switch `\\xXX` from meaning code point to meaning code unit in both "
+"string literal and byte-string literal contexts.  This was previously "
+"considered and explicitly rejected in an earlier meeting, as discussed in "
+"the [Motivation](#motivation) section."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:133
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:135
+msgid "None."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:137
+msgid "Appendices"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:139
+msgid "Behavior of xXX in C"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:142
+msgid ""
+"Here is a C program illustrating how `xXX` escape sequences are treated in "
+"string literals in that context:"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:146
+msgid "<stdio.h>"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:151
+msgid "\"a\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:152 src/0326-restrict-xXX-to-ascii.md:156
+#: src/0326-restrict-xXX-to-ascii.md:160 src/0326-restrict-xXX-to-ascii.md:164
+msgid "\"s[0]: %d\\n\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:153 src/0326-restrict-xXX-to-ascii.md:157
+#: src/0326-restrict-xXX-to-ascii.md:161 src/0326-restrict-xXX-to-ascii.md:165
+msgid "\"s[1]: %d\\n\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:155 src/0326-restrict-xXX-to-ascii.md:221
+#: src/0326-restrict-xXX-to-ascii.md:224
+msgid "\"\\x61\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:159 src/0326-restrict-xXX-to-ascii.md:227
+#: src/0326-restrict-xXX-to-ascii.md:229
+msgid "\"\\x7F\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:163 src/0326-restrict-xXX-to-ascii.md:232
+#: src/0326-restrict-xXX-to-ascii.md:234
+msgid "\"\\x80\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:170
+msgid "Its output is the following:"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:183
+msgid "Rust example"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:186
+msgid ""
+"Here is a Rust program that explores the various ways `\\xXX` sequences are "
+"treated in both string literal and byte-string literal contexts."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:195
+msgid "\"{:>20}: \\\"{}\\\"\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:196 src/0326-restrict-xXX-to-ascii.md:211
+msgid "\"\\\"{}\\\"\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:203
+msgid "\"{:>20}: {}\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:204
+msgid "\"b\\\"{}\\\"\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:211
+msgid "\"{:>9}.as_bytes(): {}\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:214
+msgid ""
+"// println!(\"{}\", b\"\\u0000\"); // invalid: \\uNNNN is not a byte "
+"escape.\n"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:215 src/0326-restrict-xXX-to-ascii.md:216
+msgid "r\"\\0\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:215
+msgid "\"\\0\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:216
+msgid "b\"\\0\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:217 src/0326-restrict-xXX-to-ascii.md:218
+msgid "r\"\\x00\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:217
+msgid "b\"\\x00\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:218
+msgid "\"\\x00\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:219
+msgid "r\"\\u0000\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:219
+msgid "\"\\u0000\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:220 src/0326-restrict-xXX-to-ascii.md:226
+#: src/0326-restrict-xXX-to-ascii.md:231 src/0326-restrict-xXX-to-ascii.md:236
+#: src/0326-restrict-xXX-to-ascii.md:241
+msgid "\"\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:221 src/0326-restrict-xXX-to-ascii.md:223
+#: src/0326-restrict-xXX-to-ascii.md:224
+msgid "r\"\\x61\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:222
+msgid "r\"a\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:222
+msgid "b\"a\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:223
+msgid "b\"\\x61\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:225
+msgid "r\"\\u0061\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:225
+msgid "\"\\u0061\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:227 src/0326-restrict-xXX-to-ascii.md:228
+#: src/0326-restrict-xXX-to-ascii.md:229
+msgid "r\"\\x7F\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:228
+msgid "b\"\\x7F\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:230
+msgid "r\"\\u007F\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:230
+msgid "\"\\u007F\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:232 src/0326-restrict-xXX-to-ascii.md:233
+#: src/0326-restrict-xXX-to-ascii.md:234
+msgid "r\"\\x80\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:233
+msgid "b\"\\x80\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:235
+msgid "r\"\\u0080\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:235
+msgid "\"\\u0080\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:237 src/0326-restrict-xXX-to-ascii.md:238
+#: src/0326-restrict-xXX-to-ascii.md:239
+msgid "r\"\\xFF\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:237 src/0326-restrict-xXX-to-ascii.md:239
+msgid "\"\\xFF\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:238
+msgid "b\"\\xFF\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:240
+msgid "r\"\\u00FF\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:240
+msgid "\"\\u00FF\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:242 src/0326-restrict-xXX-to-ascii.md:244
+msgid "r\"\\u0100\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:242 src/0326-restrict-xXX-to-ascii.md:244
+msgid "\"\\u0100\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:243
+msgid "r\"\\x01\\x00\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:243
+msgid "b\"\\x01\\x00\""
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:248
+msgid "In current Rust, it generates output as follows:"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:249
+msgid ""
+"```\n"
+"% rustc --version && echo && rustc example.rs && ./example\n"
+"rustc 0.12.0-pre (d52d0c836 2014-09-07 03:36:27 +0000)\n"
+"\n"
+"                \"\\0\": \"\\x00\"\n"
+"               b\"\\0\": [0]\n"
+"             b\"\\x00\": [0]\n"
+"   \"\\x00\".as_bytes(): [0]\n"
+" \"\\u0000\".as_bytes(): [0]\n"
+"\n"
+"              \"\\x61\": \"a\"\n"
+"                b\"a\": [97]\n"
+"             b\"\\x61\": [97]\n"
+"   \"\\x61\".as_bytes(): [97]\n"
+" \"\\u0061\".as_bytes(): [97]\n"
+"\n"
+"              \"\\x7F\": \"\\x7f\"\n"
+"             b\"\\x7F\": [127]\n"
+"   \"\\x7F\".as_bytes(): [127]\n"
+" \"\\u007F\".as_bytes(): [127]\n"
+"\n"
+"              \"\\x80\": \"\\x80\"\n"
+"             b\"\\x80\": [128]\n"
+"   \"\\x80\".as_bytes(): [194, 128]\n"
+" \"\\u0080\".as_bytes(): [194, 128]\n"
+"\n"
+"              \"\\xFF\": \"\\xff\"\n"
+"             b\"\\xFF\": [255]\n"
+"   \"\\xFF\".as_bytes(): [195, 191]\n"
+" \"\\u00FF\".as_bytes(): [195, 191]\n"
+"\n"
+"            \"\\u0100\": \"\\u0100\"\n"
+"         b\"\\x01\\x00\": [1, 0]\n"
+" \"\\u0100\".as_bytes(): [196, 128]\n"
+"%\n"
+"```"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:286
+msgid ""
+"Note that the behavior of `\\xXX` on byte-string literals matches the "
+"expectations established by the C program in [Behavior of xXX in C]"
+"(#behavior-of-xxx-in-c); that is good.  The problem is the behavior of "
+"`\\xXX` for `XX > 0x7F` in string-literal contexts, namely in the fourth and "
+"fifth examples where the `.as_bytes()` invocations are showing that the "
+"underlying byte array has two elements instead of one."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:293
+msgid "Racket example"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:296
+msgid ""
+"```\n"
+"% racket\n"
+"Welcome to Racket v5.93.\n"
+"> (define a-string \"\\xbb\\n\")\n"
+"> (display a-string)\n"
+"»\n"
+"> (bytes-length (string->bytes/utf-8 a-string))\n"
+"3\n"
+"> (define a-byte-string #\"\\xc2\\xbb\\n\")\n"
+"> (bytes-length a-byte-string)\n"
+"3\n"
+"> (display a-byte-string)\n"
+"»\n"
+"> (exit)\n"
+"%\n"
+"```"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:313
+msgid ""
+"The above code illustrates that in Racket, the `\\xXX` escape sequence "
+"denotes a code unit in byte-string context (`#\"..\"` in that language), "
+"while it denotes a code point in string context (`\"..\"`)."
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:317
+msgid "Python example"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:320
+msgid ""
+"```\n"
+"% python\n"
+"Python 2.7.5 (default, Mar  9 2014, 22:15:05)\n"
+"[GCC 4.2.1 Compatible Apple LLVM 5.0 (clang-500.0.68)] on darwin\n"
+"Type \"help\", \"copyright\", \"credits\" or \"license\" for more "
+"information.\n"
+">>> a_string = u\"\\xbb\\n\";\n"
+">>> print a_string\n"
+"»\n"
+"\n"
+">>> len(a_string.encode(\"utf-8\"))\n"
+"3\n"
+">>> a_byte_string = \"\\xc2\\xbb\\n\";\n"
+">>> len(a_byte_string)\n"
+"3\n"
+">>> print a_byte_string\n"
+"»\n"
+"\n"
+">>> exit()\n"
+"%\n"
+"```"
+msgstr ""
+
+#: src/0326-restrict-xXX-to-ascii.md:341
+msgid ""
+"The above code illustrates that in Python, the `\\xXX` escape sequence "
+"denotes a code unit in byte-string context (`\"..\"` in that language), "
+"while it denotes a code point in _unicode_ string context (`u\"..\"`)."
+msgstr ""

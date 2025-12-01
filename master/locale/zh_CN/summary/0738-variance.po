@@ -1,0 +1,756 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0738-variance.md:1
+msgid "Start Date: 2014-12-19"
+msgstr ""
+
+#: src/0738-variance.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#738](https://github.com/rust-lang/rfcs/pull/738)"
+msgstr ""
+
+#: src/0738-variance.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#22212](https://github.com/rust-lang/rust/"
+"issues/22212)"
+msgstr ""
+
+#: src/0738-variance.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0738-variance.md:7
+msgid "Use inference to determine the _variance_ of input type parameters."
+msgstr ""
+
+#: src/0738-variance.md:8
+msgid "Make it an error to have unconstrained type/lifetime parameters."
+msgstr ""
+
+#: src/0738-variance.md:9
+msgid ""
+"Revamp the variance markers to make them more intuitive and less numerous. "
+"In fact, there are only two: `PhantomData` and `PhantomFn`."
+msgstr ""
+
+#: src/0738-variance.md:11
+msgid ""
+"Integrate the notion of `PhantomData` into other automated compiler "
+"analyses, notably OIBIT, that can otherwise be deceived into yielding "
+"incorrect results."
+msgstr ""
+
+#: src/0738-variance.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/0738-variance.md:17
+msgid "Why variance is good"
+msgstr ""
+
+#: src/0738-variance.md:19
+msgid ""
+"Today, all type parameters are invariant. This can be problematic around "
+"lifetimes. A particular common example of where problems arise is in the use "
+"of `Option`. Here is a simple example. Consider this program, which has a "
+"struct containing two references:"
+msgstr ""
+
+#: src/0738-variance.md:38
+msgid ""
+"Here the function `foo` takes two references with distinct lifetimes. The "
+"variable `list` winds up being instantiated with a lifetime that is the "
+"intersection of the two (presumably, the body of `foo`).  This is good."
+msgstr ""
+
+#: src/0738-variance.md:43
+msgid ""
+"If we modify this program so that one of those references is optional, "
+"however, we will find that it gets a compilation error:"
+msgstr ""
+
+#: src/0738-variance.md:46
+msgid ""
+"```\n"
+"struct List<'l> {\n"
+"    field1: &'l int,\n"
+"    field2: Option<&'l int>,\n"
+"}\n"
+"\n"
+"fn foo(field1: &int, field2: Option<&int>) {\n"
+"    let list = List { field1: field1, field2: field2 };\n"
+"        // ERROR: Cannot infer an appropriate lifetime\n"
+"    ...\n"
+"}\n"
+"\n"
+"fn main() { }\n"
+"```"
+msgstr ""
+
+#: src/0738-variance.md:61
+msgid ""
+"The reason for this is that because `Option` is _invariant_ with respect to "
+"its argument type, it means that the lifetimes of `field1` and `field2` must "
+"match _exactly_. It is not good enough for them to have a common subset. "
+"This is not good."
+msgstr ""
+
+#: src/0738-variance.md:66
+msgid "What variance is"
+msgstr ""
+
+#: src/0738-variance.md:68
+msgid ""
+"[Variance](http://en.wikipedia.org/wiki/"
+"Covariance_and_contravariance_%28computer_science%29) is a general concept "
+"that comes up in all languages that combine subtyping and generic types. "
+"However, because in Rust all subtyping is related to the use of lifetimes "
+"parameters, Rust uses variance in a very particular way. Basically, variance "
+"is a determination of when it is ok for lifetimes to be approximated (either "
+"made bigger or smaller, depending on context)."
+msgstr ""
+
+#: src/0738-variance.md:75
+msgid ""
+"Let me give a few examples to try and clarify how variance works. Consider "
+"this simple struct `Context`:"
+msgstr ""
+
+#: src/0738-variance.md:85
+msgid ""
+"Here the `Context` struct has one lifetime parameter, `data`, that "
+"represents the lifetime of some data that it references. Now let's imagine "
+"that the lifetime of the data is some lifetime we call `'x`. If we have a "
+"context `cx` of type `Context<'x>`, it is ok to (for example) pass `cx` as "
+"an argument where a value of type `Context<'y>` is required, so long as "
+"`'x : 'y` (\"`'x` outlives `'y`\"). That is, it is ok to approximate `'x` as "
+"a shorter lifetime like `'y`. This makes sense because by changing `'x` to "
+"`'y`, we're just pretending the data has a shorter lifetime than it actually "
+"has, which can't do any harm.  Here is an example:"
+msgstr ""
+
+#: src/0738-variance.md:100
+msgid "// here we approximate 'long as 'short, but that's perfectly safe.\n"
+msgstr ""
+
+#: src/0738-variance.md:110
+msgid ""
+"This case has been traditionally called \"contravariant\" by Rust, though "
+"some argue (somewhat persuasively) that [\"covariant\" is the better "
+"terminology](https://github.com/rust-lang/rfcs/issues/391).  In any case, "
+"this RFC generally abandons the \"variance\" terminology in publicly exposed "
+"APIs and bits of the language, making this a moot point (in this RFC, "
+"however, I will stick to calling lifetimes which may be made smaller "
+"\"contravariant\", since that is what we have used in the past)."
+msgstr ""
+
+#: src/0738-variance.md:120
+msgid "Next let's consider a struct with interior mutability:"
+msgstr ""
+
+#: src/0738-variance.md:128
+msgid ""
+"In the case of `Table`, it is not safe for the compiler to approximate the "
+"lifetime `'arg` at all. This is because `'arg` appears in a mutable location "
+"(the interior of a `Cell`). Let me show you what could happen if we did "
+"allow `'arg` to be approximated:"
+msgstr ""
+
+#: src/0738-variance.md:139
+msgid "// reads `foo`, which has been destroyed\n"
+msgstr ""
+
+#: src/0738-variance.md:145
+msgid "// The following assignment is not legal, but it would be legal\n"
+msgstr ""
+
+#: src/0738-variance.md:151
+msgid ""
+"Here the function `evil()` changes contents of `t.cell` to point at data "
+"with a shorter lifetime than `t` originally had. This is bad because the "
+"caller still has the old type (`Table<'long>`) and doesn't know that data "
+"with a shorter lifetime has been inserted.  (This is traditionally called "
+"\"invariant\".)"
+msgstr ""
+
+#: src/0738-variance.md:157
+msgid ""
+"Finally, there can be cases where it is ok to make a lifetime _longer_, but "
+"not shorter. This comes up (for example) in a type like `fn(&'a u8)`, which "
+"may be safely treated as a `fn(&'static u8)`."
+msgstr ""
+
+#: src/0738-variance.md:163
+msgid "Why variance should be inferred"
+msgstr ""
+
+#: src/0738-variance.md:165
+msgid ""
+"Actually, lifetime parameters already have a notion of variance, and this "
+"variance is fully inferred. In fact, the proper variance for type parameters "
+"is _also_ being inferred, we're just largely ignoring it. (It's not "
+"completely ignored; it informs the variance of lifetimes.)"
+msgstr ""
+
+#: src/0738-variance.md:171
+msgid ""
+"The main reason we chose inference over declarations is that variance is "
+"rather tricky business. Most of the time, it's annoying to have to think "
+"about it, since it's a purely mechanical thing. The main reason that it pops "
+"up from time to time in Rust today (specifically, in examples like the one "
+"above) is because we _ignore_ the results of inference and just make "
+"everything invariant."
+msgstr ""
+
+#: src/0738-variance.md:178
+msgid ""
+"But in fact there is another reason to prefer inference. When manually "
+"specifying variance, it is easy to get those manual specifications wrong. "
+"There is one example later on where the author did this, but using the "
+"mechanisms described in this RFC to guide the inference actually led to the "
+"correct solution."
+msgstr ""
+
+#: src/0738-variance.md:184
+msgid ""
+"The corner case: unused parameters and parameters that are only used unsafely"
+msgstr ""
+
+#: src/0738-variance.md:186
+msgid ""
+"Unfortunately, variance inference only works if type parameters are actually "
+"_used_. Otherwise, there is no data to go on. You might think parameters "
+"would always be used, but this is not true. In particular, some types have "
+"\"phantom\" type or lifetime parameters that are not used in the body of the "
+"type. This generally occurs with unsafe code:"
+msgstr ""
+
+#: src/0738-variance.md:192
+msgid ""
+"    struct Items<'vec, T> { // unused lifetime parameter 'vec\n"
+"        x: *mut T\n"
+"    }\n"
+"    \n"
+"    struct AtomicPtr<T> { // unused type parameter T\n"
+"        data: AtomicUint  // represents an atomically mutable *mut T, "
+"really\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/0738-variance.md:200
+msgid ""
+"Since these parameters are unused, the inference can reasonably conclude "
+"that `AtomicPtr<int>` and `AtomicPtr<uint>` are interchangeable: after all, "
+"there are no fields of type `T`, so what difference does it make what value "
+"it has? This is not good (and in fact we have behavior like this today for "
+"lifetimes, which is a common source of error)."
+msgstr ""
+
+#: src/0738-variance.md:207
+msgid ""
+"To avoid this hazard, the RFC proposes to make it an error to have a type or "
+"lifetime parameter whose variance is not constrained. Almost always, the "
+"correct thing to do in such a case is to either remove the parameter in "
+"question or insert a _marker type_. Marker types basically inform the "
+"inference engine to pretend as if the type parameter were used in particular "
+"ways. They are discussed in the next section."
+msgstr ""
+
+#: src/0738-variance.md:214
+msgid "Revamping the marker types"
+msgstr ""
+
+#: src/0738-variance.md:216
+msgid "The UnsafeCell type"
+msgstr ""
+
+#: src/0738-variance.md:218
+msgid ""
+"As today, the `UnsafeCell<T>` type is well-known to `rustc` and is always "
+"considered invariant with respect to its type parameter `T`."
+msgstr ""
+
+#: src/0738-variance.md:221
+msgid "Phantom data"
+msgstr ""
+
+#: src/0738-variance.md:223
+msgid ""
+"This RFC proposes to replace the existing marker types (`CovariantType`, "
+"`ContravariantLifetime`, etc) with a single type, `PhantomData`:"
+msgstr ""
+
+#: src/0738-variance.md:228
+msgid ""
+"// Represents data of type `T` that is logically present, although the\n"
+"// type system cannot see it. This type is covariant with respect to `T`.\n"
+msgstr ""
+
+#: src/0738-variance.md:233
+msgid ""
+"An instance of `PhantomData` is used to represent data that is logically "
+"present, although the type system cannot see it. `PhantomData` is covariant "
+"with respect to its type parameter `T`. Here are some examples of uses of "
+"`PhantomData` from the standard library:"
+msgstr ""
+
+#: src/0738-variance.md:242
+msgid ""
+"// Act as if we could reach a `*mut T` for variance. This will\n"
+"    // make `AtomicPtr` *invariant* with respect to `T` (because `T` "
+"appears\n"
+"    // underneath the `mut` qualifier).\n"
+msgstr ""
+
+#: src/0738-variance.md:252
+msgid ""
+"// Act as if we could reach a slice `[T]` with lifetime `'a`.\n"
+"    // Induces covariance on `T` and suitable variance on `'a`\n"
+"    // (covariance using the definition from rfcs#391).\n"
+msgstr ""
+
+#: src/0738-variance.md:259
+msgid ""
+"Note that `PhantomData` can be used to induce covariance, invariance, or "
+"contravariance as desired:"
+msgstr ""
+
+#: src/0738-variance.md:263
+msgid "// covariance\n"
+msgstr ""
+
+#: src/0738-variance.md:264
+msgid "// invariance, but see \"unresolved question\"\n"
+msgstr ""
+
+#: src/0738-variance.md:265
+msgid "// invariance\n"
+msgstr ""
+
+#: src/0738-variance.md:266
+msgid "// contravariant\n"
+msgstr ""
+
+#: src/0738-variance.md:269
+msgid ""
+"Even better, the user doesn't really have to understand the terms "
+"covariance, invariance, or contravariance, but simply to accurately model "
+"the kind of data that the type system should pretend is present."
+msgstr ""
+
+#: src/0738-variance.md:273
+msgid ""
+"**Other uses for phantom data.** It turns out that phantom data is an "
+"important concept for other compiler analyses. One example is the OIBIT "
+"analysis, which decides whether certain traits (like `Send` and `Sync`) are "
+"implemented by recursively examining the fields of structs and enums. OIBIT "
+"should treat phantom data the same as normal fields. Another example is the "
+"ongoing work for removing the `#[unsafe_dtor]` annotation, which also "
+"sometimes requires a recursive analysis of a similar nature."
+msgstr ""
+
+#: src/0738-variance.md:282
+msgid "Phantom functions"
+msgstr ""
+
+#: src/0738-variance.md:284
+msgid ""
+"One limitation of the marker type `PhantomData` is that it cannot be used to "
+"constrain unused parameters appearing on traits. Consider the following "
+"example:"
+msgstr ""
+
+#: src/0738-variance.md:289
+msgid "/* T is never used here! */"
+msgstr ""
+
+#: src/0738-variance.md:292
+msgid ""
+"Normally, the variance of a trait type parameter would be determined based "
+"on where it appears in the trait's methods: but in this case there are no "
+"methods. Therefore, we introduce two special traits that can be used to "
+"induce variance. Similarly to `PhantomData`, these traits represent parts of "
+"the interface that are logically present, if not actually present:"
+msgstr ""
+
+#: src/0738-variance.md:299
+msgid ""
+"    // Act as if there were a method `fn foo(A) -> R`. Induces "
+"contravariance on A\n"
+"    // and covariance on R.\n"
+"    trait PhantomFn<A,R>;\n"
+"    "
+msgstr ""
+
+#: src/0738-variance.md:303
+msgid ""
+"These traits should appear in the supertrait list. For example, the `Dummy` "
+"trait might be modified as follows:"
+msgstr ""
+
+#: src/0738-variance.md:310
+msgid "As you can see, the `()` notation can be used with `PhantomFn` as well."
+msgstr ""
+
+#: src/0738-variance.md:313
+msgid "Designating marker traits"
+msgstr ""
+
+#: src/0738-variance.md:315
+msgid ""
+"In addition to phantom fns, there is a convenient trait `MarkerTrait` that "
+"is intended for use as a supertrait for traits that designate sets of types. "
+"These traits often have no methods and thus no actual uses of `Self`. The "
+"builtin bounds are a good example:"
+msgstr ""
+
+#: src/0738-variance.md:327
+msgid ""
+"`MarkerTrait` is not builtin to the language or specially understood by the "
+"compiler, it simply encapsulates a common pattern. It is implemented as "
+"follows:"
+msgstr ""
+
+#: src/0738-variance.md:336
+msgid ""
+"Intuitively, `MarkerTrait` extends `PhantomFn(Self)` because it is \"as if\" "
+"the traits were defined like:"
+msgstr ""
+
+#: src/0738-variance.md:345
+msgid ""
+"Here, the type parameter `Self` appears in argument position, which is "
+"contravariant."
+msgstr ""
+
+#: src/0738-variance.md:348
+msgid ""
+"**Why contravariance?** To see why contravariance is correct, you have to "
+"consider what it means for `Self` to be contravariant for a marker trait. It "
+"means that if I have evidence that `T : Copy`, then I can use that as "
+"evidence to show that `U : Copy` if `U <: T`. More formally:"
+msgstr ""
+
+#: src/0738-variance.md:353
+msgid ""
+"    (T : Copy) <: (U : Copy)   // I can use `T:Copy` where `U:Copy` is "
+"expected...\n"
+"    U <: T                     // ...so long as `U <: T`\n"
+"    "
+msgstr ""
+
+#: src/0738-variance.md:356
+msgid ""
+"More intuitively, it means that if a type `T` implements the marker, than "
+"all of its subtypes must implement the marker."
+msgstr ""
+
+#: src/0738-variance.md:359
+msgid ""
+"Because subtyping is exclusively tied to lifetimes in Rust, and most marker "
+"traits are orthogonal to lifetimes, it actually rarely makes a difference "
+"what choice you make here. But imagine that we have a marker trait that "
+"requires `'static` (such as `Send` today, though this may change). If we "
+"made marker traits covariant with respect to `Self`, then `&'static Foo : "
+"Send` could be used as evidence that `&'x Foo : Send` for any `'x`, because "
+"`&'static Foo <: &'x Foo`:"
+msgstr ""
+
+#: src/0738-variance.md:367
+msgid ""
+"    (&'static Foo : Send) <: (&'x Foo : Send) // if things were "
+"covariant...\n"
+"    &'static Foo <: &'x Foo                   // ...we'd have the wrong "
+"relation here\n"
+"    "
+msgstr ""
+
+#: src/0738-variance.md:370
+msgid ""
+"_Interesting side story: the author thought that covariance would be correct "
+"for some time. It was only when attempting to phrase the desired behavior as "
+"a fn that I realized I had it backward, and quickly found the counterexample "
+"I give above. This gives me confidence that expressing variance in terms of "
+"data and fns is more reliable than trying to divine the correct results "
+"directly._"
+msgstr ""
+
+#: src/0738-variance.md:377
+msgid "Detailed design"
+msgstr ""
+
+#: src/0738-variance.md:379
+msgid ""
+"Most of the detailed design has already been covered in the motivation "
+"section."
+msgstr ""
+
+#: src/0738-variance.md:382
+msgid "Summary of changes required"
+msgstr ""
+
+#: src/0738-variance.md:384
+msgid ""
+"Use variance results to inform subtyping of nominal types (structs, enums)."
+msgstr ""
+
+#: src/0738-variance.md:386
+msgid "Use variance for the output type parameters on traits."
+msgstr ""
+
+#: src/0738-variance.md:387
+msgid "Input type parameters of traits are considered invariant."
+msgstr ""
+
+#: src/0738-variance.md:388
+msgid ""
+"Variance has no effect on the type parameters on an impl or fn; rather those "
+"are freshly instantiated at each use."
+msgstr ""
+
+#: src/0738-variance.md:390
+msgid ""
+"Report an error if the inference does not find any use of a type or lifetime "
+"parameter _and_ that parameter is not bound in an associated type binding in "
+"some where clause."
+msgstr ""
+
+#: src/0738-variance.md:394
+msgid ""
+"These changes have largely been implemented. You can view the results, and "
+"the impact on the standard library, in [this branch on nikomatsakis's "
+"repository](https://github.com/nikomatsakis/rust/tree/variance-3). Note "
+"though that as of the time of this writing, the code is slightly outdated "
+"with respect to this RFC in certain respects (which will clearly be "
+"rectified ASAP)."
+msgstr ""
+
+#: src/0738-variance.md:403
+msgid "Variance inference algorithm"
+msgstr ""
+
+#: src/0738-variance.md:405
+msgid ""
+"I won't dive too deeply into the inference algorithm that we are using here. "
+"It is based on Section 4 of the paper [\"Taming the Wildcards: Combining "
+"Definition- and Use-Site Variance\"](http://people.cs.umass.edu/~yannis/"
+"variance-pldi11.pdf) published in PLDI'11 and written by Altidor et al. "
+"There is a fairly detailed (and hopefully only slightly outdated) "
+"description in [the code](https://github.com/nikomatsakis/rust/blob/"
+"variance-3/src/librustc_typeck/variance.rs#L11-L205) as well."
+msgstr ""
+
+#: src/0738-variance.md:415
+msgid "Bivariance yields an error"
+msgstr ""
+
+#: src/0738-variance.md:417
+msgid ""
+"One big change from today is that if we compute a result of bivariance as "
+"the variance for any type or lifetime parameter, we will report a hard "
+"error. The error message explicitly suggests the use of a `PhantomData` or "
+"`PhantomFn` marker as appropriate:"
+msgstr ""
+
+#: src/0738-variance.md:422
+msgid ""
+"    type parameter `T` is never used; either remove it, or use a\n"
+"    marker such as `std::kinds::marker::PhantomData`\"\n"
+"    "
+msgstr ""
+
+#: src/0738-variance.md:425
+msgid ""
+"The goal is to help users as concretely as possible. The documentation on "
+"the phantom markers should also be helpful in guiding users to make the "
+"right choice (the ability to easily attach documentation to the marker type "
+"was in fact the major factor that led us to adopt marker types in the first "
+"place)."
+msgstr ""
+
+#: src/0738-variance.md:431
+msgid "Rules for associated types"
+msgstr ""
+
+#: src/0738-variance.md:433
+msgid ""
+"The only exception is when this type parameter is in fact an output that is "
+"implied by where clauses declared on the type.  As an example of why this "
+"distinction is important, consider the type `Map` declared here:"
+msgstr ""
+
+#: src/0738-variance.md:447
+msgid ""
+"Neither the type `A` nor `B` are reachable from the fields declared within "
+"`Map`, and hence the variance inference for them results in bivariance. "
+"However, they are nonetheless constrained. In the case of the parameter `A`, "
+"its value is determined by the type `I`, and `B` is determined by the type "
+"`F` (note that [RFC 587](https://github.com/rust-lang/rfcs/blob/master/"
+"text/0587-fn-return-should-be-an-associated-type.md) makes the return type "
+"of `FnMut` an associated type)."
+msgstr ""
+
+#: src/0738-variance.md:454
+msgid ""
+"The analysis to decide when a type parameter is implied by other type "
+"parameters is the same as that specified in [RFC 447](https://github.com/"
+"rust-lang/rfcs/blob/master/text/0447-no-unused-impl-parameters.md#detailed-"
+"design)."
+msgstr ""
+
+#: src/0738-variance.md:460
+msgid "Future possibilities"
+msgstr ""
+
+#: src/0738-variance.md:462
+msgid ""
+"**Make phantom data and fns more first-class.** One thing I would consider "
+"in the future is to integrate phantom data and fns more deeply into the "
+"language to improve usability. The idea would be to add a phantom keyword "
+"and then permit the explicit declaration of phantom fields and fns in "
+"structs and traits respectively:"
+msgstr ""
+
+#: src/0738-variance.md:469
+msgid "// Instead of\n"
+msgstr ""
+
+#: src/0738-variance.md:476
+msgid "// you would write:\n"
+msgstr ""
+
+#: src/0738-variance.md:487
+msgid ""
+"Phantom fields would not need to be specified when creating an instance of a "
+"type and (being anonymous) could never be named. They exist solely to aid "
+"the analysis. This would improve the usability of phantom markers greatly."
+msgstr ""
+
+#: src/0738-variance.md:492
+msgid "Alternatives"
+msgstr ""
+
+#: src/0738-variance.md:494
+msgid ""
+"**Default to a particular variance when a type or lifetime parameter is "
+"unused.** A prior RFC advocated for this approach, mostly because markers "
+"were seen as annoying to use. However, after some discussion, it seems that "
+"it is more prudent to make a smaller change and retain explicit "
+"declarations. Some factors that influenced this decision:"
+msgstr ""
+
+#: src/0738-variance.md:500
+msgid "The importance of phantom data for other analyses like OIBIT."
+msgstr ""
+
+#: src/0738-variance.md:501
+msgid ""
+"Many unused lifetime parameters (and some unused type parameters) are in "
+"fact completely unnecessary. Defaulting to a particular variance would not "
+"help in identifying these cases (though a better dead code lint might)."
+msgstr ""
+
+#: src/0738-variance.md:504
+msgid ""
+"There is no default that is always correct but invariance, and invariance is "
+"typically too strong."
+msgstr ""
+
+#: src/0738-variance.md:506
+msgid "Phantom type parameters occur relatively rarely anyhow."
+msgstr ""
+
+#: src/0738-variance.md:508
+msgid ""
+"**Remove variance inference and use fully explicit declarations.** Variance "
+"inference is a rare case where we do non-local inference across type "
+"declarations. It might seem more consistent to use explicit declarations. "
+"However, variance declarations are notoriously hard for people to "
+"understand. We were unable to come up with a suitable set of keywords or "
+"other system that felt sufficiently lightweight. Moreover, explicit "
+"annotations are error-prone when compared to the phantom data and fn "
+"approach (see example in the section regarding marker traits)."
+msgstr ""
+
+#: src/0738-variance.md:518
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0738-variance.md:520
+msgid ""
+"There is one significant unresolved question: the correct way to handle a "
+"`*mut` pointer. It was revealed recently that while the current treatment of "
+"`*mut T` is correct, it frequently yields overly conservative inference "
+"results in practice. At present the inference treats `*mut T` as invariant "
+"with respect to `T`: this is correct and sound, because a `*mut` represents "
+"aliasable, mutable data, and indeed the subtyping relation for `*mut T` is "
+"that `*mut T <: *mut U if T=U`."
+msgstr ""
+
+#: src/0738-variance.md:528
+msgid ""
+"However, in practice, `*mut` pointers are often used to build safe "
+"abstractions, the APIs of which do not in fact permit aliased mutation. "
+"Examples are `Vec`, `Rc`, `HashMap`, and so forth. In all of these cases, "
+"the correct variance is covariant -- but because of the conservative "
+"treatment of `*mut`, all of these types are being inferred to an invariant "
+"result."
+msgstr ""
+
+#: src/0738-variance.md:535
+msgid ""
+"The complete solution to this seems to have two parts. First, for "
+"convenience and abstraction, we should not be building safe abstractions on "
+"raw `*mut` pointers anyway. We should have several convenient newtypes in "
+"the standard library, like `ptr::Unique`, that can be used, which would also "
+"help for handling OIBIT conditions and `NonZero` optimizations. In my branch "
+"I have used the existing (but unstable) type `ptr::Unique` for the primary "
+"role, which is kind of an \"unsafe box\". `Unique` should ensure that it is "
+"covariant with respect to its argument."
+msgstr ""
+
+#: src/0738-variance.md:545
+msgid ""
+"However, this raises the question of how to implement `Unique` under the "
+"hood, and what to do with `*mut T` in general. There are various options:"
+msgstr ""
+
+#: src/0738-variance.md:549
+msgid ""
+"Change `*mut` so that it behaves like `*const`. This unfortunately means "
+"that abstractions that introduce shared mutability have a responsibility for "
+"add phantom data to that affect, something like `PhantomData<*const "
+"Cell<T>>`. This seems non-obvious and unnatural."
+msgstr ""
+
+#: src/0738-variance.md:555
+msgid ""
+"Rewrite safe abstractions to use `*const` (or even `usize`) instead of "
+"`*mut`, casting to `*mut` only they have a `&mut self` method. This is "
+"probably the most conservative option."
+msgstr ""
+
+#: src/0738-variance.md:559
+msgid ""
+"Change variance to ignore `*mut` referents entirely. Add a lint to detect "
+"types with a `*mut T` type and require some sort of explicit marker that "
+"covers `T`. This is perhaps the most explicit option. Like option 1, it "
+"creates the odd scenario that the variance computation and subtyping "
+"relation diverge."
+msgstr ""
+
+#: src/0738-variance.md:565
+msgid "Currently I lean towards option 2."
+msgstr ""

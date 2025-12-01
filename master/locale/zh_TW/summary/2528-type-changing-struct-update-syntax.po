@@ -1,0 +1,333 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2528-type-changing-struct-update-syntax.md:1
+msgid "Feature Name: `type_changing_struct_update_syntax`"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:2
+msgid "Start Date: 2018-08-22"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:3
+msgid "RFC PR: https://github.com/rust-lang/rfcs/pull/2528"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:4
+msgid "Rust Issue: https://github.com/rust-lang/rust/issues/86555"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:9
+msgid ""
+"Extend struct update syntax (a.k.a. functional record update (FRU)) to "
+"support instances of the _same_ struct that have different types due to "
+"generic type or lifetime parameters. Fields of different types must be "
+"explicitly listed in the struct constructor, but fields of the same name and "
+"same type can be moved with struct update syntax."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:15
+msgid ""
+"This will make the following possible. In this example, `base` and `updated` "
+"are both instances of `Foo` but have different types because the generic "
+"parameter `T` is different. Struct update syntax is supported for `field2` "
+"because it has the same type `i32` in both `base` and `updated`:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:27
+msgid "\"hello\""
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:36
+msgid "Motivation"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:39
+msgid ""
+"In today's Rust, struct update syntax is a convenient way to change a small "
+"number of fields from a base instance as long as the updated instance is a "
+"subtype of the base (i.e. the _exact same_ type except lifetimes). However, "
+"this is unnecessarily restrictive. A common pattern for implementing type-"
+"checked state machines in Rust is to handle the state as a generic type "
+"parameter. For example:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:58
+msgid "// do stuff\n"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:68
+msgid "It would be much more convenient to be able to write"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:77
+msgid "instead of"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:87
+msgid ""
+"but this is not possible in current Rust because `Machine<State1>` and "
+"`Machine<State2>` are different types even though they are both the "
+"`Machine` struct."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:91
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:94
+msgid ""
+"It's often useful to create a new instance of a struct that uses most of an "
+"old instance's values but changes some. You can do this using struct update "
+"syntax."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:97
+msgid ""
+"Consider a `User` type that can be in either the `LoggedIn` state or the "
+"`LoggedOut` state and has a few additional fields describing the properties "
+"of the user."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:112
+msgid "Let's say we have a logged-out user:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:117
+msgid "\"ferris@example.com\""
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:118
+msgid "\"ferris\""
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:122
+msgid ""
+"This example shows how we create a new `User` instance named `logged_in` "
+"without the update syntax. We set a new value for `state` but move the "
+"values of the other fields from `logged_out`."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:134
+msgid ""
+"Using struct update syntax, we can achieve the same effect more concisely, "
+"as shown below. The syntax `..` specifies that the remaining fields not "
+"explicitly set should be moved from the fields of the base instance."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:145
+msgid ""
+"Note that the expression following the `..` is an _expression_; it doesn't "
+"have to be just an identifier of an existing instance. For example, it's "
+"often useful to use struct update syntax with `..Default::default()` to "
+"override a few field values from their default."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:150
+msgid ""
+"Struct update syntax is permitted for instances of the _same_ struct (`User` "
+"in the examples), even if they have different types (`User<LoggedOut>` and "
+"`User<LoggedIn>` in the examples) due to generic type or lifetime "
+"parameters. However, the types of the fields in the updated instance that "
+"are not explicitly listed (i.e. those that are moved with the `..` syntax) "
+"must be subtypes of the corresponding fields in the base instance, and all "
+"of the fields must be visible ([RFC 736](https://github.com/rust-lang/rfcs/"
+"blob/master/text/0736-privacy-respecting-fru.md)). In other words, the types "
+"of fields that are explicitly listed can change, such as the `state` field "
+"in the examples, but those that are not explicitly listed, such as the "
+"`email` and `username` fields in the examples, must stay the same (modulo "
+"subtyping)."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:161
+msgid ""
+"Existing Rust programmers can think of this RFC as extending struct update "
+"syntax to cases where some of the fields change their type, as long as those "
+"fields are explicitly listed in the struct constructor."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:165
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:168
+msgid ""
+"Struct update syntax is now allowed for instances of the _same_ struct even "
+"if the generic type parameters or lifetimes of the struct are different "
+"between the base and updated instances. The following conditions must be met:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:172
+msgid "The base and updated instances are of the same struct."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:174
+msgid ""
+"The type of each moved field (i.e. each field not explicitly listed) in the "
+"updated instance is a subtype of the type of the corresponding field in the "
+"base instance."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:178
+msgid ""
+"All fields are visible at the location of the update ([RFC 736](https://"
+"github.com/rust-lang/rfcs/blob/master/text/0736-privacy-respecting-fru.md))."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:180
+msgid "The struct update syntax is the following:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:189
+msgid ""
+"Struct update syntax is directly equivalent to explicitly listing all of the "
+"fields, with the possible exception of type inference. For example, the "
+"listing from the previous section"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:200
+msgid "is directly equivalent to"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:210
+msgid "except, possibly, for type inference."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:212
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:215
+msgid ""
+"There are trade-offs to be made when selecting the type inference strategy, "
+"since the types of fields are no longer necessarily the same between the "
+"base and updated instances in struct update syntax. See the _Type inference_ "
+"section under [Unresolved questions](#unresolved-questions)."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:220
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:223
+msgid ""
+"This proposal is a relatively small user-facing generalization that "
+"significantly improves language ergonomics in some cases."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:226
+#: src/2528-type-changing-struct-update-syntax.md:324
+msgid "Further generalization"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:228
+msgid ""
+"This proposal maintains the restriction that the types of the base and "
+"updated instance must be the same struct. Struct update syntax could be "
+"further generalized by lifting this restriction, so that the only remaining "
+"restriction would be that the moved field names and types must match. For "
+"example, the following could be allowed:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:245
+msgid "\"hi\""
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:249
+msgid ""
+"While this would be convenient in some cases, it makes field names a much "
+"more important part of the crate's API. It could also be considered to be "
+"too implicit."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:253
+msgid ""
+"The proposal in this RFC does not preclude this further generalization in "
+"the future if desired. The further generalization could be applied in a "
+"manner that is backwards-compatible with this RFC. As a result, the "
+"conservative approach presented in this RFC is a good first step. After the "
+"community has experience with this proposal, further generalization may be "
+"considered in the future."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:259
+msgid "Keep the existing behavior"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:261
+msgid ""
+"If we decide to keep the existing behavior, we are implicitly encouraging "
+"users to handle more logic with runtime checks so that they can use the "
+"concise struct update syntax instead of the verbose syntax required due to "
+"type changes. By implementing this RFC, we improve the ergonomics of using "
+"the type system to enforce constraints at compile time."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:267
+msgid "Prior art"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:270
+msgid ""
+"OCaml and Haskell allow changing the type of generic parameters with "
+"functional record update syntax, like this RFC."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:273
+msgid "OCaml:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:284
+msgid "Haskell:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:296
+msgid ""
+"Like this RFC, OCaml does not allow the alternative further generalization:"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:306
+msgid "\"\""
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:311
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:314
+msgid "Type inference"
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:316
+msgid ""
+"What is the best type inference strategy? In today's Rust, the types of the "
+"explicitly listed fields are always the same in the base and updated "
+"instances. With this RFC, the types of the explicitly listed fields can be "
+"different between the base and updated instances. This removes some of the "
+"constraints on type inference compared to today's Rust. There are choices to "
+"make regarding backwards compatibility of inferred types, the `i32`/`f64` "
+"fallback in type inference, and the conceptual simplicity of the chosen "
+"strategy."
+msgstr ""
+
+#: src/2528-type-changing-struct-update-syntax.md:326
+msgid ""
+"Should struct update syntax be further generalized to ignore the struct type "
+"and just consider field names and field types? This question could be "
+"answered later after users have experience with the changes this RFC. The "
+"further generalization could be implemented in a backwards-compatible way."
+msgstr ""

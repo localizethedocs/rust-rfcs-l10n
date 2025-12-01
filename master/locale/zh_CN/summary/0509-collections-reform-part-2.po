@@ -1,0 +1,610 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0509-collections-reform-part-2.md:1
+msgid "Start Date: 2014-12-18"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#509](https://github.com/rust-lang/rfcs/pull/509)"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#19986](https://github.com/rust-lang/rust/"
+"issues/19986)"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:7
+msgid ""
+"This RFC shores up the finer details of collections reform. In particular, "
+"where the [previous RFC](https://github.com/rust-lang/rfcs/blob/master/"
+"text/0235-collections-conventions.md) focused on general conventions and "
+"patterns, this RFC focuses on specific APIs. It also patches up any errors "
+"that were found during implementation of [part 1](https://github.com/rust-"
+"lang/rfcs/blob/master/text/0235-collections-conventions.md). Some of these "
+"changes have already been implemented, and simply need to be ratified."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:15
+msgid ""
+"Collections reform stabilizes \"standard\" interfaces, but there's a lot "
+"that still needs to be hashed out."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:18
+msgid "Detailed design"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:20
+msgid "The fate of entire collections:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:22
+msgid ""
+"Stable: Vec, RingBuf, HashMap, HashSet, BTreeMap, BTreeSet, DList, BinaryHeap"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:23
+msgid "Unstable: Bitv, BitvSet, VecMap"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:24
+msgid ""
+"Move to [collect-rs](https://github.com/Gankro/collect-rs/) for incubation: "
+"EnumSet, bitflags!, LruCache, TreeMap, TreeSet, TrieMap, TrieSet"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:27
+msgid ""
+"The stable collections have solid implementations, well-maintained APIs, are "
+"non-trivial, fundamental, and clearly useful."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:30
+msgid ""
+"The unstable collections are effectively \"on probation\". They're ok, but "
+"they need some TLC and further consideration before we commit to having them "
+"in the standard library _forever_. Bitv in particular won't have _quite_ the "
+"right API without IndexGet _and_ IndexSet."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:34
+msgid ""
+"The collections being moved out are in poor shape. EnumSet is weird/trivial, "
+"bitflags is awkward, LruCache is niche. Meanwhile Tree\\* and Trie\\* have "
+"simply bit-rotted for too long, without anyone clearly stepping up to "
+"maintain them. Their code is scary, and their APIs are out of date. Their "
+"functionality can also already reasonably be obtained through either HashMap "
+"or BTreeMap."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:39
+msgid ""
+"Of course, instead of moving them out-of-tree, they could be left "
+"`experimental`, but that would perhaps be a fate _worse_ than death, as it "
+"would mean that these collections would only be accessible to those who opt "
+"into running the Rust nightly. This way, these collections will be available "
+"for everyone through the cargo ecosystem. Putting them in `collect-rs` also "
+"gives them a chance to still benefit from a network effect and active "
+"experimentation. If they thrive there, they may still return to the standard "
+"library at a later time."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:46
+msgid "Add the following methods:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:48
+msgid "To all collections"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:49
+msgid ""
+"```\n"
+"/// Moves all the elements of `other` into `Self`, leaving `other` empty.\n"
+"pub fn append(&mut self, other: &mut Self)\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:54
+msgid ""
+"Collections know everything about themselves, and can therefore move data "
+"more efficiently than any more generic mechanism. Vec's can safely trust "
+"their own capacity and length claims. DList and TreeMap can also reuse "
+"nodes, avoiding allocating."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:58
+msgid ""
+"This is by-ref instead of by-value for a couple reasons. First, it adds "
+"symmetry (one doesn't have to be owned). Second, in the case of array-based "
+"structures, it allows `other`'s capacity to be reused. This shouldn't have "
+"much expense in the way of making `other` valid, as almost all of our "
+"collections are basically a no-op to make an empty version of if necessary "
+"(usually it amounts to zeroing a few words of memory). BTree is the only "
+"exception the author is aware of (root is pre- allocated to avoid an Option)."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:66
+msgid "To DList, Vec, RingBuf, BitV:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:67
+msgid ""
+"```\n"
+"/// Splits the collection into two at the given index. Useful for similar "
+"reasons as `append`.\n"
+"pub fn split_off(&mut self, at: uint) -> Self;\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:72
+msgid "To all other \"sorted\" collections"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:73
+msgid ""
+"```\n"
+"/// Splits the collection into two at the given key. Returns everything "
+"after the given key,\n"
+"/// including the key.\n"
+"pub fn split_off<B: Borrow<K>>(&mut self, at: B) -> Self;\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:79
+msgid ""
+"Similar reasoning to `append`, although perhaps even more needed, as there's "
+"_no_ other mechanism for moving an entire subrange of a collection "
+"efficiently like this. `into_iterator` consumes the whole collection, and "
+"using `remove` methods will do a lot of unnecessary work. For instance, in "
+"the case of `Vec`, using `pop` and `push` will involve many length changes, "
+"bounds checks, unwraps, and ultimately produce a _reversed_ Vec."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:85
+msgid "To BitvSet, VecMap:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:87
+msgid ""
+"```\n"
+"/// Reserves capacity for an element to be inserted at `len - 1` in the "
+"given\n"
+"/// collection. The collection may reserve more space to avoid frequent "
+"reallocations.\n"
+"pub fn reserve_len(&mut self, len: uint)\n"
+"\n"
+"/// Reserves the minimum capacity for an element to be inserted at `len - 1` "
+"in the given\n"
+"/// collection.\n"
+"pub fn reserve_len_exact(&mut self, len: uint)\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:97
+msgid ""
+"The \"capacity\" of these two collections isn't really strongly related to "
+"the number of elements they hold, but rather the largest index an element is "
+"stored at. See Errata and Alternatives for extended discussion of this "
+"design."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:101
+msgid "For Ringbuf:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:102
+msgid ""
+"```\n"
+"/// Gets two slices that cover the whole range of the RingBuf.\n"
+"/// The second one may be empty. Otherwise, it continues *after* the first.\n"
+"pub fn as_slices(&'a self) -> (&'a [T], &'a [T])\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:108
+msgid ""
+"This provides some amount of support for viewing the RingBuf like a slice. "
+"Unfortunately the RingBuf may be wrapped, making this impossible. See "
+"Alternatives for other designs."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:111
+msgid "There is an implementation of this at rust-lang/rust#19903."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:113
+msgid "For Vec:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:114
+msgid ""
+"```\n"
+"/// Resizes the `Vec` in-place so that `len()` equals to `new_len`.\n"
+"///\n"
+"/// Calls either `grow()` or `truncate()` depending on whether `new_len`\n"
+"/// is larger than the current value of `len()` or not.\n"
+"pub fn resize(&mut self, new_len: uint, value: T) where T: Clone\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:122
+msgid ""
+"This is actually easy to implement out-of-tree on top of the current Vec "
+"API, but it has been frequently requested."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:125
+msgid "For Vec, RingBuf, BinaryHeap, HashMap and HashSet:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:126
+msgid ""
+"```\n"
+"/// Clears the container, returning its owned contents as an iterator, but "
+"keeps the\n"
+"/// allocated memory for reuse.\n"
+"pub fn drain(&mut self) -> Drain<T>;\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:132
+msgid ""
+"This provides a way to grab elements out of a collection by value, without "
+"deallocating the storage for the collection itself."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:135
+msgid "There is a partial implementation of this at rust-lang/rust#19946."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:137
+#: src/0509-collections-reform-part-2.md:146
+#: src/0509-collections-reform-part-2.md:168
+#: src/0509-collections-reform-part-2.md:207
+#: src/0509-collections-reform-part-2.md:282
+#: src/0509-collections-reform-part-2.md:308
+#: src/0509-collections-reform-part-2.md:316
+#: src/0509-collections-reform-part-2.md:331
+msgid "=============="
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:138
+msgid "Deprecate"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:140
+msgid "`Vec::from_fn(n, f)` use `(0..n).map(f).collect()`"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:141
+msgid "`Vec::from_elem(n, v)` use `repeat(v).take(n).collect()`"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:142
+msgid "`Vec::grow` use `extend(repeat(v).take(n))`"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:143
+msgid "`Vec::grow_fn` use `extend((0..n).map(f))`"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:144
+msgid "`dlist::ListInsertion` in favour of inherent methods on the iterator"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:148
+msgid "Misc Stabilization:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:150
+msgid ""
+"Rename `BinaryHeap::top` to `BinaryHeap::peek`. `peek` is a more clear name "
+"than `top`, and is already used elsewhere in our APIs."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:153
+msgid ""
+"`Bitv::get`, `Bitv::set`, where `set` panics on OOB, and `get` returns an "
+"Option. `set` may want to wait on IndexSet being a thing (see Alternatives)."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:156
+msgid "Rename SmallIntMap to VecMap. (already done)"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:158
+msgid ""
+"Stabilize `front`/`back`/`front_mut`/`back_mut` for peeking on the ends of "
+"Deques"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:160
+msgid ""
+"Explicitly specify HashMap's iterators to be non-deterministic between "
+"iterations. This would allow e.g. `next_back` to be implemented as `next`, "
+"reducing code complexity. This can be undone in the future backwards-"
+"compatibly, but the reverse does not hold."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:164
+msgid "Move `Vec` from `std::vec` to `std::collections::vec`."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:166
+msgid "Stabilize RingBuf::swap"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:170
+msgid "Clarifications and Errata from Part 1"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:172
+msgid ""
+"Not every collection can implement every kind of iterator. This RFC simply "
+"wishes to clarify that iterator implementation should be a \"best effort\" "
+"for what makes sense for the collection."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:175
+msgid ""
+"Bitv was marked as having _explicit_ growth capacity semantics, when in fact "
+"it is implicit growth. It has the same semantics as Vec."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:178
+msgid ""
+"BitvSet and VecMap are part of a surprise _fourth_ capacity class, which "
+"isn't really based on the number of elements contained, but on the maximum "
+"index stored. This RFC proposes the name of _maximum growth_."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:182
+msgid ""
+"`reserve(x)` should specifically reserve space for `x + len()` elements, as "
+"opposed to e.g. `x + capacity()` elements."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:185
+msgid "Capacity methods should be based on a \"best effort\" model:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:187
+msgid ""
+"`capacity()` can be regarded as a _lower bound_ on the number of elements "
+"that can be inserted before a resize occurs. It is acceptable for more "
+"elements to be insertable. A collection may also randomly resize before "
+"capacity is met if highly degenerate behaviour occurs. This is relevant to "
+"HashMap, which due to its use of integer multiplication cannot precisely "
+"compute its \"true\" capacity. It also may wish to resize early if a long "
+"chain of collisions occurs. Note that Vec should make _clear_ guarantees "
+"about the precision of capacity, as this is important for `unsafe` usage."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:195
+msgid ""
+"`reserve_exact` may be subverted by the collection's own requirements (e.g. "
+"many collections require a capacity related to a power of two for fast "
+"modular arithmetic). The allocator may also give the collection more space "
+"than it requests, in which case it may as well use that space. It will still "
+"give you at least as much capacity as you request."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:200
+msgid ""
+"`shrink_to_fit` may not shrink to the true minimum size for similar reasons "
+"as `reserve_exact`."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:203
+msgid ""
+"Neither `reserve` nor `reserve_exact` can be trusted to reliably produce a "
+"specific capacity. At best you can guarantee that there will be space for "
+"the number you ask for. Although even then `capacity` itself may return a "
+"smaller number due to its own fuzziness."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:209
+msgid "Entry API V2.0"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:211
+msgid "The old Entry API:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:235
+msgid ""
+"Based on feedback and collections reform landing, this RFC proposes the "
+"following new API:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:264
+msgid ""
+"Replacing get/get_mut with Deref is simply a nice ergonomic improvement. "
+"Renaming `set` and `take` to `insert` and `remove` brings the API more "
+"inline with other collection APIs, and makes it more clear what they do. The "
+"convenience method on Entry itself makes it just nicer to use. Permitting "
+"the following `map.entry(key).get().or_else(|vacant| vacant.insert(Vec::"
+"new()))`."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:269
+msgid ""
+"This API should be stabilized for 1.0 with the exception of the impl on "
+"Entry itself."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:271
+msgid "Alternatives"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:273
+msgid "Traits vs Inherent Impls on Entries"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:274
+msgid ""
+"The Entry API as proposed would leave Entry and its two variants defined by "
+"each collection. We could instead make the actual concrete VacantEntry/"
+"OccupiedEntry implementors implement a trait. This would allow Entry to be "
+"hoisted up to root of collections, with utility functions implemented once, "
+"as well as only requiring one import when using multiple collections. This "
+"_would_ require that the traits be imported, unless we get inherent trait "
+"implementations."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:280
+msgid "These traits can of course be introduced later."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:284
+msgid "Alternatives to ToOwned on Entries"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:285
+msgid ""
+"The Entry API currently is a bit wasteful in the by-value key case. If, for "
+"instance, a user of a `HashMap<String, _>` happens to have a String they "
+"don't mind losing, they can't pass the String by \\-value to the Map. They "
+"must pass it by-reference, and have it get cloned."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:289
+msgid ""
+"One solution to this is to actually have the bound be IntoCow. This will "
+"potentially have some runtime overhead, but it should be dwarfed by the cost "
+"of an insertion anyway, and would be a clear win in the by-value case."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:293
+msgid ""
+"Another alternative would be an _IntoOwned_ trait, which would have the "
+"signature `(self) -> Owned`, as opposed to the current ToOwned `(&self) -> "
+"Owned`. IntoOwned more closely matches the semantics we actually want for "
+"our entry keys, because we really don't care about preserving them after the "
+"conversion. This would allow us to dispatch to either a no-op or a full "
+"clone as necessary. This trait would also be appropriate for the CoW type, "
+"and in fact all of our current uses of the type. However the relationship "
+"between FromBorrow and IntoOwned is currently awkward to express with our "
+"type system, as it would have to be implemented e.g. for `&str` instead of "
+"`str`. IntoOwned also has trouble co-existing \"fully\" with ToOwned due to "
+"current lack of negative bounds in where clauses. That is, we would want a "
+"blanket impl of IntoOwned for ToOwned, but this can't be properly expressed "
+"for coherence reasons."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:304
+msgid ""
+"This RFC does not propose either of these designs in favour of choosing the "
+"conservative ToOwned now, with the possibility of \"upgrading\" into "
+"IntoOwned, IntoCow, or something else when we have a better view of the type-"
+"system landscape."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:310
+msgid "Don't stabilize `Bitv::set`"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:312
+msgid ""
+"We could wait for IndexSet, Or make `set` return a result. `set` really is "
+"redundant with an IndexSet implementation, and we don't like to provide "
+"redundant APIs. On the other hand, it's kind of weird to have only `get`."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:318
+msgid "`reserve_index` vs `reserve_len`"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:320
+msgid ""
+"`reserve_len` is primarily motivated by BitvSet and VecMap, whose capacity "
+"semantics are largely based around the largest index they have set, and not "
+"the number of elements they contain. This design was chosen for its "
+"equivalence to `with_capacity`, as well as possible future-proofing for "
+"adding it to other collections like `Vec` or `RingBuf`."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:325
+msgid ""
+"However one could instead opt for `reserve_index`, which are effectively the "
+"same method, but with an off-by-one. That is, `reserve_len(x) == "
+"reserve_index(x - 1)`. This more closely matches the intent (let me have "
+"index `7`), but has tricky off-by-one with `capacity`."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:329
+msgid "Alternatively `reserve_len` could just be called `reserve_capacity`."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:333
+msgid "RingBuf `as_slice`"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:335
+msgid "Other designs for this usecase were considered:"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:337
+msgid ""
+"```\n"
+"/// Attempts to get a slice over all the elements in the RingBuf, but may "
+"instead\n"
+"/// have to return two slices, in the case that the elements aren't "
+"contiguous.\n"
+"pub fn as_slice(&'a self) -> RingBufSlice<'a, T>\n"
+"\n"
+"enum RingBufSlice<'a, T> {\n"
+"    Contiguous(&'a [T]),\n"
+"    Split((&'a [T], &'a [T])),\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:348
+msgid ""
+"```\n"
+"/// Gets a slice over all the elements in the RingBuf. This may require "
+"shifting\n"
+"/// all the elements to make this possible.\n"
+"pub fn to_slice(&mut self) -> &[T]\n"
+"```"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:354
+msgid ""
+"The one settled on had the benefit of being the simplest. In particular, "
+"having the enum wasn't very helpful, because most code would just create an "
+"empty slice anyway in the contiguous case to avoid code-duplication."
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:358
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0509-collections-reform-part-2.md:360
+msgid ""
+"`reserve_index` vs `reserve_len` and `Ringbuf::as_slice` are the two major "
+"ones."
+msgstr ""

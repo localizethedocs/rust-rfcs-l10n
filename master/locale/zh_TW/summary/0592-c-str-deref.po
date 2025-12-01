@@ -1,0 +1,227 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0592-c-str-deref.md:1
+msgid "Start Date: 2015-01-17"
+msgstr ""
+
+#: src/0592-c-str-deref.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#592](https://github.com/rust-lang/rfcs/pull/592)"
+msgstr ""
+
+#: src/0592-c-str-deref.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#22469](https://github.com/rust-lang/rust/"
+"issues/22469)"
+msgstr ""
+
+#: src/0592-c-str-deref.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0592-c-str-deref.md:7
+msgid ""
+"Make `CString` dereference to a token type `CStr`, which designates null-"
+"terminated string data."
+msgstr ""
+
+#: src/0592-c-str-deref.md:11
+msgid "// Type-checked to only accept C strings\n"
+msgstr ""
+
+#: src/0592-c-str-deref.md:17
+msgid "\"A Rust string\""
+msgstr ""
+
+#: src/0592-c-str-deref.md:22
+msgid "Motivation"
+msgstr ""
+
+#: src/0592-c-str-deref.md:24
+msgid ""
+"The type `std::ffi::CString` is used to prepare string data for passing as "
+"null-terminated strings to FFI functions. This type dereferences to a DST, "
+"`[libc::c_char]`. The slice type as it is, however, is a poor choice for "
+"representing borrowed C string data, since:"
+msgstr ""
+
+#: src/0592-c-str-deref.md:29
+msgid ""
+"A slice does not express the C string invariant at compile time. Safe "
+"interfaces wrapping FFI functions cannot take slice references as is without "
+"dynamic checks (when null-terminated slices are expected) or building a "
+"temporary `CString` internally (in this case plain Rust slices must be "
+"passed with no interior NULs)."
+msgstr ""
+
+#: src/0592-c-str-deref.md:34
+msgid ""
+"An allocated `CString` buffer is not the only desired source for borrowed C "
+"string data. Specifically, it should be possible to interpret a raw pointer, "
+"unsafely and at zero overhead, as a reference to a null-terminated string, "
+"so that the reference can then be used safely. However, in order to "
+"construct a slice (or a dynamically sized newtype wrapping a slice), its "
+"length has to be determined, which is unnecessary for the consuming FFI "
+"function that will only receive a thin pointer. Another likely data source "
+"are string and byte string literals: provided that a static string is null-"
+"terminated, there should be a way to pass it to FFI functions without an "
+"intermediate allocation in `CString`."
+msgstr ""
+
+#: src/0592-c-str-deref.md:45
+msgid ""
+"As a pattern of owned/borrowed type pairs has been established throughout "
+"other modules (see e.g. [path reform](https://github.com/rust-lang/rfcs/"
+"pull/474)), it makes sense that `CString` gets its own borrowed counterpart."
+msgstr ""
+
+#: src/0592-c-str-deref.md:50
+msgid "Detailed design"
+msgstr ""
+
+#: src/0592-c-str-deref.md:52
+msgid ""
+"This proposal introduces `CStr`, a type to designate a null-terminated "
+"string. This type does not implement `Sized`, `Copy`, or `Clone`. References "
+"to `CStr` are only safely obtained by dereferencing `CString` and a few "
+"other helper methods, described below. A `CStr` value should provide no size "
+"information, as there is intent to turn `CStr` into an [unsized type]"
+"(https://github.com/rust-lang/rfcs/issues/813), pending resolution on that "
+"proposal."
+msgstr ""
+
+#: src/0592-c-str-deref.md:60
+msgid "Stage 1: CStr, a DST with a weight problem"
+msgstr ""
+
+#: src/0592-c-str-deref.md:62
+msgid ""
+"As current Rust does not have unsized types that are not DSTs, at this stage "
+"`CStr` is defined as a newtype over a character slice:"
+msgstr ""
+
+#: src/0592-c-str-deref.md:78
+msgid "`CString` is changed to dereference to `CStr`:"
+msgstr ""
+
+#: src/0592-c-str-deref.md:87
+msgid ""
+"In implementation, the `CStr` value needs a length for the internal slice. "
+"This RFC provides no guarantees that the length will be equal to the length "
+"of the string, or be any particular value suitable for safe use."
+msgstr ""
+
+#: src/0592-c-str-deref.md:91
+msgid "Stage 2: unsized CStr"
+msgstr ""
+
+#: src/0592-c-str-deref.md:93
+msgid ""
+"If unsized types are enabled later one way of another, the definition of "
+"`CStr` would change to an unsized type with statically sized contents. The "
+"authors of this RFC believe this would constitute no breakage to code using "
+"`CStr` safely. With a view towards this future change, it's recommended to "
+"avoid any unsafe code depending on the internal representation of `CStr`."
+msgstr ""
+
+#: src/0592-c-str-deref.md:99
+msgid "Returning C strings"
+msgstr ""
+
+#: src/0592-c-str-deref.md:101
+msgid ""
+"In cases when an FFI function returns a pointer to a non-owned C string, it "
+"might be preferable to wrap the returned string safely as a 'thin' `&CStr` "
+"rather than scan it into a slice up front. To facilitate this, conversion "
+"from a raw pointer should be added (with an inferred lifetime as per [the "
+"established convention](https://github.com/rust-lang/rfcs/pull/556)):"
+msgstr ""
+
+#: src/0592-c-str-deref.md:114
+msgid ""
+"For getting a slice out of a `CStr` reference, method `to_bytes` is "
+"provided. The name is preferred over `as_bytes` to reflect the linear cost "
+"of calculating the length."
+msgstr ""
+
+#: src/0592-c-str-deref.md:124
+msgid ""
+"An odd consequence is that it is valid, if wasteful, to call `to_bytes` on a "
+"`CString` via auto-dereferencing."
+msgstr ""
+
+#: src/0592-c-str-deref.md:127
+msgid "Remove c_str_to_bytes"
+msgstr ""
+
+#: src/0592-c-str-deref.md:129
+msgid ""
+"The functions `c_str_to_bytes` and `c_str_to_bytes_with_nul`, with their "
+"problematic lifetime semantics, are deprecated and eventually removed in "
+"favor of composition of the functions described above: "
+"`c_str_to_bytes(&ptr)` becomes `CStr::from_ptr(ptr).to_bytes()`."
+msgstr ""
+
+#: src/0592-c-str-deref.md:134
+msgid "Proof of concept"
+msgstr ""
+
+#: src/0592-c-str-deref.md:136
+msgid ""
+"The described interface changes are implemented in crate [c_string](https://"
+"github.com/mzabaluev/rust-c-str)."
+msgstr ""
+
+#: src/0592-c-str-deref.md:139
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0592-c-str-deref.md:141
+msgid ""
+"The change of the deref target type is another breaking change to `CString`. "
+"In practice the main purpose of borrowing from `CString` is to obtain a raw "
+"pointer with `.as_ptr()`; for code which only does this and does not expose "
+"the slice in type annotations, parameter signatures and so on, the change "
+"should not be breaking since `CStr` also provides this method."
+msgstr ""
+
+#: src/0592-c-str-deref.md:148
+msgid ""
+"Making the deref target unsized throws away the length information intrinsic "
+"to `CString` and makes it less useful as a container for bytes. This is "
+"countered by the fact that there are general purpose byte containers in the "
+"core libraries, whereas `CString` addresses the specific need to convey "
+"string data from Rust to C-style APIs."
+msgstr ""
+
+#: src/0592-c-str-deref.md:154
+msgid "Alternatives"
+msgstr ""
+
+#: src/0592-c-str-deref.md:156
+msgid ""
+"If the proposed enhancements or other equivalent facilities are not adopted, "
+"users of Rust can turn to third-party libraries for better convenience and "
+"safety when working with C strings. This may result in proliferation of "
+"incompatible helper types in public APIs until a dominant de-facto solution "
+"is established."
+msgstr ""
+
+#: src/0592-c-str-deref.md:162
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0592-c-str-deref.md:164
+msgid "Need a `Cow`?"
+msgstr ""

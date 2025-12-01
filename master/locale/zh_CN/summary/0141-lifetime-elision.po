@@ -1,0 +1,493 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0141-lifetime-elision.md:1
+msgid "Start Date: 2014-06-24"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#141](https://github.com/rust-lang/rfcs/pull/141)"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#15552](https://github.com/rust-lang/rust/"
+"issues/15552)"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:7
+msgid "This RFC proposes to"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:9
+msgid "Expand the rules for eliding lifetimes in `fn` definitions, and"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:10
+msgid "Follow the same rules in `impl` headers."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:12
+msgid ""
+"By doing so, we can avoid writing lifetime annotations ~87% of the time that "
+"they are currently required, based on a survey of the standard library."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:17
+msgid ""
+"In today's Rust, lifetime annotations make code more verbose, both for "
+"methods"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:23
+msgid "and for `impl` blocks:"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:29
+msgid ""
+"In the vast majority of cases, however, the lifetimes follow a very simple "
+"pattern."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:32
+msgid ""
+"By codifying this pattern into simple rules for filling in elided lifetimes, "
+"we can avoid writing any lifetimes in ~87% of the cases where they are "
+"currently required."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:36
+msgid "Doing so is a clear ergonomic win."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:38
+msgid "Detailed design"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:40
+msgid "Today's lifetime elision rules"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:42
+msgid ""
+"Rust currently supports eliding lifetimes in functions, so that you can write"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:49
+msgid "instead of"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:56
+msgid ""
+"The elision rules work well for functions that consume references, but not "
+"for functions that produce them. The `get_str` signature above, for example, "
+"promises to produce a string slice that lives arbitrarily long, and is "
+"either incorrect or should be replaced by"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:65
+msgid ""
+"Returning `'static` is relatively rare, and it has been proposed to make "
+"leaving off the lifetime in output position an error for this reason."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:68
+msgid "Moreover, lifetimes cannot be elided in `impl` headers."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:70
+msgid "The proposed rules"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:72
+msgid "Overview"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:74
+msgid "This RFC proposes two changes to the lifetime elision rules:"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:76
+msgid ""
+"Since eliding a lifetime in output position is usually wrong or undesirable "
+"under today's elision rules, interpret it in a different and more useful way."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:79
+msgid ""
+"Interpret elided lifetimes for `impl` headers analogously to `fn` "
+"definitions."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:81
+msgid "Lifetime positions"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:83
+msgid "A _lifetime position_ is anywhere you can write a lifetime in a type:"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:91
+msgid ""
+"As with today's Rust, the proposed elision rules do _not_ distinguish "
+"between different lifetime positions. For example, both `&str` and "
+"`Ref<uint>` have elided a single lifetime."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:95
+msgid "Lifetime positions can appear as either \"input\" or \"output\":"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:97
+msgid ""
+"For `fn` definitions, input refers to the types of the formal arguments in "
+"the `fn` definition, while output refers to result types. So `fn foo(s: "
+"&str) -> (&str, &str)` has elided one lifetime in input position and two "
+"lifetimes in output position. Note that the input positions of a `fn` method "
+"definition do not include the lifetimes that occur in the method's `impl` "
+"header (nor lifetimes that occur in the trait header, for a default method)."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:106
+msgid ""
+"For `impl` headers, input refers to the lifetimes appears in the type "
+"receiving the `impl`, while output refers to the trait, if any. So `impl<'a> "
+"Foo<'a>` has `'a` in input position, while `impl<'a, 'b, 'c> SomeTrait<'b, "
+"'c> for Foo<'a, 'c>` has `'a` in input position, `'b` in output position, "
+"and `'c` in both input and output positions."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:112
+msgid "The rules"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:114
+msgid ""
+"Each elided lifetime in input position becomes a distinct lifetime "
+"parameter. This is the current behavior for `fn` definitions."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:117
+msgid ""
+"If there is exactly one input lifetime position (elided or not), that "
+"lifetime is assigned to _all_ elided output lifetimes."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:120
+msgid ""
+"If there are multiple input lifetime positions, but one of them is `&self` "
+"or `&mut self`, the lifetime of `self` is assigned to _all_ elided output "
+"lifetimes."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:123
+msgid "Otherwise, it is an error to elide an output lifetime."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:125
+msgid ""
+"Notice that the _actual_ signature of a `fn` or `impl` is based on the "
+"expansion rules above; the elided form is just a shorthand."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:128
+msgid "Examples"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:131 src/0141-lifetime-elision.md:134
+#: src/0141-lifetime-elision.md:137 src/0141-lifetime-elision.md:144
+#: src/0141-lifetime-elision.md:147 src/0141-lifetime-elision.md:150
+#: src/0141-lifetime-elision.md:153 src/0141-lifetime-elision.md:156
+#: src/0141-lifetime-elision.md:159 src/0141-lifetime-elision.md:162
+#: src/0141-lifetime-elision.md:166 src/0141-lifetime-elision.md:176
+#: src/0141-lifetime-elision.md:185
+msgid "// elided\n"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:132 src/0141-lifetime-elision.md:135
+#: src/0141-lifetime-elision.md:138 src/0141-lifetime-elision.md:145
+#: src/0141-lifetime-elision.md:148 src/0141-lifetime-elision.md:151
+#: src/0141-lifetime-elision.md:154 src/0141-lifetime-elision.md:157
+#: src/0141-lifetime-elision.md:160 src/0141-lifetime-elision.md:163
+#: src/0141-lifetime-elision.md:169 src/0141-lifetime-elision.md:177
+#: src/0141-lifetime-elision.md:186
+msgid "// expanded\n"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:140 src/0141-lifetime-elision.md:142
+msgid "// ILLEGAL\n"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:171
+msgid ""
+"// Note that when the impl reuses the same signature (with the same "
+"elisions)\n"
+"// from the trait definition, the expanded forms will also match, and thus\n"
+"// the `impl` will be compatible with the `trait`.\n"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:178
+msgid ""
+"// Note that the preceding example's expanded methods do not match the\n"
+"// signatures from the above trait definition for `Bar`; in the general\n"
+"// case, if the elided signatures between the `impl` and the `trait` do\n"
+"// not match, an expanded `impl` may not be compatible with the given\n"
+"// `trait` (and thus would not compile).\n"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:189
+msgid "// ILLEGAL: unbound 'a\n"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:194
+msgid "Error messages"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:196
+msgid ""
+"Since the shorthand described above should eliminate most uses of explicit "
+"lifetimes, there is a potential \"cliff\". When a programmer first "
+"encounters a situation that requires explicit annotations, it is important "
+"that the compiler gently guide them toward the concept of lifetimes."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:201
+msgid ""
+"An error can arise with the above shorthand only when the program elides an "
+"output lifetime and neither of the rules can determine how to annotate it."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:204
+msgid "For `fn`"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:206
+msgid ""
+"The error message should guide the programmer toward the concept of lifetime "
+"by talking about borrowed values:"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:209
+msgid ""
+"This function's return type contains a borrowed value, but the signature "
+"does not say which parameter it is borrowed from. It could be one of a, b, "
+"or c. Mark the input parameter it borrows from using lifetimes, e.g. "
+"\\[generated example\\]. See \\[url\\] for an introduction to lifetimes."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:214
+msgid ""
+"This message is slightly inaccurate, since the presence of a lifetime "
+"parameter does not necessarily imply the presence of a borrowed value, but "
+"there are no known use-cases of phantom lifetime parameters."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:218
+msgid "For `impl`"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:220
+msgid ""
+"The error case on `impl` is exceedingly rare: it requires (1) that the "
+"`impl` is for a trait with a lifetime argument, which is uncommon, and (2) "
+"that the `Self` type has multiple lifetime arguments."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:224
+msgid ""
+"Since there are no clear \"borrowed values\" for an `impl`, this error "
+"message speaks directly in terms of lifetimes. This choice seems warranted "
+"given that a programmer implementing a trait with lifetime parameters will "
+"almost certainly already understand lifetimes."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:229
+msgid ""
+"TraitName requires lifetime arguments, and the impl does not say which "
+"lifetime parameters of TypeName to use. Mark the parameters explicitly, e.g. "
+"\\[generated example\\]. See \\[url\\] for an introduction to lifetimes."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:233
+msgid "The impact"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:235
+msgid ""
+"To assess the value of the proposed rules, we conducted a survey of the code "
+"defined _in_ `libstd` (as opposed to the code it reexports). This corpus is "
+"large and central enough to be representative, but small enough to easily "
+"analyze."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:240
+msgid ""
+"We found that of the 169 lifetimes that currently require annotation for "
+"`libstd`, 147 would be elidable under the new rules, or 87%."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:243
+msgid ""
+"_Note: this percentage does not include the large number of lifetimes that "
+"are already elided with today's rules._"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:246
+msgid ""
+"The detailed data is available at: https://gist.github.com/aturon/"
+"da49a6d00099fdb0e861"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:249
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:251
+msgid "Learning lifetimes"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:253
+msgid ""
+"The main drawback of this change is pedagogical. If lifetime annotations are "
+"rarely used, newcomers may encounter error messages about lifetimes long "
+"before encountering lifetimes in signatures, which may be confusing. "
+"Counterpoints:"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:257
+msgid ""
+"This is already the case, to some extent, with the current elision rules."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:259
+msgid ""
+"Most existing error messages are geared to talk about specific borrows not "
+"living long enough, pinpointing their _locations_ in the source, rather than "
+"talking in terms of lifetime annotations. When the errors do mention "
+"annotations, it is usually to suggest specific ones."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:264
+msgid ""
+"The proposed error messages above will help programmers transition out of "
+"the fully elided regime when they first encounter a signature requiring it."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:267
+msgid ""
+"When combined with a good tutorial on the borrow/lifetime system (which "
+"should be introduced early in the documentation), the above should provide a "
+"reasonably gentle path toward using and understanding explicit lifetimes."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:271
+msgid ""
+"Programmers learn lifetimes once, but will use them many times. Better to "
+"favor long-term ergonomics, if a simple elision rule can cover 87% of "
+"current lifetime uses (let alone the currently elided cases)."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:275
+msgid "Subtlety for non-`&` types"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:277
+msgid ""
+"While the rules are quite simple and regular, they can be subtle when "
+"applied to types with lifetime positions. To determine whether the signature"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:284
+msgid ""
+"is actually using lifetimes via the elision rules, you have to know whether "
+"`Bar` has a lifetime parameter. But this subtlety already exists with the "
+"current elision rules. The benefit is that library types like `Ref<'a, T>` "
+"get the same status and ergonomics as built-ins like `&'a T`."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:289
+msgid "Alternatives"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:291
+msgid ""
+"Do not include _output_ lifetime elision for `impl`. Since traits with "
+"lifetime parameters are quite rare, this would not be a great loss, and "
+"would simplify the rules somewhat."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:295
+msgid "Only add elision rules for `fn`, in keeping with current practice."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:297
+msgid ""
+"Only add elision for explicit `&` pointers, eliminating one of the drawbacks "
+"mentioned above. Doing so would impose an ergonomic penalty on abstractions, "
+"though: `Ref` would be more painful to use than `&`."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:301
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:303
+msgid ""
+"The `fn` and `impl` cases tackled above offer the biggest bang for the buck "
+"for lifetime elision. But we may eventually want to consider other "
+"opportunities."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:306
+msgid "Double lifetimes"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:308
+msgid ""
+"Another pattern that sometimes arises is types like `&'a Foo<'a>`. We could "
+"consider an additional elision rule that expands `&Foo` to `&'a Foo<'a>`."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:311
+msgid ""
+"However, such a rule could be easily added later, and it is unclear how "
+"common the pattern is, so it seems best to leave that for a later RFC."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:314
+msgid "Lifetime elision in `struct`s"
+msgstr ""
+
+#: src/0141-lifetime-elision.md:316
+msgid ""
+"We may want to allow lifetime elision in `struct`s, but the cost/benefit "
+"analysis is much less clear. In particular, it could require chasing an "
+"arbitrary number of (potentially private) `struct` fields to discover the "
+"source of a lifetime parameter for a `struct`. There are also some good "
+"reasons to treat elided lifetimes in `struct`s as `'static`."
+msgstr ""
+
+#: src/0141-lifetime-elision.md:322
+msgid ""
+"Again, since shorthand can be added backwards-compatibly, it seems best to "
+"wait."
+msgstr ""

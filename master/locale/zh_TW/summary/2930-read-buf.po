@@ -1,0 +1,741 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2930-read-buf.md:1
+msgid "Feature Name: read_buf"
+msgstr ""
+
+#: src/2930-read-buf.md:2
+msgid "Start Date: 2020/05/18"
+msgstr ""
+
+#: src/2930-read-buf.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2930](https://github.com/rust-lang/rfcs/pull/2930)"
+msgstr ""
+
+#: src/2930-read-buf.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#78485](https://github.com/rust-lang/rust/"
+"issues/78485)"
+msgstr ""
+
+#: src/2930-read-buf.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2930-read-buf.md:9
+msgid ""
+"The current design of the `Read` trait is nonoptimal as it requires that the "
+"buffer passed to its various methods be pre-initialized even though the "
+"contents will be immediately overwritten. This RFC proposes an interface to "
+"allow implementors and consumers of `Read` types to robustly and soundly "
+"work with uninitialized buffers."
+msgstr ""
+
+#: src/2930-read-buf.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/2930-read-buf.md:16
+msgid "Background"
+msgstr ""
+
+#: src/2930-read-buf.md:19
+msgid "The core of the `Read` trait looks like this:"
+msgstr ""
+
+#: src/2930-read-buf.md:23
+msgid "/// Reads data into `buf`, returning the number of bytes written.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:28
+msgid ""
+"Code working with a reader needs to create the buffer that will be passed to "
+"read; the simple approach is something like this:"
+msgstr ""
+
+#: src/2930-read-buf.md:37
+msgid ""
+"However, that approach isn't ideal since the work spent to zero the buffer "
+"is wasted. The reader should be overwriting the part of the buffer we're "
+"working with, after all. Ideally, we wouldn't have to perform any "
+"initialization at all:"
+msgstr ""
+
+#: src/2930-read-buf.md:46
+msgid ""
+"However, whether it is allowed to call `assume_init()` on an array of "
+"uninitialized integers is [still subject of discussion](https://github.com/"
+"rust-lang/unsafe-code-guidelines/issues/71). And either way, this is "
+"definitely unsound when working with an arbitrary reader. The `Read` trait "
+"is not unsafe, so the soundness of working with an implementation can't "
+"depend on the \"reasonableness\" of the implementation for soundness. The "
+"implementation could read from the buffer, or return the wrong number of "
+"bytes read:"
+msgstr ""
+
+#: src/2930-read-buf.md:76
+msgid ""
+"In either case, the `process_data` call above would be working with "
+"uninitialized memory. Uninitialized memory is a dangerous (and often "
+"misunderstood) beast. Uninitialized memory does not have an _arbitrary_ "
+"value; it actually has an _undefined_ value. Undefined values can very "
+"quickly turn into undefined behavior. Check out [Ralf's blog post](https://"
+"www.ralfj.de/blog/2019/07/14/uninit.html) for a more extensive discussion of "
+"uninitialized memory."
+msgstr ""
+
+#: src/2930-read-buf.md:82
+msgid "But how bad are undefined values really?"
+msgstr ""
+
+#: src/2930-read-buf.md:85
+msgid ""
+"Are undefined values _really_ that bad in practice? Consider a function that "
+"tries to use an uninitialized buffer with a reader:"
+msgstr ""
+
+#: src/2930-read-buf.md:99
+msgid "Now consider this function that tries to use `unsound_read_u32_be`:"
+msgstr ""
+
+#: src/2930-read-buf.md:108
+msgid ""
+"It should clearly only be able to return a nonzero value, but if we compile "
+"it using rustc 1.42.0 for the x86_64-unknown-linux-gnu target, the function "
+"[compiles down to this](https://rust.godbolt.org/z/Y9rL-5):"
+msgstr ""
+
+#: src/2930-read-buf.md:116
+msgid ""
+"That means that it will return whatever arbitrary number happened to be in "
+"the `%rax` register. That could very well happen to be 0, which violates the "
+"invariant of `NonZeroU32` and any upstream callers of `blammo` will have a "
+"bad time. Because the value that `unsound_read_u32_be` returned was "
+"undefined, the compiler completely removed the check for 0!"
+msgstr ""
+
+#: src/2930-read-buf.md:120
+msgid ""
+"We want to be able to take advantage of the improved performance of avoiding "
+"buffer initialization without triggering undefined behavior in safe code."
+msgstr ""
+
+#: src/2930-read-buf.md:123
+msgid "Why not just initialize?"
+msgstr ""
+
+#: src/2930-read-buf.md:126
+msgid ""
+"If working with uninitialized buffers carries these risks, why should we "
+"bother with it at all? Code dealing with IO in both the standard library and "
+"the ecosystem today already works with uninitialized buffers because there "
+"are concrete, nontrivial performance improvements from doing so:"
+msgstr ""
+
+#: src/2930-read-buf.md:130
+msgid ""
+"[The standard library measured](https://github.com/rust-lang/rust/"
+"pull/26950) a 7% improvement in benchmarks all the way back in 2015."
+msgstr ""
+
+#: src/2930-read-buf.md:132
+msgid ""
+"[The hyper HTTP library measured](https://github.com/tokio-rs/tokio/"
+"pull/1744#issuecomment-554543881) a nontrivial improvement in benchmarks."
+msgstr ""
+
+#: src/2930-read-buf.md:134
+msgid ""
+"[The Quinn QUIC library measured](https://github.com/tokio-rs/tokio/"
+"pull/1744#issuecomment-553501198) a 0.2%-2.45% improvement in benchmarks."
+msgstr ""
+
+#: src/2930-read-buf.md:137
+msgid ""
+"Given that the ecosystem has already found that uninitialized buffer use is "
+"important enough to deal with, the standard library should provide a more "
+"robust framework to work with."
+msgstr ""
+
+#: src/2930-read-buf.md:140
+msgid ""
+"In addition, working with regular initialized buffers can be _more complex_ "
+"than working with uninitialized buffers! Back in 2015, the standard "
+"library's implementation of `Read::read_to_end` was found to be wildly "
+"inefficient due to insufficiently careful management of buffer sizes because "
+"it was initializing them. [The fix](https://github.com/rust-lang/rust/"
+"pull/23820) improved the performance of small reads by over 4,000x! If the "
+"buffer did not need to be initialized, the simpler implementation would have "
+"been fine."
+msgstr ""
+
+#: src/2930-read-buf.md:146
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2930-read-buf.md:149
+msgid ""
+"The `ReadBuf` type manages a _progressively initialized_ buffer of bytes. It "
+"is primarily used to avoid buffer initialization overhead when working with "
+"types implementing the `Read` trait. It wraps a buffer of possibly-"
+"uninitialized bytes and tracks how much of the buffer has been initialized "
+"and how much of the buffer has been filled. Tracking the set of initialized "
+"bytes allows initialization costs to only be paid once, even if the buffer "
+"is used repeatedly in a loop."
+msgstr ""
+
+#: src/2930-read-buf.md:155
+msgid "Here's a small example of working with a reader using a `ReadBuf`:"
+msgstr ""
+
+#: src/2930-read-buf.md:158
+msgid ""
+"// The base level buffer uses the `MaybeUninit` type to avoid having to "
+"initialize the whole 8kb of memory up-front.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:160
+msgid "// We then wrap that in a `ReadBuf` to track the state of the buffer.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:165
+msgid "// Read some data into the buffer.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:168
+msgid "// If nothing was written into the buffer, we're at EOF.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:173
+msgid "// Otherwise, process the data.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:176
+msgid ""
+"// And then clear the buffer out so we can read into it again. This just "
+"resets the amount of filled data to 0,\n"
+"    // but preserves the memory of how much of the buffer has been "
+"initialized.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:182
+msgid ""
+"It is important that we created the `ReadBuf` outside of the loop. If we "
+"instead created it in each loop iteration we would fail to preserve the "
+"knowledge of how much of it has been initialized."
+msgstr ""
+
+#: src/2930-read-buf.md:185
+msgid ""
+"When implementing `Read`, the author can choose between an entirely safe "
+"interface that exposes an initialized buffer, or an unsafe interface that "
+"allows the code to work directly with the uninitialized buffer for higher "
+"performance."
+msgstr ""
+
+#: src/2930-read-buf.md:188
+msgid "A safe `Read` implementation:"
+msgstr ""
+
+#: src/2930-read-buf.md:193
+msgid ""
+"// Get access to the unwritten part of the buffer, making sure it has been "
+"fully initialized. Since `ReadBuf`\n"
+"        // tracks the initialization state of the buffer, this is \"free\" "
+"after the first time it's called.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:197
+msgid "// Fill the whole buffer with some nonsense.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:202
+msgid "// And indicate that we've written the whole thing.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:211
+msgid "An unsafe `Read` implementation:"
+msgstr ""
+
+#: src/2930-read-buf.md:217
+msgid ""
+"// Get access to the filled part of the buffer, without initializing it. "
+"This method is unsafe; we are\n"
+"            // responsible for ensuring that we don't \"de-initialize\" "
+"portions of it that have previously been\n"
+"            // initialized.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:222
+msgid ""
+"// We're just delegating to the libc read function, which returns an "
+"`isize`. The return value indicates\n"
+"            // an error if negative and the number of bytes read otherwise.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:231
+msgid ""
+"// If the read succeeded, tell the buffer that the read-to portion has been "
+"initialized. This method is\n"
+"            // unsafe; we are responsible for ensuring that this portion of "
+"the buffer has actually been initialized.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:234
+msgid ""
+"// And indicate that we've written the bytes as well. Unlike "
+"`assume_initialized`, this method is safe,\n"
+"            // and asserts that the written portion of the buffer does not "
+"advance beyond the initialized portion of\n"
+"            // the buffer. If we didn't call `assume_init` above, this call "
+"could panic.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:245
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2930-read-buf.md:249
+msgid ""
+"/// A wrapper around a byte buffer that is incrementally filled and "
+"initialized.\n"
+"///\n"
+"/// This type is a sort of \"double cursor\". It tracks three regions in the "
+"buffer: a region at the beginning of the\n"
+"/// buffer that has been logically filled with data, a region that has been "
+"initialized at some point but not yet\n"
+"/// logically filled, and a region at the end that is fully uninitialized. "
+"The filled region is guaranteed to be a\n"
+"/// subset of the initialized region.\n"
+"///\n"
+"/// In summary, the contents of the buffer can be visualized as:\n"
+"/// ```not_rust\n"
+"/// [             capacity              ]\n"
+"/// [ filled |         unfilled         ]\n"
+"/// [    initialized    | uninitialized ]\n"
+"/// ```\n"
+msgstr ""
+
+#: src/2930-read-buf.md:269
+msgid "/// Creates a new `ReadBuf` from a fully initialized buffer.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:273
+msgid ""
+"/// Creates a new `ReadBuf` from a fully uninitialized buffer.\n"
+"    ///\n"
+"    /// Use `assume_init` if part of the buffer is known to be already "
+"inintialized.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:279
+msgid "/// Returns the total capacity of the buffer.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:283
+msgid "/// Returns a shared reference to the filled portion of the buffer.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:287
+msgid "/// Returns a mutable reference to the filled portion of the buffer.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:291
+msgid ""
+"/// Returns a shared reference to the initialized portion of the buffer.\n"
+"    ///\n"
+"    /// This includes the filled portion.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:297
+msgid ""
+"/// Returns a mutable reference to the initialized portion of the buffer.\n"
+"    ///\n"
+"    /// This includes the filled portion.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:303
+msgid ""
+"/// Returns a mutable reference to the unfilled part of the buffer without "
+"ensuring that it has been fully\n"
+"    /// initialized.\n"
+"    ///\n"
+"    /// # Safety\n"
+"    ///\n"
+"    /// The caller must not de-initialize portions of the buffer that have "
+"already been initialized.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:312
+msgid ""
+"/// Returns a mutable reference to the unfilled part of the buffer, ensuring "
+"it is fully initialized.\n"
+"    ///\n"
+"    /// Since `ReadBuf` tracks the region of the buffer that has been "
+"initialized, this is effectively \"free\" after\n"
+"    /// the first use.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:319
+msgid ""
+"/// Returns a mutable reference to the first `n` bytes of the unfilled part "
+"of the buffer, ensuring it is\n"
+"    /// fully initialized.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if `self.remaining()` is less than `n`.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:328
+msgid ""
+"/// Returns the number of bytes at the end of the slice that have not yet "
+"been filled.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:332
+msgid ""
+"/// Clears the buffer, resetting the filled region to empty.\n"
+"    ///\n"
+"    /// The number of initialized bytes is not changed, and the contents of "
+"the buffer are not modified.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:338
+msgid ""
+"/// Increases the size of the filled region of the buffer.\n"
+"    ///\n"
+"    /// The number of initialized bytes is not changed.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the filled region of the buffer would become larger than "
+"the initialized region.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:348
+msgid ""
+"/// Sets the size of the filled region of the buffer.\n"
+"    ///\n"
+"    /// The number of initialized bytes is not changed.\n"
+"    ///\n"
+"    /// Note that this can be used to *shrink* the filled region of the "
+"buffer in addition to growing it (for\n"
+"    /// example, by a `Read` implementation that compresses data in-place).\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the filled region of the buffer would become larger than "
+"the initialized region.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:361
+msgid ""
+"/// Asserts that the first `n` unfilled bytes of the buffer are "
+"initialized.\n"
+"    ///\n"
+"    /// `ReadBuf` assumes that bytes are never de-initialized, so this "
+"method does nothing when called with fewer\n"
+"    /// bytes than are already known to be initialized.\n"
+"    ///\n"
+"    /// # Safety\n"
+"    ///\n"
+"    /// The caller must ensure that the first `n` unfilled bytes of the "
+"buffer have already been initialized.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:372
+msgid ""
+"/// Appends data to the buffer, advancing the written position and possibly "
+"also the initialized position.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if `self.remaining()` is less than `buf.len()`.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:382
+msgid "The `Read` trait uses this type in some of its methods:"
+msgstr ""
+
+#: src/2930-read-buf.md:386
+msgid ""
+"/// Pull some bytes from this source into the specified buffer.\n"
+"    ///\n"
+"    /// This is equivalent to the `read` method, except that it is passed a "
+"`ReadBuf` rather than `[u8]` to allow use\n"
+"    /// with uninitialized buffers. The new data will be appended to any "
+"existing contents of `buf`.\n"
+"    ///\n"
+"    /// The default implementation delegates to `read`.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:402
+msgid ""
+"The `ReadBuf` type wraps a buffer of maybe-initialized bytes and tracks how "
+"much of the buffer has already been initialized. This tracking is crucial "
+"because it avoids repeated initialization of already-initialized portions of "
+"the buffer. It additionally provides the guarantee that the initialized "
+"portion of the buffer _is actually initialized_! A subtle characteristic of "
+"`MaybeUninit` is that you can de-initialize values in addition to "
+"initializing them, and this API protects against that."
+msgstr ""
+
+#: src/2930-read-buf.md:408
+msgid ""
+"It additionally tracks the amount of data read into the buffer directly so "
+"that code working with `Read` implementations can be guaranteed that the "
+"region of the buffer that the reader claims was written to is minimally "
+"initialized. Thinking back to the `BrokenReader` in the motivation section, "
+"the worst an implementation can now do (without writing unsound unsafe code) "
+"is to fail to actually write useful data into the buffer. Code using a "
+"`BrokenReader` may see bad data in the buffer, but the bad data at least has "
+"defined contents now!"
+msgstr ""
+
+#: src/2930-read-buf.md:414
+msgid ""
+"Note that `read` is still a required method of the `Read` trait. It can be "
+"easily written to delegate to `read_buf`:"
+msgstr ""
+
+#: src/2930-read-buf.md:430
+msgid ""
+"Some of `Read`'s convenience methods will be modified to take advantage of "
+"`read_buf`, and some new convenience methods will be added:"
+msgstr ""
+
+#: src/2930-read-buf.md:435
+msgid ""
+"/// Read the exact number of bytes required to fill `buf`.\n"
+"    ///\n"
+"    /// This is equivalent to the `read_exact` method, except that it is "
+"passed a `ReadBuf` rather than `[u8]` to\n"
+"    /// allow use with uninitialized buffers.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:449
+msgid "\"failed to fill buffer\""
+msgstr ""
+
+#: src/2930-read-buf.md:520
+msgid ""
+"The existing `std::io::Initializer` type and `Read::initializer` method will "
+"be removed."
+msgstr ""
+
+#: src/2930-read-buf.md:522
+msgid "Vectored reads use a similar API:"
+msgstr ""
+
+#: src/2930-read-buf.md:525
+msgid ""
+"/// A possibly-uninitialized version of `IoSliceMut`.\n"
+"///\n"
+"/// It is guaranteed to have exactly the same layout and ABI as "
+"`IoSliceMut`.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:531
+msgid ""
+"/// Creates a new `MaybeUninitIoSliceMut` from a slice of maybe-"
+"uninitialized bytes.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:544
+msgid "/// A wrapper over a set of incrementally-initialized buffers.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:549
+msgid "/// Creates a new `ReadBufs` from a set of fully initialized buffers.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:553
+msgid ""
+"/// Creates a new `ReadBufs` from a set of fully uninitialized buffers.\n"
+"    ///\n"
+"    /// Use `assume_init` if part of the buffers are known to be already "
+"initialized.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:563
+msgid ""
+"/// Pull some bytes from this source into the specified set of buffers.\n"
+"    ///\n"
+"    /// This is equivalent to the `read_vectored` method, except that it is "
+"passed a `ReadBufs` rather than\n"
+"    /// `[IoSliceMut]` to allow use with uninitialized buffers. The new data "
+"will be appended to any existing contents\n"
+"    /// of `bufs`.\n"
+"    ///\n"
+"    /// The default implementation delegates to `read_vectored`.\n"
+msgstr ""
+
+#: src/2930-read-buf.md:576
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2930-read-buf.md:579
+msgid ""
+"This introduces a nontrivial amount of complexity to one of the standard "
+"library's core traits, and results in sets of almost-but-not-quite identical "
+"methods (`read`/`read_buf`, `read_exact`/`read_buf_exact`, etc). It's "
+"unfortunate that an implementor of `Read` based on `read_buf` needs to add a "
+"boilerplate `read` implementation."
+msgstr ""
+
+#: src/2930-read-buf.md:583
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2930-read-buf.md:586
+msgid "Any solution to this problem needs to satisfy a set of constraints:"
+msgstr ""
+
+#: src/2930-read-buf.md:588
+msgid "It needs to be backwards compatible. Duh."
+msgstr ""
+
+#: src/2930-read-buf.md:589
+msgid ""
+"It needs to be _efficiently_ backwards compatible. Code that doesn't write "
+"`unsafe` should not be penalized by the new APIs. For example, code working "
+"with a reader written before these new APIs were introduced should not "
+"become slower once that code starts trying to use the new APIs."
+msgstr ""
+
+#: src/2930-read-buf.md:592
+msgid ""
+"It must be compatible with `dyn Read`. Trait objects are used pervasively in "
+"IO code, so a solution can't depend on monomorphization or specialization."
+msgstr ""
+
+#: src/2930-read-buf.md:594
+msgid ""
+"It needs to work with both normal and vectored IO (via `read_vectored`)."
+msgstr ""
+
+#: src/2930-read-buf.md:595
+msgid ""
+"It needs to be composable. Readers are very commonly nested (e.g. "
+"`GzipReader<TlsStream<TcpStream>>`), and wrapper readers should be able to "
+"opt-in to fast paths supported by their inner reader."
+msgstr ""
+
+#: src/2930-read-buf.md:597
+msgid ""
+"A reader that does want to work directly with uninitialized memory does, at "
+"some reasonable point, need to write the word `unsafe`."
+msgstr ""
+
+#: src/2930-read-buf.md:600
+msgid ""
+"This RFC covers the proposed solution. For in-depth coverage of other "
+"options and the rationale for this particular approach over others, please "
+"refer to this [Dropbox Paper writeup](https://paper.dropbox.com/doc/IO-"
+"Buffer-Initialization--Ax97Yz2_GUH23hVjfDf4JhCAAQ-MvytTgjIOTNpJAS6Mvw38) or "
+"my [discussion with Niko Matsakis](http://smallcultfollowing.com/babysteps/"
+"blog/2020/01/20/async-interview-5-steven-fackler/)."
+msgstr ""
+
+#: src/2930-read-buf.md:604
+msgid ""
+"The proposal in the Dropbox Paper does differ from the proposal in this RFC "
+"in one significant way: its definition of `read_buf` returns an `io::"
+"Result<usize>` like `read` does, and the `ReadBuf` only tracks the "
+"initialized region and not the written-to region:"
+msgstr ""
+
+#: src/2930-read-buf.md:614
+msgid ""
+"This has a subtle but important drawback. From the perspective of code "
+"working with a `Read` implementation, the initialization state of the buffer "
+"can be trusted to be correct, but the number of bytes read cannot! This mix "
+"of trusted and untrusted information can be quite a footgun for unsafe code "
+"working with a reader. For example, `read_to_end` needs to remember to "
+"assert that the number of bytes read is less than the number of bytes "
+"initialized before calling `set_len` on the `Vec<u8>` that it's reading "
+"into. Moving that bit of state into `ReadBuf` avoids the issue by allowing "
+"`ReadBuf` to guarantee that these two values stay consistent."
+msgstr ""
+
+#: src/2930-read-buf.md:621
+msgid ""
+"The concept of `ReadBuf` is not inherently tied to working with `u8` "
+"buffers;  it could alternatively be parameterized over the value type and "
+"hypothetically used in other contexts. However, the API for such a type can "
+"be iterated on in an external crate."
+msgstr ""
+
+#: src/2930-read-buf.md:625
+msgid "Prior art"
+msgstr ""
+
+#: src/2930-read-buf.md:628
+msgid ""
+"The standard library currently has the concept of a buffer \"initializer\". "
+"The `Read` trait has an (unstable) method which returns an `Initializer` "
+"object which can take a `&mut [u8]` of uninitialized memory and initialize "
+"it as needed for use with the associated reader. Then the buffer is just "
+"passed to `read` as normal."
+msgstr ""
+
+#: src/2930-read-buf.md:632
+msgid ""
+"The [`tokio::io::AsyncRead`](https://docs.rs/tokio/0.2.21/tokio/io/trait."
+"AsyncRead.html) trait has a somewhat similar approach, with a "
+"`prepare_uninitialized_buffer` method which takes a `&mut [MaybeUninit<u8>]` "
+"slice and initializes it if necessary."
+msgstr ""
+
+#: src/2930-read-buf.md:636
+msgid ""
+"Refer to the links in the \"Rationale and alternatives\" section above for a "
+"discussion of the issues with these approaches."
+msgstr ""
+
+#: src/2930-read-buf.md:639
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2930-read-buf.md:642
+msgid ""
+"Should `read_buf` return the number of bytes read like `read` does or should "
+"the `ReadBuf` track it instead? Some operations, like checking for EOF, are "
+"a bit simpler if `read_buf` returns the value, but the confusion around what "
+"is and is not trustworthy is worrysome for unsafe code working with `Read` "
+"implementations."
+msgstr ""
+
+#: src/2930-read-buf.md:646
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2930-read-buf.md:649
+msgid ""
+"Some of the complexity in the implementation of `read_to_end` above is due "
+"to having to manually track how much of the `Vec<u8>`'s spare capacity has "
+"already been initialized between iterations of the read loop. There is "
+"probably some kind of abstraction that could be defined to encapsulate that "
+"logic."
+msgstr ""
+
+#: src/2930-read-buf.md:653
+msgid ""
+"Users shouldn't be required to manually write a version of `read` that "
+"delegates to `read_buf`. We should be able to eventually add a default "
+"implementation of `read`, along with a requirement that one of `read` and "
+"`read_buf` must be overridden."
+msgstr ""

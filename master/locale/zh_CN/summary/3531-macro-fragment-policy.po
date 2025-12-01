@@ -1,0 +1,324 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3531-macro-fragment-policy.md:1
+msgid "Macro matcher fragment specifiers edition policy"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:3
+msgid "Start Date: 2023-11-15"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:4
+msgid ""
+"RFC PR: [rust-lang/rfcs#3531](https://github.com/rust-lang/rfcs/pull/3531)"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:8
+msgid ""
+"This RFC sets out the policy for how the behavior of macro matcher fragment "
+"specifiers is updated over an edition when those specifiers fall out of sync "
+"with the underlying grammar of Rust."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:10
+msgid "Background and motivation"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:12
+msgid ""
+"Rust has a syntactic abstraction feature called [\"macros by example\"]"
+"(https://doc.rust-lang.org/reference/macros-by-example.html) or "
+"`macro_rules`.  This feature allows for writing _macros_ that transform "
+"source code in a principled way."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:14
+msgid ""
+"Each macro is composed of one or more _rules_.  Each of these rules has a "
+"_matcher_.  The matcher defines what pattern of Rust syntax will be matched "
+"by the rule."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:16
+msgid ""
+"Within a matcher, different parts of the input Rust syntax can be bound to "
+"metavariables using _[fragment specifiers](https://doc.rust-lang.org/"
+"reference/macros-by-example.html#metavariables)_.  These fragment specifiers "
+"define what Rust syntax will be matched and bound to each metavariable.  For "
+"example, the `item` fragment specifier matches an [item](https://doc.rust-"
+"lang.org/reference/items.html), `block` matches a [block expression](https://"
+"doc.rust-lang.org/reference/expressions/block-expr.html), `expr` matches an "
+"[expression](https://doc.rust-lang.org/reference/expressions.html), and so "
+"on."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:18
+msgid ""
+"As we add new features to Rust, sometimes we change its syntax.  This means "
+"that, even within an edition, the definition of what exactly constitutes an "
+"[expression](https://doc.rust-lang.org/reference/expressions.html), e.g., "
+"can change.  However, to avoid breaking macros in existing code covered by "
+"our stability guarantee, we often do not update within an edition what code "
+"is matched by the relevant fragment specifier (e.g., `expr`).[^no-update-"
+"exception]  This _skew_ or divergence between the language and the fragment "
+"specifiers creates problems over time, including that macros become unable "
+"to match newer Rust syntax without dropping down to lower-level specifiers "
+"such as `tt`."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:20
+msgid ""
+"Periodically, we need a way to bring the language and the fragment "
+"specifiers back into sync.  This RFC defines a policy for how we do that."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:22
+msgid ""
+"In certain cases we may be able to update the fragment specifier "
+"simultaneously with adding new syntax as described in the [policy](#policy)."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:30
+msgid "Policy"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:34
+msgid "This section is normative."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:36
+msgid ""
+"When we change the syntax of Rust such that the syntax matched by a fragment "
+"specifier no longer exactly aligns with the actual syntax for that "
+"production in the Rust grammar, we will:"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:38
+msgid ""
+"In the current edition, the next edition, and as many other editions as "
+"practical, add a new fragment specifier that preserves the behavior of the "
+"existing fragment specifier.  If there is some semantically meaningful name "
+"that makes sense to use for this new fragment specifier, we'll use that.  "
+"Otherwise, we'll use the existing name with the identifier of the current "
+"stable edition added as a suffix after an underscore."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:39
+msgid ""
+"In the next edition, change the behavior of the original fragment specifier "
+"to match the underlying grammar as of the release of Rust corresponding to "
+"first release of that edition."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:40
+msgid ""
+"When migrating existing code to the new edition, have `cargo fix` replace "
+"all instances of the original fragment specifier in macro matchers with the "
+"new one that preserves the old behavior."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:42
+msgid ""
+"For example, suppose that the current stable edition is Rust 2021, the "
+"behavior of the `expr` fragment specifier has fallen out of sync with the "
+"grammar for a Rust [expression](https://doc.rust-lang.org/reference/"
+"expressions.html), and that Rust 2024 is the next edition.  Then in Rust "
+"2021, Rust 2024, and as many other editions of Rust as practical, we would "
+"add a new fragment specifier named `expr_2021` (assuming no better "
+"semantically meaningful name could be found) that would preserve the "
+"behavior `expr` had in Rust 2021, we would in Rust 2024 change the behavior "
+"of `expr` to match the underlying grammar, and when migrating code to Rust "
+"2024, we would have `cargo fix` replace all instances of `expr` fragment "
+"specifiers with `expr_2021`."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:44
+msgid ""
+"A new fragment specifier that preserves the old behavior _must_ be made "
+"available no later than the first release of Rust for the new edition, but "
+"it _should_ be made available as soon as the original fragment specifier "
+"first diverges from the underlying grammar."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:46
+msgid ""
+"As specified above, we will add the new fragment specifier that preserves "
+"the old behavior to the current edition, the next edition, and to as many "
+"other editions as practical.  Adding the new specifier to the current and "
+"next edition will be done to facilitate migration.  Adding it to as many "
+"other editions as practical will be done in keeping with our policy of "
+"preferring [uniform behavior across editions](https://github.com/rust-lang/"
+"rfcs/blob/master/text/3085-edition-2021.md#uniform-behavior-across-"
+"editions).  Sometimes, however, it may not be practical to add the specifier "
+"to some other edition.  E.g., the behavior being preserved may include "
+"handling a token that is a keyword in only some editions.  In these cases, "
+"we'll add the new fragment specifier only to those editions where it makes "
+"sense."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:48
+msgid ""
+"In cases where we're adding new syntax and updating the grammar to include "
+"that new syntax, if we can update the corresponding fragment specifier "
+"simultaneously to match the new grammar in such a way that we do not risk "
+"changing the behavior of existing macros (i.e., because the new syntax "
+"previously would have failed parsing), then we will do that so as to prevent "
+"or minimize divergence between the fragment specifier and the new grammar.  "
+"If that entirely prevents divergence, then no further action will be "
+"needed.  Otherwise, the policy defined in this RFC will be used to correct "
+"any remaining divergence in the next edition."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:52
+msgid "Alternatives"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:54
+msgid "Keep the old, add specifiers for the new"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:56
+msgid ""
+"Changing the behavior of existing fragment specifiers, even over an edition, "
+"has an obvious cost: we may change the meaning of existing macros and "
+"consequently change the code that they generate."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:58
+msgid ""
+"Having `cargo fix` replace all instances of a changed fragment specifier "
+"with the new fragment specifier added for backward compatibility does "
+"mitigate this.  But that has some cost in terms of code churn."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:60
+msgid ""
+"Another alternative would be to _never_ change the meaning of existing "
+"fragment specifiers.  Instead, when changing the grammar of Rust, we would "
+"add _new_ fragment specifiers that would correspond with this new grammar.  "
+"We would not have to wait for new editions to add these.  We could add, e."
+"g., `expr_2023_11`, `expr_2023_12`, etc. each time that we change the "
+"grammar."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:62
+msgid ""
+"This would be burdensome in other ways, so we've decided not to do this."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:64
+msgid "Add specifier for new edition behavior in all editions"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:66
+msgid ""
+"In addition to doing what is specified in this RFC, when releasing a new "
+"edition we could also add a new fragment specifier to all editions whose "
+"behavior would match that of the original fragment specifier in the new "
+"edition.  E.g., when releasing Rust 2024, we would add an `expr_2024` "
+"fragment specifier to all editions that would match the behavior of `expr` "
+"in Rust 2024."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:68
+msgid ""
+"The upside of doing this would be that people could take advantage of the "
+"new behavior without migrating their crates to the new edition.  "
+"Conceivably, this could help to allow some crates to make incremental "
+"transitions."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:70
+msgid ""
+"However, if later, during the life of the Rust 2024 edition, we were to "
+"change the grammar of expressions again and come up with a semantically "
+"meaningful name for the fragment specifier that would preserve the Rust 2024 "
+"behavior, then we would end up with two identical fragment specifiers for "
+"this, `expr_2024` and `expr_some_better_name`."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:72
+msgid ""
+"More importantly, making changed new edition behavior optionally available "
+"in older editions is not what we generally do.  As [RFC 3085](https://github."
+"com/rust-lang/rfcs/blob/master/text/3085-edition-2021.md) said, [editions "
+"are meant to be adopted](https://github.com/rust-lang/rfcs/blob/master/"
+"text/3085-edition-2021.md#editions-are-meant-to-be-adopted).  The way for a "
+"crate to opt in to the behavior of the new edition is to upgrade to that "
+"edition."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:74
+msgid ""
+"Further, there could be cases where the changed behavior of the fragment "
+"specifier does not make sense in older editions, similar to what is "
+"discussed in the [policy](#policy) for when it may not be practical to add "
+"the new fragment specifier to all other editions."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:76
+msgid "Consequently, for these reasons, we've decided not to do this."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:81
+msgid "Use suffix without underscore"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:83
+msgid ""
+"This RFC specifies that, when adding a new fragment specifier that preserves "
+"the old behavior, if a better semantically meaningful name cannot be found, "
+"we will use the existing name suffixed with the identifier of the current "
+"stable edition separated by an underscore.  E.g., we might add `expr_2021`."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:85
+msgid ""
+"However, with the exception of `pat_param`, none of the current fragment "
+"specifiers include an underscore.  It's conceivable that we might want to "
+"not separate the edition identifier with an underscore (e.g. `expr2021`) or "
+"that we might only want to separate the identifier when the fragment "
+"specifier already includes an underscore (i.e., we would say `expr2021` but "
+"`pat_param_2021`)."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:87
+msgid ""
+"According to [RFC 430](https://github.com/rust-lang/rfcs/blob/master/"
+"text/0430-finalizing-naming-conventions.md), both `expr_2021` and "
+"`pat_param_2021` would be the most correct (however, note that the RFC did "
+"not specifically consider fragment specifiers).  As the RFC says:"
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:89
+msgid ""
+"In `snake_case` or `SCREAMING_SNAKE_CASE`... we have... `PI_2` rather than "
+"`PI2`."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:91
+msgid ""
+"Similarly, we named the 2021 version of the Rust prelude `rust_2021` rather "
+"than `rust2021`."
+msgstr ""
+
+#: src/3531-macro-fragment-policy.md:93
+msgid ""
+"In this RFC, we've specified that the underscore separator will always be "
+"used."
+msgstr ""
