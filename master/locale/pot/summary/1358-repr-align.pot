@@ -1,0 +1,236 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1358-repr-align.md:1
+msgid "Feature Name: `repr_align`"
+msgstr ""
+
+#: src/1358-repr-align.md:2
+msgid "Start Date: 2015-11-09"
+msgstr ""
+
+#: src/1358-repr-align.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1358](https://github.com/rust-lang/rfcs/pull/1358)"
+msgstr ""
+
+#: src/1358-repr-align.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#33626](https://github.com/rust-lang/rust/"
+"issues/33626)"
+msgstr ""
+
+#: src/1358-repr-align.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1358-repr-align.md:9
+msgid ""
+"Extend the existing `#[repr]` attribute on structs with an `align = \"N\"` "
+"option to specify a custom alignment for `struct` types."
+msgstr ""
+
+#: src/1358-repr-align.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1358-repr-align.md:15
+msgid ""
+"The alignment of a type is normally not worried about as the compiler will "
+"\"do the right thing\" of picking an appropriate alignment for general use "
+"cases. There are situations, however, where a nonstandard alignment may be "
+"desired when operating with foreign systems. For example these sorts of "
+"situations tend to necessitate or be much easier with a custom alignment:"
+msgstr ""
+
+#: src/1358-repr-align.md:21
+msgid ""
+"Hardware can often have obscure requirements such as \"this structure is "
+"aligned to 32 bytes\" when it in fact is only composed of 4-byte values. "
+"While this can typically be manually calculated and managed, it's often also "
+"useful to express this as a property of a type to get the compiler to do a "
+"little extra work instead."
+msgstr ""
+
+#: src/1358-repr-align.md:26
+msgid ""
+"C compilers like gcc and clang offer the ability to specify a custom "
+"alignment for structures, and Rust can much more easily interoperate with "
+"these types if Rust can also mirror the request for a custom alignment (e.g. "
+"passing a structure to C correctly is much easier)."
+msgstr ""
+
+#: src/1358-repr-align.md:30
+msgid ""
+"Custom alignment can often be used for various tricks here and there and is "
+"often convenient as \"let's play around with an implementation\" tool. For "
+"example this can be used to statically allocate page tables in a kernel or "
+"create an at-least cache-line-sized structure easily for concurrent "
+"programming."
+msgstr ""
+
+#: src/1358-repr-align.md:36
+msgid ""
+"Currently these sort of situations are possible in Rust but aren't "
+"necessarily the most ergonomic as programmers must manually manage "
+"alignment. The purpose of this RFC is to provide a lightweight annotation to "
+"alter the compiler-inferred alignment of a structure to enable these "
+"situations much more easily."
+msgstr ""
+
+#: src/1358-repr-align.md:41
+msgid "Detailed design"
+msgstr ""
+
+#: src/1358-repr-align.md:44
+msgid ""
+"The `#[repr]` attribute on `struct`s will be extended to include a form such "
+"as:"
+msgstr ""
+
+#: src/1358-repr-align.md:47 src/1358-repr-align.md:85
+#: src/1358-repr-align.md:100
+msgid "\"16\""
+msgstr ""
+
+#: src/1358-repr-align.md:51
+msgid ""
+"This structure will still have an alignment of 16 (as returned by `mem::"
+"align_of`), and in this case the size will also be 16."
+msgstr ""
+
+#: src/1358-repr-align.md:54
+msgid ""
+"Syntactically, the `repr` meta list will be extended to accept a meta item "
+"name/value pair with the name \"align\" and the value as a string which can "
+"be parsed as a `u64`. The restrictions on where this attribute can be placed "
+"along with the accepted values are:"
+msgstr ""
+
+#: src/1358-repr-align.md:59
+msgid ""
+"Custom alignment can only be specified on `struct` declarations for now. "
+"Specifying a different alignment on perhaps `enum` or `type` definitions "
+"should be a backwards-compatible extension."
+msgstr ""
+
+#: src/1358-repr-align.md:62
+msgid "Alignment values must be a power of two."
+msgstr ""
+
+#: src/1358-repr-align.md:64
+msgid ""
+"Multiple `#[repr(align = \"..\")]` directives are accepted on a struct "
+"declaration, and the actual alignment of the structure will be the maximum "
+"of all `align` directives and the natural alignment of the struct itself."
+msgstr ""
+
+#: src/1358-repr-align.md:68
+msgid ""
+"Semantically, it will be guaranteed (modulo `unsafe` code) that custom "
+"alignment will always be respected. If a pointer to a non-aligned structure "
+"exists and is used then it is considered unsafe behavior. Local variables, "
+"objects in arrays, statics, etc, will all respect the custom alignment "
+"specified for a type."
+msgstr ""
+
+#: src/1358-repr-align.md:73
+msgid ""
+"For now, it will be illegal for any `#[repr(packed)]` struct to transitively "
+"contain a struct with `#[repr(align)]`. Specifically, both attributes cannot "
+"be applied on the same struct, and a `#[repr(packed)]` struct cannot "
+"transitively contain another struct with `#[repr(align)]`. The flip side, "
+"including a `#[repr(packed)]` structure inside of a `#[repr(align)]` one "
+"will be allowed. The behavior of MSVC and gcc differ in how these properties "
+"interact, and for now we'll just yield an error while we get experience with "
+"the two attributes."
+msgstr ""
+
+#: src/1358-repr-align.md:81
+msgid "Some examples of `#[repr(align)]` are:"
+msgstr ""
+
+#: src/1358-repr-align.md:84
+msgid "// Raising alignment\n"
+msgstr ""
+
+#: src/1358-repr-align.md:90
+msgid "// Lowering has no effect\n"
+msgstr ""
+
+#: src/1358-repr-align.md:92
+msgid "\"1\""
+msgstr ""
+
+#: src/1358-repr-align.md:97
+msgid "// Multiple attributes take the max\n"
+msgstr ""
+
+#: src/1358-repr-align.md:99 src/1358-repr-align.md:107
+msgid "\"8\""
+msgstr ""
+
+#: src/1358-repr-align.md:99
+msgid "\"4\""
+msgstr ""
+
+#: src/1358-repr-align.md:105
+msgid "// Raising alignment may not alter size.\n"
+msgstr ""
+
+#: src/1358-repr-align.md:119
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1358-repr-align.md:122
+msgid ""
+"Specifying a custom alignment isn't always necessarily easy to do so via a "
+"literal integer value. It may require usage of `#[cfg_attr]` in some "
+"situations and may otherwise be much more convenient to name a different "
+"type instead. Working with a raw integer, however, should provide the "
+"building block for building up other abstractions and should be maximally "
+"flexible. It also provides a relatively straightforward implementation and "
+"understanding of the attribute at hand."
+msgstr ""
+
+#: src/1358-repr-align.md:130
+msgid ""
+"This also currently does not allow for specifying the custom alignment of a "
+"struct field (as C compilers also allow doing) without the usage of a "
+"newtype structure. Currently `#[repr]` is not recognized here, but it would "
+"be a backwards compatible extension to start reading it on struct fields."
+msgstr ""
+
+#: src/1358-repr-align.md:135
+msgid "Alternatives"
+msgstr ""
+
+#: src/1358-repr-align.md:138
+msgid ""
+"Instead of using the `#[repr]` attribute as the \"house\" for the custom "
+"alignment, there could instead be a new `#[align = \"...\"]` attribute. This "
+"is perhaps more extensible to alignment in other locations such as a local "
+"variable (with attributes on expressions), a struct field (where `#[repr]` "
+"is more of an \"outer attribute\"), or enum variants perhaps."
+msgstr ""
+
+#: src/1358-repr-align.md:144
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1358-repr-align.md:147
+msgid ""
+"It is likely best to simply match the semantics of C/C++ in the regard of "
+"custom alignment, but is it ensured that this RFC is the same as the "
+"behavior of standard C compilers?"
+msgstr ""

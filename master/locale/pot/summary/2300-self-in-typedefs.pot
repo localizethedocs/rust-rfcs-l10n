@@ -1,0 +1,655 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2300-self-in-typedefs.md:1
+msgid "Feature Name: `self_in_typedefs`"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:2
+msgid "Start Date: 2018-01-17"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2300](https://github.com/rust-lang/rfcs/pull/2300)"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#49303](https://github.com/rust-lang/rust/"
+"issues/49303)"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:9
+msgid ""
+"The special `Self` identifier is now permitted in `struct`, `enum`, and "
+"`union` type definitions. A simple example `struct` is:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:15
+msgid "// <-- Notice the `Self` instead of `List<T>`\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:18
+msgid "// <-- And here.\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:22
+msgid "Motivation"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:25
+msgid "Removing exceptions and making the language more uniform"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:27
+msgid ""
+"The contextual identifier `Self` can already be used in type context in "
+"cases such as when defining what an associated type is for a particular type "
+"as well as for generic parameters in `impl`s as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:47
+msgid ""
+"But this is not currently possible inside both fields and where clauses of "
+"type definitions. This makes the language less consistent with respect to "
+"what is allowed in type positions than what it could be."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:51
+msgid "Principle of least surprise"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:53
+msgid ""
+"Users, just new to the language and experts in the language alike, also have "
+"a reasonable expectations that using `Self` inside type definitions is in "
+"fact already possible. Users may have and have these expectations because "
+"`Self` already works in other places where a type is expected. If a user "
+"attempts to use `Self` today, that attempt will fail, breaking the users "
+"intuition of the languages semantics. Avoiding that breakage will reduce the "
+"paper cuts newcomers face when using the language. It will also allow the "
+"community to focus on answering more important questions."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:62
+msgid "Better ergonomics with smaller edit distances"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:64
+msgid ""
+"When you have complex recursive `enum`s with many variants and generic "
+"types, and want to rename a type parameter or the type itself, it would make "
+"renaming and refactoring the type definitions easier if you did not have to "
+"make changes in the variant fields which mention the type. This can be "
+"helped by IDEs to some extent, but you do not always have such IDEs and even "
+"then, the readability of using `Self` is superior to repeating the type in "
+"variants and fields since it is a more visual cue that can be highlighted "
+"for specially."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:72
+msgid ""
+"Encouraging descriptively named types, type variables, and more generic code"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:74
+msgid ""
+"Making it simpler and more ergonomic to have longer type names and more "
+"generic parameters in type definitions can also encourage using more "
+"descriptive identifiers for both the type and the type variables used. It "
+"may also encourage more generic code altogether."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:79
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:84
+msgid ""
+"[An Obligatory Public Service Announcement](http://cglab.ca/~abeinges/blah/"
+"too-many-lists/book/#an-obligatory-public-service-announcement): When "
+"reading this RFC, keep in mind that these lists are only examples. **Always "
+"consider if you really need to use linked lists!**"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:88
+msgid ""
+"We will now go through a few examples of what you can and can't do with this "
+"RFC."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:90
+msgid "Simple example"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:92
+msgid ""
+"Let's look at a simple cons-list of `u8`s. Before this RFC, you had to write:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:101
+msgid "But with this RFC, you can now instead write:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:106 src/2300-self-in-typedefs.md:146
+msgid "// <-- Notice 'Self' here\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:110
+msgid ""
+"If you had written this example with `Self` without this RFC, the compiler "
+"would have greeted you with:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:113
+msgid ""
+"```\n"
+"error[E0411]: cannot find type `Self` in this scope\n"
+" --> src/main.rs:3:18\n"
+"  |\n"
+"3 |     Cons(u8, Box<Self>) // <-- Notice 'Self' here\n"
+"  |                  ^^^^ `Self` is only available in traits and impls\n"
+"```"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:121
+msgid "With this RFC, the compiler will never do so."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:123
+msgid ""
+"This new way of writing with `Self` can be thought of as literally "
+"desugaring to the way it is written in the example before it. This also "
+"extends to generic types (non-nullary type constructors) that are recursive."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:127
+msgid "With generic type parameters"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:129
+msgid ""
+"Continuing with the cons lists, let's take a look at how the canonical "
+"linked-list example can be rewritten using this RFC."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:132
+msgid "We start off with:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:141
+msgid "With this RFC, the snippet above can be rewritten as:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:150
+msgid ""
+"Notice in particular how we used just `Self` for both `U8List` and "
+"`List<T>`. This applies to types with any number of parameters, including "
+"those that are parameterized by lifetimes."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:154
+msgid "Examples with lifetimes"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:156
+msgid "An example of this can be seen in the following cons list:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:165
+msgid "which is rewritten with this RFC as:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:170
+msgid "// <-- Still using just 'Self'\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:174
+msgid "Structs and unions"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:176
+msgid "You can also use `Self` in `struct`s as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:185
+msgid "which is written with this RFC as:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:194
+msgid "This also extends to `union`s."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:196
+msgid "`where`\\-clauses"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:198
+msgid "In today's Rust, it is possible to define a type such as:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:205 src/2300-self-in-typedefs.md:223
+#: src/2300-self-in-typedefs.md:235 src/2300-self-in-typedefs.md:246
+#: src/2300-self-in-typedefs.md:253 src/2300-self-in-typedefs.md:435
+#: src/2300-self-in-typedefs.md:446
+msgid "// Some fields..\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:209
+msgid "and with some `impl`s:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:218
+msgid ""
+"this idiom bounds the types that the type parameter `T` can be of but also "
+"avoids defining an `Auxiliary` trait which one bound `T` with as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:227
+msgid ""
+"You could also have the type on the right hand side of the bound in the "
+"`where` clause as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:239
+msgid "with this RFC, you can now redefine `Foo<T>` and `Bar<T>` as:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:244 src/2300-self-in-typedefs.md:251
+msgid "// <-- Notice `Self`!\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:257
+msgid "This makes the bound involving `Self` slightly more clear."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:259
+msgid "When `Self` can **not** be used"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:261
+msgid "Consider the following small expression language:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:291
+msgid "\"{:#?}\""
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:295
+msgid "You may perhaps reach for this:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:306
+msgid ""
+"But you have now changed the definition of `Expr` semantically. The changed "
+"semantics are due to the fact that `Self` in this context is not the same "
+"type as `Expr<Int>` or `Expr<Bool>`. The compiler, when desugaring `Self` in "
+"this context, will simply substitute `Self` with what it sees in `Expr<T: "
+"Ty>` (with any bounds removed)."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:312
+msgid "You may at most use `Self` by changing the definition of `Expr<T>` to:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:323
+msgid "Types of infinite size"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:325
+msgid "Consider the following example:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:334
+msgid "If you try to compile it this today, the compiler will greet you with:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:349
+msgid "If we use the syntax introduced by this RFC as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:358
+msgid ""
+"you will still get an error since [it is fundamentally impossible to "
+"construct a type of infinite size](https://doc.rust-lang.org/error-index."
+"html#E0072). The error message would however use `Self` as you wrote it "
+"instead of `List<T>` as seen in this snippet:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:378
+msgid "Teaching the contents of this RFC"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:382
+msgid ""
+"When talking about and teaching recursive types in Rust, since it is now "
+"possible to use `Self`, the ability to use `Self` in this context should be "
+"taught along side those types. An example of where this can be introduced is "
+"the [_\"Learning Rust With Entirely Too Many Linked Lists\"_ guide](http://"
+"cglab.ca/~abeinges/blah/too-many-lists/book/first-layout.html)."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:387
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:390
+msgid ""
+"The identifier `Self` is (now) allowed in type contexts in fields of "
+"`struct`s, `union`s, and the variants of `enum`s. The identifier `Self` is "
+"also allowed as the left hand side of a bound in a `where` clause and as a "
+"type argument to a trait bound on the right hand side of a `where` clause."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:395
+msgid "Desugaring"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:397
+msgid ""
+"When the compiler encounters `Self` in type contexts inside the places "
+"described above, it will substitute them with the header of the type "
+"definition but remove any bounds on generic parameters prior."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:401
+msgid "An example: the following cons list:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:410
+msgid "desugars into:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:419
+msgid "Note in particular that the source code is **not** desugared into:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:428
+msgid "An example of `Self` in `where` bounds is:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:439
+msgid "which desugars into:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:452
+msgid ""
+"In relation to [RFC 2102](https://github.com/rust-lang/rfcs/pull/2102) and "
+"what `Self` refers to."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:454
+msgid ""
+"It should be noted that `Self` always refers to the top level type and not "
+"the inner unnamed `struct` or `union` because those are unnamed. "
+"Specifically, _Self always applies to the innermost nameable type_. In type "
+"definitions in particular, this is equivalent: _Self always applies to the "
+"top level type_."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:459
+msgid "Error messages"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:461
+msgid "When `Self` is used to construct an infinite type as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:470
+msgid "The compiler will emit error `E0072` as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:485
+msgid "Note in particular that `Self` is used and not `List<T>` on line `3`."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:487
+msgid "In relation to other RFCs"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:489
+msgid ""
+"This RFC expands on [RFC 593](0593-forbid-Self-definitions.md) and [RFC 1647]"
+"(1647-allow-self-in-where-clauses.md) with respect to where the keyword "
+"`Self` is allowed."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:495
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:498
+msgid ""
+"Some may argue that we shouldn't have many ways to do the same thing and "
+"that it introduces new syntax whereby making the surface language more "
+"complex. However, the RFC may equally be said to simplify the surface "
+"language since it removes exceptional cases especially in the users mental "
+"model."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:503
+msgid ""
+"Using `Self` in a type definition makes it harder to search for all "
+"positions in which a pattern can appear in an AST."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:506
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:509
+msgid ""
+"The rationale for this particular design is straightforward as it would be "
+"uneconomic, confusing, and inconsistent to use other keywords."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:512
+msgid "The consistency of what `Self` refers to"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:514
+msgid "As explained in the \\[reference-level explanation\\], we said that:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:515
+msgid "_Self always applies to the innermost nameable type_."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:517
+msgid ""
+"We arrive at this conclusion by examining a few different cases and what "
+"they have in common."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:520
+msgid "Current Rust - Shadowing in `impl`s"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:522
+msgid "First, let's take a look at shadowing in `impl`s."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:532
+msgid "// Prints \"Foo\", which is the innermost type.\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:533 src/2300-self-in-typedefs.md:541
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:540
+msgid "// Prints \"Bar\", also the innermost type in this context.\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:549
+msgid "Let's also consider trait impls instead of inherent impls:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:555
+msgid "// Self is shadowed here...\n"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:561
+msgid "We see that the conclusion holds for both examples."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:563
+msgid "In relation to [RFC 2102](https://github.com/rust-lang/rfcs/pull/2102)"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:565
+msgid ""
+"Let's consider a modified example from [RFC 2102](https://github.com/rust-"
+"lang/rfcs/pull/2102):"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:579
+msgid ""
+"In this example, the inner union is not nameable, and so `Self` refers to "
+"the only nameable introduced type `S`. Therefore, the conclusion holds."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:582
+msgid "Type definitions inside `impl`s"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:584
+msgid ""
+"If in the future we decide to permit type definitions inside `impl`s as in:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:595
+msgid "as sugar for:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:607
+msgid ""
+"In the desugared example, we see that the only possible meaning of `Self` is "
+"that it refers to `_Bar` and not `Foo`. To be consistent with the desugared "
+"form, the sugared variant should have the same meaning and so `Self` refers "
+"to `Bar` there."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:612
+msgid "Let's now consider an alternative possible syntax:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:623
+msgid ""
+"Notice here in particular that there is no identifier after the keyword "
+"`struct`. Because of this, it is reasonable to say that the `struct` "
+"assigned to the associated type `Bar` is not directly nameable as `Bar`. "
+"Instead, a user must qualify `Bar` with `Self::Bar`. With this in mind, we "
+"arrive at the following interpretation:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:638
+msgid "Conclusion"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:640
+msgid ""
+"We've now examined a few cases and seen that indeed, the meaning of `Self` "
+"is consistent in all of them as well as with what the meaning in today's "
+"Rust."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:643
+msgid "Doing nothing"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:645
+msgid ""
+"One alternative to the changes proposed in this RFC is to simply not "
+"implement those changes. However, this has the downsides of not increasing "
+"the ergonomics and keeping the language less consistent than what it could "
+"be. Not improving the ergonomics here may be especially problematic when "
+"dealing with \"recursive\" types that have long names and/or many generic "
+"parameters and may encourage developers to use type names which are less "
+"descriptive and keep their code less generic than what is appropriate."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:653
+msgid "Internal scoped type aliases"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:655
+msgid ""
+"Another alternative is to allow users to specify type aliases inside type "
+"definitions and use any generic parameters specified in that definition. An "
+"example is:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:668 src/2300-self-in-typedefs.md:690
+msgid "instead of:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:679
+msgid ""
+"When dealing with _[generic associated types](https://github.com/rust-lang/"
+"rfcs/blob/master/text/1598-generic_associated_types.md) (GATs)_, we can then "
+"write:"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:699
+msgid ""
+"As we can see, this approach and alternative is more flexible compared to "
+"what is proposed in this RFC, particularly in the case of GATs. However, "
+"this alternative requires introducing and teaching more concepts compared to "
+"this RFC, which comparatively builds more on what users already know. Mixing "
+"`;` and `,` has also proven to be controversial in the past. The alternative "
+"also opens up questions such as if the type alias should be permitted before "
+"the variants, or after the variants."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:707
+msgid ""
+"For simpler cases such as the first tree-example, using `Self` is also more "
+"readable as it is a special construct that you can easily syntax-highlight "
+"for in a more noticeable way. Further, while there is an expectation from "
+"some users that `Self` already works, as discussed in the [motivation]"
+"(#motivation), the expectation that this alternative already works has not "
+"been brought forth by anyone as far as this RFC's author is aware."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:714
+msgid ""
+"It is also unclear how internal scoped type aliases would syntactically work "
+"with `where` bounds."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:717
+msgid ""
+"Strictly speaking, this particular alternative is not in conflict with this "
+"RFC in that both can be supported technically. The alternative should be "
+"considered interesting future work, but for now, a more conservative "
+"approach is preferred."
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:722
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2300-self-in-typedefs.md:725
+msgid ""
+"This syntax creates ambiguity if we ever permit types to be declared "
+"directly within impls (for example, as the value for an associated type). Do "
+"we ever want to support that, and if so, how should we resolve the "
+"ambiguity? **A** possible, interpretation and way to solve the ambiguity "
+"consistently is discussed in the rationale."
+msgstr ""

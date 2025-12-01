@@ -1,0 +1,1155 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2325-stable-simd.md:1
+msgid "Feature Name: `vendor_intrinsics`"
+msgstr ""
+
+#: src/2325-stable-simd.md:2
+msgid "Start Date: 2018-02-04"
+msgstr ""
+
+#: src/2325-stable-simd.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2325](https://github.com/rust-lang/rfcs/pull/2325)"
+msgstr ""
+
+#: src/2325-stable-simd.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#48556](https://github.com/rust-lang/rust/"
+"issues/48556)"
+msgstr ""
+
+#: src/2325-stable-simd.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2325-stable-simd.md:9
+msgid ""
+"The purpose of this RFC is to provide a framework for SIMD to be used on "
+"stable Rust. It proposes stabilizing x86-specific vendor intrinsics, but "
+"includes the scaffolding for other platforms as well as a future portable "
+"SIMD design (to be fleshed out in another RFC)."
+msgstr ""
+
+#: src/2325-stable-simd.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/2325-stable-simd.md:17
+msgid ""
+"Stable Rust today does not typically expose all of the capabilities of the "
+"platform that you're running on. A notable gap in Rust's support includes "
+"SIMD (single instruction multiple data) support. For example on x86 you "
+"don't currently have explicit access to the 128, 256, and 512 bit registers "
+"on the CPU. LLVM is in general an excellent optimizing compiler and often "
+"attempts to make use of these registers (auto vectorizing code), but it "
+"unfortunately is still somewhat limited and doesn't express the full power "
+"of the various SIMD intrinsics."
+msgstr ""
+
+#: src/2325-stable-simd.md:26
+msgid ""
+"The goal of this RFC is to enable using SIMD intrinsics on stable Rust, and "
+"in general provide a means to access the architecture-specific functionality "
+"of each vendor. For example the AES intrinsics on x86 would also be made "
+"available through this RFC, not only the SIMD-related AVX intrinsics."
+msgstr ""
+
+#: src/2325-stable-simd.md:31
+msgid ""
+"Note that this is certainly not the first discussion to broach the topic of "
+"SIMD in Rust, but rather this has been an ongoing discussion for quite some "
+"time now! For example the [simd crate](https://github.com/rust-lang-nursery/"
+"simd) started [long ago](http://huonw.github.io/blog/2015/08/simd-in-rust/), "
+"we've had [rfcs](https://github.com/rust-lang/rfcs/pull/1199), we've had a "
+"[lot](https://internals.rust-lang.org/t/getting-explicit-simd-on-stable-"
+"rust/4380) of [discussions](https://internals.rust-lang.org/t/whats-the-next-"
+"step-towards-the-stabilization-of-simd/5867) on internals, and the [stdsimd]"
+"(https://github.com/rust-lang-nursery/stdsimd) crate has been implemented."
+msgstr ""
+
+#: src/2325-stable-simd.md:37
+msgid ""
+"This RFC draws from much of the historical feedback and design that we've "
+"done around SIMD in Rust and is targeted at providing path forward for using "
+"SIMD on stable Rust while allowing the compiler to change in the future and "
+"retain a stable interface."
+msgstr ""
+
+#: src/2325-stable-simd.md:49
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2325-stable-simd.md:52
+msgid ""
+"Let's say you've just heard about this fancy feature called \"auto "
+"vectorization\" in LLVM and you want to take advantage of it. For example "
+"you've got a function like this you'd like to make faster:"
+msgstr ""
+
+#: src/2325-stable-simd.md:64
+msgid ""
+"When [inspecting the assembly](https://play.rust-lang.org/?"
+"gist=36b253cd70840ea2ce6aad90418ec58b&version=nightly&mode=release) you "
+"notice that rustc is making use of the `%xmmN` registers which you've read "
+"is related to SSE on your CPU. You know, however, that your CPU supports up "
+"to AVX2 which has bigger registers, so you'd like to get access to them!"
+msgstr ""
+
+#: src/2325-stable-simd.md:69
+msgid ""
+"Your first solution to this problem is to compile with `-C target-"
+"feature=+avx2`, and after that you see the `%ymmN` registers being used, "
+"yay! Unfortunately though you're publishing this binary on CPUs which may "
+"not actually have AVX2 as a feature, so you don't want to enable AVX2 for "
+"the entire program. Instead what you can do is enable it for just this "
+"function:"
+msgstr ""
+
+#: src/2325-stable-simd.md:76 src/2325-stable-simd.md:98
+#: src/2325-stable-simd.md:105 src/2325-stable-simd.md:155
+#: src/2325-stable-simd.md:263
+msgid "\"avx2\""
+msgstr ""
+
+#: src/2325-stable-simd.md:84
+msgid ""
+"And [sure enough](https://play.rust-lang.org/?"
+"gist=a31bdd3ce2b9a60e3317ccafb0133490&version=nightly&mode=release) you see "
+"the `%ymmN` registers getting used in this function! Note, however, that "
+"because you've explicitly enabled a feature you're required to declare the "
+"function as `unsafe`, as specified in [RFC 2045](https://github.com/rust-"
+"lang/rfcs/blob/master/text/2045-target-feature.md) (although this "
+"requirement is likely to be relaxed in [RFC 2212](https://github.com/rust-"
+"lang/rfcs/pull/2212)). This worked as a proof of concept but what you still "
+"need to do is dispatch at runtime whether the local CPU that you're running "
+"on supports AVX2 or not. Thankfully, though, libstd has a handy macro for "
+"this!"
+msgstr ""
+
+#: src/2325-stable-simd.md:96
+msgid ""
+"// Note that this `unsafe` block is safe because we're testing\n"
+"    // that the `avx2` feature is indeed available on our CPU.\n"
+msgstr ""
+
+#: src/2325-stable-simd.md:107
+msgid "// the function below is inlined here\n"
+msgstr ""
+
+#: src/2325-stable-simd.md:117
+msgid ""
+"And [sure enough once again](https://play.rust-lang.org/?"
+"gist=cfce0743910291517aae3b15f70a7cbd&version=nightly&mode=release) we see "
+"that `foo` is dispatching at runtime to the appropriate function, and only "
+"`foo_avx2` is using our `%ymmN` registers!"
+msgstr ""
+
+#: src/2325-stable-simd.md:125
+msgid ""
+"Ok great! At this point we've seen how to enable CPU features for functions-"
+"at-a-time as well as how they could be used in a larger context to do "
+"runtime dispatch to the most appropriate implementation. As we saw in the "
+"motivation, however, we're just relying on LLVM to auto-vectorize here which "
+"often isn't good enough or otherwise doesn't expose the functionality we "
+"want."
+msgstr ""
+
+#: src/2325-stable-simd.md:131
+msgid ""
+"For **explicit and guaranteed simd** on stable Rust you'll be using a new "
+"module in the standard library, `std::arch`. The `std::arch` module is "
+"defined by vendors/architectures, not us actually! For example Intel "
+"[publishes a list of intrinsics](https://software.intel.com/sites/"
+"landingpage/IntrinsicsGuide/#) as does [ARM](https://developer.arm.com/"
+"technologies/neon/intrinsics). These exact functions and their signatures "
+"will be available in `std::arch` with types translated to Rust (e.g. "
+"`int32_t` becomes `i32`). Vendor specific types like `__m128i` on Intel will "
+"also live in `std::arch`."
+msgstr ""
+
+#: src/2325-stable-simd.md:139
+msgid ""
+"For example let's say that we're writing a function that encodes a `&[u8]` "
+"in ascii hex and we want to convert `&[1, 2]` to `\"0102\"`. The [stdsimd]"
+"(https://github.com/rust-lang-nursery/stdsimd) crate currently has this [as "
+"an example](https://github.com/rust-lang-nursery/stdsimd/blob/"
+"ee046e0419e4d5e8f742b138313eeefd603326b5/examples/hex.rs), and let's take a "
+"look at a few snippets from that."
+msgstr ""
+
+#: src/2325-stable-simd.md:144
+msgid "First up you'll see the dispatch routine like we wrote above:"
+msgstr ""
+
+#: src/2325-stable-simd.md:153
+msgid "\"x86\""
+msgstr ""
+
+#: src/2325-stable-simd.md:153
+msgid "\"x86_64\""
+msgstr ""
+
+#: src/2325-stable-simd.md:158 src/2325-stable-simd.md:355
+msgid "\"sse4.1\""
+msgstr ""
+
+#: src/2325-stable-simd.md:167
+msgid ""
+"Here we have some routine business about hex encoding in general, and then "
+"for x86/x86\\_64 platforms we have optimized versions specifically for avx2 "
+"and sse41. Using the `is_target_feature_detected!` macro in libstd we saw "
+"above we'll dispatch to the correct one at runtime."
+msgstr ""
+
+#: src/2325-stable-simd.md:172
+msgid ""
+"Taking a closer look at [`hex_encode_sse41`](https://github.com/rust-lang-"
+"nursery/stdsimd/blob/ee046e0419e4d5e8f742b138313eeefd603326b5/examples/hex."
+"rs#L114-L160) we see that it starts out with a bunch of weird looking "
+"function calls:"
+msgstr ""
+
+#: src/2325-stable-simd.md:176
+msgid "b'0'"
+msgstr ""
+
+#: src/2325-stable-simd.md:178
+msgid "b'a'"
+msgstr ""
+
+#: src/2325-stable-simd.md:182
+msgid ""
+"As it turns out though, these are all Intel SIMD intrinsics! For example "
+"[`_mm_set1_epi8`](https://software.intel.com/sites/landingpage/"
+"IntrinsicsGuide/#text=_mm_set1_epi8&expand=4669) is defined as creating an "
+"instance of `__m128i`, a 128-bit integer register. The intrinsic "
+"specifically sets all bytes to the first argument."
+msgstr ""
+
+#: src/2325-stable-simd.md:187
+msgid ""
+"These functions are all imported through `std::arch::*` at the top of the "
+"example (in this case `stdsimd::vendor::*`). We go on to use a bunch of "
+"these intrinsics throughout the `hex_encode_sse41` function to actually do "
+"the hex encoding."
+msgstr ""
+
+#: src/2325-stable-simd.md:192
+msgid ""
+"The example listed currently has some tests/benchmarks as well, and if we "
+"run the benchmarks we'll see:"
+msgstr ""
+
+#: src/2325-stable-simd.md:206
+msgid ""
+"Or in other words, our runtime dispatch implementation (\"default\") is **20 "
+"times faster** than the fallback implementation (no explicit SIMD). "
+"Furthermore the AVX2 implementation is nearly 2x faster than the SSE4.1 "
+"implementation for large inputs, and the SSE4.1 implementation is over 10x "
+"faster than the default fallback as well."
+msgstr ""
+
+#: src/2325-stable-simd.md:212
+msgid ""
+"With `std::arch` and `is_target_feature_detected!` we've now written a "
+"program that's 20x faster on supported hardware, yet it also continues to "
+"run on older hardware as well! Not bad for a few dozen lines on each "
+"function!"
+msgstr ""
+
+#: src/2325-stable-simd.md:224
+msgid ""
+"Note that this RFC is explicitly not attempting to stabilize/design a set of "
+"\"portable simd operations\". The contents of `std::arch` are platform "
+"specific and provide no guarantees about portability. Efforts in the past, "
+"however, such as with [simd.js](https://developer.mozilla.org/en-US/docs/Web/"
+"JavaScript/Reference/Global_Objects/SIMD) and the [simd crate](https://"
+"github.com/rust-lang-nursery/simd) show that it's desirable and useful to "
+"have a set of types which are usable across platforms."
+msgstr ""
+
+#: src/2325-stable-simd.md:230
+msgid ""
+"Furthermore LLVM does quite a good job with a portable `u32x4` type, for "
+"example, in terms of platform support and speed on platforms that support "
+"it. This RFC is not going to go too much into the details about these types, "
+"but rather these guidelines will still hold:"
+msgstr ""
+
+#: src/2325-stable-simd.md:235
+msgid ""
+"The intrinsics **will not** take portable types as arguments. For example "
+"`u32x4` and `__m128i` will be different types on x86. The two types, "
+"however, will be convertible between one another (either via transmutes or "
+"via explicit functions). This conversion will have zero run-time cost."
+msgstr ""
+
+#: src/2325-stable-simd.md:239
+msgid ""
+"The portable simd types will likely live in a module like `std::simd` rather "
+"than `std::arch`."
+msgstr ""
+
+#: src/2325-stable-simd.md:242
+msgid ""
+"The design around these portable types are ongoing, however, and stay tuned "
+"for an RFC for the `std::simd` module!"
+msgstr ""
+
+#: src/2325-stable-simd.md:247
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2325-stable-simd.md:250
+msgid ""
+"Stable SIMD in Rust ends up requiring a surprising number of both language "
+"and library features to be productive. Thankfully, though, there's has been "
+"quite a bit of experimentation over time with SIMD in Rust and we've gotten "
+"a lot of good experience along the way! In this section, though, we'll be "
+"going into the various features in detail."
+msgstr ""
+
+#: src/2325-stable-simd.md:256
+msgid "The `#[target_feature]` Attribute"
+msgstr ""
+
+#: src/2325-stable-simd.md:258
+msgid ""
+"The `#[target_feature]` attribute was specified in [RFC 2045](https://github."
+"com/rust-lang/rfcs/blob/master/text/2045-target-feature.md) and remains "
+"unchanged from that specification. As a quick recap it allows you to add "
+"this attribute to functions:"
+msgstr ""
+
+#: src/2325-stable-simd.md:266
+msgid ""
+"The only currently allowed key is `enable` (one day we may allow `disable`). "
+"The string values accepted by `enable` will be separately stabilized but are "
+"likely to be guided by vendor definitions. For example in Intel's [intrinsic "
+"guide](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#) it "
+"lists functions under \"AVX2\", so we're likely to stabilize the name `avx2` "
+"for Rust."
+msgstr ""
+
+#: src/2325-stable-simd.md:272
+msgid ""
+"There's a good number of these features supported by the compiler today. "
+"It's expected that when stabilizing other pieces of this RFC the names of "
+"the following existing features for x86 will be stabilized:"
+msgstr ""
+
+#: src/2325-stable-simd.md:276
+msgid "`aes`"
+msgstr ""
+
+#: src/2325-stable-simd.md:277
+msgid "`avx2`"
+msgstr ""
+
+#: src/2325-stable-simd.md:278
+msgid "`avx`"
+msgstr ""
+
+#: src/2325-stable-simd.md:279
+msgid "`bmi2`"
+msgstr ""
+
+#: src/2325-stable-simd.md:280
+msgid "`bmi` - to be renamed to `bmi1`, the name Intel gives it"
+msgstr ""
+
+#: src/2325-stable-simd.md:281
+msgid "`fma`"
+msgstr ""
+
+#: src/2325-stable-simd.md:282
+msgid "`fxsr`"
+msgstr ""
+
+#: src/2325-stable-simd.md:283
+msgid "`lzcnt`"
+msgstr ""
+
+#: src/2325-stable-simd.md:284
+msgid "`popcnt`"
+msgstr ""
+
+#: src/2325-stable-simd.md:285
+msgid "`rdrnd`"
+msgstr ""
+
+#: src/2325-stable-simd.md:286
+msgid "`rdseed`"
+msgstr ""
+
+#: src/2325-stable-simd.md:287
+msgid "`sse2`"
+msgstr ""
+
+#: src/2325-stable-simd.md:288
+msgid "`sse3`"
+msgstr ""
+
+#: src/2325-stable-simd.md:289
+msgid "`sse4.1`"
+msgstr ""
+
+#: src/2325-stable-simd.md:290
+msgid "`sse4.2`"
+msgstr ""
+
+#: src/2325-stable-simd.md:291
+msgid "`sse`"
+msgstr ""
+
+#: src/2325-stable-simd.md:292
+msgid "`ssse3`"
+msgstr ""
+
+#: src/2325-stable-simd.md:293
+msgid "`xsave`"
+msgstr ""
+
+#: src/2325-stable-simd.md:294
+msgid "`xsavec`"
+msgstr ""
+
+#: src/2325-stable-simd.md:295
+msgid "`xsaveopt`"
+msgstr ""
+
+#: src/2325-stable-simd.md:296
+msgid "`xsaves`"
+msgstr ""
+
+#: src/2325-stable-simd.md:298
+msgid ""
+"Note that AVX-512 names are missing from this list, but that's because we "
+"haven't implemented any AVX-512 intrinsics yet. Those'll get stabilized on "
+"their own once implemented. Additionally note that `mmx` is missing from "
+"this list. For reasons discussed later, it's proposed that MMX types are "
+"omitted from the first pass of stabilization. AMD also has some specific "
+"features supported (`sse4a`, `tbm`), and so do ARM, MIPS, and PowerPC, but "
+"none of these feature names a proposed for becoming stable in the first pass."
+msgstr ""
+
+#: src/2325-stable-simd.md:306
+msgid "The `target_feature` value in `#[cfg]`"
+msgstr ""
+
+#: src/2325-stable-simd.md:308
+msgid ""
+"In addition to enabling target features for a function the compiler will "
+"also allow statically testing whether a particular target feature is "
+"enabled. This corresponds to the `cfg_target_feature` feature today in "
+"rustc, and can be seen via:"
+msgstr ""
+
+#: src/2325-stable-simd.md:314 src/2325-stable-simd.md:319
+#: src/2325-stable-simd.md:328
+msgid "\"avx\""
+msgstr ""
+
+#: src/2325-stable-simd.md:316
+msgid "// implementation that can use `avx`\n"
+msgstr ""
+
+#: src/2325-stable-simd.md:321
+msgid "// a fallback implementation\n"
+msgstr ""
+
+#: src/2325-stable-simd.md:325
+msgid "Additionally this is also made available to `cfg!`:"
+msgstr ""
+
+#: src/2325-stable-simd.md:329
+msgid "\"this program was compiled with AVX support\""
+msgstr ""
+
+#: src/2325-stable-simd.md:333
+msgid ""
+"The `#[cfg]` attribute and `cfg!` macro statically resolve and **do not do "
+"runtime dispatch**. Tweaking these functions is currently done via the `-C "
+"target-feature` flag to the compiler. This flag to the compiler accepts a "
+"similar set of strings to the ones specified above and is already \"stable\"."
+msgstr ""
+
+#: src/2325-stable-simd.md:338
+msgid "The `is_target_feature_detected!` Macro"
+msgstr ""
+
+#: src/2325-stable-simd.md:340
+msgid ""
+"One mode of operation with intrinsics is to compile _part_ of a program with "
+"certain CPU features enabled but not the entire program. This way a portable "
+"program can be compiled which runs across a broad range of hardware which "
+"can still benefit from optimized implementations for particular hardware at "
+"runtime."
+msgstr ""
+
+#: src/2325-stable-simd.md:346
+msgid ""
+"The crux of this support in libstd is this macro provided by libstd, "
+"`is_target_feature_detected!`. The macro will accept one argument, a string "
+"literal.  The string can be any feature passed to `#[target_feature(enable "
+"= ...)]` for the platform you're compiling for. Finally, the macro will "
+"resolve to a `bool` result."
+msgstr ""
+
+#: src/2325-stable-simd.md:352
+msgid "For example on x86 you could write:"
+msgstr ""
+
+#: src/2325-stable-simd.md:356
+msgid "\"this cpu has sse4.1 features enabled!\""
+msgstr ""
+
+#: src/2325-stable-simd.md:360
+msgid "It would, however, be an error to write this on x86 cpus:"
+msgstr ""
+
+#: src/2325-stable-simd.md:363
+msgid "\"neon\""
+msgstr ""
+
+#: src/2325-stable-simd.md:363
+msgid "//~ COMPILE ERROR: neon is an ARM feature, not x86\n"
+msgstr ""
+
+#: src/2325-stable-simd.md:364
+msgid "\"foo\""
+msgstr ""
+
+#: src/2325-stable-simd.md:364
+msgid "//~ COMPILE ERROR: unknown target feature for x86\n"
+msgstr ""
+
+#: src/2325-stable-simd.md:367
+msgid ""
+"The macro is intended to be implemented in the `std` crate (**not** `core`) "
+"and made available via the normal macro preludes. The implementation of this "
+"macro is expected to be what [`stdsimd`](https://github.com/rust-lang-"
+"nursery/stdsimd) does today, notably:"
+msgstr ""
+
+#: src/2325-stable-simd.md:371
+msgid ""
+"The first time the macro is invoked all the local CPU features will be "
+"detected."
+msgstr ""
+
+#: src/2325-stable-simd.md:373
+msgid ""
+"The detected features will then be cached globally (when possible and "
+"currently in a bitset) for the rest of the execution of the program."
+msgstr ""
+
+#: src/2325-stable-simd.md:375
+msgid ""
+"Further invocations of `is_target_feature_detected!` are expected to be "
+"cheap runtime dispatches. (aka load a value and check whether a bit is set)"
+msgstr ""
+
+#: src/2325-stable-simd.md:377
+msgid ""
+"Exception: in some cases the result of the macro is statically known: for "
+"example, `is_target_feature_detected!(\"sse2\")` when the binary is being "
+"compiled with \"sse42\" globally. In these cases, none of the steps above "
+"are performed and the macro just expands to `true`."
+msgstr ""
+
+#: src/2325-stable-simd.md:382
+msgid ""
+"The exact method of CPU feature detection various by platform, OS, and "
+"architecture. For example on x86 we make heavy use of the `cpuid` "
+"instruction whereas on ARM the implementation currently uses getauxval/`/"
+"proc` mounted information on Linux. It's expected that the detection will "
+"vary for each particular target, as necessary."
+msgstr ""
+
+#: src/2325-stable-simd.md:388
+msgid ""
+"Note that the implementation details of the macro today prevent it from "
+"being located in libcore. If getauxval or `/proc` is used that requires libc "
+"to be available or `File` in one form or another. These concerns are "
+"currently std-only (not available in libcore). This is also a conservative "
+"route for x86 where it is possible to do CPU feature detection in libcore "
+"(as it's just the `cpuid` instruction), but for consistency across platforms "
+"the macro will only be available in libstd for now. This placement can of "
+"course be relaxed in the future if necessary."
+msgstr ""
+
+#: src/2325-stable-simd.md:397
+msgid "The `std::arch` Module"
+msgstr ""
+
+#: src/2325-stable-simd.md:399
+msgid ""
+"This is where the real meat is. A new module will be added to the standard "
+"library, `std::arch`. This module will also be available in `core::arch` "
+"(and `std` will simply reexport it). The contents of this module provide no "
+"portability guarantees (like `std::os` and unlike the rest of `std`). APIs "
+"present on one platform may not be present on another."
+msgstr ""
+
+#: src/2325-stable-simd.md:405
+msgid ""
+"The contents of the `arch` modules are defined by, well, architectures! For "
+"example Intel has an [intrinsics guide](https://software.intel.com/sites/"
+"landingpage/IntrinsicsGuide/#) which will serve as a guideline for all "
+"contents in the `arch` module itself. The standard library will not deviate "
+"in naming or type signature of any intrinsic defined by an architecture."
+msgstr ""
+
+#: src/2325-stable-simd.md:411
+msgid ""
+"For example most Intel intrinsics start with `_mm_` or `_mm256_` for 128 and "
+"256-bit registers. While perhaps unergonomic, we'll be sticking to what "
+"Intel says. Note that all intrinsics will also be `unsafe`, according to "
+"[RFC 2045](https://github.com/rust-lang/rfcs/blob/master/text/2045-target-"
+"feature.md)."
+msgstr ""
+
+#: src/2325-stable-simd.md:416
+msgid ""
+"Function signatures defined by architectures are typically defined in terms "
+"of C types. In Rust, however, those aren't always available! Instead the "
+"intrinsics will be defined in terms of Rust-specific types. Some types are "
+"easily translated such as `int32_t`, but otherwise a different mapping may "
+"be applied per-architecture."
+msgstr ""
+
+#: src/2325-stable-simd.md:422
+msgid "The current proposed mapping for x86 intrinsics is:"
+msgstr ""
+
+#: src/2325-stable-simd.md:424
+msgid "What Intel says"
+msgstr ""
+
+#: src/2325-stable-simd.md:424
+msgid "Rust Type"
+msgstr ""
+
+#: src/2325-stable-simd.md:426
+msgid "`void*`"
+msgstr ""
+
+#: src/2325-stable-simd.md:426
+msgid "`*mut u8`"
+msgstr ""
+
+#: src/2325-stable-simd.md:427
+msgid "`char`"
+msgstr ""
+
+#: src/2325-stable-simd.md:427
+msgid "`i8`"
+msgstr ""
+
+#: src/2325-stable-simd.md:428
+msgid "`short`"
+msgstr ""
+
+#: src/2325-stable-simd.md:428
+msgid "`i16`"
+msgstr ""
+
+#: src/2325-stable-simd.md:429
+msgid "`int`"
+msgstr ""
+
+#: src/2325-stable-simd.md:429
+msgid "`i32`"
+msgstr ""
+
+#: src/2325-stable-simd.md:430
+msgid "`long long`"
+msgstr ""
+
+#: src/2325-stable-simd.md:430
+msgid "`i64`"
+msgstr ""
+
+#: src/2325-stable-simd.md:431
+msgid "`const int`"
+msgstr ""
+
+#: src/2325-stable-simd.md:431
+msgid "`i32` \\[0\\]"
+msgstr ""
+
+#: src/2325-stable-simd.md:433
+msgid "\\[0\\] required to be compile-time constants."
+msgstr ""
+
+#: src/2325-stable-simd.md:435
+msgid ""
+"Other than these exceptions the x86 intrinsics will be defined exactly as "
+"Intel defines them. This will necessitate new types in the `std::arch` "
+"modules for SIMD registers! For example these new types will all be present "
+"in `std::arch` on x86 platforms:"
+msgstr ""
+
+#: src/2325-stable-simd.md:440
+msgid "`__m128`"
+msgstr ""
+
+#: src/2325-stable-simd.md:441
+msgid "`__m128d`"
+msgstr ""
+
+#: src/2325-stable-simd.md:442
+msgid "`__m128i`"
+msgstr ""
+
+#: src/2325-stable-simd.md:443
+msgid "`__m256`"
+msgstr ""
+
+#: src/2325-stable-simd.md:444
+msgid "`__m256d`"
+msgstr ""
+
+#: src/2325-stable-simd.md:445
+msgid "`__m256i`"
+msgstr ""
+
+#: src/2325-stable-simd.md:447
+msgid "(note that AVX-512 types will come in the future!)"
+msgstr ""
+
+#: src/2325-stable-simd.md:449
+msgid ""
+"Infrastructure-wise the contents of `std::arch` are expected to continue to "
+"be defined in the [`stdsimd` crate/repository](https://github.com/rust-lang-"
+"nursery/stdsimd). Intrinsics defined here go through a rigorous test suite "
+"involving automatic verification against the upstream architecture "
+"definition, verification that the correct instruction is generated by LLVM, "
+"and at least one runtime test for each intrinsic to ensure it not only "
+"compiles but also produces correct results. It's expected that stabilized "
+"intrinsics will meet these criteria to the best of their ability."
+msgstr ""
+
+#: src/2325-stable-simd.md:457
+msgid ""
+"Currently today on x86 and ARM platforms the stdsimd crate performs all "
+"these checks, but these checks are not yet implemented for PowerPC/MIPS/etc, "
+"but that's always just some more work to do!"
+msgstr ""
+
+#: src/2325-stable-simd.md:461
+msgid ""
+"It's not expected that the contents of `std::arch` will remain static for "
+"all time. Rather intrinsics will continue to be implemented in `stdsimd` and "
+"make their way into the main Rust repository. For example there are not "
+"currently any implemented AVX-512 intrinsics, but that doesn't mean we won't "
+"implement them! Rather once implemented they'll be stabilized and included "
+"in libstd following the Rust release model."
+msgstr ""
+
+#: src/2325-stable-simd.md:468
+msgid "The types in `std::arch`"
+msgstr ""
+
+#: src/2325-stable-simd.md:470
+msgid ""
+"It's worth paying close attention to the types in `std::arch`. Types like "
+"`__m128i` are intended to represent a 128-bit packed SIMD register on x86, "
+"but there's nothing stopping you from using types like `Option<__m128i>` in "
+"your program!  Most generic containers and such probably aren't written with "
+"packed SIMD types in mind, and it'd be a bummer if everything stopped "
+"working once you used a packed SIMD type in one of them."
+msgstr ""
+
+#: src/2325-stable-simd.md:477
+msgid ""
+"Instead it will be required that the types defined in `std::arch` do indeed "
+"work when used in \"nonstandard\" contexts. For example `Option<__m128i>` "
+"should never produce a compiler error or a codegen error when used (it may "
+"just be slower than you expect). This requires special care to be taken both "
+"in representation of these arguments as well as their ABI."
+msgstr ""
+
+#: src/2325-stable-simd.md:483
+msgid ""
+"Implementation-wise these packed SIMD types are implemented in terms of a "
+"\"portable\" vector in LLVM. LLVM as a results gets most of this logic "
+"correct for us in terms of having these compile without errors in many "
+"contexts. The ABI, however, had to be special cased as it was a location "
+"where LLVM didn't always help us."
+msgstr ""
+
+#: src/2325-stable-simd.md:489
+msgid ""
+"The Rust ABI will currently be implemented such that all related packed-SIMD "
+"types are passed via _memory_ instead of by-value. This means that "
+"regardless of the target features enabled for a function everything should "
+"agree on how packed SIMD arguments are passed across boundaries and whatnot."
+msgstr ""
+
+#: src/2325-stable-simd.md:494
+msgid ""
+"Again though, note that this section is largely an implementation detail of "
+"SIMD in Rust today, though it's enabling usage without a lot of codegen "
+"errors popping up all over the place."
+msgstr ""
+
+#: src/2325-stable-simd.md:498
+msgid "Intrinsics in `std::arch` and constant arguments"
+msgstr ""
+
+#: src/2325-stable-simd.md:500
+msgid ""
+"There are a number of intrinsics on x86 (and other) platforms that require "
+"their arguments to be constants rather than decided at runtime. For example "
+"[`_mm_insert_pi16`](https://software.intel.com/sites/landingpage/"
+"IntrinsicsGuide/#text=insert_pi&expand=2973) requires its third argument to "
+"be a constant value where only the lowest two bits are used. The Rust type "
+"system, however, does not currently have a stable way of expressing this "
+"information."
+msgstr ""
+
+#: src/2325-stable-simd.md:506
+msgid ""
+"Eventually we will likely have some form of `const` arguments or `const` "
+"machinery to guarantee that these functions are called and monomorphized "
+"with constant arguments, but for now this RFC proposes taking a more "
+"conservative route forward. Instead we'll, for the time being, forbid the "
+"functions from being invoked with non-constant arguments. Prototyped in "
+"[\\#48018](https://github.com/rust-lang/rust/pull/48018) the `stdsimd` crate "
+"will have an unstable attribute where the compiler can help provide this "
+"guarantee. As an extra precaution as well [\\#48078](https://github.com/rust-"
+"lang/rust/pull/48078) also implements disallowing taking a function pointer "
+"to these intrinsics, requiring a direct invocation."
+msgstr ""
+
+#: src/2325-stable-simd.md:520
+msgid ""
+"It's hoped that this restriction will allow `stdsimd` to be forward "
+"compatible with a future const-powered world of Rust but in the meantime not "
+"otherwise block stabilization of these intrinsics."
+msgstr ""
+
+#: src/2325-stable-simd.md:524
+msgid "Portable packed SIMD"
+msgstr ""
+
+#: src/2325-stable-simd.md:526
+msgid ""
+"So-called \"portable\" packed SIMD types are currently implemented in both "
+"the [stdsimd](https://github.com/rust-lang-nursery/stdsimd) and [simd]"
+"(https://github.com/rust-lang-nursery/simd) crates. These types look like "
+"`u8x16` and explicitly specify how many lanes they have (16 in this case) "
+"and what type each line is (`u8` in this case). These types are intended to "
+"unconditionally available (like the rest of libstd) and simply optimized "
+"much more aggressively on platforms that have native support for the various "
+"operations."
+msgstr ""
+
+#: src/2325-stable-simd.md:533
+msgid ""
+"For example `u8x16::add` may be implemented differently on i586 vs i686, and "
+"also entirely differently implemented on ARM. The idea with portable packed "
+"SIMD types is that they represent a broad intersection of fast behavior "
+"across a broad range of platforms."
+msgstr ""
+
+#: src/2325-stable-simd.md:538
+msgid ""
+"It's intended that this RFC neither includes nor rules out the addition of "
+"portable packed-SIMD types in Rust. It's expected that an upcoming RFC will "
+"propose the addition of these types in a `std::simd` module. These types "
+"will be orthogonal to scalable-vector types which are expected to be "
+"proposed in another, also different, RFC.  What this RFC does do, however, "
+"is explicitly specify that:"
+msgstr ""
+
+#: src/2325-stable-simd.md:545
+msgid ""
+"The portable SIMD types (both packed and scalable) will not be used in "
+"intrinsics."
+msgstr ""
+
+#: src/2325-stable-simd.md:547
+msgid ""
+"The per-architecture SIMD types will be distinct types from the portable "
+"SIMD types."
+msgstr ""
+
+#: src/2325-stable-simd.md:550
+msgid ""
+"Or, in other words, it's intended that portable SIMD types are entirely "
+"decoupled from intrinsics. If they both end up being implemented then there "
+"will be jkro-cost interoperation between them, but neither will necessarily "
+"depend on the other."
+msgstr ""
+
+#: src/2325-stable-simd.md:557
+msgid "Not stabilizing MMX in this RFC"
+msgstr ""
+
+#: src/2325-stable-simd.md:559
+msgid ""
+"This RFC proposed notably omitting the MMX intrinsics, or those related to "
+"`__m64` in other words. The MMX type `__m64` and the intrinsics have been "
+"somewhat problematic in a number of ways. Known cases include:"
+msgstr ""
+
+#: src/2325-stable-simd.md:563
+msgid ""
+"[MMX intrinsics aren't always desirable](https://github.com/rust-lang/rust/"
+"pull/45367#issuecomment-337883136)"
+msgstr ""
+
+#: src/2325-stable-simd.md:564
+msgid ""
+"[LLVM codegen errors happen with debuginfo enabled and MMX](https://github."
+"com/rust-lang-nursery/stdsimd/issues/246)"
+msgstr ""
+
+#: src/2325-stable-simd.md:565
+msgid ""
+"[LLVM codegen errors with MMX types and i586](https://github.com/rust-lang-"
+"nursery/stdsimd/issues/300)"
+msgstr ""
+
+#: src/2325-stable-simd.md:571
+msgid ""
+"Due to these issues having an unclear conclusion as well as a seeming lack "
+"of desire to stabilize MMX intrinsics, the `__m64` and all related "
+"intrinsics **will not be stabilized** via this RFC."
+msgstr ""
+
+#: src/2325-stable-simd.md:575
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2325-stable-simd.md:579
+msgid ""
+"This RFC represents a _significant_ addition to the standard library, maybe "
+"one of the largest we've ever done! As a result alternate implementations of "
+"Rust will likely have a difficult time catching up to rustc/LLVM with all "
+"the SIMD intrinsics. Additionally the semantics of \"packed SIMD types "
+"should work everywhere\" may be overly difficult to implement in alternate "
+"implementations. It is worth noting that both [Cranelift](https://github.com/"
+"CraneStation/cranelift/) and GCC support packed SIMD types."
+msgstr ""
+
+#: src/2325-stable-simd.md:589
+msgid ""
+"Due to the enormity of what's being added to the standard library it's also "
+"infeasible to carefully review each addition in isolation. While there are a "
+"number of automatic verifications in place we're likely to inevitably make a "
+"mistake when stabilizing something. _Fixing_ a stabilization can often be "
+"quite difficult and costly."
+msgstr ""
+
+#: src/2325-stable-simd.md:595
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2325-stable-simd.md:598
+msgid ""
+"Over the years quite a few iterations have happened for SIMD in Rust. This "
+"RFC draws from as many of those as it can and attempts to strike a balance "
+"between exposing functionality while still allowing us to implement "
+"everything in a stable fashion for years to come (and without blocking us "
+"from updating LLVM, for example). Despite this there's a few alternatives we "
+"could do as well."
+msgstr ""
+
+#: src/2325-stable-simd.md:604
+msgid "Portable types in architecture interfaces"
+msgstr ""
+
+#: src/2325-stable-simd.md:606
+msgid ""
+"It was initially attempted in the [stdsimd](https://github.com/rust-lang-"
+"nursery/stdsimd) crate that we would use the portable types on all of the "
+"intrinsics. For example instead of:"
+msgstr ""
+
+#: src/2325-stable-simd.md:613
+msgid "we would instead define"
+msgstr ""
+
+#: src/2325-stable-simd.md:619
+msgid ""
+"The latter definition here is much easier for a beginner to SIMD to read (or "
+"at least I gawked when I first saw `__m128i`)."
+msgstr ""
+
+#: src/2325-stable-simd.md:622
+msgid ""
+"The downside of this approach, however, is that Intel isn't telling us what "
+"to do. While that may sound simple, this RFC is proposing an addition of "
+"**thousands** of functions to the standard library in a stable manner. It's "
+"infeasible for any one person (or even the entire libs team) to scrutinize "
+"all functions and assess whether the correct signature is applied (aka was "
+"it `i8x16` or `i16x8`?)"
+msgstr ""
+
+#: src/2325-stable-simd.md:629
+msgid ""
+"Furthermore not all intrinsics from Intel actually have an interpretation "
+"with one of the portable types. For example some intrinsics take an integer "
+"constant which when 0 interprets the input as `u8x16` and when 1 interprets "
+"it as `u16x8` (as an example). This effectively means that there _isn't_ a "
+"correct choice in all situations for what portable type should be used."
+msgstr ""
+
+#: src/2325-stable-simd.md:635
+msgid ""
+"Consequently it's proposed that instead of portable types the exact "
+"architecture types are used in all intrinsics. This provides us a much "
+"easier route to stabilization (\"make sure it's what Intel says\") along "
+"with no need to interpret what Intel does and attempt to find the most "
+"appropriate type."
+msgstr ""
+
+#: src/2325-stable-simd.md:640
+msgid ""
+"There is interest by both current `stdsimd` maintainers and users to expose "
+"a \"better-typed\" SIMD API in crates.io that builds on top of the "
+"intrinsics proposed for stabilization here."
+msgstr ""
+
+#: src/2325-stable-simd.md:644
+msgid "Stabilizing SIMD implementation details"
+msgstr ""
+
+#: src/2325-stable-simd.md:646
+msgid ""
+"Another alternative to the bulk of this RFC is allowing more raw access to "
+"the internals of LLVM. For example stabilizing `#[repr(simd)]` or the "
+"ability to write `extern \"platform-intrinsics\" { ... }` or "
+"`#[link_llvm_intrinsic...]`. This is certainly a _much_ smaller surface area "
+"to stabilize (aka not thousands of intrinsics)."
+msgstr ""
+
+#: src/2325-stable-simd.md:652
+msgid "This avenue was decided against, however, for a few reasons:"
+msgstr ""
+
+#: src/2325-stable-simd.md:654
+msgid ""
+"Such raw interfaces may change over time as they simply represent LLVM as a "
+"current point in time rather than what LLVM wants to do in the future."
+msgstr ""
+
+#: src/2325-stable-simd.md:656
+msgid ""
+"Alternate implementations of rustc or alternate rustc backends like "
+"[Cranelift](https://github.com/CraneStation/cranelift/) may not expose the "
+"same sort of functionality that LLVM provides, or implementing the "
+"interfaces may be much more difficult in alternate backends than in LLVM's."
+msgstr ""
+
+#: src/2325-stable-simd.md:663
+msgid ""
+"As a result, it's intended that instead of exposing raw building blocks (and "
+"allowing `stdsimd` to live on crates.io) we'll instead pull in `stdsimd` to "
+"the standard library and expose it as the stable interface to SIMD in Rust."
+msgstr ""
+
+#: src/2325-stable-simd.md:667
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2325-stable-simd.md:670
+msgid ""
+"There's a number of unresolved questions around stabilizing SIMD today which "
+"don't pose serious blockers and may also wish to be considered open bugs "
+"rather than blocking stabilization:"
+msgstr ""
+
+#: src/2325-stable-simd.md:674
+msgid "Relying on unexported LLVM APIs"
+msgstr ""
+
+#: src/2325-stable-simd.md:676
+msgid ""
+"The static detection performed by `cfg!` and `#[cfg]` currently relies on a "
+"[Rust-specific patch to LLVM](https://github.com/rust-lang/llvm/"
+"commit/68e1e29618b2bd094d82faac16cf8e89959bbd68). LLVM internal knows all "
+"about hierarchies of features and such. For example if you compile with `-C "
+"target-feature=+avx2` then `cfg!(target_feature = \"sse2\")` also needs to "
+"resolve to `true`. Rustc, however, does not know about these features and "
+"relies on learning this information through LLVM."
+msgstr ""
+
+#: src/2325-stable-simd.md:683
+msgid ""
+"Unfortunately though LLVM does not actually export this information for us "
+"to consume (as far as we know). As a result we have a [local patch](https://"
+"github.com/rust-lang/llvm/commit/68e1e29618b2bd094d82faac16cf8e89959bbd68) "
+"which exposed this information for us to read. The consequence of this "
+"implementation detail is that when compiled against the system LLVM the `cfg!"
+"` macro may not work correctly when used in conjunction with `-C target-"
+"feature` or `-C target-cpu` flags."
+msgstr ""
+
+#: src/2325-stable-simd.md:690
+msgid ""
+"It appears that clang [vendors and/or duplicates](https://github.com/llvm-"
+"mirror/clang/blob/679d846fcc73bd213347785185006d591698a132/lib/Basic/Targets/"
+"X86.cpp) LLVM's functionality in this regard. It's an option for rustc to do "
+"the same but it may also be an option to expose the information in upstream "
+"LLVM. So far there appears to have been no attempts to upstream this patch "
+"into LLVM itself."
+msgstr ""
+
+#: src/2325-stable-simd.md:698
+msgid "Packed SIMD types in `extern` functions are not sound"
+msgstr ""
+
+#: src/2325-stable-simd.md:700
+msgid ""
+"The packed SIMD types have particular care paid to them with respect to "
+"their ABI in Rust and how they're passed between functions, notably to "
+"ensure that they work properly throughout Rust programs. The \"fix\" to pass "
+"them in memory over function calls, however, was only applied to the "
+"\"Rust\" ABI and not any other function ABIs."
+msgstr ""
+
+#: src/2325-stable-simd.md:706
+msgid ""
+"A consequence of this change is that if you instead label all your functions "
+"`extern` then the [same bug](https://github.com/rust-lang/rust/issues/44367) "
+"will arise. It may be possible to implement a \"lint\" or a compiler error "
+"of sorts to forbid this situation in the short term. We could also possibly "
+"accept this as a known bug for the time being."
+msgstr ""
+
+#: src/2325-stable-simd.md:712
+msgid "What if we're wrong?"
+msgstr ""
+
+#: src/2325-stable-simd.md:714
+msgid ""
+"Despite the CI infrastructure of the `stdsimd` crate it seems inevitable "
+"that we'll get an intrinsic wrong at some point. What do we do in a "
+"situation like that? This situation is somewhat analogous to the `libc` "
+"crate but there you can fix the problem downstream (just have a corrected "
+"type/definition) for vendor intrinsics it's not so easy."
+msgstr ""
+
+#: src/2325-stable-simd.md:720
+msgid ""
+"Currently it seems that our only recourse would be to add a `2` suffix to "
+"the function name or otherwise indicate there's a corrected version, but "
+"that's not always the best..."
+msgstr ""

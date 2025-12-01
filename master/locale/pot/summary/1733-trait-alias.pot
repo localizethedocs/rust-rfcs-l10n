@@ -1,0 +1,606 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1733-trait-alias.md:1
+msgid "Feature Name: Trait alias"
+msgstr ""
+
+#: src/1733-trait-alias.md:2
+msgid "Start Date: 2016-08-31"
+msgstr ""
+
+#: src/1733-trait-alias.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1733](https://github.com/rust-lang/rfcs/pull/1733)"
+msgstr ""
+
+#: src/1733-trait-alias.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#41517](https://github.com/rust-lang/rust/"
+"issues/41517)"
+msgstr ""
+
+#: src/1733-trait-alias.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1733-trait-alias.md:9
+msgid ""
+"Traits can be aliased with the `trait TraitAlias = …;` construct. Currently, "
+"the right hand side is a bound – a single trait, a combination with `+` "
+"traits and lifetimes. Type parameters and lifetimes can be added to the "
+"_trait alias_ if needed."
+msgstr ""
+
+#: src/1733-trait-alias.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/1733-trait-alias.md:16
+msgid "First motivation: `impl`"
+msgstr ""
+
+#: src/1733-trait-alias.md:18
+msgid "Sometimes, some traits are defined with parameters. For instance:"
+msgstr ""
+
+#: src/1733-trait-alias.md:22 src/1733-trait-alias.md:34
+#: src/1733-trait-alias.md:45
+msgid "// ...\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:26
+msgid ""
+"It’s not uncommon to do that in _generic_ crates and implement them in "
+"_backend_ crates, where the `T` template parameter gets substituted with a "
+"_backend_ type."
+msgstr ""
+
+#: src/1733-trait-alias.md:30
+msgid "// in the backend crate\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:38
+msgid ""
+"Users who want to use that crate will have to export both the trait `Foo` "
+"from the generic crate _and_ the backend singleton type from the backend "
+"crate. Instead, we would like to be able to leave the backend singleton type "
+"hidden in the crate. The first shot would be to create a new trait for our "
+"backend:"
+msgstr ""
+
+#: src/1733-trait-alias.md:51
+msgid ""
+"If you try to pass an object that implements `Foo<Backend>`, that won’t "
+"work, because it doesn’t implement `FooBackend`. However, we can make it "
+"work with the following universal `impl`:"
+msgstr ""
+
+#: src/1733-trait-alias.md:58
+msgid ""
+"With that, it’s now possible to pass an object that implements "
+"`Foo<Backend>` to a function expecting a `FooBackend`. However, what about "
+"impl blocks? What happens if we implement only `FooBackend`? Well, we "
+"cannot, because the trait explicitly states that we need to implement "
+"`Foo<Backend>`. We hit a problem here. The problem is that even though "
+"there’s a compatibility at the `trait bound` level between `Foo<Backend>` "
+"and `FooBackend`, there’s none at the `impl` level, so all we’re left with "
+"is implementing `Foo<Backend>` – that will also provide an implementation "
+"for `FooBackend` because of the universal implementation just above."
+msgstr ""
+
+#: src/1733-trait-alias.md:66
+msgid "Second example: ergonomic collections and scrapping boilerplate"
+msgstr ""
+
+#: src/1733-trait-alias.md:68
+msgid ""
+"Another example is associated types. Take the following [trait from tokio]"
+"(https://docs.rs/tokio-service/0.1.0/tokio_service/trait.Service.html):"
+msgstr ""
+
+#: src/1733-trait-alias.md:80
+msgid ""
+"It would be nice to be able to create a few aliases to remove boilerplate "
+"for very common combinations of associated types with `Service`."
+msgstr ""
+
+#: src/1733-trait-alias.md:87
+msgid ""
+"The trait above is a http service trait which only the associated type "
+"`Future` is left to be implemented. Such an alias would be very appealing "
+"because it would remove copying the whole `Service` trait into use sites – "
+"trait bounds, or even trait impls. Scrapping such an annoying boilerplate is "
+"a definitive plus to the language and might be one of the most interesting "
+"use case."
+msgstr ""
+
+#: src/1733-trait-alias.md:92
+msgid "Detailed design"
+msgstr ""
+
+#: src/1733-trait-alias.md:95
+msgid "Syntax"
+msgstr ""
+
+#: src/1733-trait-alias.md:97
+msgid "Declaration"
+msgstr ""
+
+#: src/1733-trait-alias.md:99
+msgid "The syntax chosen to declare a _trait alias_ is:"
+msgstr ""
+
+#: src/1733-trait-alias.md:105
+msgid ""
+"Trait aliasing to combinations of traits is also provided with the standard "
+"`+` construct:"
+msgstr ""
+
+#: src/1733-trait-alias.md:111
+msgid ""
+"Optionally, if needed, one can provide a `where` clause to express _bounds_:"
+msgstr ""
+
+#: src/1733-trait-alias.md:114
+msgid "// same as the example above\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:117
+msgid ""
+"Furthermore, it’s possible to use only the `where` clause by leaving the "
+"list of traits empty:"
+msgstr ""
+
+#: src/1733-trait-alias.md:123
+msgid ""
+"It’s also possible to partially bind associated types of the right hand side:"
+msgstr ""
+
+#: src/1733-trait-alias.md:129
+msgid ""
+"This would leave `IntoIntIterator` with a _free parameter_ being `IntoIter`, "
+"and it should be bind the same way associated types are bound with regular "
+"traits:"
+msgstr ""
+
+#: src/1733-trait-alias.md:136
+msgid ""
+"A trait alias can be parameterized over types and lifetimes, just like "
+"traits themselves:"
+msgstr ""
+
+#: src/1733-trait-alias.md:146
+msgid "Specifically, the grammar being added is, in informal notation:"
+msgstr ""
+
+#: src/1733-trait-alias.md:152
+msgid ""
+"`GENERIC_BOUNDS` is a list of zero or more traits and lifetimes separated by "
+"`+`, the same as the current syntax for bounds on a type parameter, and "
+"`PREDICATES` is a comma-separated list of zero or more predicates, just like "
+"any other `where` clause. `GENERIC_PARAMS` is a comma-separated list of zero "
+"or more lifetime and type parameters, with optional bounds, just like other "
+"generic definitions."
+msgstr ""
+
+#: src/1733-trait-alias.md:158
+msgid "Use semantics"
+msgstr ""
+
+#: src/1733-trait-alias.md:160
+msgid ""
+"You cannot directly `impl` a trait alias, but you can have them as _bounds_, "
+"_trait objects_ and _impl Trait_."
+msgstr ""
+
+#: src/1733-trait-alias.md:165
+msgid ""
+"It is an error to attempt to override a previously specified equivalence "
+"constraint with a non-equivalent type. For example:"
+msgstr ""
+
+#: src/1733-trait-alias.md:172 src/1733-trait-alias.md:197
+#: src/1733-trait-alias.md:198 src/1733-trait-alias.md:200
+msgid "// ok\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:173
+msgid "// ok (perhaps subject to lint warning)\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:174 src/1733-trait-alias.md:176
+msgid "// ERROR: `Item` already constrained\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:181
+msgid ""
+"When using a trait alias as a trait object, it is subject to object safety "
+"restrictions _after_ substituting the aliased traits. This means:"
+msgstr ""
+
+#: src/1733-trait-alias.md:184
+msgid ""
+"it contains an object safe trait, optionally a lifetime, and zero or more of "
+"these other bounds: `Send`, `Sync` (that is, `trait Show = Display + Debug;` "
+"would not be object safe);"
+msgstr ""
+
+#: src/1733-trait-alias.md:186
+msgid "all the associated types of the trait need to be specified;"
+msgstr ""
+
+#: src/1733-trait-alias.md:187
+msgid "the `where` clause, if present, only contains bounds on `Self`."
+msgstr ""
+
+#: src/1733-trait-alias.md:189
+msgid "Some examples:"
+msgstr ""
+
+#: src/1733-trait-alias.md:199
+msgid "// ERROR: associated type not specified\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:201
+msgid "// ERROR: too many traits (*)\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:202
+msgid "// ok (*)\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:205
+msgid ""
+"The lines marked with `(*)` assume that [\\#24010](https://github.com/rust-"
+"lang/rust/issues/24010) is fixed."
+msgstr ""
+
+#: src/1733-trait-alias.md:208
+msgid "Ambiguous constraints"
+msgstr ""
+
+#: src/1733-trait-alias.md:210
+msgid ""
+"If there are multiple associated types with the same name in a trait alias, "
+"then it is a static error (\"ambiguous associated type\") to attempt to "
+"constrain that associated type via the trait alias. For example:"
+msgstr ""
+
+#: src/1733-trait-alias.md:216
+msgid "// same name!\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:217
+msgid "// This works:\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:220
+msgid "// This does not work:\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:223
+msgid "// ERROR: ambiguous associated type\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:224
+msgid "// Here are ways to workaround the above error:\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:226
+msgid "// (leaves Bar::Assoc unconstrained)\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:227
+msgid "// constrains both\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:230
+msgid "Teaching"
+msgstr ""
+
+#: src/1733-trait-alias.md:233
+msgid ""
+"[Traits](https://doc.rust-lang.org/book/traits.html) are obviously a huge "
+"prerequisite. Traits aliases could be introduced at the end of that chapter."
+msgstr ""
+
+#: src/1733-trait-alias.md:236
+msgid ""
+"Conceptually, a _trait alias_ is a syntax shortcut used to reason about one "
+"or more trait(s). Inherently, the _trait alias_ is usable in a limited set "
+"of places:"
+msgstr ""
+
+#: src/1733-trait-alias.md:239
+msgid ""
+"as a _bound_: exactly like a _trait_, a _trait alias_ can be used to "
+"constraint a type (type parameters list, where-clause)"
+msgstr ""
+
+#: src/1733-trait-alias.md:241
+msgid ""
+"as a _trait object_: same thing as with a _trait_, a _trait alias_ can be "
+"used as a _trait object_ if it fits object safety restrictions (see above in "
+"the [semantics](#semantics) section)"
+msgstr ""
+
+#: src/1733-trait-alias.md:243
+msgid ""
+"in an [`impl Trait`](https://github.com/rust-lang/rfcs/blob/master/text/1522-"
+"conservative-impl-trait.md)"
+msgstr ""
+
+#: src/1733-trait-alias.md:245
+msgid "Examples should be showed for all of the three cases above:"
+msgstr ""
+
+#: src/1733-trait-alias.md:247
+msgid "As a bound"
+msgstr ""
+
+#: src/1733-trait-alias.md:252
+msgid "// used as bound\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:255
+msgid "As a trait object"
+msgstr ""
+
+#: src/1733-trait-alias.md:258
+msgid "// used as trait object\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:261
+msgid "In an `impl Trait`"
+msgstr ""
+
+#: src/1733-trait-alias.md:264
+msgid "// used in an impl Trait\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:267
+msgid ""
+"As shown above, a _trait alias_ can substitute associated types. It doesn’t "
+"have to substitute them all. In that case, the _trait alias_ is left "
+"incomplete and you have to pass it the associated types that are left. "
+"Example with the [tokio case](#second-example-ergonomic-collections-and-"
+"scrapping-boilerplate):"
+msgstr ""
+
+#: src/1733-trait-alias.md:282
+msgid "// assume MyFuture exists and fulfills the rules to be used in here\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:285
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1733-trait-alias.md:288
+msgid "Adds another construct to the language."
+msgstr ""
+
+#: src/1733-trait-alias.md:290
+msgid ""
+"The syntax `trait TraitAlias = Trait` requires lookahead in the parser to "
+"disambiguate a trait from a trait alias."
+msgstr ""
+
+#: src/1733-trait-alias.md:293
+msgid "Alternatives"
+msgstr ""
+
+#: src/1733-trait-alias.md:296
+msgid "Should we use `type` as the keyword instead of `trait`?"
+msgstr ""
+
+#: src/1733-trait-alias.md:298
+msgid ""
+"`type Foo = Bar;` already creates an alias `Foo` that can be used as a trait "
+"object."
+msgstr ""
+
+#: src/1733-trait-alias.md:300
+msgid ""
+"If we used `type` for the keyword, this would imply that `Foo` could also be "
+"used as a bound as well. If we use `trait` as proposed in the body of the "
+"RFC, then `type Foo = Bar;` and `trait Foo = Bar;` _both_ create an alias "
+"for the object type, but only the latter creates an alias that can be used "
+"as a bound, which is a confusing bit of redundancy."
+msgstr ""
+
+#: src/1733-trait-alias.md:305
+msgid ""
+"However, this mixes the concepts of types and traits, which are different, "
+"and allows nonsense like `type Foo = Rc<i32> + f32;` to parse."
+msgstr ""
+
+#: src/1733-trait-alias.md:308
+msgid "Supertraits & universal `impl`"
+msgstr ""
+
+#: src/1733-trait-alias.md:310
+msgid ""
+"It’s possible to create a new trait that derives the trait to alias, and "
+"provide a universal `impl`"
+msgstr ""
+
+#: src/1733-trait-alias.md:320
+msgid ""
+"This works for trait objects and trait bounds only. You cannot implement "
+"`FooFakeAlias` directly because you need to implement `Foo` first – hence, "
+"you don’t really need `FooFakeAlias` if you can implement `Foo`."
+msgstr ""
+
+#: src/1733-trait-alias.md:324
+msgid "There’s currently no alternative to the impl problem described here."
+msgstr ""
+
+#: src/1733-trait-alias.md:326
+msgid "`ConstraintKinds`"
+msgstr ""
+
+#: src/1733-trait-alias.md:328
+msgid ""
+"Similar to GHC’s `ConstraintKinds`, we could declare an entire predicate as "
+"a reified list of constraints, instead of creating an alias for a set of "
+"supertraits and predicates. Syntax would be something like `constraint "
+"Foo<T> = T: Bar, Vec<T>: Baz;`, used as `fn quux<T>(...) where Foo<T> { ... }"
+"` (i.e. direct substitution). Trait object usage is unclear."
+msgstr ""
+
+#: src/1733-trait-alias.md:333
+msgid "Syntax for sole `where` clause."
+msgstr ""
+
+#: src/1733-trait-alias.md:335
+msgid ""
+"The current RFC specifies that it is possible to use only the `where` clause "
+"by leaving the list of traits empty:"
+msgstr ""
+
+#: src/1733-trait-alias.md:341
+msgid ""
+"This is one of many syntaxes that are available for this construct. "
+"Alternatives include:"
+msgstr ""
+
+#: src/1733-trait-alias.md:343
+msgid ""
+"`trait DebugDefault where Self: Debug + Default;` (which has been "
+"[considered and discarded](https://github.com/rust-lang/rfcs/"
+"pull/1733#issuecomment-257993316) because [it might look](https://github.com/"
+"rust-lang/rfcs/pull/1733#issuecomment-258495468) too much like a new trait "
+"definition)"
+msgstr ""
+
+#: src/1733-trait-alias.md:344
+msgid ""
+"`trait DebugDefault = _ where Self: Debug + Default;` (which was [considered "
+"and then removed](https://github.com/rust-lang/rfcs/pull/1733/"
+"commits/88d3074957276c7201147fc625f18e0ebcecc1b9#diff-"
+"ae27a1a8d977f731e67823349151bed5L116) because it is [technically unnecessary]"
+"(https://github.com/rust-lang/rfcs/pull/1733#issuecomment-284252196))"
+msgstr ""
+
+#: src/1733-trait-alias.md:345
+msgid ""
+"`trait DebugDefault = Self where Self: Debug + Default;` (analogous to "
+"previous case but not formally discussed)"
+msgstr ""
+
+#: src/1733-trait-alias.md:347
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1733-trait-alias.md:350
+msgid "Trait alias containing only lifetimes"
+msgstr ""
+
+#: src/1733-trait-alias.md:352
+msgid "This is annoying. Consider:"
+msgstr ""
+
+#: src/1733-trait-alias.md:360
+msgid ""
+"Such an alias is legit. However, I feel concerned about the actual meaning "
+"of the declaration – i.e. using the `trait` keyword to define alias on "
+"_lifetimes_ seems a wrong design choice and seems not very consistent."
+msgstr ""
+
+#: src/1733-trait-alias.md:364
+msgid ""
+"If we chose another keyword, like `constraint`, I feel less concerned and it "
+"would open further opportunities – see the `ConstraintKinds` alternative "
+"discussion above."
+msgstr ""
+
+#: src/1733-trait-alias.md:367
+msgid "Which bounds need to be repeated when using a trait alias?"
+msgstr ""
+
+#: src/1733-trait-alias.md:369
+msgid ""
+"[RFC 1927](https://github.com/rust-lang/rfcs/pull/1927) intends to change "
+"the rules here for traits, and we likely want to have the rules for trait "
+"aliases be the same to avoid confusion."
+msgstr ""
+
+#: src/1733-trait-alias.md:372
+msgid "The `constraint` alternative sidesteps this issue."
+msgstr ""
+
+#: src/1733-trait-alias.md:374
+msgid "What about bounds on type variable declaration in the trait alias?"
+msgstr ""
+
+#: src/1733-trait-alias.md:380
+msgid ""
+"`PartialEq` has no super-trait `Bar`, but we’re adding one via our trait "
+"alias. What is the behavior of such a feature? One possible desugaring is:"
+msgstr ""
+
+#: src/1733-trait-alias.md:387
+msgid ""
+"[Issue 21903](https://github.com/rust-lang/rust/issues/21903) explains the "
+"same problem for type aliasing."
+msgstr ""
+
+#: src/1733-trait-alias.md:390
+msgid "**Note: what about the following proposal below?**"
+msgstr ""
+
+#: src/1733-trait-alias.md:392
+msgid ""
+"When using a trait alias as a bound, you cannot add extra bound on the input "
+"parameters, like in the following:"
+msgstr ""
+
+#: src/1733-trait-alias.md:399
+msgid "Here, `T` adds a `Bar` bound. Now consider:"
+msgstr ""
+
+#: src/1733-trait-alias.md:405
+msgid ""
+"Currently, we don’t have a proper understanding of that situation, because "
+"we’re adding in both cases a bound, and we don’t know how to disambiguate "
+"between _pre-condition_ and _implication_. That is, is that added `Bar` "
+"bound a constraint that `T` must fulfil in order for the trait alias to be "
+"met, or is it a constraint the trait alias itself adds? To disambiguate, "
+"consider:"
+msgstr ""
+
+#: src/1733-trait-alias.md:416
+msgid ""
+"`BarPrecond` would require the use-site code to fulfil the constraint, like "
+"the following:"
+msgstr ""
+
+#: src/1733-trait-alias.md:422
+msgid "`BarImplic` would give us `T: Bar`:"
+msgstr ""
+
+#: src/1733-trait-alias.md:426
+msgid "// T: Bar because given by BarImplic<T>\n"
+msgstr ""
+
+#: src/1733-trait-alias.md:430
+msgid ""
+"`BarImpossible` wouldn’t compile because we try to express a pre-condition "
+"and an implication for the same bound at the same time. However, it’d be "
+"possible to have both a pre-condition and an implication on a parameter:"
+msgstr ""
+
+#: src/1733-trait-alias.md:438
+msgid "// T: Debug because given by BarBoth\n"
+msgstr ""

@@ -1,0 +1,150 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0879-small-base-lexing.md:1
+msgid "Feature Name: stable, it only restricts the language"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:2
+msgid "Start Date: 2015-02-17"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#879](https://github.com/rust-lang/rfcs/pull/879)"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#23872](https://github.com/rust-lang/rust/"
+"pull/23872)"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:8
+msgid "Lex binary and octal literals as if they were decimal."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:10
+msgid "Motivation"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:12
+msgid ""
+"Lexing all digits (even ones not valid in the given base) allows for "
+"improved error messages & future proofing (this is more conservative than "
+"the current approach) and less confusion, with little downside."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:16
+msgid ""
+"Currently, the lexer stops lexing binary and octal literals (`0b10` and "
+"`0o12345670`) as soon as it sees an invalid digit (2-9 or 8-9 respectively), "
+"and immediately starts lexing a new token, e.g. `0b0123` is two tokens, "
+"`0b01` and `23`. Writing such a thing in normal code gives a strange error "
+"message:"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:28
+msgid ""
+"However, it is valid to write such a thing in a macro (e.g. using the `tt` "
+"non-terminal), and thus lexing the adjacent digits as two tokens can lead to "
+"unexpected behaviour."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:41
+msgid "\"{}\""
+msgstr ""
+
+#: src/0879-small-base-lexing.md:45
+msgid "prints `24` (`add` expands to `0 + 0b01 + 23`)."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:47
+msgid "It would be nicer for both cases to print an error like:"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:55
+msgid ""
+"(The non-macro case could be handled by detecting this pattern in the lexer "
+"and special casing the message, but this doesn't not handle the macro case.)"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:59
+msgid ""
+"Code that wants two tokens can opt in to it by `0b01 23`, for example. This "
+"is easy to write, and expresses the intent more clearly anyway."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:63
+msgid "Detailed design"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:65
+msgid "The grammar that the lexer uses becomes"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:71
+msgid "instead of just `[01]` and `[0-7]` for the first two, respectively."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:73
+msgid ""
+"However, it is always an error (in the lexer) to have invalid digits in a "
+"numeric literal beginning with `0b` or `0o`. In particular, even a macro "
+"invocation like"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:83
+msgid "is an error even though it doesn't use the tokens."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:86
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:88
+msgid ""
+"This adds a slightly peculiar special case, that is somewhat unique to Rust. "
+"On the other hand, most languages do not expose the lexical grammar so "
+"directly, and so have more freedom in this respect. That is, in many "
+"languages it is indistinguishable if `0b1234` is one or two tokens: it is "
+"_always_ an error either way."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:95
+msgid "Alternatives"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:97
+msgid "Don't do it, obviously."
+msgstr ""
+
+#: src/0879-small-base-lexing.md:99
+msgid ""
+"Consider `0b123` to just be `0b1` with a suffix of `23`, and this is an "
+"error or not depending if a suffix of `23` is valid. Handling this uniformly "
+"would require `\"foo\"123` and `'a'123` also being lexed as a single token. "
+"(Which may be a good idea anyway.)"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:104
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0879-small-base-lexing.md:106
+msgid "None."
+msgstr ""

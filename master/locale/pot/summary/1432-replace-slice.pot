@@ -1,0 +1,200 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1432-replace-slice.md:1
+msgid "Feature Name: splice"
+msgstr ""
+
+#: src/1432-replace-slice.md:2
+msgid "Start Date: 2015-12-28"
+msgstr ""
+
+#: src/1432-replace-slice.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1432](https://github.com/rust-lang/rfcs/pull/1432)"
+msgstr ""
+
+#: src/1432-replace-slice.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#32310](https://github.com/rust-lang/rust/"
+"issues/32310)"
+msgstr ""
+
+#: src/1432-replace-slice.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1432-replace-slice.md:9
+msgid ""
+"Add a `splice` method to `Vec<T>` and `String` removes a range of elements, "
+"and replaces it in place with a given sequence of values. The new sequence "
+"does not necessarily have the same length as the range it replaces. In the "
+"`Vec` case, this method returns an iterator of the elements being moved out, "
+"like `drain`."
+msgstr ""
+
+#: src/1432-replace-slice.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/1432-replace-slice.md:18
+msgid "An implementation of this operation is either slow or dangerous."
+msgstr ""
+
+#: src/1432-replace-slice.md:20
+msgid ""
+"The slow way uses `Vec::drain`, and then `Vec::insert` repeatedly. The "
+"latter part takes quadratic time: potentially many elements after the "
+"replaced range are moved by one offset potentially many times, once for each "
+"new element."
+msgstr ""
+
+#: src/1432-replace-slice.md:25
+msgid ""
+"The dangerous way, detailed below, takes linear time but involves unsafely "
+"moving generic values with `std::ptr::copy`. This is non-trivial `unsafe` "
+"code, where a bug could lead to double-dropping elements or exposing "
+"uninitialized elements. (Or for `String`, breaking the UTF-8 invariant.) It "
+"therefore benefits form having a shared, carefully-reviewed implementation "
+"rather than leaving it to every potential user to do it themselves."
+msgstr ""
+
+#: src/1432-replace-slice.md:33
+msgid ""
+"While it could be an external crate on crates.io, this operation is general-"
+"purpose enough that I think it belongs in the standard library, similar to "
+"`Vec::drain`."
+msgstr ""
+
+#: src/1432-replace-slice.md:37
+msgid "Detailed design"
+msgstr ""
+
+#: src/1432-replace-slice.md:40
+msgid "An example implementation is below."
+msgstr ""
+
+#: src/1432-replace-slice.md:42
+msgid ""
+"The proposal is to have inherent methods instead of extension traits. "
+"(Traits are used to make this testable outside of `std` and to make a point "
+"in Unresolved Questions below.)"
+msgstr ""
+
+#: src/1432-replace-slice.md:63 src/1432-replace-slice.md:71
+#: src/1432-replace-slice.md:77 src/1432-replace-slice.md:83
+msgid "// FIXME: Fill in when exact semantics are decided.\n"
+msgstr ""
+
+#: src/1432-replace-slice.md:112
+msgid "\"Hello, world!\""
+msgstr ""
+
+#: src/1432-replace-slice.md:113
+msgid "\"世界!\""
+msgstr ""
+
+#: src/1432-replace-slice.md:114 src/1432-replace-slice.md:120
+msgid "\"Hello, 世界!\""
+msgstr ""
+
+#: src/1432-replace-slice.md:121
+msgid "\"\""
+msgstr ""
+
+#: src/1432-replace-slice.md:125
+msgid ""
+"The elements of the vector after the range first be moved by an offset of "
+"the lower bound of `Iterator::size_hint` minus the length of the range. "
+"Then, depending on the real length of the iterator:"
+msgstr ""
+
+#: src/1432-replace-slice.md:129
+msgid "If it’s the same as the lower bound, we’re done."
+msgstr ""
+
+#: src/1432-replace-slice.md:130
+msgid ""
+"If it’s lower than the lower bound (which was then incorrect), the elements "
+"will be moved once more."
+msgstr ""
+
+#: src/1432-replace-slice.md:131
+msgid ""
+"If it’s higher, the extra iterator items well be collected into a temporary "
+"`Vec` in order to know exactly how many there are, and the elements after "
+"will be moved once more."
+msgstr ""
+
+#: src/1432-replace-slice.md:134
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1432-replace-slice.md:137
+msgid ""
+"Same as for any addition to `std`: not every program needs it, and standard "
+"library growth has a maintenance cost."
+msgstr ""
+
+#: src/1432-replace-slice.md:140
+msgid "Alternatives"
+msgstr ""
+
+#: src/1432-replace-slice.md:143
+msgid ""
+"Status quo: leave it to every one who wants this to do it the slow way or "
+"the dangerous way."
+msgstr ""
+
+#: src/1432-replace-slice.md:144
+msgid ""
+"Publish a crate on crates.io. Individual crates tend to be not very "
+"discoverable, so not this situation would not be so different from the "
+"status quo."
+msgstr ""
+
+#: src/1432-replace-slice.md:148
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1432-replace-slice.md:151
+msgid ""
+"Should the input iterator be consumed incrementally at each `Splice::next` "
+"call, or only in `Splice::drop`?"
+msgstr ""
+
+#: src/1432-replace-slice.md:154
+msgid ""
+"It would be nice to be able to `Vec::splice` with a slice without writing `."
+"iter().cloned()` explicitly. This is possible with the same trick as for the "
+"`Extend` trait ([RFC 839](https://github.com/rust-lang/rfcs/blob/master/"
+"text/0839-embrace-extend-extinguish.md)): accept iterators of `&T` as well "
+"as iterators of `T`:"
+msgstr ""
+
+#: src/1432-replace-slice.md:170
+msgid ""
+"However, this trick can not be used with an inherent method instead of a "
+"trait. (By the way, what was the motivation for `Extend` being a trait "
+"rather than inherent methods, before RFC 839?)"
+msgstr ""
+
+#: src/1432-replace-slice.md:174
+msgid ""
+"If coherence rules and backward-compatibility allow it, this functionality "
+"could be added to `Vec::insert` and `String::insert` by overloading them / "
+"making them more generic. This would probably require implementing "
+"`RangeArgument` for `usize` representing an empty range, though a range of "
+"length 1 would maybe make more sense for `Vec::drain` (another user of "
+"`RangeArgument`)."
+msgstr ""

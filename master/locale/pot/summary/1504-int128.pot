@@ -1,0 +1,287 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1504-int128.md:1
+msgid "Feature Name: int128"
+msgstr ""
+
+#: src/1504-int128.md:2
+msgid "Start Date: 2016-02-21"
+msgstr ""
+
+#: src/1504-int128.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1504](https://github.com/rust-lang/rfcs/pull/1504)"
+msgstr ""
+
+#: src/1504-int128.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#35118](https://github.com/rust-lang/rust/"
+"issues/35118)"
+msgstr ""
+
+#: src/1504-int128.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1504-int128.md:9
+msgid "This RFC adds the `i128` and `u128` primitive types to Rust."
+msgstr ""
+
+#: src/1504-int128.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1504-int128.md:14
+msgid ""
+"Some algorithms need to work with very large numbers that don't fit in 64 "
+"bits, such as certain cryptographic algorithms. One possibility would be to "
+"use a BigNum library, but these use heap allocation and tend to have high "
+"overhead. LLVM has support for very efficient 128-bit integers, which are "
+"exposed by Clang in C as the `__int128` type."
+msgstr ""
+
+#: src/1504-int128.md:16
+msgid "Detailed design"
+msgstr ""
+
+#: src/1504-int128.md:19
+msgid "Compiler support"
+msgstr ""
+
+#: src/1504-int128.md:21
+msgid ""
+"The first step for implementing this feature is to add support for the "
+"`i128`/`u128` primitive types to the compiler. This will requires changes to "
+"many parts of the compiler, from libsyntax to trans."
+msgstr ""
+
+#: src/1504-int128.md:23
+msgid ""
+"The compiler will need to be bootstrapped from an older compiler which does "
+"not support `i128`/`u128`, but rustc will want to use these types internally "
+"for things like literal parsing and constant propagation. This can be solved "
+"by using a \"software\" implementation of these types, similar to the one in "
+"the [extprim](https://github.com/kennytm/extprim) crate. Once stage1 is "
+"built, stage2 can be compiled using the native LLVM `i128`/`u128` types."
+msgstr ""
+
+#: src/1504-int128.md:25
+msgid "Runtime library support"
+msgstr ""
+
+#: src/1504-int128.md:27
+msgid ""
+"The LLVM code generator supports 128-bit integers on all architectures, "
+"however it will lower some operations to runtime library calls. This similar "
+"to how we currently handle `u64` and `i64` on 32-bit platforms: \"complex\" "
+"operations such as multiplication or division are lowered by LLVM backends "
+"into calls to functions in the `compiler-rt` runtime library."
+msgstr ""
+
+#: src/1504-int128.md:29
+msgid ""
+"Here is a rough breakdown of which operations are handled natively instead "
+"of through a library call:"
+msgstr ""
+
+#: src/1504-int128.md:30
+msgid "Add/Sub/Neg: native, including checked overflow variants"
+msgstr ""
+
+#: src/1504-int128.md:31
+msgid "Compare (eq/ne/gt/ge/lt/le): native"
+msgstr ""
+
+#: src/1504-int128.md:32
+msgid "Bitwise and/or/xor/not: native"
+msgstr ""
+
+#: src/1504-int128.md:33
+msgid ""
+"Shift left/right: native on most architectures (some use libcalls instead)"
+msgstr ""
+
+#: src/1504-int128.md:34
+msgid "Bit counting, parity, leading/trailing ones/zeroes: native"
+msgstr ""
+
+#: src/1504-int128.md:35
+msgid "Byte swapping: native"
+msgstr ""
+
+#: src/1504-int128.md:36
+msgid "Mul/Div/Mod: libcall (including checked overflow multiplication)"
+msgstr ""
+
+#: src/1504-int128.md:37
+msgid "Conversion to/from f32/f64: libcall"
+msgstr ""
+
+#: src/1504-int128.md:39
+msgid ""
+"The `compiler-rt` library that comes with LLVM only implements runtime "
+"library functions for 128-bit integers on 64-bit platforms (`#ifdef "
+"__LP64__`). We will need to provide our own implementations of the relevant "
+"functions to allow `i128`/`u128` to be available on all architectures. Note "
+"that this can only be done with a compiler that already supports `i128`/"
+"`u128` to match the calling convention that LLVM is expecting."
+msgstr ""
+
+#: src/1504-int128.md:41
+msgid "Here is the list of functions that need to be implemented:"
+msgstr ""
+
+#: src/1504-int128.md:63
+msgid ""
+"Implementations of these functions will be written in Rust and will be "
+"included in libcore. Note that it is not possible to write these functions "
+"in C or use the existing implementations in `compiler-rt` since the "
+"`__int128` type is not available in C on 32-bit platforms."
+msgstr ""
+
+#: src/1504-int128.md:65
+msgid "Modifications to libcore"
+msgstr ""
+
+#: src/1504-int128.md:67
+msgid "Several changes need to be done to libcore:"
+msgstr ""
+
+#: src/1504-int128.md:68
+msgid "`src/libcore/num/i128.rs`: Define `MIN` and `MAX`."
+msgstr ""
+
+#: src/1504-int128.md:69
+msgid "`src/libcore/num/u128.rs`: Define `MIN` and `MAX`."
+msgstr ""
+
+#: src/1504-int128.md:70
+msgid ""
+"`src/libcore/num/mod.rs`: Implement inherent methods, `Zero`, `One`, `From` "
+"and `FromStr` for `u128` and `i128`."
+msgstr ""
+
+#: src/1504-int128.md:71
+msgid ""
+"`src/libcore/num/wrapping.rs`: Implement methods for `Wrapping<u128>` and "
+"`Wrapping<i128>`."
+msgstr ""
+
+#: src/1504-int128.md:72
+msgid ""
+"`src/libcore/fmt/num.rs`: Implement `Binary`, `Octal`, `LowerHex`, "
+"`UpperHex`, `Debug` and `Display` for `u128` and `i128`."
+msgstr ""
+
+#: src/1504-int128.md:73
+msgid ""
+"`src/libcore/cmp.rs`: Implement `Eq`, `PartialEq`, `Ord` and `PartialOrd` "
+"for `u128` and `i128`."
+msgstr ""
+
+#: src/1504-int128.md:74
+msgid "`src/libcore/nonzero.rs`: Implement `Zeroable` for `u128` and `i128`."
+msgstr ""
+
+#: src/1504-int128.md:75
+msgid "`src/libcore/iter.rs`: Implement `Step` for `u128` and `i128`."
+msgstr ""
+
+#: src/1504-int128.md:76
+msgid "`src/libcore/clone.rs`: Implement `Clone` for `u128` and `i128`."
+msgstr ""
+
+#: src/1504-int128.md:77
+msgid "`src/libcore/default.rs`: Implement `Default` for `u128` and `i128`."
+msgstr ""
+
+#: src/1504-int128.md:78
+msgid ""
+"`src/libcore/hash/mod.rs`: Implement `Hash` for `u128` and `i128` and add "
+"`write_i128` and `write_u128` to `Hasher`."
+msgstr ""
+
+#: src/1504-int128.md:79
+msgid "`src/libcore/lib.rs`: Add the `u128` and `i128` modules."
+msgstr ""
+
+#: src/1504-int128.md:81
+msgid "Modifications to libstd"
+msgstr ""
+
+#: src/1504-int128.md:83
+msgid "A few minor changes are required in libstd:"
+msgstr ""
+
+#: src/1504-int128.md:84
+msgid "`src/libstd/lib.rs`: Re-export `core::{i128, u128}`."
+msgstr ""
+
+#: src/1504-int128.md:85
+msgid ""
+"`src/libstd/primitive_docs.rs`: Add documentation for `i128` and `u128`."
+msgstr ""
+
+#: src/1504-int128.md:87
+msgid "Modifications to other crates"
+msgstr ""
+
+#: src/1504-int128.md:89
+msgid "A few external crates will need to be updated to support the new types:"
+msgstr ""
+
+#: src/1504-int128.md:90
+msgid "`rustc-serialize`: Add the ability to serialize `i128` and `u128`."
+msgstr ""
+
+#: src/1504-int128.md:91
+msgid "`serde`: Add the ability to serialize `i128` and `u128`."
+msgstr ""
+
+#: src/1504-int128.md:92
+msgid "`rand`: Add the ability to generate random `i128`s and `u128`s."
+msgstr ""
+
+#: src/1504-int128.md:94
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1504-int128.md:97
+msgid ""
+"One possible issue is that a `u128` can hold a very large number that "
+"doesn't fit in a `f32`. We need to make sure this doesn't lead to any "
+"`undef`s from LLVM. See [this comment](https://github.com/rust-lang/rust/"
+"issues/10185#issuecomment-110955148), and [this example code](https://gist."
+"github.com/Amanieu/f87da5f0599b343c5500)."
+msgstr ""
+
+#: src/1504-int128.md:99
+msgid "Alternatives"
+msgstr ""
+
+#: src/1504-int128.md:102
+msgid ""
+"There have been several attempts to create `u128`/`i128` wrappers based on "
+"two `u64` values, but these can't match the performance of LLVM's native 128-"
+"bit integers. For example LLVM is able to lower a 128-bit add into just 2 "
+"instructions on 64-bit platforms and 4 instructions on 32-bit platforms."
+msgstr ""
+
+#: src/1504-int128.md:104
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1504-int128.md:107
+msgid "None"
+msgstr ""

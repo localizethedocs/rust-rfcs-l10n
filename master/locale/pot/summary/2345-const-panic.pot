@@ -1,0 +1,186 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2345-const-panic.md:1
+msgid "Feature Name: `const_panic`"
+msgstr ""
+
+#: src/2345-const-panic.md:2
+msgid "Start Date: 2018-02-22"
+msgstr ""
+
+#: src/2345-const-panic.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2345](https://github.com/rust-lang/rfcs/pull/2345)"
+msgstr ""
+
+#: src/2345-const-panic.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#51999](https://github.com/rust-lang/rust/"
+"issues/51999)"
+msgstr ""
+
+#: src/2345-const-panic.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2345-const-panic.md:9
+msgid ""
+"Allow the use of `panic!`, `assert!` and `assert_eq!` within constants and "
+"report their evaluation as a compile-time error."
+msgstr ""
+
+#: src/2345-const-panic.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2345-const-panic.md:15
+msgid ""
+"It can often be desirable to terminate a constant evaluation due to invalid "
+"arguments. Currently there's no way to do this other than to use `Result` to "
+"produce an `Err` in case of errors. Unfortunately this will end up as a "
+"runtime problem and not abort compilation, even though the problem has been "
+"detected at compile-time. There are already ways to abort compilation, e.g. "
+"by invoking `[\"some assert failed\"][42]` within a constant, which will "
+"abort with a compile-time error pointing at the span of the index operation. "
+"But this hack is not very convenient to use and produces the wrong error "
+"message."
+msgstr ""
+
+#: src/2345-const-panic.md:24
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2345-const-panic.md:27
+msgid ""
+"You can now use `panic!` and `assert!` within `const fn`s. This means that "
+"when the const fn is invoked at runtime, you will get a regular panic, but "
+"if it is invoked at compile-time, the panic message will show up as an error "
+"message."
+msgstr ""
+
+#: src/2345-const-panic.md:31
+msgid ""
+"As an example, imagine a function that converts strings to their "
+"corresponding booleans."
+msgstr ""
+
+#: src/2345-const-panic.md:37 src/2345-const-panic.md:42
+msgid "\"true\""
+msgstr ""
+
+#: src/2345-const-panic.md:38 src/2345-const-panic.md:43
+msgid "\"false\""
+msgstr ""
+
+#: src/2345-const-panic.md:39
+msgid "\"`{}` is not a valid bool\""
+msgstr ""
+
+#: src/2345-const-panic.md:44
+msgid "\"foo\""
+msgstr ""
+
+#: src/2345-const-panic.md:47
+msgid "will produce an error with your custom error message:"
+msgstr ""
+
+#: src/2345-const-panic.md:49
+msgid ""
+"```\n"
+"error[E0080]: `foo` is not a valid bool\n"
+" --> src/main.rs: 5:25\n"
+"  |\n"
+"5 |        other => panic!(\"`{}` is not a valid bool\", other),\n"
+"  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+"note: during the evaluation of\n"
+"   |\n"
+"10 | parse_bool(\"foo\");\n"
+"   | ^^^^^^^^^^^^^^^^^\n"
+"```"
+msgstr ""
+
+#: src/2345-const-panic.md:61
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2345-const-panic.md:64
+msgid ""
+"MIR interpretation gets a special case for the panic machinery (which isn't "
+"const fn). If the `panic` lang item is entered, instead of producing an "
+"error about it not being const fn, we produce a specialized error with the "
+"panic's message. This panic reporting machinery is already present in the "
+"mir interpreter, but needs the lang item detection in order to work."
+msgstr ""
+
+#: src/2345-const-panic.md:70
+msgid ""
+"Note that this internal machinery is inherently unstable and thus never "
+"invoked directly by users. Users will use the `panic!` macro as an entry "
+"point. The internal details of the panic handling might change in the "
+"future, but always in a way that will keep allowing MIR interpretation to "
+"evaluate it. All future changes will have to address this directly and "
+"regression tests should ensure that we never break the const evaluability."
+msgstr ""
+
+#: src/2345-const-panic.md:77
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2345-const-panic.md:80
+msgid ""
+"We have to implement some magic around processing `fmt::Arguments` objects "
+"and producing the panic message from that."
+msgstr ""
+
+#: src/2345-const-panic.md:83
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2345-const-panic.md:86
+msgid ""
+"We could add a special constant error reporting mechanism. This has the "
+"disadvantage of widening the gap between const eval and runtime execution."
+msgstr ""
+
+#: src/2345-const-panic.md:88
+msgid ""
+"We could make `String` and formatting const enough to allow the panic "
+"formatting machinery to be interpreted and made const fn"
+msgstr ""
+
+#: src/2345-const-panic.md:90
+msgid ""
+"Don't produce a good error message, just say \"const eval encountered an "
+"error\" and point the user to the panic location. This already works out of "
+"the box right now. We can improve the error message in the future with the "
+"`String` + formatting alternative. This is the most minimalistic alternative "
+"to this RFC"
+msgstr ""
+
+#: src/2345-const-panic.md:95
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2345-const-panic.md:98
+msgid ""
+"Should there be some additional message in the error about this being a "
+"panic turned error? Or do we just produce the exact message the panic would "
+"produce?"
+msgstr ""
+
+#: src/2345-const-panic.md:101
+msgid ""
+"This change becomes really useful if `Result::unwrap` and `Option::unwrap` "
+"become const fn, doing both in one go might be a good idea"
+msgstr ""

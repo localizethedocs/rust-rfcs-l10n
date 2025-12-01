@@ -1,0 +1,303 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1414-rvalue_static_promotion.md:1
+msgid "Feature Name: rvalue_static_promotion"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:2
+msgid "Start Date: 2015-12-18"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:3
+msgid "RFC PR: [\\#1414](https://github.com/rust-lang/rfcs/pull/1414)"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:4
+msgid "Rust Issue: [\\#38865](https://github.com/rust-lang/rust/issues/38865)"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:9
+msgid ""
+"Promote constexpr rvalues to values in static memory instead of stack slots, "
+"and expose those in the language by being able to directly create `'static` "
+"references to them. This would allow code like `let x: &'static u32 = &42` "
+"to work."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:17
+msgid ""
+"Right now, when dealing with constant values, you have to explicitly define "
+"`const` or `static` items to create references with `'static` lifetime, "
+"which can be unnecessarily verbose if those items never get exposed in the "
+"actual API:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:38
+msgid ""
+"This workaround also has the limitation of not being able to refer to type "
+"parameters of a containing generic functions, eg you can't do this:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:48
+msgid ""
+"However, the compiler already special cases a small subset of rvalue const "
+"expressions to have static lifetime - namely the empty array expression:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:55
+msgid ""
+"And though they don't have to be seen as such, string literals could be "
+"regarded as the same kind of special sugar:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:59
+msgid "b\"test\""
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:59
+msgid "// could be seen as `= &[116, 101, 115, 116]`\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:62
+msgid "\"foo\""
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:62
+msgid ""
+"// could be seen as `= &str([102, 111, 111])`\n"
+"// given `struct str([u8]);` and the ability to construct compound\n"
+"// DST structs directly\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:68
+msgid ""
+"With the proposed change, those special cases would instead become part of a "
+"general language feature usable for custom code."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:71
+msgid "Detailed design"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:74
+msgid "Inside a function body's block:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:76
+msgid "If a shared reference to a constexpr rvalue is taken. (`&<constexpr>`)"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:77
+#: src/1414-rvalue_static_promotion.md:149
+msgid "And the constexpr does not contain a `UnsafeCell { ... }` constructor."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:78
+#: src/1414-rvalue_static_promotion.md:150
+msgid ""
+"And the constexpr does not contain a const fn call returning a type "
+"containing a `UnsafeCell`."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:79
+#: src/1414-rvalue_static_promotion.md:152
+msgid ""
+"Then instead of translating the value into a stack slot, translate it into a "
+"static memory location and give the resulting reference a `'static` lifetime."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:83
+msgid ""
+"The `UnsafeCell` restrictions are there to ensure that the promoted value is "
+"truly immutable behind the reference."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:86
+msgid "Examples:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:89
+msgid "// OK:\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:99
+msgid "// BAD:\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:102
+msgid "// assuming conf fn new()\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:105
+msgid ""
+"These rules above should be consistent with the existing rvalue promotions "
+"in `const` initializer expressions:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:109
+msgid "// If this compiles:\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:111
+msgid "// Then this should compile as well:\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:116
+msgid "Implementation"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:118
+msgid ""
+"The necessary changes in the compiler did already get implemented as part of "
+"codegen optimizations (emitting references-to or memcopies-from values in "
+"static memory instead of embedding them in the code)."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:121
+msgid ""
+"All that is left to do is \"throw the switch\" for the new lifetime semantic "
+"by removing these lines: https://github.com/rust-lang/rust/"
+"blob/29ea4eef9fa6e36f40bc1f31eb1e56bf5941ee72/src/librustc/middle/"
+"mem_categorization.rs#L801-L807"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:125
+msgid ""
+"(And of course fixing any fallout/bitrot that might have happened, adding "
+"tests, etc.)"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:127
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:130
+msgid ""
+"One more feature with seemingly ad-hoc rules to complicate the language..."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:132
+msgid "Alternatives, Extensions"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:135
+msgid ""
+"It would be possible to extend support to `&'static mut` references, as long "
+"as there is the additional constraint that the referenced type is zero sized."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:139
+msgid "This again has precedence in the array reference constructor:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:142
+msgid "// valid code today\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:146
+msgid "The rules would be similar:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:148
+msgid ""
+"If a mutable reference to a constexpr rvalue is taken. (`&mut <constexpr>`)"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:151
+msgid "_And the type of the rvalue is zero-sized._"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:156
+msgid ""
+"The zero-sized restriction is there because aliasing mutable references are "
+"only safe for zero sized types (since you never dereference the pointer for "
+"them)."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:160
+msgid "Example:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:165
+msgid ""
+"// ^ would be okay, since it would be translated like this:\n"
+"    // const STATIC_TRAIT_OBJECT: &'static mut FnMut(u32, u32) -> u32\n"
+"    //     = &mut |x, y| x * y;\n"
+"    // self.operator.unwrap_or(STATIC_TRAIT_OBJECT)\n"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:175
+msgid "There are two ways this could be taken further with zero-sized types:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:177
+msgid ""
+"Remove the `UnsafeCell` restriction if the type of the rvalue is zero-sized."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:178
+msgid ""
+"The above, but also remove the **constexpr** restriction, applying to any "
+"zero-sized rvalue instead."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:180
+msgid ""
+"Both cases would work because one can't cause memory unsafety with a "
+"reference to a zero sized value, and they would allow more safe code to "
+"compile."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:183
+msgid ""
+"However, they might complicated reasoning about the rules more, especially "
+"with the last one also being possibly confusing in regards to side-effects."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:187
+msgid "Not doing this means:"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:189
+msgid ""
+"Relying on `static` and `const` items to create `'static` references, which "
+"won't work in generics."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:190
+msgid "Empty-array expressions would remain special cased."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:191
+msgid ""
+"It would also not be possible to safely create `&'static mut` references to "
+"zero-sized types, though that part could also be achieved by allowing "
+"mutable references to zero-sized types in constants."
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:195
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1414-rvalue_static_promotion.md:198
+msgid "None, beyond \"Should we do alternative 1 instead?\"."
+msgstr ""

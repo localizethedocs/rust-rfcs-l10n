@@ -1,0 +1,1643 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3058-try-trait-v2.md:1
+msgid "Feature Name: try_trait_v2"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:2
+msgid "Start Date: 2020-12-12"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3058](https://github.com/rust-lang/rfcs/pull/3058)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#84277](https://github.com/rust-lang/rust/"
+"issues/84277)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:9
+msgid ""
+"Replace [RFC #1859, `try_trait`](https://rust-lang.github.io/rfcs/1859-try-"
+"trait.html), with a new design for the currently-unstable [`Try` trait]"
+"(https://doc.rust-lang.org/nightly/std/ops/trait.Try.html) and corresponding "
+"desugaring for the `?` operator."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:13
+msgid ""
+"The new design includes support for all _intentional_ interconversions. It "
+"proposes removing the _accidental_ interconversions, as a crater run "
+"demonstrated that would be feasible, however includes an alternative system "
+"that can support them as a low-support-cost edition mechanism if needed."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:18
+msgid ""
+"_This is [forward-looking](#future-possibilities) to be compatible with "
+"other features, like [`try {}`](https://doc.rust-lang.org/nightly/unstable-"
+"book/language-features/try-blocks.html) blocks or [`yeet e`](https://twitter."
+"com/josh_triplett/status/1248658754976927750) expressions or [`Iterator::"
+"try_find`](https://github.com/rust-lang/rust/issues/63178), but the statuses "
+"of those features are **not** themselves impacted by this RFC._"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:24
+msgid "Motivation"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:27
+msgid ""
+"The motivations from the previous RFC still apply (supporting more types, "
+"and restricted interconversion). However, new information has come in since "
+"the previous RFC, making people wish for a different approach."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:30
+msgid ""
+"Using the \"error\" terminology is a poor fit for other potential "
+"implementations of the trait."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:31
+msgid ""
+"The previous RFC's mechanism for controlling interconversions proved "
+"ineffective, with inference meaning that people did it unintentionally."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:32
+msgid ""
+"It's no longer clear that `From` should be part of the `?` desugaring for "
+"_all_ types.  It's both more flexible -- making inference difficult -- and "
+"more restrictive -- especially without specialization -- than is always "
+"desired."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:33
+msgid ""
+"An [experience report](https://github.com/rust-lang/rust/"
+"issues/42327#issuecomment-366840247) in the tracking issue mentioned that "
+"it's annoying to need to make a residual type in common cases."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:35
+msgid ""
+"This RFC proposes a solution that _mixes_ the two major options considered "
+"last time."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:37
+msgid ""
+"Like the _reductionist_ approach, this RFC proposes an unparameterized trait "
+"with an _associated_ type for the \"ok\" part, so that the type produced "
+"from the `?` operator on a value is always the same."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:38
+msgid ""
+"Like the [_essentialist_ approach](https://github.com/rust-lang/rfcs/blob/"
+"master/text/1859-try-trait.md#the-essentialist-approach), this RFC proposes "
+"a trait with a _generic_ parameter for \"error\" part, so that different "
+"types can be consumed."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:44
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:47
+msgid "The `ops::ControlFlow` type"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:49
+msgid "This is a simple enum:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:52 src/3058-try-trait-v2.md:346
+msgid "/// Exit the operation without running subsequent phases.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:54 src/3058-try-trait-v2.md:348
+msgid "/// Move on to the next phase of the operation as normal.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:59
+msgid ""
+"It's intended for exposing things (like graph traversals or visitor) where "
+"you want the user to be able to choose whether to exit early.  Using an enum "
+"is clearer than just using a bool -- what did `false` mean again? -- as well "
+"as [allows it to carry a value](https://github.com/rust-lang/rust/"
+"pull/78779#pullrequestreview-524885131), if desired."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:61
+msgid ""
+"For example, you could use it to expose a simple tree traversal in a way "
+"that lets the caller exit early if they want:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:78
+msgid ""
+"Now, you _could_ write the same thing with `Result<(), B>` instead.  But "
+"that would require that the passed-in closure use `Err(value)` to early-exit "
+"the traversal, which can cause mental dissonance when that exit is because "
+"it successfully found the value for which it was looking.  Using "
+"`ControlFlow::Break(value)` instead avoids that prejudice, the same way that "
+"`break val` in a `loop` doesn't inherently mean success nor failure."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:80
+msgid "The `Try` trait"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:82
+msgid ""
+"The `ops::Try` trait describes a type's behavior when used with the `?` "
+"operator, like how the `ops::Add` trait describes its behavior when used "
+"with the `+` operator."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:84
+msgid ""
+"At its core, the `?` operator is about splitting a type into its two parts:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:86
+msgid ""
+"The _output_ that will be returned from the `?` expression, with which the "
+"program will continue, and"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:87
+msgid ""
+"The _residual_ that will be returned to the calling code, as an early exit "
+"from the normal flow."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:89
+msgid ""
+"(Oxford's definition for a residual is \"a quantity remaining after other "
+"things have been subtracted or allowed for\", thus the use here.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:91
+msgid ""
+"The `Try` trait also has facilities for rebuilding a type from either of its "
+"parts.  This is needed to build the final return value from a function, both "
+"in `?` and in methods generic over multiple types implementing `Try`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:93
+msgid ""
+"Here's a quick overview of a few standard types which implement `Try`, their "
+"corresponding output and residual types, and the functions which convert "
+"between them. (Full details will come later; the goal for now is just to get "
+"the general idea.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:106
+msgid ""
+"If you've used `?`\\-on-`Result` before, that output type is likely "
+"unsurprising.  Since it's given out directly from the operator, there's not "
+"much of a choice."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:108
+msgid ""
+"The residual types, however, are somewhat more interesting.  Code using `?` "
+"doesn't see them directly -- their usage is hidden inside the desugaring -- "
+"so there are more possibilities available.  So why are we using these ones "
+"specifically?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:110
+msgid ""
+"Most importantly, this gives each family of types (`Result`s, `Option`s, "
+"`ControlFlow`s) their own _distinct_ residual type.  That avoids "
+"unrestricted _interconversion_ between the different types, the ability to "
+"arbitrarily mix them in the same method.  For example, like in the traversal "
+"example earlier, just because a `ControlFlow::Break` is also an early exit, "
+"that doesn't mean that it should be allowed to consider it a `Result::Err` "
+"-- it might be a success, conceptually.  So by giving `ControlFlow<X, _>` "
+"and `Result<_, X>` different residual types, it becomes a compilation error "
+"to use the `?` operator on a `ControlFlow` in a method which returns a "
+"`Result`, and vice versa.  (There are also ways to allow interconversion "
+"where it's desirable between a particular pair of types.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:112 src/3058-try-trait-v2.md:170
+msgid "🏗️ Note for those familiar with the previous RFC 🏗️"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:114
+msgid ""
+"This is the most critical semantic difference.  Structurally this definition "
+"of the trait is very similar to the previous -- there's still a method "
+"splitting the type into a discriminated union between two associated types, "
+"and constructors to rebuild it from them.  But by keeping the \"result-"
+"ness\" or \"option-ness\" in the residual type, it gives extra control over "
+"interconversion that wasn't possible before.  The changes other than this "
+"are comparatively minor, typically either rearrangements to work with that "
+"or renamings to change the vocabulary used in the trait."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:116
+msgid ""
+"Using `!` is then just a convenient yet efficient way to create those "
+"residual types.  It's nice as a user, too, not to need to understand an "
+"additional type.  Just the same \"it can't be that one\" pattern that's also "
+"used in `TryFrom`, where for example `i32::try_from(10_u8)` gives a "
+"`Result<i32, !>`, since it's a widening conversion which cannot fail.  Note "
+"that there's nothing special going on with `!` here -- any uninhabited "
+"`enum` would work fine."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:119
+msgid "How error conversion works"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:121
+msgid ""
+"One thing [The Book mentions](https://doc.rust-lang.org/stable/book/ch09-02-"
+"recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--"
+"operator), if you recall, is that error values in `?` have `From::from` "
+"called on them, to convert from one error type to another."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:124
+msgid ""
+"The previous section actually lied to you slightly: there are _two_ traits "
+"involved, not just one.  The `from_residual` method is on `FromResidual`, "
+"which is generic so that the implementation on `Result` can add that extra "
+"conversion.  Specifically, the trait looks like this:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:132
+msgid ""
+"And while we're showing code, here's the exact definition of the `Try` trait:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:143
+msgid ""
+"The fact that it's a super-trait like that is why I don't feel bad about the "
+"slight lie: Every `T: Try` _always_ has a `from_residual` function from `T::"
+"Residual` to `T`.  It's just that some types might offer more."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:145
+msgid "Here's how `Result` implements `FromResidual` to do error-conversions:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:156
+msgid ""
+"But `Option` doesn't need to do anything exciting, so just has a simple "
+"implementation, taking advantage of the default parameter:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:168
+msgid ""
+"In your own types, it's up to you to decide how much freedom is "
+"appropriate.  You can even enable interconversion by defining "
+"implementations from the residual types of other families if you'd like.  "
+"But just supporting your one residual type is ok too."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:172
+msgid ""
+"This is another notable difference: The `From::from` is up to the trait "
+"implementation, not part of the desugaring."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:175
+msgid "Implementing `Try` for a non-generic type"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:177
+msgid ""
+"The examples in the standard library are all generic, so serve as good "
+"examples of that, but non-generic implementations are also possible."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:179
+msgid ""
+"Suppose we're working on migrating some C code to Rust, and it's still using "
+"the common \"zero is success; non-zero is an error\" pattern.  Maybe we're "
+"using a simple type like this to stay ABI-compatible:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:189
+msgid ""
+"We can implement `Try` for that type to simplify the code without changing "
+"the error model."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:191
+msgid ""
+"First, we'll need a residual type.  We can make this a simple newtype, and "
+"conveniently there's a type with a niche for exactly the value that this "
+"can't hold.  This is only used inside the desugaring, so we can leave it "
+"opaque -- nobody but us will need to create or inspect it."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:197
+msgid ""
+"With that, it's straight-forward to implement the traits.  `NonZeroI32`'s "
+"constructor even does exactly the check we need in `Try::branch`:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:220
+msgid ""
+"Aside: As a nice bonus, the use of a `NonZero` type in the residual means "
+"that `<ResultCode as Try>::branch` [compiles down to a nop](https://rust."
+"godbolt.org/z/GxeYax) on the current nightly.  Thanks, enum layout "
+"optimizations!"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:222
+msgid ""
+"Now, this is all great for keeping the interface that the other unmigrated C "
+"code expects, and can even work in `no_std` if we want.  But it might also "
+"be nice to give other _Rust_ code that uses it the option to convert things "
+"into a `Result` with a more detailed error."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:224
+msgid "For expository purposes, we'll use this error type:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:230
+msgid ""
+"(A real one would probably be more complicated and have a better name, but "
+"this will work for what we need here -- it's bigger and needs non-core "
+"things to work.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:232
+msgid ""
+"We can allow `?` on a `ResultCode` in a method returning `Result` with an "
+"implementation like this:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:236
+msgid "\"Something fancy about {} at {:?}\""
+msgstr ""
+
+#: src/3058-try-trait-v2.md:241
+msgid ""
+"_The split between different error strategies in this section is inspired by "
+"[`windows-rs`](https://github.com/microsoft/windows-rs), which has both "
+"[`ErrorCode`](https://microsoft.github.io/windows-docs-rs/doc/bindings/"
+"windows/struct.ErrorCode.html) -- a simple newtype over `u32` -- and "
+"[`Error`](https://microsoft.github.io/windows-docs-rs/doc/bindings/windows/"
+"struct.Error.html) -- a richer type that can capture a stack trace, has an "
+"`Error` trait implementation, and can carry additional debugging information "
+"-- where the former can be converted into the latter._"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:244
+msgid "Using these traits in generic code"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:246
+msgid ""
+"`Iterator::try_fold` has been stable to call (but not to implement) for a "
+"while now.  To illustrate the flow through the traits in this RFC, let's "
+"implement our own version."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:248
+msgid ""
+"As a reminder, an infallible version of a fold looks something like this:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:262
+msgid ""
+"So instead of `f` returning just an `A`, we'll need it to return some other "
+"type that produces an `A` in the \"don't short circuit\" path.  "
+"Conveniently, that's also the type we need to return from the function."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:264
+msgid ""
+"Let's add a new generic parameter `R` for that type, and bound it to the "
+"output type that we want:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:275
+msgid ""
+"`Try` is also the trait we need to get the updated accumulator from `f`'s "
+"return value and return the result if we manage to get through the entire "
+"iterator:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:293
+msgid ""
+"We'll also need `FromResidual::from_residual` to turn the residual back into "
+"the original type.  But because it's a supertrait of `Try`, we don't need to "
+"mention it in the bounds.  All types which implement `Try` can always be "
+"recreated from their corresponding residual, so we'll just call it:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:311
+msgid ""
+"But this \"call `branch`, then `match` on it, and `return` if it was a "
+"`Break`\" is exactly what happens inside the `?` operator.  So rather than "
+"do all this manually, we can just use `?` instead:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:338
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:341
+msgid "`ops::ControlFlow`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:353
+msgid "The traits"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:357
+msgid ""
+"/// The type of the value consumed or produced when not short-circuiting.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:360
+msgid ""
+"/// A type that \"colours\" the short-circuit value so it can stay "
+"associated\n"
+"    /// with the type constructor from which it came.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:364
+msgid "/// Used in `try{}` blocks to wrap the result of the block.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:367
+msgid ""
+"/// Determine whether to short-circuit (by returning `ControlFlow::Break`)\n"
+"    /// or continue executing (by returning `ControlFlow::Continue`).\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:373
+msgid "/// Recreate the type implementing `Try` from a related residual\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:378
+msgid "Expected laws"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:380
+msgid "What comes out is what you put in:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:381
+msgid ""
+"`<T as Try>::from_output(x).branch()` ⇒ `ControlFlow::Continue(x)` (aka `try "
+"{ x }?` ⇒ `x`)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:382
+msgid ""
+"`<T as Try>::from_residual(x).branch()` ⇒ `ControlFlow::Break(x)` (maybe aka "
+"something like `try { yeet e }` ⇒ `Err(e)`, see the future possibilities)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:384
+msgid "You can recreate what you split up:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:385
+msgid ""
+"`match x.branch() { ControlFlow::Break(r) => Try::from_residual(r), "
+"ControlFlow::Continue(v) => Try::from_output(v) }` ⇒ `x` (aka `try { x? }` ⇒ "
+"`x`)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:387
+msgid "Desugaring `?`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:389
+msgid "The previous desugaring of `x?` was"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:398
+msgid "The new one is very similar:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:407
+msgid ""
+"The critical difference is that conversion (such as `From::from`) is left up "
+"to the implementation instead of forcing it in the desugar."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:409
+msgid "Standard implementations"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:411
+msgid "`Result`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:441
+msgid "`Option`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:471
+msgid "`Poll`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:473
+msgid ""
+"These reuse `Result`'s residual type, and thus interconversion between "
+"`Poll` and `Result` is allowed without needing additional `FromResidual` "
+"implementations on `Result`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:530
+msgid "`ControlFlow`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:558
+msgid "Use in `Iterator`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:560
+msgid ""
+"The provided implementation of `try_fold` is already just using `?` and "
+"`try{}`, so doesn't change.  The only difference is the name of the "
+"associated type in the bound:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:586
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:589
+msgid ""
+"While this handles a known accidental stabilization, it's possible that "
+"there's something else unknown that will keep this from being doable while "
+"meeting Rust's stringent stability guarantees."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:590
+msgid ""
+"The extra complexity of this approach, compared to either of the "
+"alternatives considered the last time around, might not be worth it."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:591
+msgid ""
+"This is the fourth attempt at a design in this space, so it might not be the "
+"right one either."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:592
+msgid ""
+"As with all overloadable operators, users might implement this to do "
+"something weird."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:593
+msgid ""
+"In situations where extensive interconversion is desired, this requires more "
+"implementations."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:594
+msgid ""
+"Moving `From::from` from the desugaring to the implementations means that "
+"implementations which do want it are more complicated."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:600
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:603
+msgid "Why `ControlFlow` pulls its weight"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:605
+msgid ""
+"The previous RFC discussed having such a type, but ended up deciding that "
+"defining a new type for the desugar wasn't worth it, and just used `Result`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:607
+msgid ""
+"This RFC does use a new type because one already [exists in nightly](https://"
+"doc.rust-lang.org/nightly/std/ops/enum.ControlFlow.html) under [the "
+"`control_flow_enum` feature gate](https://github.com/rust-lang/rust/"
+"issues/75744). It's being used in [the library](https://github.com/rust-lang/"
+"rust/blob/fd34606ddf02d1e9364e459b373a6ad665c3d8a4/library/core/src/iter/"
+"traits/iterator.rs#L2239-L2252) and [the compiler](https://github.com/rust-"
+"lang/rust/blob/c609b2eaf323186a1167ec1a9ffa69a7d4a5b1b9/compiler/"
+"rustc_middle/src/ty/fold.rs#L184-L206), demonstrating that it's useful "
+"beyond just this desugaring, so the desugar might as well use it too for "
+"extra clarity. There are also [ecosystem changes waiting on something like "
+"it](https://github.com/rust-itertools/itertools/"
+"issues/469#issuecomment-677729589), so it's not just a compiler-internal "
+"need."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:611
+msgid "Methods on `ControlFlow`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:613
+msgid ""
+"On nightly there are a [variety of methods](https://doc.rust-lang.org/"
+"nightly/std/ops/enum.ControlFlow.html#implementations) available on "
+"`ControlFlow`.  However, none of them are needed for the stabilization of "
+"the traits, so they left out of this RFC.  They can be considered by libs at "
+"a later point."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:615
+msgid ""
+"There's a basic set of simple ones that could be included if desired, though:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:625
+msgid "Traits for `ControlFlow`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:627
+msgid ""
+"`ControlFlow` derives a variety of traits where they have obvious "
+"behaviour.  It does not, however, derive `PartialOrd`/`Ord`.  They're left "
+"out as it's unclear which order, if any, makes sense between the variants."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:629
+msgid ""
+"For `Option`s, `None < Some(_)`, but for `Result`s, `Ok(_) < Err(_)`.  So "
+"there's no definition for `ControlFlow` that's consistent with the "
+"isomorphism to both types."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:631
+msgid ""
+"Leaving it out also leaves us free to change the ordering of the variants in "
+"the definition in case doing so can allow us to optimize the `?` operator.  "
+"(For a similar previous experiment, see [PR #49499](https://github.com/rust-"
+"lang/rust/pull/49499).)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:633
+msgid "Naming the variants on `ControlFlow`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:635
+msgid ""
+"The variants are given those names as they serve the same purpose as the "
+"corresponding keywords when used in `Iterator::try_fold` or `Iterator::"
+"try_for_each`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:638
+msgid "For example, this (admittedly contrived) loop"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:648
+msgid "can be written as"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:658
+msgid ""
+"(Of course, one wouldn't normally use the `continue` keyword at the end of a "
+"`for` loop like that, but I've included it here to emphasize that even the "
+"`ControlFlow::Continue(())` as the final expression of the block it ends up "
+"working like the keyword would.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:660
+msgid "Why `ControlFlow` has `C = ()`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:662
+msgid ""
+"The type that eventually became `ControlFlow` was originally added way back "
+"in 2017 as [the internal-only type `LoopState`](https://github.com/rust-lang/"
+"rust/commit/"
+"b32267f2c1344d37c4aa30eccd5a9ab77642b3e6#diff-6f95fa6b66f447d11bb7507f832027237ee240310c159c74495a2363c82e76d7R357-"
+"R376) used to make some default implementations in `Iterator` easier to "
+"read.  It had no type parameter defaults."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:664
+msgid ""
+"[Issue #75744](https://github.com/rust-lang/rust/issues/75744) in 2020 "
+"started the process of exposing it, coming out of the [observation](https://"
+"github.com/rust-itertools/itertools/issues/469) that `Iterator::try_fold` "
+"isn't a great replacement for the deprecated-at-the-time `Itertools::"
+"fold_while` since using `Err` for a conceptual success makes code hard to "
+"read."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:666
+msgid ""
+"The compiler actually had [its own version of the type](https://github.com/"
+"rust-lang/rust/blob/515c9fa505e18a65d7f61bc3e9eb833b79a68618/src/"
+"librustc_data_structures/graph/iterate/mod.rs#L91-L94) in "
+"`librustc_data_structures` at the time:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:674
+msgid ""
+"The compiler was moved over to the newly-exposed type, and that inspired the "
+"creation of [MCP#374](https://github.com/rust-lang/compiler-team/"
+"issues/374), TypeVisitor: use ops::ControlFlow instead of bool.  Experience "
+"from that lead to flipping the type arguments in [PR#76614](https://github."
+"com/rust-lang/rust/pull/76614) -- which also helped the original use cases "
+"in `Iterator`, where things like default implementation of `find` also want "
+"`C = ()`.  And these were so successful that it lead to [MCP#383](https://"
+"github.com/rust-lang/compiler-team/issues/383), TypeVisitor: do not hard-"
+"code a `ControlFlow<()>` result, having the visitors use `ControlFlow<Self::"
+"BreakTy>`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:676
+msgid ""
+"As an additional anecdote that `C = ()` is particularly common, [Hytak "
+"mentioned the following](https://discord.com/"
+"channels/530598289813536771/530603542138847242/807920021728264193) on "
+"Discord in response to seeing a draft of this RFC:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:678
+msgid ""
+"i didn't read your proposal in depth, but this reminds me of a recursive "
+"search function i experimented with a few days ago. It used a Result type as "
+"output, where Err(value) meant that it found the value and Ok(()) meant that "
+"it didn't find the value. That way i could use the `?` to exit early"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:680
+msgid ""
+"So when thinking about `ControlFlow`, it's often best to think of it not "
+"like `Result`, but like an `Option` which short-circuits the other variant.  "
+"While it _can_ flow a `Continue` value, that seems to be a fairly uncommon "
+"use in practice."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:682
+msgid "Was this considered last time?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:684
+msgid ""
+"Interestingly, a [previous version](https://github.com/rust-lang/rfcs/blob/"
+"f89568b1fe5db4d01c4668e0d334d4a5abb023d8/text/0000-try-trait.md#using-an-"
+"associated-type-for-the-success-value) of RFC #1859 _did_ actually mention a "
+"two-trait solution, splitting the \"associated type for ok\" and \"generic "
+"type for error\" like is done here.  It's no longer  mentioned in the "
+"version that was merged.  To speculate, it may have been unpopular due to a "
+"thought that an extra traits just for the associated type wasn't worth it."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:686
+msgid ""
+"Current desires for the solution, however, have more requirements than were "
+"included in the RFC at the time of that version.  Notably, the stabilized "
+"`Iterator::try_fold` method depends on being able to create a `Try` type "
+"from the accumulator.  Including such a constructor on the trait with the "
+"associated type helps that separate trait provide value."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:688
+msgid ""
+"Also, ok-wrapping was decided [in #70941](https://github.com/rust-lang/rust/"
+"issues/70941), which needs such a constructor, making this [\"much more "
+"appealing\"](https://github.com/rust-lang/rust/"
+"issues/42327#issuecomment-379882998)."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:690
+msgid "Why not make the output a generic type?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:692
+msgid "It's helpful that type information can flow both ways through `?`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:694
+msgid ""
+"In the forward direction, not needing a contextual type means that `println!"
+"(\"{}\", x?)` works instead of needing a type annotation.  (It's also just "
+"less confusing to have `?` on the same type always produce the same type.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:695
+msgid ""
+"In the reverse direction, it allows things like `let x: i32 = s.parse()?;` "
+"to infer the requested type from that annotation, rather than requiring it "
+"be specified again."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:697
+msgid ""
+"Similar scenarios exist for `try`, though of course they're not yet stable:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:699
+msgid ""
+"`let y: anyhow::Result<_> = try { x };` doesn't need to repeat the type of "
+"`x`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:700
+msgid ""
+"`let x: i16 = { 4 };` works for infallible code, so for consistency it's "
+"good for `let x: anyhow::Result<i16> = try { 4 };` to also work (rather than "
+"default the literal to `i32` and fail)."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:702
+msgid "Why does `FromResidual` take a generic type?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:704
+msgid ""
+"The simplest case is that the already-stable error conversions require a "
+"generic _somewhere_ in the error path in the desugaring.  In the RFC #1859 "
+"implementation, that generic comes from using `From::from` in the desugaring."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:706
+msgid ""
+"However, more experience with trying to use `Try` for scenarios other than "
+"\"the early exit is an error\" have shown that _forcing_ this on everything "
+"is inappropriate.  `ControlFlow`, for example, would rather not have it, for "
+"the same kinds of reasons that `return` and `break`\\-from-`loop` don't "
+"implicitly call it.  `Option` may not care, as it only ever gets applied for "
+"`None`⇒`None`, but that's not really a glowing endorsement."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:708
+msgid ""
+"But even for the error path, forcing `From` causes problems, notably because "
+"of its identity impl.  [`anyhow`](https://lib.rs/crates/anyhow)'s `Error` "
+"type, for example, doesn't implement `std::error::Error` because that would "
+"prevent it from being `From`\\-convertible from any `E: std::error::Error` "
+"type.  The [error handling project group](https://blog.rust-lang.org/inside-"
+"rust/2020/09/18/error-handling-wg-announcement.html) under libs has "
+"experimented with a prototype toolchain with this RFC implemented, and is "
+"[excited](https://rust-lang.zulipchat.com/#narrow/stream/257204-project-"
+"error-handling/topic/"
+"separating.20From.3CE.3A.20Error.3E.20from.20Box.3Cdyn.20Error.3E) at the "
+"possibilities that could come from being free of this restriction:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:710
+msgid ""
+"my mind is exploding, the possibility of all error types implementing error "
+"the way they actually should has such massive implications for the rest of "
+"the error reporting stuff we've been working on"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:712
+msgid ""
+"As a bonus, moving conversion (if any) into the `FromResidual` "
+"implementation may actually speed up the compiler -- the simpler desugar "
+"means generating less HIR, and thus less work for everything thereafter (up "
+"to LLVM optimizations, at least).  The `serde` crate has [their own macro]"
+"(https://github.com/serde-rs/serde/blob/"
+"b0c99ed761d638f2ca2f0437522e6c35ad254d93/serde_derive/src/try.rs#L3-L6) for "
+"error propagation which omits `From`\\-conversion as they see a "
+"\"significant improvement\" from doing so."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:714
+msgid "Why not merge `Try` and `FromResidual`?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:716
+msgid ""
+"This RFC treats them as conceptually the same trait -- there are no types "
+"proposed here to implement `FromResidual<_>` which don't also implement "
+"`Try` -- so one might wonder why they're not merged into one `Try<R>`.  "
+"After all, that would seem to remove the duplication between the associated "
+"type and the generic type, as something like"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:726
+msgid ""
+"This, however, is technically too much freedom.  Looking at the error "
+"propagation case, it would end up calling both `Try<?R1>::branch` and `Try<?"
+"R2>::from_residual`.  With the implementation for `Result`, where those "
+"inference variables go through `From`, there's no way to pick what they "
+"should be, similar to how `.into().into()` doesn't compile.  And even "
+"outside the desugaring, this would make `Try::from_output(x)` no longer "
+"work, since the compiler would (correctly) insist that the desired residual "
+"type be specified."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:728
+msgid ""
+"And even for a human, it's not clear that this freedom is helpful.  While "
+"any trait can be implemented weirdly, one good part of RFC #1859 that this "
+"one hopes to retain is that one doesn't need to know contextual information "
+"to understand what comes out of `?`.  Whereas any design that puts `branch` "
+"on a generic trait would mean it'd be possible for `?` to return different "
+"things depending on that generic type parameter -- unless the associated "
+"type were split out into a separate trait, but that just reopens the \"why "
+"are they different traits\" conversation again, without solving the other "
+"issues."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:730
+msgid "Naming the `?`\\-related traits and associated types"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:732
+msgid ""
+"This RFC introduces the _residual_ concept as it was helpful to have a name "
+"to talk about in the guide section.  (A previous version proved unclear, "
+"perhaps in part due to it being difficult to discuss something without "
+"naming it.)  But the `fn branch(self) -> ControlFlow<Self::Residual, Self::"
+"Output>` API is not necessarily obvious."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:734
+msgid ""
+"A different scheme might be clearer for people.  For example, there's some "
+"elegance to matching the variant names by using `fn branch(self) -> "
+"ControlFlow<Self::Break, Self::Continue>`.  Or perhaps there are more "
+"descriptive names, like `KeepGoing`/`ShortCircuit`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:736
+msgid "As a sketch, one of those alternatives might look something like this:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:749
+msgid ""
+"However the \"boring\" `Output` name does have the advantage that one "
+"doesn't need to remember a special name, as it's the same as the other "
+"operator traits.  (For precedent, it's `Add::Output` and `Div::Output` even "
+"if one could argue that `Add::Sum` or `Div::Quotient` would be more "
+"\"correct\", in a sense.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:751 src/3058-try-trait-v2.md:819
+msgid ""
+"ℹ Per feedback from T-libs, this is left as an unresolved question for the "
+"RFC, to be resolved in nightly."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:753
+msgid "Splitting up `Try` more"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:755
+msgid ""
+"This RFC encourages one to think of a `Try` type holistically, as something "
+"that supports all three of the core operations, with expected rules between "
+"them."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:757
+msgid ""
+"That's not necessarily the way it should go.  It could be different, like "
+"there's no guarantee that `Add` and `AddAssign` work consistently, nor that "
+"`Add` and `Sub` are inverses."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:759
+msgid ""
+"Notably, the this proposal has both an _introduction_ rule (`Try::"
+"from_output`) and _elimination_ rule (`Try::branch`), in the [Gentzian sense]"
+"(https://en.wikipedia.org/wiki/"
+"Natural_deduction#Introduction_and_elimination), on the same trait.  That "
+"means that an implementor will need to support both, which could restrict "
+"the set of type with which `?` (and `try` and `yeet`) could be used."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:761
+msgid ""
+"One unknown question here is whether this is important for any FFI "
+"scenarios.  Often error APIs come in pairs (like Win32's [`GetLastError`]"
+"(https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-"
+"errhandlingapi-getlasterror) and [`SetLastError`](https://docs.microsoft.com/"
+"en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-setlasterror)), but "
+"some libraries may only give them out without allowing updating them to a "
+"custom value.  It's unclear whether such a thing would want to be exposed as "
+"`?` on some ZST, and thus would need a trait split to work, or whether it "
+"would be sufficient to load such things into a `?`\\-supporting type where "
+"supporting `from_residual` would be simple."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:763
+msgid ""
+"In pure rust, one could also imagine types where it might be interesting to "
+"allow _introduction_ rules but not _elimination_ rules.  With `try` blocks, "
+"one could perhaps have something like"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:771
+msgid ""
+"which works by allowing `from_residual` from any `Result<_, _>::Residual`, "
+"as well as `from_output` from `()`.  On such a type there's no real _use_ in "
+"allowing `?` on the result, but at the same time it wouldn't be a hardship "
+"to offer it."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:773
+msgid ""
+"The split currently in the proposal, though it's there for other reasons, "
+"would allow a small version of this: it would be possible to add an "
+"implementation like `impl FromResidual<Result<!, !>> for ()`, which would "
+"allow code like `u64::try_from(123_u16)?` even in a method that returns "
+"unit.  That has a number of issues, however, like only supporting `-> ()` "
+"and not other things like `-> i32` where one would probably also expect it "
+"to work, and it could not be a generic implementation without some form of "
+"specialization, as it would conflict with the desired implementation on "
+"`Result`.  And even if it did work, it's not clear that allowing `?` here is "
+"the clearest option -- other options [such as an `always_ok` method on "
+"`Result<T, !>`](https://github.com/rust-lang/rfcs/issues/1723) might be "
+"superior anyway."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:775
+msgid ""
+"Another downside of the flexibility is that the structure of the traits "
+"would be somewhat more complicated."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:777
+msgid "The simplest split would just move each method to its own trait,"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:792
+msgid ""
+"but that loses the desired property that the returned-by-`?` and expected-by-"
+"`try` types match for types which _do_ implement both."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:794
+msgid ""
+"One way to fix that would be to add another trait for that associated type, "
+"perhaps something like"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:812
+msgid ""
+"But this has still lost the simplicity of the `R: Try` bound for use in "
+"simple cases like `try_fold`.  (And, in fact, all designs that allow types "
+"to choose them independently have that issue.)  That may mean that it would "
+"also be useful to add yet another item, a trait alias to tie everything "
+"together in the \"usual\" way again.  Perhaps it would look something like "
+"this:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:817
+msgid ""
+"There are probably also useful intermediary designs here.  Perhaps the "
+"`IgnoreAllErrors` example above suggests that _introduction_ on its own is "
+"reasonable, but _elimination_ should require that both be supported.  That's "
+"also the direction that would make sense for `?` in infallible functions: "
+"it's absolutely undesirable for `()?????` to compile, but it might be fine "
+"for all return types to support something like `T: FromResidual<!>` "
+"eventually."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:821
+msgid "Why a \"residual\" type is better than an \"error\" type"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:823
+msgid ""
+"Most importantly, for any type generic in its \"output type\" it's easy to "
+"produce a residual type using an uninhabited type.  That works for `Option` "
+"-- no `NoneError` residual type needed -- as well as for the `StrandFail<T>` "
+"type from the experience report.  And thanks to enum layout optimizations, "
+"there's no space overhead to doing this: `Option<!>` is a ZST, and "
+"`Result<!, E>` is no larger than `E` itself.  So most of the time one will "
+"not need to define anything additional."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:825
+msgid ""
+"In those cases where a separate type _is_ needed, it's still easier to make "
+"a residual type because they're transient and thus can be opaque: there's no "
+"point at which a user is expected to _do_ anything with a residual type "
+"other than convert it back into a known `Try` type.  This is different from "
+"the previous design, where less-restrictive interconversion meant that "
+"anything could be exposed via a `Result`.  That has lead to requests, [such "
+"as for `NoneError` to implement `Error`](https://github.com/rust-lang/rust/"
+"issues/46871#issuecomment-618186642), that are perfectly understandable "
+"given that the instances are exposed in `Result`s.  As residual types aren't "
+"ever exposed like that, it would be fine for them to implement nothing but "
+"`FromResidual` (and probably `Debug`), making them cheap to define and "
+"maintain."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:827
+msgid "Use of `!`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:829
+msgid ""
+"This RFC uses `!` to be concise.  It would work fine with `convert::"
+"Infallible` instead if `!` has not yet stabilized, though a few more match "
+"arms would be needed in the implementations.  (For example, `Option::"
+"from_residual` would need `Some(c) => match c {}`.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:831
+msgid "Why `FromResidual` is the supertrait"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:833
+msgid ""
+"It's nicer for `try_fold` implementations to just mention the simpler `Try` "
+"name.  It being the subtrait means that code needing only the basic scenario "
+"can just bound on `Try` and know that both `from_output` and `from_residual` "
+"are available."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:835
+msgid "Default `Residual` on `FromResidual`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:837
+msgid ""
+"The default here is provided to make the basic case simple.  It means that "
+"when implementing the trait, the simple case (like in `Option`) doesn't need "
+"to think about it -- similar to how you can `impl Add for Foo` for the "
+"homogeneous case even though that trait also has a generic parameter."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:839
+msgid "`FromResidual::from_residual` vs `Residual::into_try`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:841
+msgid ""
+"Either of these directions could be made to work.  Indeed, an early "
+"experiment while drafting this had a method on a required trait for the "
+"residual that created the type implementing `Try` (not just the associated "
+"type).  However that method was removed as unnecessary once `from_residual` "
+"was added, and then the whole trait was moved to future work in order to "
+"descope the RFC, as it proved unnecessary for the essential `?`/`try_fold` "
+"functionality."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:843
+msgid ""
+"A major advantage of the `FromResidual::from_residual` direction is that "
+"it's more flexible with coherence when it comes to allowing other things to "
+"be converted into a new type being defined.  That does come at the cost of "
+"higher restriction on allowing the new type to be converted into other "
+"things, but reusing a residual can also be used for that scenario."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:845
+msgid ""
+"Converting a known residual into a generic `Try` type seems impossible "
+"(unless it's uninhabited), but consuming arbitrary residuals could work -- "
+"imagine something like"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:854
+msgid ""
+"(Not that that's necessarily a good idea -- it's plausibly _too_ generic.  "
+"This RFC definitely isn't proposing it for the standard library.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:856
+msgid ""
+"And, ignoring the coherence implications, a major difference between the two "
+"sides is that the target type is typically typed out visibly (in a return "
+"type) whereas the source type (going into the `?`) is often the result of "
+"some called function.  So it's preferable for any behaviour extensions to be "
+"on the type that can more easily be seen in the code."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:858
+msgid "Can we just remove the accidental interconversions?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:860
+msgid ""
+"This depends on how we choose to read the rules around breaking changes."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:862
+msgid ""
+"A [crater run on a prototype implementation](https://github.com/rust-lang/"
+"rust/pull/82322#issuecomment-792299734) found that some people are doing "
+"this.  PRs have been sent to the places that broke, and generally it was "
+"agreed that removing the mixing improved the code:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:864
+msgid "Definitely a good change."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:866
+msgid "Thanks for spotting that, that was indeed a confusing mix"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:868
+msgid ""
+"However another instance is in an abandoned project where the repository has "
+"been archived, so will not be fixed.  And of course if it happened 3 times, "
+"there might be more instances in the wild."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:870
+msgid "The interesting pattern boils down to this:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:876
+msgid ""
+"That means it's using `?` on an `Option`, but the closure ends up returning "
+"`Result<_, NoneError>` without needing to name the type as trait resolution "
+"discovers that it's the only possibility.  It seems reasonable that this "
+"could happen accidentally while refactoring.  That does mean, however, that "
+"the breakage could also be considered \"allowed\" as an inference change, "
+"and hypothetically additional implementations could make it ambiguous in the "
+"future.  (It's like the normal `AsRef` breakage, and fits the pattern of "
+"\"there's a way it could be written that works before and after\", though in "
+"this case the disambiguated form requires naming an unstable type.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:878
+msgid "This RFC thus proposes removing the accidental interconversions."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:880
+msgid "Compatibility with accidental interconversions (if needed)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:882
+msgid ""
+"If something happens that turns out they need to be supported, the following "
+"approach can work."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:884
+msgid "This would take a multi-step approach:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:885
+msgid "Add a new never-stable `FromResidualLegacy` trait"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:886
+msgid ""
+"Have a blanket implementation so that users interact only with `FromResidual`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:887
+msgid "Add implementations for the accidental interconversions"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:888
+msgid ""
+"Use `FromResidualLegacy` in the desugaring, [perhaps only for old editions]"
+"(https://github.com/scottmcm/rust/commit/do-or-do-not-edition)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:890
+msgid ""
+"This keeps them from being visible in the trait system on stable, as "
+"`FromResidual` (the only form that would ever stabilize, or even be "
+"mentionable) would not include them."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:896
+msgid ""
+"/// This includes all of the [`ops::FromResidual`] conversions, but\n"
+"    /// also adds the two interconversions that work in 2015 & 2018.\n"
+"    /// It will never be stable.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:909
+msgid ""
+"/// This is a remnant of the old `NoneError` which is never going to be "
+"stabilized.\n"
+"    /// It's here as a snapshot of an oversight that allowed this to work in "
+"the past,\n"
+"    /// so we're stuck supporting it even though we'd really rather not.\n"
+"    /// This will never be stabilized; use [`Option::ok_or`] to mix `Option` "
+"and `Result`.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:928
+msgid "\"try_trait_v2\""
+msgstr ""
+
+#: src/3058-try-trait-v2.md:928
+msgid "\"42327\""
+msgstr ""
+
+#: src/3058-try-trait-v2.md:945
+msgid "Prior art"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:948
+msgid "Previous approaches used on nightly"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:949
+msgid ""
+"The original [`Carrier` trait](https://doc.rust-lang.org/1.16.0/core/ops/"
+"trait.Carrier.html)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:950
+msgid ""
+"The next design with a [`Try` trait](https://doc.rust-lang.org/1.32.0/core/"
+"ops/trait.Try.html) (different from the one here)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:952
+msgid ""
+"This is definitely _monadic_.  One can define the basic monad operations for "
+"the `Maybe` monad as"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:973
+msgid ""
+"However, [like boats described for `async.await`](https://twitter.com/"
+"withoutboats/status/1027702535707090944), using monads directly isn't a "
+"great fit for rust.  `?` desugaring to a `return` (rather than closures) "
+"mixes better with the other control flow constructs, such as `break` and "
+"`continue`, that don't work through closures.  And while the definitions "
+"above work fine for `Option`, they don't allow the error-conversion that's "
+"already stable with `Result`, so any monad-based implementation of `?` "
+"wouldn't be able to be the normal monad structure regardless."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:991
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:994
+msgid "Questions from T-libs to be resolved in nightly:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:995
+msgid ""
+"What vocabulary should `Try` use in the associated types/traits?  "
+"Output+residual, continue+break, or something else entirely?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:996
+msgid ""
+"Is it ok for the two traits to be tied together closely, as outlined here, "
+"or should they be split up further to allow types that can be only-created "
+"or only-destructured?"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:998
+msgid "Implementation and Stabilization Sequencing"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1000
+msgid "`ControlFlow` is implemented in nightly already."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1001
+msgid "The traits and desugaring could go into nightly immediately."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1002
+msgid ""
+"That would allow `ControlFlow` to be considered for stabilizating, as the "
+"new desugaring would keep from stabilizing any unwanted interconversions."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1003
+msgid ""
+"Beta testing might result in reports requiring that the accidental "
+"interconversions be added back in old editions, due to crater-invisible code."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1004
+msgid ""
+"Then the unresolved naming & structure questions need to be addressed before "
+"`Try` could stabilize."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1013
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1016
+msgid ""
+"While it isn't directly used in this RFC, a particular residual type can be "
+"used to define a \"family\" of types which all share that residual."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1018
+msgid "For example, one could define a trait like this one:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1021
+msgid ""
+"/// The type from the original type constructor that also has this residual "
+"type,\n"
+"    /// but has the specified Output type.\n"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1027
+msgid "With corresponding simple implementations like these:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1038
+msgid ""
+"And thus allow code to put whatever value they want into the appropriate "
+"type from the same family."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1040
+msgid ""
+"This can be thought of as the type-level inverse of `Try`'s associated "
+"types: It splits them apart, and this puts them back together again."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1042
+msgid ""
+"(Why is this not written using Generic Associated Types (GATs)?  Because it "
+"allows implementations to work with only specific types, or with generic-but-"
+"bounded types.  Anything using it can bound to just the specific types "
+"needed for that method.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1044
+msgid ""
+"A previous version of this RFC included a trait along these lines, but it "
+"wasn't needed for the stable-at-time-of-writing scenarios.  Furthermore, "
+"some experiments demonstrated that having a bound in `Try` requiring it "
+"(something like `where Self::Residual: GetCorrespondingTryType<Self::"
+"Output>`) wasn't actually even helpful for unstable scenarios, so there was "
+"no need to include it in normative section of the RFC."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1046
+msgid "Possibilities for `try_find`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1048
+msgid ""
+"Various library methods, such as `try_map` for arrays ([PR #79713](https://"
+"github.com/rust-lang/rust/pull/79713#issuecomment-739075171)), would like to "
+"be able to do HKT-like things to produce their result types.  For example, "
+"`Iterator::try_find` wants to be able to return a `Foo<Option<Item>>` from a "
+"predicate that returned a `Foo<bool>`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1050
+msgid "That could be done with an implementation such as the following:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1083
+msgid ""
+"Similarly, it could allow `Try` to automatically provide an appropriate "
+"`map` method:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1097
+msgid "Possibilities for `try{}`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1099
+msgid ""
+"A core problem with [try blocks](https://doc.rust-lang.org/nightly/unstable-"
+"book/language-features/try-blocks.html) as implemented in nightly, is that "
+"they require their contextual type to be known."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1101
+msgid ""
+"That is, the following never compiles, no matter the types of `x` and `y`:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1110
+msgid ""
+"This usually isn't a problem on stable, as the `?` usually has a contextual "
+"type from its function, but can still happen there in closures."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1112
+msgid ""
+"But with something like `GetCorrespondingTryType`, an alternative desugaring "
+"becomes available which takes advantage of how the residual type preserves "
+"the \"result-ness\" (or whatever-ness) of the original value.  That might "
+"turn the block above into something like the following:"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1131
+msgid ""
+"(It's untested whether the inference engine is smart enough to pick the "
+"appropriate `C` with just that -- the `Output` associated type is "
+"constrained to have a `Continue` type matching the generic parameter, and "
+"that `Continue` type needs to match that of `z`, so it's possible.  But "
+"hopefully this communicates the idea, even if an actual implementation might "
+"need to more specifically introduce type variables or something.)"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1133
+msgid ""
+"That way it could compile so long as the `TryType`s of the residuals "
+"matched.  For example, [these uses in rustc](https://github.com/rust-lang/"
+"rust/blob/7cf205610e1310897f43b35713a42459e8b40c64/compiler/"
+"rustc_codegen_ssa/src/back/linker.rs#L529-L573) would work without the extra "
+"annotation."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1135
+msgid ""
+"Now, of course that wouldn't cover anything.  It wouldn't work with anything "
+"needing error conversion, for example, but annotation is also unavoidable in "
+"those cases -- there's no reasonable way for the compiler to pick \"the\" "
+"type into which all the errors are convertible."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1137
+msgid ""
+"So a future RFC could define a way (syntax, code inspection, heuristics, who "
+"knows) to pick which of the desugarings would be best.  (As a strawman, one "
+"could say that `try { ... }` uses the \"same family\" desugaring whereas "
+"`try as anyhow::Result<_> { ... }` uses the contextual desugaring.)  This "
+"RFC declines to debate those possibilities, however."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1139
+msgid ""
+"_Note that the `?` desugaring in nightly is already different depending "
+"whether it's inside a `try {}` (since it needs to block-break instead of "
+"`return`), so making it slightly more different shouldn't have excessive "
+"implementation cost._"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1141
+msgid "Possibilities for `yeet`"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1143
+msgid ""
+"As previously mentioned, this RFC neither defines nor proposes a `yeet` "
+"operator.  However, like the previous design could support one with its "
+"`Try::from_error`, it's important that this design would be sufficient to "
+"support it."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1145
+msgid ""
+"_`yeet` is a [bikeshed-avoidance](https://twitter.com/josh_triplett/"
+"status/1248658754976927750) name for `throw`/`fail`/`raise`/etc, used "
+"because it definitely won't be the final keyword._"
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1147
+msgid ""
+"Because this \"residual\" design carries along the \"result-ness\" or "
+"\"option-ness\" or similar, it means there are two possibilities for a "
+"desugaring."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1149
+msgid ""
+"It could directly take the residual type, so `yeet e` would desugar directly "
+"to `FromResidual::from_residual(e)`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1150
+msgid ""
+"It could put the argument into a special residual type, so `yeet e` would "
+"desugar to something like `FromResidual::from_residual(Yeeted(e))`."
+msgstr ""
+
+#: src/3058-try-trait-v2.md:1152
+msgid ""
+"These have various implications -- like `yeet None`/`yeet`, `yeet "
+"Err(ErrorKind::NotFound)`/`yeet ErrorKind::NotFound.into()`, etc -- but "
+"thankfully this RFC doesn't need to discuss those.  (And please don't do so "
+"in the GitHub comments either, to keep things focused, though feel free to "
+"start an IRLO or Zulip thread if you're so inspired.)"
+msgstr ""

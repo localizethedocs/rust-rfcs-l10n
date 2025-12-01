@@ -1,0 +1,386 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1200-cargo-install.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1200-cargo-install.md:2
+msgid "Start Date: 2015-07-10"
+msgstr ""
+
+#: src/1200-cargo-install.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1200](https://github.com/rust-lang/rfcs/pull/1200)"
+msgstr ""
+
+#: src/1200-cargo-install.md:4
+msgid "Rust Issue: N/A"
+msgstr ""
+
+#: src/1200-cargo-install.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1200-cargo-install.md:8
+msgid ""
+"Add a new subcommand to Cargo, `install`, which will install `[[bin]]`\\-"
+"based packages onto the local system in a Cargo-specific directory."
+msgstr ""
+
+#: src/1200-cargo-install.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/1200-cargo-install.md:13
+msgid ""
+"There has [almost always been a desire](https://github.com/rust-lang/cargo/"
+"issues/37) to be able to install Cargo packages locally, but it's been "
+"somewhat unclear over time what the precise meaning of this is. Now that we "
+"have crates.io and lots of experience with Cargo, however, the niche that "
+"`cargo install` would fill is much clearer."
+msgstr ""
+
+#: src/1200-cargo-install.md:20
+msgid ""
+"Fundamentally, however, Cargo is a ubiquitous tool among the Rust community "
+"and implementing `cargo install` would facilitate sharing Rust code among "
+"its developers.  Simple tasks like installing a new cargo subcommand, "
+"installing an editor plugin, etc, would be just a `cargo install` away. "
+"Cargo can manage dependencies and versions itself to make the process as "
+"seamless as possible."
+msgstr ""
+
+#: src/1200-cargo-install.md:26
+msgid ""
+"Put another way, enabling easily sharing code is one of Cargo's fundamental "
+"design goals, and expanding into binaries is simply an extension of Cargo's "
+"core functionality."
+msgstr ""
+
+#: src/1200-cargo-install.md:30
+msgid "Detailed design"
+msgstr ""
+
+#: src/1200-cargo-install.md:32
+msgid "The following new subcommand will be added to Cargo:"
+msgstr ""
+
+#: src/1200-cargo-install.md:80
+msgid "Installing Crates"
+msgstr ""
+
+#: src/1200-cargo-install.md:82
+msgid ""
+"Cargo attempts to be as flexible as possible in terms of installing crates "
+"from various locations and specifying what should be installed. All binaries "
+"will be stored in a **cargo-local** directory, and more details on where "
+"exactly this is located can be found below."
+msgstr ""
+
+#: src/1200-cargo-install.md:87
+msgid ""
+"Cargo will not attempt to install binaries or crates into system directories "
+"(e.g. `/usr`) as that responsibility is intended for system package managers."
+msgstr ""
+
+#: src/1200-cargo-install.md:90
+msgid ""
+"To use installed crates one just needs to add the binary path to their "
+"`PATH` environment variable. This will be recommended when `cargo install` "
+"is run if `PATH` does not already look like it's configured."
+msgstr ""
+
+#: src/1200-cargo-install.md:94
+msgid "Crate Sources"
+msgstr ""
+
+#: src/1200-cargo-install.md:96
+msgid ""
+"The `cargo install` command will be able to install crates from any source "
+"that Cargo already understands. For example it will start off being able to "
+"install from crates.io, git repositories, and local paths. Like with normal "
+"dependencies, downloads from crates.io can specify a version, git "
+"repositories can specify branches, tags, or revisions."
+msgstr ""
+
+#: src/1200-cargo-install.md:102
+msgid "Sources with multiple crates"
+msgstr ""
+
+#: src/1200-cargo-install.md:104
+msgid ""
+"Sources like git repositories and paths can have multiple crates inside "
+"them, and Cargo needs a way to figure out which one is being installed. If "
+"there is more than one crate in a repo (or path), then Cargo will apply the "
+"following heuristics to select a crate, in order:"
+msgstr ""
+
+#: src/1200-cargo-install.md:109
+msgid "If the `-p` argument is specified, use that crate."
+msgstr ""
+
+#: src/1200-cargo-install.md:110
+msgid "If only one crate has binaries, use that crate."
+msgstr ""
+
+#: src/1200-cargo-install.md:111
+msgid "If only one crate has examples, use that crate."
+msgstr ""
+
+#: src/1200-cargo-install.md:112
+msgid "Print an error suggesting the `-p` flag."
+msgstr ""
+
+#: src/1200-cargo-install.md:114
+msgid "Multiple binaries in a crate"
+msgstr ""
+
+#: src/1200-cargo-install.md:116
+msgid ""
+"Once a crate has been selected, Cargo will by default build all binaries and "
+"install them. This behavior can be modified with the `--bin` or `--example` "
+"flags to configure what's installed on the local system."
+msgstr ""
+
+#: src/1200-cargo-install.md:120
+msgid "Building a Binary"
+msgstr ""
+
+#: src/1200-cargo-install.md:122
+msgid ""
+"The `cargo install` command has some standard build options found on `cargo "
+"build` and friends, but a key difference is that `--release` is the default "
+"for installed binaries so a `--debug` flag is present to switch this back to "
+"debug-mode. Otherwise the `--features` flag can be specified to activate "
+"various features of the crate being installed."
+msgstr ""
+
+#: src/1200-cargo-install.md:128
+msgid ""
+"The `--target` option is omitted as `cargo install` is not intended for "
+"creating cross-compiled binaries to ship to other platforms."
+msgstr ""
+
+#: src/1200-cargo-install.md:131
+msgid "Conflicting Crates"
+msgstr ""
+
+#: src/1200-cargo-install.md:133
+msgid ""
+"Cargo will not namespace the installation directory for crates, so conflicts "
+"may arise in terms of binary names. For example if crates A and B both "
+"provide a binary called `foo` they cannot be both installed at once. Cargo "
+"will reject these situations and recommend that a binary is selected via `--"
+"bin` or the conflicting crate is uninstalled."
+msgstr ""
+
+#: src/1200-cargo-install.md:139
+msgid "Placing output artifacts"
+msgstr ""
+
+#: src/1200-cargo-install.md:141
+msgid ""
+"The `cargo install` command can be customized where it puts its output "
+"artifacts to install packages in a custom location. The root directory of "
+"the installation will be determined in a hierarchical fashion, choosing the "
+"first of the following that is specified:"
+msgstr ""
+
+#: src/1200-cargo-install.md:146
+msgid "The `--root` argument on the command line."
+msgstr ""
+
+#: src/1200-cargo-install.md:147
+msgid "The environment variable `CARGO_INSTALL_ROOT`."
+msgstr ""
+
+#: src/1200-cargo-install.md:148
+msgid "The `install.root` configuration option."
+msgstr ""
+
+#: src/1200-cargo-install.md:149
+msgid ""
+"The value of `$CARGO_HOME` (also determined in an independent and "
+"hierarchical fashion)."
+msgstr ""
+
+#: src/1200-cargo-install.md:152
+msgid ""
+"Once the root directory is found, Cargo will place all binaries in the "
+"`$INSTALL_ROOT/bin` folder. Cargo will also reserve the right to retain some "
+"metadata in this folder in order to keep track of what's installed and what "
+"binaries belong to which package."
+msgstr ""
+
+#: src/1200-cargo-install.md:157
+msgid "Managing Installations"
+msgstr ""
+
+#: src/1200-cargo-install.md:159
+msgid ""
+"If Cargo gives access to installing packages, it should surely provide the "
+"ability to manage what's installed! The first part of this is just "
+"discovering what's installed, and this is provided via `cargo install --"
+"list`."
+msgstr ""
+
+#: src/1200-cargo-install.md:163
+msgid "Removing Crates"
+msgstr ""
+
+#: src/1200-cargo-install.md:165
+msgid ""
+"To remove an installed crate, another subcommand will be added to Cargo:"
+msgstr ""
+
+#: src/1200-cargo-install.md:185
+msgid ""
+"Cargo won't remove the source for uninstalled crates, just the binaries that "
+"were installed by Cargo itself."
+msgstr ""
+
+#: src/1200-cargo-install.md:188
+msgid "Non-binary artifacts"
+msgstr ""
+
+#: src/1200-cargo-install.md:190
+msgid ""
+"Cargo will not currently attempt to manage anything other than a binary "
+"artifact of `cargo build`. For example the following items will not be "
+"available to installed crates:"
+msgstr ""
+
+#: src/1200-cargo-install.md:194
+msgid "Dynamic native libraries built as part of `cargo build`."
+msgstr ""
+
+#: src/1200-cargo-install.md:195
+msgid "Native assets such as images not included in the binary itself."
+msgstr ""
+
+#: src/1200-cargo-install.md:196
+msgid ""
+"The source code is not guaranteed to exist, and the binary doesn't know "
+"where the source code is."
+msgstr ""
+
+#: src/1200-cargo-install.md:199
+msgid ""
+"Additionally, Cargo will not immediately provide the ability to configure "
+"the installation stage of a package. There is often a desire for a \"pre-"
+"install script\" which runs various house-cleaning tasks. This is left as a "
+"future extension to Cargo."
+msgstr ""
+
+#: src/1200-cargo-install.md:204
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1200-cargo-install.md:206
+msgid ""
+"Beyond the standard \"this is more surface area\" and \"this may want to "
+"aggressively include more features initially\" concerns there are no known "
+"drawbacks at this time."
+msgstr ""
+
+#: src/1200-cargo-install.md:210
+msgid "Alternatives"
+msgstr ""
+
+#: src/1200-cargo-install.md:212
+msgid "System Package Managers"
+msgstr ""
+
+#: src/1200-cargo-install.md:214
+msgid ""
+"The primary alternative to putting effort behind `cargo install` is to "
+"instead put effort behind system-specific package managers. For example the "
+"line between a system package manager and `cargo install` is a little "
+"blurry, and the \"official\" way to distribute a package should in theory be "
+"through a system package manager. This also has the upside of benefiting "
+"those outside the Rust community as you don't have to have Cargo installed "
+"to manage a program. This approach is not without its downsides, however:"
+msgstr ""
+
+#: src/1200-cargo-install.md:222
+msgid ""
+"There are _many_ system package managers, and it's unclear how much effort "
+"it would be for Cargo to support building packages for all of them."
+msgstr ""
+
+#: src/1200-cargo-install.md:224
+msgid ""
+"Actually preparing a package for being packaged in a system package manager "
+"can be quite onerous and is often associated with a high amount of overhead."
+msgstr ""
+
+#: src/1200-cargo-install.md:226
+msgid ""
+"Even once a system package is created, it must be added to an online "
+"repository in one form or another which is often different for each "
+"distribution."
+msgstr ""
+
+#: src/1200-cargo-install.md:230
+msgid ""
+"All in all, even if Cargo invested effort in facilitating creation of system "
+"packages, **the threshold for distribution a Rust program is still too "
+"high**. If everything went according to plan it's just unfortunately "
+"inherently complex to only distribute packages through a system package "
+"manager because of the various requirements and how diverse they are. The "
+"`cargo install` command provides a cross-platform, easy-to-use, if Rust-"
+"specific interface to installing binaries."
+msgstr ""
+
+#: src/1200-cargo-install.md:238
+msgid ""
+"It is expected that all major Rust projects will still invest effort into "
+"distribution through standard package managers, and Cargo will certainly "
+"have room to help out with this, but it doesn't obsolete the need for `cargo "
+"install`."
+msgstr ""
+
+#: src/1200-cargo-install.md:243
+msgid "Installing Libraries"
+msgstr ""
+
+#: src/1200-cargo-install.md:245
+msgid ""
+"Another possibility for `cargo install` is to not only be able to install "
+"binaries, but also libraries. The meaning of this however, is pretty "
+"nebulous and it's not clear that it's worthwhile. For example all Cargo "
+"builds will not have access to these libraries (as Cargo retains control "
+"over dependencies). It may mean that normal invocations of `rustc` have "
+"access to these libraries (e.g. for small one-off scripts), but it's not "
+"clear that this is worthwhile enough to support installing libraries yet."
+msgstr ""
+
+#: src/1200-cargo-install.md:253
+msgid ""
+"Another possible interpretation of installing libraries is that a developer "
+"is informing Cargo that the library should be available in a pre-compiled "
+"form. If any compile ends up using the library, then it can use the "
+"precompiled form instead of recompiling it. This job, however, seems best "
+"left to `cargo build` as it will automatically handle when the compiler "
+"version changes, for example. It may also be more appropriate to add the "
+"caching layer at the `cargo build` layer instead of `cargo install`."
+msgstr ""
+
+#: src/1200-cargo-install.md:261
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1200-cargo-install.md:263
+msgid "None yet"
+msgstr ""

@@ -1,0 +1,870 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3127-trim-paths.md:1
+msgid "Feature Name: trim-paths"
+msgstr ""
+
+#: src/3127-trim-paths.md:2
+msgid "Start Date: 2021-05-24"
+msgstr ""
+
+#: src/3127-trim-paths.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3127](https://github.com/rust-lang/rfcs/pull/3127)"
+msgstr ""
+
+#: src/3127-trim-paths.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#111540](https://github.com/rust-lang/rust/"
+"issues/111540)"
+msgstr ""
+
+#: src/3127-trim-paths.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3127-trim-paths.md:9
+msgid ""
+"Cargo should have a [profile setting](https://doc.rust-lang.org/cargo/"
+"reference/profiles.html#profile-settings) named `trim-paths` to sanitise "
+"absolute paths introduced during compilation that may be embedded in the "
+"compiled binary executable or library."
+msgstr ""
+
+#: src/3127-trim-paths.md:12
+msgid ""
+"`cargo build` with the default `release` profile should not produce any host "
+"filesystem dependent paths into binary executable or library. But it will "
+"retain the paths inside separate debug symbols file, if one exists, to help "
+"debuggers and profilers locate the source files."
+msgstr ""
+
+#: src/3127-trim-paths.md:15
+msgid ""
+"To facilitate this, a new flag named `--remap-path-scope` should be added to "
+"`rustc` controlling the behaviour of `--remap-path-prefix`, allowing us to "
+"fine tune the scope of remapping, specifying paths under which context (in "
+"macro expansion, in debuginfo or in diagnostics) should or shouldn't be "
+"remapped."
+msgstr ""
+
+#: src/3127-trim-paths.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/3127-trim-paths.md:22
+msgid "Sanitising local paths that are currently embedded"
+msgstr ""
+
+#: src/3127-trim-paths.md:23
+msgid ""
+"Currently, executables and libraries built by Rust and Cargo have a lot of "
+"embedded absolute paths. They most frequently appear in debug information "
+"and panic messages (pointing to the panic location source file). As an "
+"example, consider the following package:"
+msgstr ""
+
+#: src/3127-trim-paths.md:26
+msgid "`Cargo.toml`:"
+msgstr ""
+
+#: src/3127-trim-paths.md:28
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"rfc\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2018\"\n"
+"\n"
+"[dependencies]\n"
+"rand = \"0.8.0\"\n"
+"```"
+msgstr ""
+
+#: src/3127-trim-paths.md:37
+msgid "`src/main.rs`"
+msgstr ""
+
+#: src/3127-trim-paths.md:44
+msgid "\"{}\""
+msgstr ""
+
+#: src/3127-trim-paths.md:48
+msgid "Then run"
+msgstr ""
+
+#: src/3127-trim-paths.md:55
+msgid ""
+"We will see some absolute paths pointing to dependency crates downloaded by "
+"Cargo, containing our username:"
+msgstr ""
+
+#: src/3127-trim-paths.md:63
+msgid "This is undesirable for the following reasons:"
+msgstr ""
+
+#: src/3127-trim-paths.md:65
+msgid ""
+"**Privacy**. `release` binaries may be distributed, and anyone could then "
+"see the builder's local OS account username. Additionally, some CI (such as "
+"[GitLab CI](https://docs.gitlab.com/runner/best_practice/#build-directory)) "
+"checks out the repo under a path where non-public information is included. "
+"Without sanitising the path by default, this may be inadvertently leaked."
+msgstr ""
+
+#: src/3127-trim-paths.md:68
+msgid ""
+"**Build reproducibility**. We would like to make it easier to reproduce "
+"binary equivalent builds. While it is not required to maintain "
+"reproducibility across different environments, removing environment-"
+"sensitive information from the build will increase the tolerance on the "
+"inevitable environment differences. This helps with build verification, as "
+"well as producing deterministic builds when using a distributed build system."
+msgstr ""
+
+#: src/3127-trim-paths.md:73
+msgid "Handling sysroot paths"
+msgstr ""
+
+#: src/3127-trim-paths.md:74
+msgid ""
+"At the moment, paths to the source files of standard and core libraries, "
+"even when they are present, always begin with a virtual prefix in the form "
+"of `/rustc/[SHA1 hash]/library`. This is not an issue when the source files "
+"are not present (i.e. when `rust-src` component is not installed), but when "
+"a user installs `rust-src` they may want the path to their local copy of "
+"source files to be visible. Sometimes this is simply impossible as the path "
+"originated from the pre-compiled std and core and outside of rustc's "
+"control, but the local path should be used where possible. Hence the default "
+"behaviour when `rust-src` is installed should be to use the local path. "
+"These local paths should be then affected by path remappings in the usual "
+"way."
+msgstr ""
+
+#: src/3127-trim-paths.md:79
+msgid "Preserving debuginfo to help debuggers"
+msgstr ""
+
+#: src/3127-trim-paths.md:80
+msgid ""
+"At the moment, `--remap-path-prefix` will cause paths to source files in "
+"debuginfo to be remapped. On platforms where the debuginfo resides in a "
+"separate file from the distributable binary, this may be unnecessary and it "
+"prevents debuggers from being able to find the source. Hence `rustc` should "
+"support finer grained control over paths in which contexts should be "
+"remapped."
+msgstr ""
+
+#: src/3127-trim-paths.md:84
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3127-trim-paths.md:87
+msgid "The rustc book: Command-line arguments"
+msgstr ""
+
+#: src/3127-trim-paths.md:89
+msgid "`--remap-path-scope`: configure the scope of path remapping"
+msgstr ""
+
+#: src/3127-trim-paths.md:91
+msgid ""
+"When the `--remap-path-prefix` option is passed to rustc, source path "
+"prefixes in all output will be affected by default. The `--remap-path-scope` "
+"argument can be used in conjunction with `--remap-path-prefix` to determine "
+"paths in which output context should be affected. This flag accepts a comma-"
+"separated list of values and may be specified multiple times, in which case "
+"the scopes are aggregated together. The valid scopes are:"
+msgstr ""
+
+#: src/3127-trim-paths.md:95
+msgid ""
+"`macro` - apply remappings to the expansion of `std::file!()` macro. This is "
+"where paths in embedded panic messages come from"
+msgstr ""
+
+#: src/3127-trim-paths.md:96
+msgid "`diagnostics` - apply remappings to printed compiler diagnostics"
+msgstr ""
+
+#: src/3127-trim-paths.md:97
+msgid ""
+"`unsplit-debuginfo` - apply remappings to debug information only when they "
+"are written to compiled executables or libraries, but not when they are in "
+"split debuginfo files"
+msgstr ""
+
+#: src/3127-trim-paths.md:98
+msgid ""
+"`split-debuginfo` - apply remappings to debug information only when they are "
+"written to split debug information files, but not in compiled executables or "
+"libraries"
+msgstr ""
+
+#: src/3127-trim-paths.md:99
+msgid ""
+"`split-debuginfo-path` - apply remappings to the paths pointing to split "
+"debug information files. Does nothing when these files are not generated."
+msgstr ""
+
+#: src/3127-trim-paths.md:100
+msgid ""
+"`object` - an alias for `macro,unsplit-debuginfo,split-debuginfo-path`. This "
+"ensures all paths in compiled executables or libraries are remapped, but not "
+"elsewhere."
+msgstr ""
+
+#: src/3127-trim-paths.md:101
+msgid ""
+"`all` and `true` - an alias for all of the above, also equivalent to "
+"supplying only `--remap-path-prefix` without `--remap-path-scope`."
+msgstr ""
+
+#: src/3127-trim-paths.md:103
+msgid ""
+"Debug information are written to split files when the separate codegen "
+"option `-C split-debuginfo=packed` or `unpacked` (whether by default or "
+"explicitly set)."
+msgstr ""
+
+#: src/3127-trim-paths.md:105 src/3127-trim-paths.md:117
+msgid ""
+"Note: this RFC is not a commitment to stabilizing all of these options; "
+"stabilization will evaluate each option and see if that option carries "
+"enough value to stabilize."
+msgstr ""
+
+#: src/3127-trim-paths.md:107
+msgid "Cargo"
+msgstr ""
+
+#: src/3127-trim-paths.md:109
+msgid ""
+"`trim-paths` is a profile setting which enables and controls the "
+"sanitisation of file paths in build outputs. It is a simplified version of "
+"rustc's `--remap-path-scope`. It takes a comma separated list of the "
+"following values:"
+msgstr ""
+
+#: src/3127-trim-paths.md:111
+msgid "`none` and `false` - disable path sanitisation"
+msgstr ""
+
+#: src/3127-trim-paths.md:112
+msgid ""
+"`macro` - sanitise paths in the expansion of `std::file!()` macro. This is "
+"where paths in embedded panic messages come from"
+msgstr ""
+
+#: src/3127-trim-paths.md:113
+msgid "`diagnostics` - sanitise paths in printed compiler diagnostics"
+msgstr ""
+
+#: src/3127-trim-paths.md:114
+msgid "`object` - sanitise paths in compiled executables or libraries"
+msgstr ""
+
+#: src/3127-trim-paths.md:115
+msgid "`all` and `true` - sanitise paths in all possible locations"
+msgstr ""
+
+#: src/3127-trim-paths.md:119
+msgid ""
+"It is defaulted to `none` for debug profiles, and `object` for release "
+"profiles. You can manually override it by specifying this option in `Cargo."
+"toml`:"
+msgstr ""
+
+#: src/3127-trim-paths.md:120
+msgid ""
+"```toml\n"
+"[profile.dev]\n"
+"trim-paths = \"all\"\n"
+"\n"
+"[profile.release]\n"
+"trim-paths = \"none\"\n"
+"```"
+msgstr ""
+
+#: src/3127-trim-paths.md:128
+msgid ""
+"The default release profile setting (`object`) sanitises only the paths in "
+"emitted executable or library files. It always affects paths from macros "
+"such as panic messages, and in debug information only if they will be "
+"embedded together with the binary (the default on platforms with ELF "
+"binaries, such as Linux and windows-gnu), but will not touch them if they "
+"are in separate files (the default on Windows MSVC and macOS). But the paths "
+"to these separate files are sanitised."
+msgstr ""
+
+#: src/3127-trim-paths.md:132
+msgid ""
+"If `trim-paths` is not `none` or `false`, then the following paths are "
+"sanitised if they appear in a selected scope:"
+msgstr ""
+
+#: src/3127-trim-paths.md:134
+msgid ""
+"Path to the source files of the standard and core library (sysroot) will "
+"begin with `/rustc/[rustc commit hash]`. E.g. `/home/username/.rustup/"
+"toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/"
+"core/src/result.rs` -> `/rustc/fe72845f7bb6a77b9e671e6a4f32fe714962cec4/"
+"library/core/src/result.rs`"
+msgstr ""
+
+#: src/3127-trim-paths.md:137
+msgid ""
+"Path to the current package will be stripped. E.g. `/home/username/crate/src/"
+"lib.rs` -> `src/lib.rs`."
+msgstr ""
+
+#: src/3127-trim-paths.md:138
+msgid ""
+"Path to dependency packages will be replaced with `[package name]-"
+"[version]`. E.g. `/home/username/deps/foo/src/lib.rs` -> `foo-0.1.0/src/lib."
+"rs`"
+msgstr ""
+
+#: src/3127-trim-paths.md:140
+msgid ""
+"When a path to the source files of the standard and core library is _not_ in "
+"scope for sanitisation, the emitted path will depend on if `rust-src` "
+"component is present. If it is, then some paths will point to the copy of "
+"the source files on your file system; if it isn't, then they will show up as "
+"`/rustc/[rustc commit hash]/library/...` (just like when it is selected for "
+"sanitisation). Paths to all other source files will not be affected."
+msgstr ""
+
+#: src/3127-trim-paths.md:144
+msgid ""
+"This will not affect any hard-coded paths in the source code, such as in "
+"strings."
+msgstr ""
+
+#: src/3127-trim-paths.md:146
+msgid "Environment variables Cargo sets for build scripts"
+msgstr ""
+
+#: src/3127-trim-paths.md:147
+msgid ""
+"`CARGO_TRIM_PATHS` - The value of `trim-paths` profile option. If the build "
+"script introduces absolute paths to built artefacts (such as by invoking a "
+"compiler), the user may request them to be sanitised in different types of "
+"artefacts. Common paths requiring sanitisation include `OUT_DIR` and "
+"`CARGO_MANIFEST_DIR`, plus any other introduced by the build script, such as "
+"include directories."
+msgstr ""
+
+#: src/3127-trim-paths.md:151
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3127-trim-paths.md:154
+msgid "`trim-paths` implementation in Cargo"
+msgstr ""
+
+#: src/3127-trim-paths.md:156
+msgid ""
+"If `trim-paths` is `none` (`false`), no extra flag is supplied to `rustc`."
+msgstr ""
+
+#: src/3127-trim-paths.md:158
+msgid ""
+"If `trim-paths` is anything else, then its value is supplied directly to "
+"`rustc`'s `--remap-path-scope` option, along with two `--remap-path-prefix` "
+"arguments:"
+msgstr ""
+
+#: src/3127-trim-paths.md:159
+msgid "From the path of the local sysroot to `/rustc/[commit hash]`."
+msgstr ""
+
+#: src/3127-trim-paths.md:160
+msgid ""
+"For the current package (where the current working directory is in), from "
+"the absolute path of the package root to empty string. For other packages, "
+"from the absolute path of the package root to `[package name]-[package "
+"version]`."
+msgstr ""
+
+#: src/3127-trim-paths.md:163
+msgid ""
+"The default value of `trim-paths` is `object` for release profile. As a "
+"result, panic messages (which are always embedded) are sanitised. If debug "
+"information is embedded, then they are sanitised; if they are split then "
+"they are kept untouched, but the paths to these split files are sanitised."
+msgstr ""
+
+#: src/3127-trim-paths.md:165
+msgid "Some interactions with compiler-intrinsic macros need to be considered:"
+msgstr ""
+
+#: src/3127-trim-paths.md:166
+msgid ""
+"Path (of the current file) introduced by [`file!()`](https://doc.rust-lang."
+"org/std/macro.file.html) _will_ be remapped. **Things may break** if the "
+"code interacts with its own source file at runtime by using this macro."
+msgstr ""
+
+#: src/3127-trim-paths.md:168
+msgid ""
+"Path introduced by [`include!()`](https://doc.rust-lang.org/std/macro."
+"include.html) _will_ be remapped, given that the included file is under the "
+"current package or a dependency package."
+msgstr ""
+
+#: src/3127-trim-paths.md:171
+msgid ""
+"If the user further supplies custom `--remap-path-prefix` arguments via "
+"`RUSTFLAGS` or similar mechanisms, they will take precedence over the one "
+"supplied by `trim-paths`. This means that the user-defined remapping "
+"arguments must be supplied _after_ Cargo's own remapping."
+msgstr ""
+
+#: src/3127-trim-paths.md:175
+msgid "Changing handling of sysroot path in `rustc`"
+msgstr ""
+
+#: src/3127-trim-paths.md:177
+msgid ""
+"The remapping of sysroot paths to `/rustc/[commit hash]/library/...` was "
+"done when std and core libraries are compiled by Rust's release CI. Unless "
+"[`build-std`](https://doc.rust-lang.org/cargo/reference/unstable.html#build-"
+"std) is specified, these pre-compiled artifacts are used."
+msgstr ""
+
+#: src/3127-trim-paths.md:179
+msgid ""
+"Most of the time, these paths are never handled by `rustc`, since they are "
+"in the debuginfo of pre-compiled binaries to be directly copied by the "
+"linker. However, sometimes (such as when compiling monomorphised functions), "
+"`rustc` does pick up these metadata. When this happens, `rustc` tries to "
+"correlate this virtual path to a real path pointing to the file on the local "
+"file system. Currently the result is represented internally as if the path "
+"was remapped by a `--remap-path-prefix`, from local `rust-src` path to the "
+"virtual path `/rustc/[commit hash]/library/...`. Only the virtual path is "
+"ever emitted for metadata or codegen. We want to change this behaviour such "
+"that, when `rust-src` source files can be discovered, the virtual path is "
+"discarded and therefore the local path will be embedded, unless there is a "
+"`--remap-path-prefix` that causes this local path to be remapped in the "
+"usual way."
+msgstr ""
+
+#: src/3127-trim-paths.md:186
+msgid "Split Debuginfo"
+msgstr ""
+
+#: src/3127-trim-paths.md:188
+msgid ""
+"When debug information are not embedded in the binary (i.e. `split-"
+"debuginfo` is not `off`), absolute paths to various files containing debug "
+"information are embedded into the binary instead. Such as the absolute path "
+"to `.pdb` file (MSVC, `packed`), `.dwo` files (ELF, `unpacked`), and `.o` "
+"files (ELF, `packed`). This can be undesirable. As such, `split-debuginfo-"
+"path` is made specifically for these embedded paths."
+msgstr ""
+
+#: src/3127-trim-paths.md:192
+msgid ""
+"On macOS and ELF platforms, these paths are introduced by `rustc` during "
+"codegen. With MSVC, however, the path to `.pdb` file is generated and "
+"embedded into the binary by the linker `link.exe`. The linker has a `/"
+"PDBALTPATH` option allows us to change the embedded path written to the "
+"binary, which could be supplied by `rustc`"
+msgstr ""
+
+#: src/3127-trim-paths.md:196
+msgid "Usage examples"
+msgstr ""
+
+#: src/3127-trim-paths.md:198
+msgid ""
+"Alice wants to ship her binaries, but doesn't want others to see her username"
+msgstr ""
+
+#: src/3127-trim-paths.md:200
+msgid "It works out of the box!"
+msgstr ""
+
+#: src/3127-trim-paths.md:206
+msgid ""
+"Bob wants to profile his program and see the original function names in the "
+"report"
+msgstr ""
+
+#: src/3127-trim-paths.md:208
+msgid ""
+"He needs the debug information emitted and preserved, so he changes his "
+"`Cargo.toml` file"
+msgstr ""
+
+#: src/3127-trim-paths.md:210
+msgid ""
+"```toml\n"
+"[profile.release]\n"
+"trim-paths = \"none\"\n"
+"debuginfo = 1\n"
+"```"
+msgstr ""
+
+#: src/3127-trim-paths.md:220
+msgid ""
+"Eve wants to symbolicate her users' crash reports from binaries without "
+"debug information"
+msgstr ""
+
+#: src/3127-trim-paths.md:222
+msgid ""
+"She needs to use the `split-debuginfo` feature to produce a separate file "
+"containing debug information"
+msgstr ""
+
+#: src/3127-trim-paths.md:224
+msgid ""
+"```toml\n"
+"[profile.release]\n"
+"split-debuginfo = \"packed\"\n"
+"debuginfo = 1\n"
+"```"
+msgstr ""
+
+#: src/3127-trim-paths.md:230
+msgid "Again, the default works fine."
+msgstr ""
+
+#: src/3127-trim-paths.md:236
+msgid ""
+"She can ship her binary like Alice, without worrying about leaking usernames."
+msgstr ""
+
+#: src/3127-trim-paths.md:238
+msgid "Hana needs to compile a C program in their build script"
+msgstr ""
+
+#: src/3127-trim-paths.md:240
+msgid ""
+"They can consult `CARGO_TRIM_PATHS` in their build script to find out paths "
+"in what places the user wants sanitised"
+msgstr ""
+
+#: src/3127-trim-paths.md:243
+msgid "// in build.rs\n"
+msgstr ""
+
+#: src/3127-trim-paths.md:247
+msgid "\"gcc\""
+msgstr ""
+
+#: src/3127-trim-paths.md:248
+msgid "\"OUT_DIR\""
+msgstr ""
+
+#: src/3127-trim-paths.md:249
+msgid "\"CARGO_TRIM_PATHS\""
+msgstr ""
+
+#: src/3127-trim-paths.md:251
+msgid "\"none\""
+msgstr ""
+
+#: src/3127-trim-paths.md:251
+msgid "\"false\""
+msgstr ""
+
+#: src/3127-trim-paths.md:252
+msgid "// Runtime working directory of the build script\n"
+msgstr ""
+
+#: src/3127-trim-paths.md:253
+msgid "\"CARGO_MANIFEST_DIR\""
+msgstr ""
+
+#: src/3127-trim-paths.md:255
+msgid "\"macro\""
+msgstr ""
+
+#: src/3127-trim-paths.md:255
+msgid "\"-fmacro-prefix-map\""
+msgstr ""
+
+#: src/3127-trim-paths.md:256
+msgid "\"-ffile-prefix-map\""
+msgstr ""
+
+#: src/3127-trim-paths.md:258
+msgid "\"{gcc_scope}={cwd}=redacted\""
+msgstr ""
+
+#: src/3127-trim-paths.md:258
+msgid "\"{gcc_scope}={out_dir}=redacted\""
+msgstr ""
+
+#: src/3127-trim-paths.md:261
+msgid "\"-std=c11\""
+msgstr ""
+
+#: src/3127-trim-paths.md:261
+msgid "\"-o={out_dir}/lib.o\""
+msgstr ""
+
+#: src/3127-trim-paths.md:261
+msgid "\"lib.c\""
+msgstr ""
+
+#: src/3127-trim-paths.md:264
+msgid "//... do stuff\n"
+msgstr ""
+
+#: src/3127-trim-paths.md:272
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3127-trim-paths.md:275
+msgid ""
+"The user will not be able to `Ctrl+click` on any paths provided in panic "
+"messages or backtraces outside of the working directory. But there shouldn't "
+"be any confusion as the combination of package name and version can be used "
+"to pinpoint the file."
+msgstr ""
+
+#: src/3127-trim-paths.md:278
+msgid ""
+"As mentioned above, `trim-paths` may break code that relies on `std::file!"
+"()` to evaluate to an accessible path to the file. Hence enabling it by "
+"default for release builds may be a technically breaking change. Occurrences "
+"of such use should be extremely rare but should be investigated via a Crater "
+"run. In case this breakage is unacceptable, `trim-paths` can be made an opt-"
+"in option rather than default in any build profile."
+msgstr ""
+
+#: src/3127-trim-paths.md:282
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3127-trim-paths.md:285
+msgid ""
+"There has been an issue (https://github.com/rust-lang/rust/issues/40552) "
+"asking for path sanitisation to be implemented and enabled by default for "
+"release builds. It has, over the past 4 years, gained a decent amount of "
+"popular support. The remapping rule proposed here is very simple to "
+"implement."
+msgstr ""
+
+#: src/3127-trim-paths.md:289
+msgid ""
+"Paths to sysroot crates are specially handled by `rustc`. Due to this, the "
+"behaviour we currently have is that all such paths are virtualised. Although "
+"good for privacy and reproducibility, some people find it a hindrance for "
+"debugging: https://github.com/rust-lang/rust/issues/85463. Hence the user "
+"should be given control on if they want the virtual or local path."
+msgstr ""
+
+#: src/3127-trim-paths.md:293
+msgid ""
+"An alternative is to extend the syntax accepted by `--remap-path-prefix` or "
+"add a new option called `--remap-path-prefix-scoped` which allows scoping "
+"rules to be explicitly applied to each remapping. This can co-exist with `--"
+"remap-path-scope` so it will be discussed further in [Future possibilities]"
+"(#future-possibilities) section."
+msgstr ""
+
+#: src/3127-trim-paths.md:297
+msgid "Rationale for the `--remap-path-scope` options"
+msgstr ""
+
+#: src/3127-trim-paths.md:298
+msgid ""
+"There are quite a few options available for `--remap-path-scope`. Not all of "
+"them are expected to have meaningful use-cases in their own right. Some are "
+"only added for completeness, that is, the behaviour of `--remap-path-"
+"scope=all` (or the original `--remap-path-prefix` on its own) is the same as "
+"specifying all individual scopes. In the future, we expect some of the "
+"scopes to be removed as independent options, while preserving the behaviour "
+"of `--remap-path-scope=all` and the stable `--remap-path-prefix`, which is "
+"\"Remap source names in all output\"."
+msgstr ""
+
+#: src/3127-trim-paths.md:303
+msgid "`macro` is primarily meant for panic messages embedded in binaries."
+msgstr ""
+
+#: src/3127-trim-paths.md:304
+msgid ""
+"`diagnostics` is unlikely to be used on its own as it only affects console "
+"outputs, but is required for completeness. See [\\#87745](https://github.com/"
+"rust-lang/rust/issues/87745)."
+msgstr ""
+
+#: src/3127-trim-paths.md:305
+msgid "`unsplit-debuginfo` is used to sanitise debuginfo embedded in binaries."
+msgstr ""
+
+#: src/3127-trim-paths.md:306
+msgid ""
+"`split-debuginfo` is used to sanitise debuginfo separate from binaries. This "
+"may be used when debuginfo files are separate and the author still wants to "
+"distribute them."
+msgstr ""
+
+#: src/3127-trim-paths.md:308
+msgid ""
+"`split-debuginfo-path` is used to sanitise the path embedded in binaries "
+"pointing to separate debuginfo files. This is likely needed in all contexts "
+"where `unsplit-debuginfo` is used, but it's technically a separate piece of "
+"information inserted by the linker, not rustc."
+msgstr ""
+
+#: src/3127-trim-paths.md:310
+msgid ""
+"`object` is a shorthand for the most common use-case: sanitise everything in "
+"binaries, but nowhere else."
+msgstr ""
+
+#: src/3127-trim-paths.md:311
+msgid ""
+"`all` and `true` preserves the documented behaviour of `--remap-path-prefix`."
+msgstr ""
+
+#: src/3127-trim-paths.md:313
+msgid "Prior art"
+msgstr ""
+
+#: src/3127-trim-paths.md:316
+msgid ""
+"The name `trim-paths` came from the [similar feature](https://golang.org/cmd/"
+"go/#hdr-Compile_packages_and_dependencies) in Go. An alternative name "
+"`sanitize-paths` was first considered but the spelling of \"sanitise\" "
+"differs across the pond and down under. It is also not as short and concise."
+msgstr ""
+
+#: src/3127-trim-paths.md:319
+msgid ""
+"Go does not enable this by default. Since Go does not differ between debug "
+"and release builds, removing absolute paths for all build would be a hassle "
+"for debugging. However this is not an issue for Rust as we have separate "
+"debug build profile."
+msgstr ""
+
+#: src/3127-trim-paths.md:322
+msgid ""
+"GCC and Clang both have a flag equivalent to `--remap-path-prefix`, but they "
+"also both have two separate flags one for only macro expansion and the other "
+"for only debuginfo: https://reproducible-builds.org/docs/build-path/. This "
+"is the origin of the `--remap-path-scope` idea."
+msgstr ""
+
+#: src/3127-trim-paths.md:325
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3127-trim-paths.md:328
+msgid ""
+"Should we use a slightly more complex remapping rule, like distinguishing "
+"packages from registry, git and path, as proposed in [Issue #40552](https://"
+"github.com/rust-lang/rust/issues/40552)?"
+msgstr ""
+
+#: src/3127-trim-paths.md:330
+msgid ""
+"With debug information in separate files, debuggers and Rust's own backtrace "
+"rely on the path embedded in the binary to find these files to display "
+"source code lines, columns and symbols etc. If we sanitise these paths to "
+"relative paths, then debuggers and backtrace must be invoked in specific "
+"directories for these paths to work. [For instance](https://github.com/rust-"
+"lang/rust/issues/87825#issuecomment-920693005), if the absolute path to the "
+"`.pdb` file is sanitised to the relative `target/release/foo.pdb`, then the "
+"binary must be invoked under the crate root as `target/release/foo` to allow "
+"the correct backtrace to be displayed."
+msgstr ""
+
+#: src/3127-trim-paths.md:335
+msgid ""
+"Should we treat the current package the same as other packages? We could "
+"have one fewer remapping rule by remapping all package roots to `[package "
+"name]-[version]`. A minor downside to this is not being able to `Ctrl+click` "
+"on paths to files the user is working on from panic messages."
+msgstr ""
+
+#: src/3127-trim-paths.md:338
+msgid ""
+"Will these cover all potentially embedded paths? Have we missed anything?"
+msgstr ""
+
+#: src/3127-trim-paths.md:340
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3127-trim-paths.md:343
+msgid "Per-mapping scope control"
+msgstr ""
+
+#: src/3127-trim-paths.md:344
+msgid ""
+"If it turns out that we want to enable finer grained scoping control on each "
+"individual remapping, we could use a `scopes:from=to` syntax. E.g. `split-"
+"debuginfo,unsplit-debuginfo,diagnostics:/path/to/src=src` will remove all "
+"references to `/path/to/src` from compiler diagnostics and debug "
+"information, but they are retained in panic messages."
+msgstr ""
+
+#: src/3127-trim-paths.md:348
+msgid ""
+"How exactly this new syntax will look like is, of course, up to further "
+"discussion. Using comma as a separator for scopes may look ambiguous as "
+"`macro,diagnostics:/path/from=to` could be interpreted as `macro` and "
+"`diagnostics:/path/from=to`."
+msgstr ""
+
+#: src/3127-trim-paths.md:351
+msgid ""
+"This syntax can be used with either a brand new `--remap-path-prefix-scoped` "
+"option, or we could extend the existing `--remap-path-prefix` option to take "
+"in this new syntax."
+msgstr ""
+
+#: src/3127-trim-paths.md:354
+msgid ""
+"If we were to extend the existing `--remap-path-prefix`, there may be an "
+"ambiguity to whether `:` means a separator between scope list and mapping, "
+"or is it a part of the path; if the first `:` supplied belongs to the path "
+"then it would have to be escaped. This could be technically breaking."
+msgstr ""
+
+#: src/3127-trim-paths.md:357
+msgid ""
+"In any case, future inclusion of this new syntax will not affect `--remap-"
+"path-scope` introduced in this RFC. Scopes specified in `--remap-path-scope` "
+"will be used as default for all mappings, and explicit scopes for an "
+"individual mapping will take precedence on that mapping."
+msgstr ""
+
+#: src/3127-trim-paths.md:360
+msgid "Sysroot paths uniformity"
+msgstr ""
+
+#: src/3127-trim-paths.md:361
+msgid ""
+"Since some virtualised sysroot paths are hardcoded in the pre-compiled "
+"debuginfo, while the others can be resolved back to a local path with `rust-"
+"src`, the user may see them interleaved"
+msgstr ""
+
+#: src/3127-trim-paths.md:373
+msgid ""
+"This is not very nice. It is infeasible to fix up the pre-compiled debuginfo "
+"before linking to fully remove the virtual paths, so demapping needs to "
+"happen when it is displayed (in this case, when the backtrace is printed). "
+"This is out of scope of this RFC but it may be something we want to do "
+"separately in the future."
+msgstr ""

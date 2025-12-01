@@ -1,0 +1,418 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3772-build-target-edition.md:1
+msgid "Feature Name: `build-target-edition`"
+msgstr ""
+
+#: src/3772-build-target-edition.md:2
+msgid "Start Date: 2025-02-13"
+msgstr ""
+
+#: src/3772-build-target-edition.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3772](https://github.com/rust-lang/rfcs/pull/3772)"
+msgstr ""
+
+#: src/3772-build-target-edition.md:4
+msgid ""
+"Rust Issue: [rust-lang/cargo#15283](https://github.com/rust-lang/cargo/"
+"issues/15283)"
+msgstr ""
+
+#: src/3772-build-target-edition.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3772-build-target-edition.md:9
+msgid ""
+"Deprecate `lib.edition`, etc in favor of only setting `package.edition`, "
+"removing the fields in the next Edition."
+msgstr ""
+
+#: src/3772-build-target-edition.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3772-build-target-edition.md:14
+msgid "Cargo supports setting the edition per-build-target:"
+msgstr ""
+
+#: src/3772-build-target-edition.md:15
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"foo\"\n"
+"edition = \"2021\"\n"
+"\n"
+"[lib]\n"
+"edition = \"2015\"\n"
+"\n"
+"[[bin]]\n"
+"name = \"foo\"\n"
+"path = \"src/main.rs\"\n"
+"edition = \"2015\"\n"
+"\n"
+"[[example]]\n"
+"name = \"foo\"\n"
+"path = \"examples/foo.rs\"\n"
+"edition = \"2015\"\n"
+"\n"
+"[[test]]\n"
+"name = \"foo\"\n"
+"path = \"tests/foo.rs\"\n"
+"edition = \"2015\"\n"
+"\n"
+"[[bench]]\n"
+"name = \"foo\"\n"
+"path = \"benches/foo.rs\"\n"
+"edition = \"2015\"\n"
+"```"
+msgstr ""
+
+#: src/3772-build-target-edition.md:44
+msgid ""
+"This was intended for ([cargo#5661](https://github.com/rust-lang/cargo/"
+"issues/5661)):"
+msgstr ""
+
+#: src/3772-build-target-edition.md:45
+msgid "Migrating to a new edition per build-target"
+msgstr ""
+
+#: src/3772-build-target-edition.md:46
+msgid "Per edition tests"
+msgstr ""
+
+#: src/3772-build-target-edition.md:48
+msgid ""
+"In practice, this feature does not seem to be in common use. Searching the "
+"latest `Cargo.toml` files of every package on crates.io, we found 13 "
+"packages using this feature ([zulip](https://rust-lang.zulipchat.com/#narrow/"
+"channel/246057-t-cargo/topic/Deprecate.20build-"
+"target.20.60edition.60.20field.3F/near/499047806)):"
+msgstr ""
+
+#: src/3772-build-target-edition.md:52
+msgid "4 set `edition` on the sole build-target, rather than on the `package`"
+msgstr ""
+
+#: src/3772-build-target-edition.md:53
+msgid ""
+"3 set `edition` because they enumerated every build-target field but then "
+"forgot to update them when updating `package.edition`"
+msgstr ""
+
+#: src/3772-build-target-edition.md:54
+msgid "3 (+2 forks) have per-edition tests"
+msgstr ""
+
+#: src/3772-build-target-edition.md:55
+msgid "1 has every version yanked"
+msgstr ""
+
+#: src/3772-build-target-edition.md:57
+msgid ""
+"While this does not account for transient use of this feature during an "
+"Edition migration, from our experience and observing others, we think this "
+"practice is not very common. In fact, it seems more likely that migrating a "
+"lint at a time may be more beneficial ([cargo#11125](https://github.com/rust-"
+"lang/cargo/issues/11125#issuecomment-2641119791)). There is also an open "
+"question on the Cargo team on how much to focus on multiple build-targets "
+"per package vs individual packages (see [This Development-cycle in Cargo: "
+"1.77](https://blog.rust-lang.org/inside-rust/2024/02/13/this-development-"
+"cycle-in-cargo-1-77.html#when-to-use-packages-or-workspaces))."
+msgstr ""
+
+#: src/3772-build-target-edition.md:65
+msgid "Drawbacks of this feature include:"
+msgstr ""
+
+#: src/3772-build-target-edition.md:66
+msgid ""
+"Using this has a lot of friction as users have to explicitly enumerate each "
+"build target they want to set `edition` on which usually requires also "
+"setting the `name` and `path`."
+msgstr ""
+
+#: src/3772-build-target-edition.md:69
+msgid ""
+"This has led to bugs where people thought they migrated editions but did not"
+msgstr ""
+
+#: src/3772-build-target-edition.md:70
+msgid ""
+"This is an easily overlooked feature to take into account when extending "
+"Cargo"
+msgstr ""
+
+#: src/3772-build-target-edition.md:71
+msgid ""
+"Cargo cannot tell a `build.rs` what Edition to generate code for as it may "
+"generate code for one of several ([cargo#6408](https://github.com/rust-lang/"
+"cargo/issues/6408)). This will become more important once we have [metabuild]"
+"(https://github.com/rust-lang/cargo/issues/14903) for delegating build "
+"scripts to dependencies."
+msgstr ""
+
+#: src/3772-build-target-edition.md:74
+msgid ""
+"Making it more difficult for tools like `cargo fmt` ([rustfmt#5071](https://"
+"github.com/rust-lang/rustfmt/pull/5071)) which need to map a file back to "
+"its edition which requires heuristics to associate a `.rs` file with a "
+"`Cargo.toml` and then to associate it with a specific build-target."
+msgstr ""
+
+#: src/3772-build-target-edition.md:79
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3772-build-target-edition.md:82
+msgid "Documentation updates:"
+msgstr ""
+
+#: src/3772-build-target-edition.md:84
+msgid "Configuring a target"
+msgstr ""
+
+#: src/3772-build-target-edition.md:86
+msgid ""
+"_From the [Cargo book](https://doc.rust-lang.org/cargo/reference/cargo-"
+"targets.html#configuring-a-target)_"
+msgstr ""
+
+#: src/3772-build-target-edition.md:88 src/3772-build-target-edition.md:106
+#: src/3772-build-target-edition.md:134
+msgid "..."
+msgstr ""
+
+#: src/3772-build-target-edition.md:90
+msgid ""
+"```toml\n"
+"[lib]\n"
+"name = \"foo\"           # The name of the target.\n"
+"path = \"src/lib.rs\"    # The source file of the target.\n"
+"test = true            # Is tested by default.\n"
+"doctest = true         # Documentation examples are tested by default.\n"
+"bench = true           # Is benchmarked by default.\n"
+"doc = true             # Is documented by default.\n"
+"proc-macro = false     # Set to `true` for a proc-macro library.\n"
+"harness = true         # Use libtest harness.\n"
+"crate-type = [\"lib\"]   # The crate types to generate.\n"
+"required-features = [] # Features required to build this target (N/A for "
+"lib).\n"
+"\n"
+"edition = \"2015\"       # Deprecated, N/A for Edition 20XX+\n"
+"```"
+msgstr ""
+
+#: src/3772-build-target-edition.md:108
+msgid "The `edition` field"
+msgstr ""
+
+#: src/3772-build-target-edition.md:110
+msgid ""
+"The `edition` field defines the \\[Rust edition\\] the target will use. If "
+"not specified, it defaults to the \\[`edition` field\\]\\[package-edition\\] "
+"for the `[package]`."
+msgstr ""
+
+#: src/3772-build-target-edition.md:114
+msgid "This field is deprecated and unsupported for Edition 20XX+"
+msgstr ""
+
+#: src/3772-build-target-edition.md:116
+msgid "Migration guide"
+msgstr ""
+
+#: src/3772-build-target-edition.md:118
+msgid ""
+"_From [Rust Edition Guide: Advanced migration strategies](https://doc.rust-"
+"lang.org/nightly/edition-guide/editions/advanced-migrations.html#migrating-a-"
+"large-project-or-workspace)_"
+msgstr ""
+
+#: src/3772-build-target-edition.md:120
+msgid "Migrating a large project or workspace"
+msgstr ""
+
+#: src/3772-build-target-edition.md:122
+msgid ""
+"You can migrate a large project incrementally to make the process easier if "
+"you run into problems."
+msgstr ""
+
+#: src/3772-build-target-edition.md:124
+msgid ""
+"In a \\[Cargo workspace\\], each package defines its own edition, so the "
+"process naturally involves migrating one package at a time."
+msgstr ""
+
+#: src/3772-build-target-edition.md:126
+msgid ""
+"Within a \\[Cargo package\\], you can either migrate the entire package at "
+"once, or migrate individual \\[Cargo targets\\] one at a time. For example, "
+"if you have multiple binaries, tests, and examples, you can use specific "
+"target selection flags with `cargo fix --edition` to migrate just that one "
+"target. By default, `cargo fix` uses `--all-targets`."
+msgstr ""
+
+#: src/3772-build-target-edition.md:130
+msgid "_(removed talk of the build-target `edition` field)_"
+msgstr ""
+
+#: src/3772-build-target-edition.md:132
+msgid "Migrating macros"
+msgstr ""
+
+#: src/3772-build-target-edition.md:136
+msgid ""
+"If you have macros, you are encouraged to make sure you have tests that "
+"fully cover the macro's syntax. You may also want to test the macros by "
+"importing and using them in crates from multiple editions, just to ensure it "
+"works correctly everywhere. You can do this in doctests by setting the "
+"[edition attribute](https://doc.rust-lang.org/stable/rustdoc/write-"
+"documentation/documentation-tests.html#attributes) or by creating a package "
+"for your tests in your workspace for each edition."
+msgstr ""
+
+#: src/3772-build-target-edition.md:143
+msgid ""
+"If you run into issues, you'll need to read through the chapters of this "
+"guide to understand how the code can be changed to work across all editions."
+msgstr ""
+
+#: src/3772-build-target-edition.md:147
+msgid "_(added a testing strategy which was previously left unspoken)_"
+msgstr ""
+
+#: src/3772-build-target-edition.md:149
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3772-build-target-edition.md:152
+msgid "A non-`None` edition will be considered deprecated"
+msgstr ""
+
+#: src/3772-build-target-edition.md:153
+msgid "A deprecation message will eventually be shown by Cargo"
+msgstr ""
+
+#: src/3772-build-target-edition.md:154
+msgid ""
+"Timing depends on if this will be blocked on having `[lints]` control over "
+"this or not"
+msgstr ""
+
+#: src/3772-build-target-edition.md:155
+msgid ""
+"When `package.edition` is set to Edition 20XX+, an error will be reported "
+"when a `<build-target>.edition` field is set."
+msgstr ""
+
+#: src/3772-build-target-edition.md:157
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3772-build-target-edition.md:160
+msgid "This makes testing macros more difficult as they are limited to either"
+msgstr ""
+
+#: src/3772-build-target-edition.md:161
+msgid "doctests"
+msgstr ""
+
+#: src/3772-build-target-edition.md:162
+msgid "creating packages just for the sake of defining tests"
+msgstr ""
+
+#: src/3772-build-target-edition.md:164
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3772-build-target-edition.md:167
+msgid "One Edition field controlling another"
+msgstr ""
+
+#: src/3772-build-target-edition.md:169
+msgid ""
+"The exact semantics of `package.edition` vs `<build-target>.edition` have "
+"not been well defined when it comes to the manifest format itself."
+msgstr ""
+
+#: src/3772-build-target-edition.md:171
+msgid ""
+"`package.edition`'s [documentation](https://doc.rust-lang.org/cargo/"
+"reference/manifest.html#the-edition-field) says:"
+msgstr ""
+
+#: src/3772-build-target-edition.md:173
+msgid "\\[it\\] affects which Rust Edition your package is compiled with"
+msgstr ""
+
+#: src/3772-build-target-edition.md:175
+msgid ""
+"while `<build-target>.edition` [documentation](https://doc.rust-lang.org/"
+"cargo/reference/cargo-targets.html#the-edition-field) says:"
+msgstr ""
+
+#: src/3772-build-target-edition.md:177
+msgid "\\[it\\] defines the Rust edition the target will use"
+msgstr ""
+
+#: src/3772-build-target-edition.md:179
+msgid ""
+"For Edition 2024, support for `<build-target>.proc_macro` and `<build-"
+"target>.crate_type` was removed based on `package.edition` and not `<build-"
+"target>.edition`."
+msgstr ""
+
+#: src/3772-build-target-edition.md:182
+msgid ""
+"By having `package.edition` affect `<build-target>.edition`, we are "
+"effectively saying that `package.edition` affects the manifest format while "
+"`<build-target>.edition` affects only affects the source code of the build-"
+"target."
+msgstr ""
+
+#: src/3772-build-target-edition.md:186
+msgid "Prior art"
+msgstr ""
+
+#: src/3772-build-target-edition.md:189
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3772-build-target-edition.md:192
+msgid "When will Cargo start to report the deprecation message?"
+msgstr ""
+
+#: src/3772-build-target-edition.md:193
+msgid ""
+"Cargo currently lacks lint control for itself ([cargo#12235](https://github."
+"com/rust-lang/cargo/issues/12235)) which we could wait for"
+msgstr ""
+
+#: src/3772-build-target-edition.md:194
+msgid ""
+"We could unconditionally report the warning but the Cargo team avoids adding "
+"warnings without a way of suppressing them without changing behavior"
+msgstr ""
+
+#: src/3772-build-target-edition.md:196
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3772-build-target-edition.md:199
+msgid "Reporting the Edition to `build.rs`"
+msgstr ""

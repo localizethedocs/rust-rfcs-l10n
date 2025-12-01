@@ -1,0 +1,316 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0982-dst-coercion.md:1
+msgid "Feature Name: dst_coercions"
+msgstr ""
+
+#: src/0982-dst-coercion.md:2
+msgid "Start Date: 2015-03-16"
+msgstr ""
+
+#: src/0982-dst-coercion.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#982](https://github.com/rust-lang/rfcs/pull/982)"
+msgstr ""
+
+#: src/0982-dst-coercion.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#18598](https://github.com/rust-lang/rust/"
+"issues/18598)"
+msgstr ""
+
+#: src/0982-dst-coercion.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/0982-dst-coercion.md:8
+msgid ""
+"Custom coercions allow smart pointers to fully participate in the DST "
+"system. In particular, they allow practical use of `Rc<T>` and `Arc<T>` "
+"where `T` is unsized."
+msgstr ""
+
+#: src/0982-dst-coercion.md:11
+msgid ""
+"This RFC subsumes part of [RFC 401 coercions](https://github.com/rust-lang/"
+"rfcs/blob/master/text/0401-coercions.md)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/0982-dst-coercion.md:15
+msgid ""
+"DST is not really finished without this, in particular there is a need for "
+"types like reference counted trait objects (`Rc<Trait>`) which are not "
+"currently well- supported (without coercions, it is pretty much impossible "
+"to create such values with such a type)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:20
+msgid "Detailed design"
+msgstr ""
+
+#: src/0982-dst-coercion.md:22
+msgid ""
+"There is an `Unsize` trait and lang item. This trait signals that a type can "
+"be converted using the compiler's coercion machinery from a sized to an "
+"unsized type. All implementations of this trait are implicit and compiler "
+"generated. It is an error to implement this trait. If `&T` can be coerced to "
+"`&U` then there will be an implementation of `Unsize<U>` for `T`. E.g, "
+"`[i32; 42]: Unsize<[i32]>`. Note that the existence of an `Unsize` impl does "
+"not signify a coercion can itself can take place, it represents an internal "
+"part of the coercion mechanism (it corresponds with `coerce_inner` from  RFC "
+"401). The trait is defined as:"
+msgstr ""
+
+#: src/0982-dst-coercion.md:32
+msgid ""
+"```\n"
+"#[lang=\"unsize\"]\n"
+"trait Unsize<T: ?Sized>: ::std::marker::PhantomFn<Self, T> {}\n"
+"```"
+msgstr ""
+
+#: src/0982-dst-coercion.md:37
+msgid ""
+"There are implementations for any fixed size array to the corresponding "
+"unsized array, for any type to any trait that that type implements, for "
+"structs and tuples where the last field can be unsized, and for any pair of "
+"traits where `Self` is a sub-trait of `T` (see RFC 401 for more details)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:42
+msgid ""
+"There is a `CoerceUnsized` trait which is implemented by smart pointer types "
+"to opt-in to DST coercions. It is defined as:"
+msgstr ""
+
+#: src/0982-dst-coercion.md:45
+msgid ""
+"```\n"
+"#[lang=\"coerce_unsized\"]\n"
+"trait CoerceUnsized<Target>: ::std::marker::PhantomFn<Self, Target> + Sized "
+"{}\n"
+"```"
+msgstr ""
+
+#: src/0982-dst-coercion.md:50
+msgid "An example implementation:"
+msgstr ""
+
+#: src/0982-dst-coercion.md:52
+msgid ""
+"```\n"
+"impl<T: ?Sized+Unsize<U>, U: ?Sized> CoerceUnsized<Rc<U>> for Rc<T> {}\n"
+"impl<T: Zeroable+CoerceUnsized<U>, U: Zeroable> CoerceUnsized<NonZero<U>> "
+"for NonZero<T> {}\n"
+"\n"
+"// For reference, the definitions of Rc and NonZero:\n"
+"pub struct Rc<T: ?Sized> {\n"
+"    _ptr: NonZero<*mut RcBox<T>>,\n"
+"}\n"
+"pub struct NonZero<T: Zeroable>(T);\n"
+"```"
+msgstr ""
+
+#: src/0982-dst-coercion.md:63
+msgid ""
+"Implementing `CoerceUnsized` indicates that the self type should be able to "
+"be coerced to the `Target` type. E.g., the above implementation means that "
+"`Rc<[i32; 42]>` can be coerced to `Rc<[i32]>`. There will be `CoerceUnsized` "
+"impls for the various pointer kinds available in Rust and which allow "
+"coercions, therefore `CoerceUnsized` when used as a bound indicates "
+"coercible types. E.g.,"
+msgstr ""
+
+#: src/0982-dst-coercion.md:75
+msgid "Built-in pointer impls:"
+msgstr ""
+
+#: src/0982-dst-coercion.md:92
+msgid ""
+"Note that there are some coercions which are not given by `CoerceUnsized`, e."
+"g., from safe to unsafe function pointers, so it really is a `CoerceUnsized` "
+"trait, not a general `Coerce` trait."
+msgstr ""
+
+#: src/0982-dst-coercion.md:97
+msgid "Compiler checking"
+msgstr ""
+
+#: src/0982-dst-coercion.md:99
+msgid ""
+"On encountering an implementation of `CoerceUnsized` (type collection phase)"
+msgstr ""
+
+#: src/0982-dst-coercion.md:101
+msgid ""
+"If the impl is for a built-in pointer type, we check nothing, otherwise..."
+msgstr ""
+
+#: src/0982-dst-coercion.md:102
+msgid ""
+"The compiler checks that the `Self` type is a struct or tuple struct and "
+"that the `Target` type is a simple substitution of type parameters from the "
+"`Self` type (i.e., That `Self` is `Foo<Ts>`, `Target` is `Foo<Us>` and that "
+"there exist `Vs` and `Xs` (where `Xs` are all type parameters) such that "
+"`Target = [Vs/Xs]Self`. One day, with HKT, this could be a regular part of "
+"type checking, for now it must be an ad hoc check). We might enforce that "
+"this substitution is of the form `X/Y` where `X` and `Y` are both formal "
+"type parameters of the implementation (I don't think this is necessary, but "
+"it makes checking coercions easier and is satisfied for all smart pointers)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:111
+msgid ""
+"The compiler checks each field in the `Self` type against the corresponding "
+"field in the `Target` type. Assuming `Fs` is the type of a field in `Self` "
+"and `Ft` is the type of the corresponding field in `Target`, then either `Ft "
+"<: Fs` or `Fs: CoerceUnsized<Ft>` (note that this includes some built-in "
+"coercions, coercions unrelated to unsizing are excluded, these could "
+"probably be added later, if needed)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:116
+msgid "There must be only one non-PhantomData field that is coerced."
+msgstr ""
+
+#: src/0982-dst-coercion.md:117
+msgid ""
+"We record for each impl, the index of the field in the `Self` type which is "
+"coerced."
+msgstr ""
+
+#: src/0982-dst-coercion.md:120
+msgid "On encountering a potential coercion (type checking phase)"
+msgstr ""
+
+#: src/0982-dst-coercion.md:122
+msgid ""
+"If we have an expression with type `E` where the type `F` is required during "
+"type checking and `E` is not a subtype of `F`, nor is it coercible using the "
+"built-in coercions, then we search for a bound of `E: CoerceUnsized<F>`. "
+"Note that we may not at this stage find the actual impl, but finding the "
+"bound is good enough for type checking."
+msgstr ""
+
+#: src/0982-dst-coercion.md:128
+msgid ""
+"If we require a coercion in the receiver of a method call or field lookup, "
+"we perform the same search that we currently do, except that where we "
+"currently check for coercions, we check for built-in coercions and then for "
+"`CoerceUnsized` bounds. We must also check for `Unsize` bounds for the case "
+"where the receiver is auto-deref'ed, but not autoref'ed."
+msgstr ""
+
+#: src/0982-dst-coercion.md:135
+msgid "On encountering an adjustment (translation phase)"
+msgstr ""
+
+#: src/0982-dst-coercion.md:137
+msgid ""
+"In trans (which is post-monomorphisation) we should always be able to find "
+"an impl for any `CoerceUnsized` bound."
+msgstr ""
+
+#: src/0982-dst-coercion.md:139
+msgid ""
+"If the impl is for a built-in pointer type, then we use the current coercion "
+"code for the various pointer kinds (`Box<T>` has different behaviour than "
+"`&` and `*` pointers)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:142
+msgid ""
+"Otherwise, we lookup which field is coerced due to the opt-in coercion, move "
+"the object being coerced and coerce the field in question by recursing (the "
+"built-in pointers are the base cases)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:147
+msgid "Adjustment types"
+msgstr ""
+
+#: src/0982-dst-coercion.md:149
+msgid ""
+"We add `AdjustCustom` to the `AutoAdjustment` enum as a placeholder for "
+"coercions due to a `CoerceUnsized` bound. I don't think we need the "
+"`UnsizeKind` enum at all now, since all checking is postponed until trans or "
+"relies on traits and impls."
+msgstr ""
+
+#: src/0982-dst-coercion.md:154
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0982-dst-coercion.md:156
+msgid "Not as flexible as the previous proposal."
+msgstr ""
+
+#: src/0982-dst-coercion.md:158
+msgid "Alternatives"
+msgstr ""
+
+#: src/0982-dst-coercion.md:160
+msgid ""
+"The original [DST5 proposal](http://smallcultfollowing.com/babysteps/"
+"blog/2014/01/05/dst-take-5/) contains a similar proposal with no opt-in "
+"trait, i.e., coercions are completely automatic and arbitrarily deep. This "
+"is a little too magical and unpredictable. It violates some 'soft "
+"abstraction boundaries' by interefering with the deep structure of objects, "
+"sometimes even automatically (and implicitly) allocating."
+msgstr ""
+
+#: src/0982-dst-coercion.md:166
+msgid ""
+"[RFC 401](https://github.com/rust-lang/rfcs/blob/master/text/0401-coercions."
+"md) proposed a scheme for proposals where users write their own coercion "
+"using intrinsics. Although more flexible, this allows for implicit execution "
+"of arbitrary code. If we need the increased flexibility, I believe we can "
+"add a manual option to the `CoerceUnsized` trait backwards compatibly."
+msgstr ""
+
+#: src/0982-dst-coercion.md:172
+msgid ""
+"The proposed design could be tweaked: for example, we could change the "
+"`CoerceUnsized` trait in many ways (we experimented with an associated type "
+"to indicate the field type which is coerced, for example)."
+msgstr ""
+
+#: src/0982-dst-coercion.md:176
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0982-dst-coercion.md:178
+msgid ""
+"It is unclear to what extent DST coercions should support multiple fields "
+"that refer to the same type parameter. `PhantomData<T>` should definitely be "
+"supported as an \"extra\" field that's skipped, but can all zero-sized "
+"fields be skipped? Are there cases where this would enable by-passing the "
+"abstractions that make some API safe?"
+msgstr ""
+
+#: src/0982-dst-coercion.md:184
+msgid "Updates since being accepted"
+msgstr ""
+
+#: src/0982-dst-coercion.md:186
+msgid "Since it was accepted, the RFC has been updated as follows:"
+msgstr ""
+
+#: src/0982-dst-coercion.md:188
+msgid "`CoerceUnsized` was specified to ignore PhantomData fields."
+msgstr ""

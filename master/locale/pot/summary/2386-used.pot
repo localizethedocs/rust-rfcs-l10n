@@ -1,0 +1,324 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2386-used.md:1
+msgid "Feature Name: `used`"
+msgstr ""
+
+#: src/2386-used.md:2
+msgid "Start Date: 2018-04-03"
+msgstr ""
+
+#: src/2386-used.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2386](https://github.com/rust-lang/rfcs/pull/2386)"
+msgstr ""
+
+#: src/2386-used.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#40289](https://github.com/rust-lang/rust/"
+"issues/40289)"
+msgstr ""
+
+#: src/2386-used.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2386-used.md:9
+msgid ""
+"Stabilize the `#[used]` attribute which is used to force the compiler to "
+"keep static variables, even if not referenced by any other part of the "
+"program, in the output object file."
+msgstr ""
+
+#: src/2386-used.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2386-used.md:15
+msgid ""
+"Bare metal applications, like kernels, bootloaders and other firmware, "
+"usually need precise control over the memory layout of the program. These "
+"programs usually need to place data structures like vector (interrupt) "
+"tables in certain memory locations for the system to operate properly."
+msgstr ""
+
+#: src/2386-used.md:19
+msgid ""
+"The final memory layout of the program is decided by the linker; bare metal "
+"applications make use of _linker scripts_ to control the placement of "
+"(linker) _sections_ in memory. But for all this to work the vector table "
+"must be present in the object files passed to the linker. That's where the "
+"`#[used]` attribute comes in: without it the compiler will optimize away the "
+"vector table, as it's not directly used by the program, and it will never "
+"reach the linker."
+msgstr ""
+
+#: src/2386-used.md:25
+msgid ""
+"It's possible to work around the lack of the `#[used]` attribute by "
+"declaring the vector table as public:"
+msgstr ""
+
+#: src/2386-used.md:29
+msgid "// public items are exposed in the object file\n"
+msgstr ""
+
+#: src/2386-used.md:30 src/2386-used.md:44 src/2386-used.md:66
+msgid "\".vector_table.exceptions\""
+msgstr ""
+
+#: src/2386-used.md:31 src/2386-used.md:45 src/2386-used.md:49
+#: src/2386-used.md:67 src/2386-used.md:140 src/2386-used.md:142
+msgid "\"C\""
+msgstr ""
+
+#: src/2386-used.md:31 src/2386-used.md:45 src/2386-used.md:67
+msgid "/* .. */"
+msgstr ""
+
+#: src/2386-used.md:34
+msgid ""
+"But this is brittle because the compiler can still optimize the symbol away "
+"when compiling with LTO enabled -- with LTO the compiler has global "
+"knowledge about the program, and will see that `EXCEPTIONS` is unused by the "
+"program and discard it."
+msgstr ""
+
+#: src/2386-used.md:38
+msgid ""
+"Yet another workaround is to force a volatile load of the vector table in "
+"some part of the program, usually before main. The compiler will always keep "
+"the vector table in this case but this alternative incurs in the cost of a "
+"load operation that will never be optimized away by the compiler."
+msgstr ""
+
+#: src/2386-used.md:46
+msgid "// entry point of the firmware\n"
+msgstr ""
+
+#: src/2386-used.md:50
+msgid "// user entry point\n"
+msgstr ""
+
+#: src/2386-used.md:54
+msgid "// this operation will never be optimized away\n"
+msgstr ""
+
+#: src/2386-used.md:61
+msgid ""
+"The proper solution to keeping the vector table is to mark the vector table "
+"as a _used_ variable to force the compiler to keep in one of the emitted "
+"object files."
+msgstr ""
+
+#: src/2386-used.md:65
+msgid "// will be present in the object file\n"
+msgstr ""
+
+#: src/2386-used.md:70
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2386-used.md:73
+msgid ""
+"We can think of the compilation process performed by `rustc` as a two stage "
+"process. First, `rustc` compiles a crate (source code) into _object files_, "
+"then `rustc` invokes the linker on those object files to produce a single "
+"_executable_, or shared library (e.g. `.so`) if the crate type was set to "
+"\"cdylib\"."
+msgstr ""
+
+#: src/2386-used.md:78
+msgid ""
+"The `#[used]` attribute can be applied to static variables to keep them in "
+"the _object files_ produced by `rustc`, even in the presence of LTO. Note "
+"that this does **not** mean that the static variable will make its way into "
+"the binary file emitted by the linker as the linker is free to drop symbols "
+"that it deems unused. In other words, the `#[used]` attribute does **not** "
+"affect the behavior of the linker."
+msgstr ""
+
+#: src/2386-used.md:84 src/2386-used.md:135
+msgid "Consider the following program:"
+msgstr ""
+
+#: src/2386-used.md:94
+msgid ""
+"The variable `FOO` marked with the `#[used]` attribute will be kept in the "
+"emitted object file regardless of the optimization level. On the other hand, "
+"the unused variable `BAR` is always optimized away."
+msgstr ""
+
+#: src/2386-used.md:123
+msgid ""
+"`FOO` never makes it to the final executable because the linker sees that "
+"the call graph that stems from the user entry point `main` never makes use "
+"of `FOO` and discards it."
+msgstr ""
+
+#: src/2386-used.md:132
+msgid ""
+"To keep `FOO` in the final binary assistance from the linker is required; "
+"this usually means writing a linker script."
+msgstr ""
+
+#: src/2386-used.md:139
+msgid "\".init_array\""
+msgstr ""
+
+#: src/2386-used.md:143
+msgid "\"Hello\""
+msgstr ""
+
+#: src/2386-used.md:147
+msgid "\"World\""
+msgstr ""
+
+#: src/2386-used.md:151
+msgid ""
+"When dealing with ELF files the `.init_array` section will usually be kept "
+"in the final binary by the default linker script. If the system supports it, "
+"all function pointers stored in the `.init_array` section will be called "
+"before entering `main`. Thus, the above program prints \"Hello\" and then "
+"\"World\" to the console when run on a \\*nix system."
+msgstr ""
+
+#: src/2386-used.md:165
+msgid ""
+"If the `#[used]` attribute is removed from the source code then only "
+"\"World\" is printed to the console as the `FOO` variable will get optimized "
+"away by the compiler."
+msgstr ""
+
+#: src/2386-used.md:168
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2386-used.md:171
+msgid ""
+"The `#[used]` attribute can only be used on static variables. Static "
+"variables marked with this attribute will be appended to the special `@llvm."
+"used` global variable when lowered to LLVM IR."
+msgstr ""
+
+#: src/2386-used.md:181
+msgid ""
+"```console\n"
+"$ cargo clean; cargo rustc -- --emit=llvm-ir\n"
+"$ grep llvm.used $(find -name '*.ll')\n"
+"@llvm.used = appending global [1 x i8*] [i8* getelementptr inbounds (<{ [4 x "
+"i8] }>, <{ [4 x i8] }>* @_ZN3foo3FOO17hf0af6b03a826c578E, i32 0, i32 0, i32 "
+"0)], section \"llvm.metadata\"\n"
+"```"
+msgstr ""
+
+#: src/2386-used.md:187
+msgid ""
+"The semantics of this operation are (quoting [LLVM reference](https://llvm."
+"org/docs/LangRef.html#the-llvm-used-global-variable)):"
+msgstr ""
+
+#: src/2386-used.md:191
+msgid ""
+"If a symbol appears in the @llvm.used list, then the compiler, assembler, "
+"~~and linker~~ are required to treat the symbol as if there is a reference "
+"to the symbol that it cannot see (which is why they have to be named). For "
+"example, if a variable has internal linkage and no references other than "
+"that from the @llvm.used list, it cannot be deleted. This is commonly used "
+"to represent references from inline asms and other things the compiler "
+"cannot “see”, and corresponds to “attribute((used))” in GNU C."
+msgstr ""
+
+#: src/2386-used.md:198
+msgid "_strikethrough added by the author_"
+msgstr ""
+
+#: src/2386-used.md:200
+msgid ""
+"The part about the linker is not true (\\*): from the point of view of the "
+"linker static variables marked with `#[used]` look exactly the same as "
+"variables that have not been marked with that attribute -- those are the "
+"implemented LLVM semantics. Also ELF object files have no mechanism to "
+"prevent the linker from dropping its symbols if they are not referenced by "
+"other object files."
+msgstr ""
+
+#: src/2386-used.md:205
+msgid "(\\*) unless \"linker\" is actually referring to `llvm-link` (?)"
+msgstr ""
+
+#: src/2386-used.md:207
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2386-used.md:210
+msgid ""
+"This is yet another low level feature that alternative `rustc` "
+"implementations would have to implement to be 100% compatible with the "
+"official LLVM based `rustc` implementation. Also see `#[repr(align = "
+"\"*\")]`, `#[repr(*)]`, `#[link_section]`, etc."
+msgstr ""
+
+#: src/2386-used.md:214
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2386-used.md:217
+msgid "Chosen design"
+msgstr ""
+
+#: src/2386-used.md:219
+msgid ""
+"This design pretty much matches how C compilers implement this feature. See "
+"prior art section below."
+msgstr ""
+
+#: src/2386-used.md:221
+msgid "Not doing this"
+msgstr ""
+
+#: src/2386-used.md:223
+msgid ""
+"Not doing this means that people will continue to use the brittle "
+"workarounds presented in the motivation section."
+msgstr ""
+
+#: src/2386-used.md:226
+msgid "Prior art"
+msgstr ""
+
+#: src/2386-used.md:229
+msgid ""
+"Most compilers provide a feature with the exact same semantics: usually in "
+"the form of a \"used\" attribute (e.g. `__attribute(used)__`)  that can be "
+"applied to static variables."
+msgstr ""
+
+#: src/2386-used.md:232
+msgid ""
+"The following C code is an example from the [KEIL toolchain documentation]"
+"(http://www.keil.com/support/man/docs/armcc/armcc_chr1359124983230.htm):"
+msgstr ""
+
+#: src/2386-used.md:238 src/2386-used.md:239
+msgid "// retained in object file\n"
+msgstr ""
+
+#: src/2386-used.md:242
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2386-used.md:245
+msgid "None so far."
+msgstr ""

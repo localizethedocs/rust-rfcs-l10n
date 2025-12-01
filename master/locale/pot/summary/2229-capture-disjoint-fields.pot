@@ -1,0 +1,392 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2229-capture-disjoint-fields.md:1
+msgid "Feature Name: `capture_disjoint_fields`"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:2
+msgid "Start Date: 2017-11-28"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2229](https://github.com/rust-lang/rfcs/pull/2229)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#53488](https://github.com/rust-lang/rust/"
+"issues/53488)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:9
+msgid ""
+"This RFC proposes that closure capturing should be minimal rather than "
+"maximal. Conceptually, existing rules regarding borrowing and moving "
+"disjoint fields should be applied to capturing. If implemented, the "
+"following code examples would become valid:"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:16
+msgid "// Error! cannot borrow `foo`\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:22
+msgid "// Error! cannot move `foo`\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:26
+msgid "Note that some discussion of this has already taken place:"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:27
+msgid "rust-lang/rust#19004"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:28
+msgid ""
+"[Rust internals forum](https://internals.rust-lang.org/t/borrow-the-full-"
+"stable-name-in-closures-for-ergonomics/5387)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:30
+msgid "Motivation"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:33
+msgid ""
+"In the rust language today, any variables named within a closure will be "
+"fully captured. This was simple to implement but is inconsistent with the "
+"rest of the language because rust normally allows simultaneous borrowing of "
+"disjoint fields. Remembering this exception adds to the mental burden of the "
+"programmer and makes the rules of borrowing and ownership harder to learn."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:39
+msgid "The following is allowed; why should closures be treated differently?"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:43
+msgid "// ok!\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:46
+msgid ""
+"This is a particularly annoying problem because closures often need to "
+"borrow data from `self`:"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:51
+msgid ""
+"// cannot borrow `self` as immutable because `self.list` is also borrowed as "
+"mutable\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:56
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:59
+msgid ""
+"Rust understands structs sufficiently to know that it's possible to borrow "
+"disjoint fields of a struct simultaneously. Structs can also be destructed "
+"and moved piece-by-piece. This functionality should be available anywhere, "
+"including from within closures:"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:72
+msgid "// Ok! destructure self\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:77
+msgid "// Ok! mutate and inspect self\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:83
+msgid "Rust will prevent dangerous double usage:"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:90
+msgid "// Error! can't destructure and mutate same data\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:97
+msgid "// Error! can't mutate and inspect same data\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:103
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:106
+msgid ""
+"This RFC does not propose any changes to the borrow checker. Instead, the "
+"MIR generation for closures should be altered to produce the minimal "
+"capture. Additionally, a hidden `repr` for closures might be added, which "
+"could reduce closure size through awareness of the new capture rules _(see "
+"unresolved)_."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:111
+msgid ""
+"In a sense, when a closure is lowered to MIR, a list of \"capture "
+"expressions\" is created, which we will call the \"capture set\". Each "
+"expression is some part of the closure body which, in order to capture parts "
+"of the enclosing scope, must be pre-evaluated when the closure is created. "
+"The output of the expressions, which we will call \"capture data\", is "
+"stored in the anonymous struct which implements the `Fn*` traits. If a "
+"binding is used within a closure, at least one capture expression which "
+"borrows or moves that binding's value must exist in the capture set."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:120
+msgid ""
+"Currently, lowering creates exactly one capture expression for each used "
+"binding, which borrows or moves the value in its entirety. This RFC proposes "
+"that lowering should instead create the minimal capture, where each "
+"expression is as precise as possible."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:125
+msgid ""
+"This minimal set of capture expressions _might_ be created through a sort of "
+"iterative refinement. We would start out capturing all of the local "
+"variables. Then, each path would be made more precise by adding additional "
+"dereferences and path components depending on which paths are used and how. "
+"References to structs would be made more precise by reborrowing fields and "
+"owned structs would be made more precise by moving fields."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:132
+msgid ""
+"A capture expression is minimal if it produces a value that is used by the "
+"closure in its entirety (e.g. is a primitive, is passed outside the closure, "
+"etc.) or if making the expression more precise would require one the "
+"following."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:136
+msgid "a call to an impure function"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:137
+msgid "an illegal move (for example, out of a `Drop` type)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:139
+msgid ""
+"When generating a capture expression, we must decide if the output should be "
+"owned or if it can be a reference. In a non-`move` closure, a capture "
+"expression will _only_ produce owned data if ownership of that data is "
+"required by the body of the closure. A `move` closure will _always_ produce "
+"owned data unless the captured binding does not have ownership."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:145
+msgid ""
+"Note that _all_ functions are considered impure (including to overloaded "
+"deref implementations). And, for the sake of capturing, all indexing is "
+"considered impure. It is possible that overloaded `Deref::deref` "
+"implementations could be marked as pure by using a new, marker trait (such "
+"as `DerefPure`) or attribute (such as `#[deref_transparent]`). However, such "
+"a solution should be proposed in a separate RFC. In the meantime, `<Box as "
+"Deref>::deref` could be a special case of a pure function _(see unresolved)_."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:153
+msgid ""
+"Also note that, because capture expressions are all subsets of the closure "
+"body, this RFC does not change _what_ is executed. It does change the order/"
+"number of executions for some operations, but since these must be pure, "
+"order/repetition does not matter. Only changes to lifetimes might be "
+"breaking. Specifically, the drop order of uncaptured data can be altered."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:159
+msgid ""
+"We might solve this by considering a struct to be minimal if it contains "
+"unused fields that implement `Drop`. This would prevent the drop order of "
+"those fields from changing, but feels strange and non-orthogonal _(see "
+"unresolved)_. Encountering this case at all could trigger a warning, so that "
+"this extra rule could exist temporarily but be removed over the next epoc "
+"_(see unresolved)_."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:165
+msgid "Reference Examples"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:167
+msgid "Below are examples of various closures and their capture sets."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:174
+msgid "`&mut foo` (primitive, ownership not required, used in entirety)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:182
+msgid "`&mut foo.b` (ownership not required, used in entirety)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:183
+msgid "`&mut foo.c` (ownership not required, used in entirety)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:185
+msgid ""
+"The borrow checker passes because `foo.a`, `foo.b`, and `foo.c` are disjoint."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:193
+msgid "`foo.b` (ownership available, used in entirety)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:195
+msgid "The borrow checker passes because `foo.a` and `foo.b` are disjoint."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:203
+msgid ""
+"`foo.drop_world` (ownership available, can't be more precise without moving "
+"out of `Drop`)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:206
+msgid ""
+"The borrow checker passes because `foo.hello` and `foo.drop_world` are "
+"disjoint."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:209
+msgid "\"{}\""
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:212
+msgid ""
+"`&foo.wrapper_thing` (ownership not required, can't be more precise because "
+"overloaded `Deref` on `wrapper_thing` is impure)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:219
+msgid ""
+"`foo.list` (ownership required, can't be more precise because indexing is "
+"impure)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:223
+msgid "// struct\n"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:227
+msgid "`bar` (ownership required, used in entirety)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:235
+msgid "`&mut foo.a`  (ownership not required, used in entirety)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:237
+msgid "The borrow checker fails because `foo_again` and `foo.a` intersect."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:244
+msgid "`foo.a`  (ownership required, used in entirety)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:246
+msgid "The borrow checker fails because `foo.a` has already been moved."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:254
+msgid ""
+"`drop_foo` (ownership available, can't be more precise without moving out of "
+"`Drop`)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:257
+msgid ""
+"The borrow checker fails because `drop_foo` cannot be moved while borrowed."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:263
+msgid ""
+"`&<Box<_> as Deref>::deref(&box_foo).b` (ownership not required, `Box::"
+"deref` is pure)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:269
+msgid ""
+"`box_foo` (ownership available, can't be more precise without moving out of "
+"`Drop`)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:279
+msgid "`&mut foo.bar` (ownership _not_ available, borrow can be split)"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:282
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:285
+msgid ""
+"This RFC does ruin the intuition that all variables named within a closure "
+"are _completely_ captured. I argue that that intuition is not common or "
+"necessary enough to justify the extra glue code."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:289
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:292
+msgid ""
+"This proposal is purely ergonomic since there is a complete and common "
+"workaround. The existing rules could remain in place and rust users could "
+"continue to pre-borrow/move fields. However, this workaround results in "
+"significant useless glue code when borrowing many but not all of the fields "
+"in a struct. It also produces a larger closure than necessary which could "
+"make the difference when inlining."
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:299
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:302
+msgid ""
+"How to optimize pointers. Can borrows that all reference parts of the same "
+"object be stored as a single pointer? How should this optimization be "
+"implemented (e.g. a special `repr`, refinement typing)?"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:306
+msgid ""
+"How to signal that a function is pure. Is this even needed/wanted? Any other "
+"places where the language could benefit?"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:309
+msgid "Should `Box` be special?"
+msgstr ""
+
+#: src/2229-capture-disjoint-fields.md:311
+msgid ""
+"Drop order can change as a result of this RFC, is this a real stability "
+"problem? How should this be resolved?"
+msgstr ""

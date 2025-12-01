@@ -1,0 +1,341 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1156-adjust-default-object-bounds.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:2
+msgid "Start Date: 2015-06-04"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1156](https://github.com/rust-lang/rfcs/pull/1156)"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#26438](https://github.com/rust-lang/rust/"
+"issues/26438)"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:8
+msgid ""
+"Adjust the object default bound algorithm for cases like `&'x Box<Trait>` "
+"and `&'x Arc<Trait>`. The existing algorithm would default to `&'x "
+"Box<Trait+'x>`. The proposed change is to default to `&'x "
+"Box<Trait+'static>`."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:13
+msgid ""
+"Note: This is a **BREAKING CHANGE**. The change has [been implemented]"
+"(https://github.com/nikomatsakis/rust/tree/better-object-defaults) and its "
+"impact has been evaluated. It was [found](https://gist.github.com/"
+"brson/085d84d43c6a9a8d4dc3) to cause **no root regressions** on `crates.io`. "
+"Nonetheless, to minimize impact, this RFC proposes phasing in the change as "
+"follows:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:19
+#: src/1156-adjust-default-object-bounds.md:156
+msgid ""
+"In Rust 1.2, a warning will be issued for code which will break when the "
+"defaults are changed. This warning can be disabled by using explicit bounds. "
+"The warning will only be issued when explicit bounds would be required in "
+"the future anyway."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:23
+#: src/1156-adjust-default-object-bounds.md:163
+msgid ""
+"In Rust 1.3, the change will be made permanent. Any code that has not been "
+"updated by that time will break."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:26
+msgid "Motivation"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:28
+msgid ""
+"When we instituted default object bounds, [RFC 599](0599-default-object-"
+"bound.md) specified that `&'x Box<Trait>` (and `&'x mut Box<Trait>`) should "
+"expand to `&'x Box<Trait+'x>` (and `&'x mut Box<Trait+'x>`). This is in "
+"contrast to a `Box` type that appears outside of a reference (e.g., "
+"`Box<Trait>`), which defaults to using `'static` (`Box<Trait+'static>`). "
+"This decision was made because it meant that a function written like so "
+"would accept the broadest set of possible objects:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:41
+msgid ""
+"In particular, under the current defaults, `foo` can be supplied an object "
+"which references borrowed data. Given that `foo` is taking the argument by "
+"reference, it seemed like a good rule. Experience has shown otherwise (see "
+"below for some of the problems encountered)."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:46
+msgid ""
+"This RFC proposes changing the default object bound rules so that the "
+"default is drawn from the innermost type that encloses the trait object. If "
+"there is no such type, the default is `'static`. The type is a reference (e."
+"g., `&'r Trait`), then the default is the lifetime `'r` of that reference. "
+"Otherwise, the type must in practice be some user-declared type, and the "
+"default is derived from the declaration: if the type declares a lifetime "
+"bound, then this lifetime bound is used, otherwise `'static` is used. This "
+"means that (e.g.) `&'r Box<Trait>` would default to `&'r "
+"Box<Trait+'static>`, and `&'r Ref<'q, Trait>` (from `RefCell`) would default "
+"to `&'r Ref<'q, Trait+'q>`."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:58
+msgid "Problems with the current default."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:60
+msgid ""
+"**Same types, different expansions.** One problem is fairly predictable: the "
+"current default means that identical types differ in their interpretation "
+"based on where they appear. This is something we have striven to avoid in "
+"general. So, as an example, this code [will not type-check](http://is.gd/"
+"Yaak1l):"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:78
+msgid ""
+"Even though `x` is a reference to a `Box<Trait>` and the type of `field` is "
+"a `Box<Trait>`, the expansions differ. `x` expands to `&'x mut "
+"Box<Trait+'x>` and the field expands to `Box<Trait+'static>`.  In general, "
+"we have tried to ensure that if the type is _typed precisely the same_ in a "
+"type definition and a fn definition, then those two types are equal (note "
+"that fn definitions allow you to omit things that cannot be omitted in "
+"types, so some types that you can enter in a fn definition, like `&i32`, "
+"cannot appear in a type definition)."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:87
+msgid ""
+"Now, the same is of course true for the type `Trait` itself, which appears "
+"identically in different contexts and is expanded in different ways. This is "
+"not a problem here because the type `Trait` is unsized, which means that it "
+"cannot be swapped or moved, and hence the main sources of type mismatches "
+"are avoided."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:93
+msgid ""
+"**Mental model.** In general the mental model of the newer rules seems "
+"simpler: once you move a trait object into the heap (via `Box`, or `Arc`), "
+"you must explicitly indicate whether it can contain borrowed data or not.  "
+"So long as you manipulate by reference, you don't have to. In contrast, the "
+"current rules are more subtle, since objects in the heap may still accept "
+"borrowed data, if you have a reference to the box."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:101
+msgid ""
+"**Poor interaction with the dropck rules.** When implementing the newer "
+"dropck rules specified by [RFC 769](0769-sound-generic-drop.md), we found a "
+"[rather subtle problem](https://github.com/rust-lang/rust/"
+"pull/25212#issuecomment-100244929) that would arise with the current "
+"defaults. The precise problem is spelled out in appendix below, but the TL;"
+"DR is that if you wish to pass an array of boxed objects, the current "
+"defaults can be actively harmful, and hence force you to specify explicit "
+"lifetimes, whereas the newer defaults do something reasonable."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:110
+msgid "Detailed design"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:112
+msgid ""
+"The rules for user-defined types from RFC 599 are altered as follows (text "
+"that is not changed is italicized):"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:115
+msgid ""
+"_If `SomeType` contains a single where-clause like `T:'a`, where `T` is some "
+"type parameter on `SomeType` and `'a` is some lifetime, then the type "
+"provided as value of `T` will have a default object bound of `'a`. An "
+"example of this is `std::cell::Ref`: a usage like `Ref<'x, X>` would change "
+"the default for object types appearing in `X` to be `'a`._"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:121
+msgid ""
+"If `SomeType` contains no where-clauses of the form `T:'a`, then the \"base "
+"default\" is used. The base default depends on the overall context:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:123
+msgid "in a fn body, the base default is a fresh inference variable."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:124
+msgid ""
+"outside of a fn body, such in a fn signature, the base default is `'static`. "
+"Hence `Box<X>` would typically be a default of `'static` for `X`, regardless "
+"of whether it appears underneath an `&` or not. (Note that in a fn body, the "
+"inference is strong enough to adopt `'static` if that is the necessary "
+"bound, or a looser bound if that would be helpful.)"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:130
+msgid ""
+"_If `SomeType` contains multiple where-clauses of the form `T:'a`, then the "
+"default is cleared and explicit lifetiem bounds are required. There are no "
+"known examples of this in the standard library as this situation arises "
+"rarely in practice._"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:135
+msgid "Timing and breaking change implications"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:137
+msgid ""
+"This is a breaking change, and hence it behooves us to evaluate the impact "
+"and describe a procedure for making the change as painless as possible. One "
+"nice property of this change is that it only affects _defaults_, which means "
+"that it is always possible to write code that compiles both before and after "
+"the change by avoiding defaults in those cases where the new and old "
+"compiler disagree."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:144
+msgid "The estimated impact of this change is very low, for two reasons:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:145
+msgid ""
+"A recent test of crates.io found [no regressions](https://gist.github.com/"
+"brson/085d84d43c6a9a8d4dc3) caused by this change (however, a [previous run]"
+"(https://gist.github.com/brson/80f9b80acef2e7ab37ee) (from before Rust 1.0) "
+"found 8 regressions)."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:148
+msgid ""
+"This feature was only recently stabilized as part of Rust 1.0 (and was only "
+"added towards the end of the release cycle), so there hasn't been time for a "
+"large body of dependent code to arise outside of crates.io."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:153
+msgid ""
+"Nonetheless, to minimize impact, this RFC proposes phasing in the change as "
+"follows:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:160
+msgid ""
+"Specifically, types that were written `&Box<Trait>` where the (boxed) trait "
+"object may contain references should now be written `&Box<Trait+'a>` to "
+"disable the warning."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:166
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:168
+msgid ""
+"The primary drawback is that this is a breaking change, as discussed in the "
+"previous section."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:171
+msgid "Alternatives"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:173
+msgid "Keep the current design, with its known drawbacks."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:175
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:177
+msgid "None."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:179
+msgid "Appendix: Details of the dropck problem"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:181
+msgid ""
+"This appendix goes into detail about the sticky interaction with dropck that "
+"was uncovered. The problem arises if you have a function that wishes to take "
+"a mutable slice of objects, like so:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:189
+msgid ""
+"Here, `&mut [..]` is used because the objects are `FnMut` objects, and hence "
+"require `&mut self` to call. This function in turn is expanded to:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:197
+msgid "Now callers might try to invoke the function as so:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:203
+msgid ""
+"Unfortunately, this code fails to compile -- in fact, it cannot be made to "
+"compile without changing the definition of `do_it`, due to a sticky "
+"interaction between dropck and variance. The problem is that dropck requires "
+"that all data in the box strictly outlives the lifetime of the box's owner. "
+"This is to prevent cyclic content. Therefore, the type of the objects must "
+"be `Box<FnMut()+'R>` where `'R` is some region that strictly outlives the "
+"array itself (as the array is the owner of the objects).  However, the "
+"signature of `do_it` demands that the reference to the array has the same "
+"lifetime as the trait objects within (and because this is an `&mut` "
+"reference and hence invariant, no approximation is permitted). This implies "
+"that the array must live for at least the region `'R`. But we defined the "
+"region `'R` to be some region that outlives the array, so we have a quandry."
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:218
+msgid "The solution is to change the definition of `do_it` in one of two ways:"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:222
+msgid ""
+"// Use explicit lifetimes to make it clear that the reference is not\n"
+"// required to have the same lifetime as the objects themselves:\n"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:225
+msgid ""
+"// Specifying 'static is easier, but then the closures cannot\n"
+"// capture the stack:\n"
+msgstr ""
+
+#: src/1156-adjust-default-object-bounds.md:231
+msgid ""
+"Under the proposed RFC, `do_it2` would be the default.  If one wanted to use "
+"lifetimes, then one would have to use explicit lifetime overrides as shown "
+"in `do_it1`. This is consistent with the mental model of \"once you box up "
+"an object, you must add annotations for it to contain borrowed data\"."
+msgstr ""

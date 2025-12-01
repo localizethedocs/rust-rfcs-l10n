@@ -1,0 +1,631 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3631-rustdoc-cfgs-handling.md:1
+msgid "Rustdoc: stabilization of the `doc(cfg*)` attributes"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:3
+msgid "Features Name: `doc_cfg`"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:4
+msgid "Start Date: 2022-12-07"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#3631](https://github.com/rust-lang/rfcs/pull/3631)"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:6
+msgid ""
+"Rust Issue: [rust-lang/rust#43781](https://github.com/rust-lang/rust/"
+"issues/43781)"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:9
+msgid "Summary"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:12
+msgid ""
+"This RFC aims at providing rustdoc users the possibility to add visual "
+"markers to the rendered documentation to know under which conditions an item "
+"is available (currently possible through the following unstable features: "
+"`doc_cfg`, `doc_auto_cfg` and `doc_cfg_hide`)."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:14
+msgid ""
+"It does not aim to allow having a same item with different `cfg`s to appear "
+"more than once in the generated documentation."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:16
+msgid ""
+"It does not aim to document items which are _inactive_ under the current "
+"configuration (i.e., “`cfg`ed out”). More details in the [Unresolved "
+"questions section](#unresolved-questions)."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:21
+msgid ""
+"The goal of this RFC is to stabilize the possibility to add visual markers "
+"to the rendered documentation to know under which conditions an item is "
+"available."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:23
+msgid ""
+"Providing this information to users will solve a common issue: “Why can I "
+"see this item in the documentation and yet can't use it in my code?”. The "
+"end goal being to provide this information automatically so that the "
+"documentation maintenance cost won't increase."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:27
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:30
+msgid "This RFC proposes to add the following attributes:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:32
+msgid "`#[doc(auto_cfg)]`/`#[doc(auto_cfg = true)]`/`#[doc(auto_cfg = false)]`"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:34
+msgid ""
+"When this is turned on (with `doc(auto_cfg)` or `doc(auto_cfg = true)`), "
+"`#[cfg]` attributes are shown in documentation just like `#[doc(cfg)]` "
+"attributes are. By default, `auto_cfg` will be enabled."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:36 src/3631-rustdoc-cfgs-handling.md:77
+msgid "`#[doc(cfg(...))]`"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:38
+msgid ""
+"This attribute is used to document the operating systems, feature flags, and "
+"build profiles where an item is available. For example, `#[doc(cfg(unix))` "
+"will add a tag that says \"this is supported on **unix** only\" to the item."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:40
+msgid ""
+"The syntax of this attribute is the same as the syntax of the [`#[cfg()]` "
+"attribute](https://doc.rust-lang.org/reference/conditional-compilation.html) "
+"used for conditional compilation."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:42
+msgid "`#![doc(auto_cfg(hide(...)))]` / `#[doc(auto_cfg(show(...)))]`"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:44
+msgid ""
+"These attributes suppress or un-suppress the `auto_cfg` behavior for a "
+"particular configuration predicate."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:46
+msgid ""
+"For example, `#[doc(auto_cfg(hide(windows)))]` could be used in newer "
+"versions of the [`windows` crate](https://docs.rs/windows/latest/windows/) "
+"to prevent the \"this is supported on **windows** only\" tag from being "
+"shown on every single item. Using these attributes will also re-enable "
+"`doc(auto_cfg)` if it was disabled at this location."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:51
+msgid ""
+"All of these attributes can be added to a module or to the crate root, and "
+"they will be inherited by the child items unless another attribute overrides "
+"it. This is why \"opposite\" attributes like `auto_cfg(hide(...))` and "
+"`auto_cfg(show(...))` are provided: they allow a child item to override its "
+"parent."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:53
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:56
+msgid "The attributes"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:58
+msgid "`#[doc(auto_cfg)`/`#[doc(auto_cfg = true)]`/`#[doc(auto_cfg = false)]`"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:60
+msgid ""
+"By default, `#[doc(auto_cfg)]` is enabled at the crate-level. When it's "
+"enabled, Rustdoc will automatically display `cfg(...)` compatibility "
+"information as-if the same `#[doc(cfg(...))]` had been specified."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:62
+msgid ""
+"This attribute impacts the item on which it is used and its descendants."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:64
+msgid "So if we take back the previous example:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:67 src/3631-rustdoc-cfgs-handling.md:83
+#: src/3631-rustdoc-cfgs-handling.md:85 src/3631-rustdoc-cfgs-handling.md:96
+#: src/3631-rustdoc-cfgs-handling.md:113 src/3631-rustdoc-cfgs-handling.md:127
+#: src/3631-rustdoc-cfgs-handling.md:208
+msgid "\"futures-io\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:71
+msgid ""
+"There's no need to \"duplicate\" the `cfg` into a `doc(cfg())` to make "
+"Rustdoc display it."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:73
+msgid ""
+"In some situations, the detailed conditional compilation rules used to "
+"implement the feature might not serve as good documentation (for example, "
+"the list of supported platforms might be very long, and it might be better "
+"to document them in one place). To turn it off, add the `#[doc(auto_cfg = "
+"false)]` attribute on the item."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:75
+msgid ""
+"If no argument is specified (ie `#[doc(auto_cfg)]`), it's the same as "
+"writing `#[doc(auto_cfg = true)]`."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:79
+msgid ""
+"This attribute provides a standardized format to override `#[cfg()]` "
+"attributes to document conditionally available items. Example:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:82
+msgid "// the \"real\" cfg condition\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:83
+msgid "// the `doc(cfg())` so it's displayed to the readers\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:89
+msgid "It will display in the documentation for this module:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:91
+msgid ""
+"![This is supported on feature=\"futures-io\" only.](https://user-images."
+"githubusercontent.com/81079/89731116-d7b7ce00-da44-11ea-87c6-022d192d6eca."
+"png)"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:93
+msgid ""
+"You can use it to display information in generated documentation, whether or "
+"not there is a `#[cfg()]` attribute:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:100
+msgid "It will be displayed exactly the same as the previous code."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:102
+msgid ""
+"This attribute has the same syntax as conditional compilation, but it only "
+"causes documentation to be added. This means `#[doc(cfg(not(windows)))]` "
+"will not cause your docs to be hidden on non-windows targets, even though "
+"`#[cfg(not(windows))]` does do that."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:104
+msgid ""
+"If `doc(auto_cfg)` is enabled on the item, `doc(cfg)` will override it "
+"anyway so in the two previous examples, even if the `doc(auto_cfg)` feature "
+"was enabled, it would still display the same thing."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:106
+msgid "This attribute works on modules and on items."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:108
+msgid "`#[doc(auto_cfg(hide(...)))]`"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:110
+msgid ""
+"This attribute is used to prevent some `cfg` to be generated in the visual "
+"markers. It only applies to `#[doc(auto_cfg = true)]`, not to "
+"`#[doc(cfg(...))]`. So in the previous example:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:117
+msgid ""
+"It currently displays both `unix` and `feature = \"futures-io\"` into the "
+"documentation, which is not great. To prevent the `unix` cfg to ever be "
+"displayed, you can use this attribute at the crate root level:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:123
+msgid ""
+"Or directly on a given item/module as it covers any of the item's "
+"descendants:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:129 src/3631-rustdoc-cfgs-handling.md:210
+msgid ""
+"// `futures` and all its descendants won't display \"unix\" in their cfgs.\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:133
+msgid "Then, the `unix` cfg will never be displayed into the documentation."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:135
+msgid ""
+"Rustdoc currently hides `doc` and `doctest` attributes by default and "
+"reserves the right to change the list of \"hidden by default\" attributes."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:137 src/3631-rustdoc-cfgs-handling.md:218
+msgid ""
+"The attribute accepts only a list of identifiers or key/value items. So you "
+"can write:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:140 src/3631-rustdoc-cfgs-handling.md:221
+msgid "\"something\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:144 src/3631-rustdoc-cfgs-handling.md:225
+msgid "But you cannot write:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:150
+msgid ""
+"So if we use `doc(auto_cfg(hide(unix)))`, it means it will hide all mentions "
+"of `unix`:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:153 src/3631-rustdoc-cfgs-handling.md:154
+msgid "// nothing displayed\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:155
+msgid "// only `windows` displayed\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:158
+msgid "However, it only impacts the `unix` cfg, not the feature:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:161
+msgid "\"unix\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:161
+msgid "// `feature = \"unix\"` is displayed\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:164
+msgid ""
+"If `cfg_auto(show(...))` and `cfg_auto(hide(...))` are used to show/hide a "
+"same `cfg` on a same item, it'll emit an error. Example:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:168 src/3631-rustdoc-cfgs-handling.md:235
+msgid "// Error!\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:172 src/3631-rustdoc-cfgs-handling.md:239
+msgid ""
+"Using this attribute will re-enable `auto_cfg` if it was disabled at this "
+"location:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:175 src/3631-rustdoc-cfgs-handling.md:182
+#: src/3631-rustdoc-cfgs-handling.md:242
+msgid "// Disabling `auto_cfg`\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:179
+msgid "And using `doc(auto_cfg)` will re-enable it:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:184 src/3631-rustdoc-cfgs-handling.md:243
+msgid "// `auto_cfg` is re-enabled.\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:189
+msgid ""
+"However, using `doc(auto_cfg = ...)` and `doc(auto_cfg(...))` on the same "
+"item will emit an error:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:193
+msgid "// error\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:197
+msgid ""
+"The reason behind this is that `doc(auto_cfg = ...)` enables or disables the "
+"feature, whereas `doc(auto_cfg(...))` enables it unconditionally, making the "
+"first attribute to appear useless as it will be overidden by the next "
+"`doc(auto_cfg)` attribute."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:199
+msgid "`#[doc(auto_cfg(show(...)))]`"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:201
+msgid ""
+"This attribute does the opposite of `#[doc(auto_cfg(hide(...)))]`: if you "
+"used `#[doc(auto_cfg(hide(...)))]` and want to revert its effect on an item "
+"and its descendants, you can use `#[doc(auto_cfg(show(...)))]`. It only "
+"applies to `#[doc(auto_cfg = true)]`, not to `#[doc(cfg(...))]`."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:204
+msgid "For example:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:213
+msgid ""
+"// `child` and all its descendants will display \"unix\" in their cfgs.\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:231
+msgid ""
+"If `auto_cfg(show(...))` and `auto_cfg(hide(...))` are used to show/hide a "
+"same `cfg` on a same item, it'll emit an error. Example:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:247
+msgid "Inheritance"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:249
+msgid ""
+"Rustdoc merges `cfg` attributes from parent modules to its children. For "
+"example, in this case, the module `non_unix` will describe the entire "
+"compatibility matrix for the module, and not just its directly attached "
+"information:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:256
+msgid "//\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:261 src/3631-rustdoc-cfgs-handling.md:371
+msgid ""
+"![Available on (Windows or Unix) and non-Unix only.](https://hackmd.io/"
+"_uploads/SJrmwYeF2.png)"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:263
+msgid ""
+"[Future versions of rustdoc](#boolean-simplification) may simplify this "
+"display down to \"available on **Windows** only.\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:265
+msgid "Re-exports and inlining"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:267
+msgid ""
+"`cfg` attributes of a re-export are never merged with the re-exported "
+"item(s) attributes except if the re-export has the `#[doc(inline)]` "
+"attribute. In this case, the `cfg` of the re-exported item will be merged "
+"with the re-export's."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:269
+msgid ""
+"When talking about \"attributes merge\", we mean that if the re-export has "
+"`#[cfg(unix)]` and the re-exported item has `#[cfg(feature = \"foo\")]`, you "
+"will only see `cfg(unix)` on the re-export and only `cfg(feature = \"foo\")` "
+"on the re-exported item, unless the re-export has `#[doc(inline)]`, then you "
+"will only see the re-exported item with both `cfg(unix)` and `cfg(feature = "
+"\"foo\")`."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:271
+msgid "Example:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:278
+msgid "// code\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:282
+msgid "\"freebsd\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:284 src/3631-rustdoc-cfgs-handling.md:331
+msgid "\"macos\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:289
+msgid ""
+"In this example, `non_unix_desktop` will only display `cfg(target_os = "
+"\"freeebsd\")` and not display any `cfg` from `desktop::non_unix`."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:291
+msgid ""
+"On the contrary, `inlined_non_unix_desktop` will have cfgs from both the re-"
+"export and the re-exported item."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:293
+msgid ""
+"So that also means that if a crate re-exports a foreign item, unless it has "
+"`#[doc(inline)]`, the `cfg` and `doc(cfg)` attributes will not be visible:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:296
+msgid "// dep:\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:297
+msgid "\"a\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:299
+msgid "// crate using dep:\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:301
+msgid ""
+"// There will be no mention of `feature = \"a\"` in the documentation.\n"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:306
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:309
+msgid ""
+"A potential drawback is that it adds more attributes, making documentation "
+"more complex."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:312
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:315
+msgid "Why not merging cfg and doc(cfg) attributes by default?"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:317
+msgid ""
+"It was debated and implemented in [rust-lang/rust#113091](https://github.com/"
+"rust-lang/rust/pull/113091)."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:319
+msgid ""
+"When re-exporting items with different cfgs there are two things that can "
+"happen:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:321
+msgid ""
+"The re-export uses a subset of cfgs, this subset is sufficient so that the "
+"item will appear exactly with the subset"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:322
+msgid "The re-export uses a non-subset of cfgs like in this code:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:326
+msgid "\"linux\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:328
+msgid "/* impl for linux */"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:333
+msgid "/* impl for darwin */"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:338
+msgid ""
+"If the non-subset cfgs are active (e.g. compiling this example on windows), "
+"then this will be a compile error as the item doesn't exist to re-export. If "
+"the subset cfgs are active it behaves like described in 1."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:341
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:344
+msgid "`cfg`ed out items"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:346
+msgid ""
+"Rustdoc doesn't take into account `cfg`ed out items. The reason for this "
+"limitation is that Rustdoc has only access to rustc's information: `cfg`ed "
+"out items, although still present, don't have enough information to be "
+"useful to rustdoc when generating documentation, hence why they are not "
+"treated."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:348
+msgid ""
+"So for the following crate, `function` wouldn't show up in the generated "
+"docs unless you actually passed `--cfg special` to Rustdoc:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:355
+msgid ""
+"Therefore, the common and offical workaround is the use of the semi-special "
+"cfg `doc`:"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:362
+msgid ""
+"There are a few leads on how Rustdoc could solve this issue, but they all "
+"come with big drawbacks, so this problem is not addressed in this RFC but "
+"will (hopefully) be in the future."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:364
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:368
+msgid "Boolean simplification"
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:373
+msgid ""
+"Of course, the above example is equivalent to \"available on **Windows** "
+"only.\""
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:375
+msgid ""
+"We probably don't want to make promises one way or the other about whether "
+"rustdoc does this, but for compatibility's sake, Rustdoc does promise that "
+"`#[doc(cfg(false))]` will not hide the documentation. This means "
+"simplification can be added, and it won't cause docs to mysteriously vanish."
+msgstr ""
+
+#: src/3631-rustdoc-cfgs-handling.md:377
+msgid ""
+"This is tracked in issue [rust-lang/rust#104991](https://github.com/rust-"
+"lang/rust/issues/104991)."
+msgstr ""

@@ -1,0 +1,2734 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0517-io-os-reform.md:1
+msgid "Start Date: 2014-12-07"
+msgstr ""
+
+#: src/0517-io-os-reform.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#517](https://github.com/rust-lang/rfcs/pull/517)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#21070](https://github.com/rust-lang/rust/"
+"issues/21070)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0517-io-os-reform.md:8
+msgid ""
+"This RFC proposes a significant redesign of the `std::io` and `std::os` "
+"modules in preparation for API stabilization. The specific problems "
+"addressed by the redesign are given in the [Problems](#problems) section "
+"below, and the key ideas of the design are given in [Vision for IO](#vision-"
+"for-io)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:13
+msgid "Note about RFC structure"
+msgstr ""
+
+#: src/0517-io-os-reform.md:15
+msgid ""
+"This RFC was originally posted as a single monolithic file, which made it "
+"difficult to discuss different parts separately."
+msgstr ""
+
+#: src/0517-io-os-reform.md:18
+msgid ""
+"It has now been split into a skeleton that covers (1) the problem statement, "
+"(2) the overall vision and organization, and (3) the `std::os` module."
+msgstr ""
+
+#: src/0517-io-os-reform.md:22
+msgid ""
+"Other parts of the RFC are marked with `(stub)` and will be filed as follow-"
+"up PRs against this RFC."
+msgstr ""
+
+#: src/0517-io-os-reform.md:25
+msgid "Table of contents"
+msgstr ""
+
+#: src/0517-io-os-reform.md:27
+msgid "[Summary](#summary)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:28
+msgid "[Table of contents](#table-of-contents)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:29
+msgid "[Problems](#problems)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:30
+msgid ""
+"[Atomicity and the `Reader`/`Writer` traits](#atomicity-and-the-readerwriter-"
+"traits)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:31
+msgid "[Timeouts](#timeouts)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:32
+msgid "[Posix and libuv bias](#posix-and-libuv-bias)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:33
+msgid "[Unicode](#unicode)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:34
+msgid "[stdio](#stdio)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:35
+msgid "[Overly high-level abstractions](#overly-high-level-abstractions)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:36
+msgid "[The error chaining pattern](#the-error-chaining-pattern)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:37
+msgid "[Detailed design](#detailed-design)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:38
+msgid "[Vision for IO](#vision-for-io)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:39
+msgid "[Goals](#goals)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:40
+msgid "[Design principles](#design-principles)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:41
+msgid "[What cross-platform means](#what-cross-platform-means)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:42
+msgid "[Relation to the system-level APIs](#relation-to-the-system-level-apis)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:43
+msgid "[Platform-specific opt-in](#platform-specific-opt-in)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:44
+msgid "[Proposed organization](#proposed-organization)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:45
+msgid "[Revising `Reader` and `Writer`](#revising-reader-and-writer)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:46
+msgid "[Read](#read)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:47
+msgid "[Write](#write)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:48
+msgid "[String handling](#string-handling)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:49
+msgid "[Key observations](#key-observations)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:50
+msgid "[The design: `os_str`](#the-design-os_str)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:51
+msgid "[The future](#the-future)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:52
+msgid "[Deadlines](#deadlines) (stub)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:53
+msgid ""
+"[Splitting streams and cancellation](#splitting-streams-and-cancellation) "
+"(stub)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:54
+msgid "[Modules](#modules)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:55
+msgid "[core::io](#coreio)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:56
+msgid "[Adapters](#adapters)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:57 src/0517-io-os-reform.md:68
+msgid "[Free functions](#free-functions)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:58
+msgid "[Seeking](#seeking)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:59
+msgid "[Buffering](#buffering)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:60
+msgid "[Cursor](#cursor)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:61
+msgid "[The std::io facade](#the-stdio-facade)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:62
+msgid "[Errors](#error)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:63
+msgid "[Channel adapters](#channel-adapters)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:64
+msgid "[stdin, stdout, stderr](#stdin-stdout-stderr)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:65
+msgid "[Printing functions](#printing-functions)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:66
+msgid "[std::env](#stdenv)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:67
+msgid "[std::fs](#stdfs)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:69
+msgid "[Files](#files)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:70
+msgid "[File kinds](#file-kinds)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:71
+msgid "[File permissions](#file-permissions)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:72
+msgid "[std::net](#stdnet)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:73
+msgid "[TCP](#tcp)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:74
+msgid "[UDP](#udp)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:75
+msgid "[Addresses](#addresses)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:76
+msgid "[std::process](#stdprocess)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:77
+msgid "[Command](#command)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:78
+msgid "[Child](#child)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:79
+msgid "[std::os](#stdos)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:80
+msgid "[Odds and ends](#odds-and-ends)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:81
+msgid "[The io prelude](#the-io-prelude)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:82
+msgid "[Drawbacks](#drawbacks)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:83
+msgid "[Alternatives](#alternatives)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:84
+msgid "[Unresolved questions](#unresolved-questions)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:86
+msgid "Problems"
+msgstr ""
+
+#: src/0517-io-os-reform.md:89
+msgid ""
+"The `io` and `os` modules are the last large API surfaces of `std` that need "
+"to be stabilized. While the basic functionality offered in these modules is "
+"_largely_ traditional, many problems with the APIs have emerged over time. "
+"The RFC discusses the most significant problems below."
+msgstr ""
+
+#: src/0517-io-os-reform.md:94
+msgid ""
+"This section only covers specific problems with the current library; see "
+"[Vision for IO](#vision-for-io) for a higher-level view.  section."
+msgstr ""
+
+#: src/0517-io-os-reform.md:97
+msgid "Atomicity and the `Reader`/`Writer` traits"
+msgstr ""
+
+#: src/0517-io-os-reform.md:100
+msgid ""
+"One of the most pressing -- but also most subtle -- problems with `std::io` "
+"is the lack of _atomicity_ in its `Reader` and `Writer` traits."
+msgstr ""
+
+#: src/0517-io-os-reform.md:103
+msgid "For example, the `Reader` trait offers a `read_to_end` method:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:109
+msgid ""
+"Executing this method may involve many calls to the underlying `read` "
+"method. And it is possible that the first several calls succeed, and then a "
+"call returns an `Err` -- which, like `TimedOut`, could represent a transient "
+"problem. Unfortunately, given the above signature, there is no choice but to "
+"simply _throw this data away_."
+msgstr ""
+
+#: src/0517-io-os-reform.md:115
+msgid ""
+"The `Writer` trait suffers from a more fundamental problem, since its "
+"primary method, `write`, may actually involve several calls to the "
+"underlying system -- and if a failure occurs, there is no indication of how "
+"much was written."
+msgstr ""
+
+#: src/0517-io-os-reform.md:119
+msgid ""
+"Existing blocking APIs all have to deal with this problem, and Rust can and "
+"should follow the existing tradition here. See [Revising `Reader` and "
+"`Writer`](#revising-reader-and-writer) for the proposed solution."
+msgstr ""
+
+#: src/0517-io-os-reform.md:123
+msgid "Timeouts"
+msgstr ""
+
+#: src/0517-io-os-reform.md:126
+msgid ""
+"The `std::io` module supports \"timeouts\" on virtually all IO objects via a "
+"`set_timeout` method. In this design, every IO object (file, socket, etc.) "
+"has an optional timeout associated with it, and `set_timeout` mutates the "
+"associated timeout. All subsequent blocking operations are implicitly "
+"subject to this timeout."
+msgstr ""
+
+#: src/0517-io-os-reform.md:131
+msgid ""
+"This API choice suffers from two problems, one cosmetic and the other deeper:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:133
+msgid ""
+"The \"timeout\" is [actually a _deadline_](https://github.com/rust-lang/rust/"
+"issues/15802) and should be named accordingly."
+msgstr ""
+
+#: src/0517-io-os-reform.md:137
+msgid ""
+"The stateful API has poor composability: when passing a mutable reference of "
+"an IO object to another function, it's possible that the deadline has been "
+"changed. In other words, users of the API can easily interfere with each "
+"other by accident."
+msgstr ""
+
+#: src/0517-io-os-reform.md:142
+msgid "See [Deadlines](#deadlines) for the proposed solution."
+msgstr ""
+
+#: src/0517-io-os-reform.md:144
+msgid "Posix and libuv bias"
+msgstr ""
+
+#: src/0517-io-os-reform.md:147
+msgid ""
+"The current `io` and `os` modules were originally designed when `librustuv` "
+"was providing IO support, and to some extent they reflect the capabilities "
+"and conventions of `libuv` -- which in turn are loosely based on Posix."
+msgstr ""
+
+#: src/0517-io-os-reform.md:151
+msgid ""
+"As such, the modules are not always ideal from a cross-platform standpoint, "
+"both in terms of forcing Windows programmings into a Posix mold, and also of "
+"offering APIs that are not actually usable on all platforms."
+msgstr ""
+
+#: src/0517-io-os-reform.md:155
+msgid ""
+"The modules have historically also provided _no_ platform-specific APIs."
+msgstr ""
+
+#: src/0517-io-os-reform.md:157
+msgid ""
+"Part of the goal of this RFC is to set out a clear and extensible story for "
+"both cross-platform and platform-specific APIs in `std`. See [Design "
+"principles](#design-principles) for the details."
+msgstr ""
+
+#: src/0517-io-os-reform.md:161
+msgid "Unicode"
+msgstr ""
+
+#: src/0517-io-os-reform.md:164
+msgid ""
+"Rust has followed the [utf8 everywhere](http://utf8everywhere.org/) approach "
+"to its strings. However, at the borders to platform APIs, it is revealed "
+"that the world is not, in fact, UTF-8 (or even Unicode) everywhere."
+msgstr ""
+
+#: src/0517-io-os-reform.md:168
+msgid ""
+"Currently our story for platform APIs is that we either assume they can take "
+"or return Unicode strings (suitably encoded) or an uninterpreted byte "
+"sequence. Sadly, this approach does _not_ actually cover all platform needs, "
+"and is also not highly ergonomic as presently implemented. (Consider `os::"
+"getenv` which introduces replacement characters (!) versus `os::"
+"getenv_as_bytes` which yields a `Vec<u8>`; neither is ideal.)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:175
+msgid ""
+"This topic was covered in some detail in the [Path Reform RFC](https://"
+"github.com/rust-lang/rfcs/pull/474), but this RFC gives a more general "
+"account in [String handling](#string-handling)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:179
+msgid "`stdio`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:182
+msgid ""
+"The `stdio` module provides access to readers/writers for `stdin`, `stdout` "
+"and `stderr`, which is essential functionality. However, it _also_ provides "
+"a means of changing e.g. \"stdout\" -- but there is no connection between "
+"these two! In particular, `set_stdout` affects only the writer that `println!"
+"` and friends use, while `set_stderr` affects `panic!`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:188
+msgid ""
+"This module needs to be clarified. See [The std::io facade](#the-stdio-"
+"facade) and \\[Functionality moved elsewhere\\] for the detailed design."
+msgstr ""
+
+#: src/0517-io-os-reform.md:191
+msgid "Overly high-level abstractions"
+msgstr ""
+
+#: src/0517-io-os-reform.md:194
+msgid ""
+"There are a few places where `io` provides high-level abstractions over "
+"system services without also providing more direct access to the service as-"
+"is. For example:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:197
+msgid ""
+"The `Writer` trait's `write` method -- a cornerstone of IO -- actually "
+"corresponds to an unbounded number of invocations of writes to the "
+"underlying IO object. This RFC changes `write` to follow more standard, "
+"lower-level practice; see [Revising `Reader` and `Writer`](#revising-reader-"
+"and-writer)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:202
+msgid ""
+"Objects like `TcpStream` are `Clone`, which involves a fair amount of "
+"supporting infrastructure. This RFC tackles the problems that `Clone` was "
+"trying to solve more directly; see [Splitting streams and cancellation]"
+"(#splitting-streams-and-cancellation)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:206
+msgid ""
+"The motivation for going lower-level is described in [Design principles]"
+"(#design-principles) below."
+msgstr ""
+
+#: src/0517-io-os-reform.md:208
+msgid "The error chaining pattern"
+msgstr ""
+
+#: src/0517-io-os-reform.md:211
+msgid ""
+"The `std::io` module is somewhat unusual in that most of the functionality "
+"it proves are used through a few key traits (like `Reader`) and these traits "
+"are in turn \"lifted\" over `IoResult`:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:219
+msgid ""
+"This lifting and others makes it possible to chain IO operations that might "
+"produce errors, without any explicit mention of error handling:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:228
+msgid ""
+"The result of such a chain is either `Ok` of the outcome, or `Err` of the "
+"first error."
+msgstr ""
+
+#: src/0517-io-os-reform.md:231
+msgid ""
+"While this pattern is highly ergonomic, it does not fit particularly well "
+"into our evolving error story ([interoperation](https://github.com/rust-lang/"
+"rfcs/pull/201) or [try blocks](https://github.com/rust-lang/rfcs/pull/243)), "
+"and it is the only module in `std` to follow this pattern."
+msgstr ""
+
+#: src/0517-io-os-reform.md:237
+msgid "Eventually, we would like to write"
+msgstr ""
+
+#: src/0517-io-os-reform.md:243
+msgid ""
+"to take advantage of the `FromError` infrastructure, hook into error "
+"handling control flow, and to provide good chaining ergonomics throughout "
+"_all_ Rust APIs \\-- all while keeping this handling a bit more explicit via "
+"the `?` operator. (See https://github.com/rust-lang/rfcs/pull/243 for the "
+"rough direction)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:248
+msgid ""
+"In the meantime, this RFC proposes to phase out the use of impls for "
+"`IoResult`. This will require use of `try!` for the time being."
+msgstr ""
+
+#: src/0517-io-os-reform.md:251
+msgid ""
+"(Note: this may put some additional pressure on at least landing the basic "
+"use of `?` instead of today's `try!` before 1.0 final.)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:254
+msgid "Detailed design"
+msgstr ""
+
+#: src/0517-io-os-reform.md:257
+msgid ""
+"There's a lot of material here, so the RFC starts with high-level goals, "
+"principles, and organization, and then works its way through the various "
+"modules involved."
+msgstr ""
+
+#: src/0517-io-os-reform.md:261
+msgid "Vision for IO"
+msgstr ""
+
+#: src/0517-io-os-reform.md:264
+msgid ""
+"Rust's IO story had undergone significant evolution, starting from a "
+"`libuv`\\-style pure green-threaded model to a dual green/native model and "
+"now to a [pure native model](https://github.com/rust-lang/rfcs/pull/230). "
+"Given that history, it's worthwhile to set out explicitly what is, and is "
+"not, in scope for `std::io`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:270
+msgid "Goals"
+msgstr ""
+
+#: src/0517-io-os-reform.md:273
+msgid "For Rust 1.0, the aim is to:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:275
+msgid ""
+"Provide a _blocking_ API based directly on the services provided by the "
+"native OS for native threads."
+msgstr ""
+
+#: src/0517-io-os-reform.md:278
+msgid ""
+"These APIs should cover the basics (files, basic networking, basic process "
+"management, etc) and suffice to write servers following the classic Apache "
+"thread-per-connection model. They should impose essentially zero cost over "
+"the underlying OS services; the core APIs should map down to a single "
+"syscall unless more are needed for cross-platform compatibility."
+msgstr ""
+
+#: src/0517-io-os-reform.md:284
+msgid ""
+"Provide basic blocking abstractions and building blocks (various stream and "
+"buffer types and adapters) based on traditional blocking IO models but "
+"adapted to fit well within Rust."
+msgstr ""
+
+#: src/0517-io-os-reform.md:288
+msgid ""
+"Provide hooks for integrating with low-level and/or platform-specific APIs."
+msgstr ""
+
+#: src/0517-io-os-reform.md:290
+msgid "Ensure reasonable forwards-compatibility with future async IO models."
+msgstr ""
+
+#: src/0517-io-os-reform.md:292
+msgid ""
+"It is explicitly _not_ a goal at this time to support asynchronous "
+"programming models or nonblocking IO, nor is it a goal for the blocking APIs "
+"to eventually be used in a nonblocking \"mode\" or style."
+msgstr ""
+
+#: src/0517-io-os-reform.md:296
+msgid ""
+"Rather, the hope is that the basic abstractions of files, paths, sockets, "
+"and so on will eventually be usable directly within an async IO programming "
+"model and/or with nonblocking APIs. This is the case for most existing "
+"languages, which offer multiple interoperating IO models."
+msgstr ""
+
+#: src/0517-io-os-reform.md:301
+msgid ""
+"The _long term_ intent is certainly to support async IO in some form, but "
+"doing so will require new research and experimentation."
+msgstr ""
+
+#: src/0517-io-os-reform.md:304
+msgid "Design principles"
+msgstr ""
+
+#: src/0517-io-os-reform.md:307
+msgid ""
+"Now that the scope has been clarified, it's important to lay out some broad "
+"principles for the `io` and `os` modules. Many of these principles are "
+"already being followed to some extent, but this RFC makes them more explicit "
+"and applies them more uniformly."
+msgstr ""
+
+#: src/0517-io-os-reform.md:312
+msgid "What cross-platform means"
+msgstr ""
+
+#: src/0517-io-os-reform.md:315
+msgid ""
+"Historically, Rust's `std` has always been \"cross-platform\", but as "
+"discussed in [Posix and libuv bias](#posix-and-libuv-bias) this hasn't "
+"always played out perfectly. The proposed policy is below. **With this "
+"policies, the APIs should largely feel like part of \"Rust\" rather than "
+"part of any legacy, and they should enable truly portable code**."
+msgstr ""
+
+#: src/0517-io-os-reform.md:321
+msgid ""
+"Except for an explicit opt-in (see [Platform-specific opt-in](#platform-"
+"specific-opt-in) below), all APIs in `std` should be cross-platform:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:324
+msgid ""
+"The APIs should **only expose a service or a configuration if it is "
+"supported on all platforms**, and if the semantics on those platforms is or "
+"can be made loosely equivalent. (The latter requires exercising some "
+"judgment). Platform-specific functionality can be handled separately "
+"([Platform-specific opt-in](#platform-specific-opt-in)) and interoperate "
+"with normal `std` abstractions."
+msgstr ""
+
+#: src/0517-io-os-reform.md:330
+msgid ""
+"This policy rules out functions like `chown` which have a clear meaning on "
+"Unix and no clear interpretation on Windows; the ownership and permissions "
+"models are _very_ different."
+msgstr ""
+
+#: src/0517-io-os-reform.md:334
+msgid ""
+"The APIs should **follow Rust's conventions**, including their naming, which "
+"should be platform-neutral."
+msgstr ""
+
+#: src/0517-io-os-reform.md:337
+msgid ""
+"This policy rules out names like `fstat` that are the legacy of a particular "
+"platform family."
+msgstr ""
+
+#: src/0517-io-os-reform.md:340
+msgid ""
+"The APIs should **never directly expose the representation** of underlying "
+"platform types, even if they happen to coincide on the currently-supported "
+"platforms. Cross-platform types in `std` should be newtyped."
+msgstr ""
+
+#: src/0517-io-os-reform.md:344
+msgid ""
+"This policy rules out exposing e.g. error numbers directly as an integer "
+"type."
+msgstr ""
+
+#: src/0517-io-os-reform.md:346
+msgid ""
+"The next subsection gives detail on what these APIs should look like in "
+"relation to system services."
+msgstr ""
+
+#: src/0517-io-os-reform.md:349
+msgid "Relation to the system-level APIs"
+msgstr ""
+
+#: src/0517-io-os-reform.md:352
+msgid ""
+"How should Rust APIs map into system services? This question breaks down "
+"along several axes which are in tension with one another:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:355
+msgid ""
+"**Guarantees**. The APIs provided in the mainline `io` modules should be "
+"predominantly safe, aside from the occasional `unsafe` function. In "
+"particular, the representation should be sufficiently hidden that most use "
+"cases are safe by construction. Beyond memory safety, though, the APIs "
+"should strive to provide a clear multithreaded semantics (using the `Send`/"
+"`Sync` kinds), and should use Rust's type system to rule out various kinds "
+"of bugs when it is reasonably ergonomic to do so (following the usual Rust "
+"conventions)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:364
+msgid ""
+"**Ergonomics**. The APIs should present a Rust view of things, making use of "
+"the trait system, newtypes, and so on to make system services fit well with "
+"the rest of Rust."
+msgstr ""
+
+#: src/0517-io-os-reform.md:368
+msgid ""
+"**Abstraction/cost**. On the other hand, the abstractions introduced in "
+"`std` must not induce significant costs over the system services -- or at "
+"least, there must be a way to safely access the services directly without "
+"incurring this penalty. When useful abstractions would impose an extra cost, "
+"they must be pay-as-you-go."
+msgstr ""
+
+#: src/0517-io-os-reform.md:374
+msgid ""
+"Putting the above bullets together, **the abstractions must be safe, and "
+"they should be as high-level as possible without imposing a tax**."
+msgstr ""
+
+#: src/0517-io-os-reform.md:377
+msgid ""
+"**Coverage**. Finally, the `std` APIs should over time strive for full "
+"coverage of non-niche, cross-platform capabilities."
+msgstr ""
+
+#: src/0517-io-os-reform.md:380
+msgid "Platform-specific opt-in"
+msgstr ""
+
+#: src/0517-io-os-reform.md:383
+msgid ""
+"Rust is a systems language, and as such it should expose seamless, no/low-"
+"cost access to system services. In many cases, however, this cannot be done "
+"in a cross-platform way, either because a given service is only available on "
+"some platforms, or because providing a cross-platform abstraction over it "
+"would be costly."
+msgstr ""
+
+#: src/0517-io-os-reform.md:389
+msgid ""
+"This RFC proposes _platform-specific opt-in_: submodules of `os` that are "
+"named by platform, and made available via `#[cfg]` switches. For example, "
+"`os::unix` can provide APIs only available on Unix systems, and `os::linux` "
+"can drill further down into Linux-only APIs. (You could even imagine "
+"subdividing by OS versions.) This is \"opt-in\" in the sense that, like the "
+"`unsafe` keyword, it is very easy to audit for potential platform-"
+"specificity: just search for `os::anyplatform`. Moreover, by separating out "
+"subsets like `linux`, it's clear exactly how specific the platform "
+"dependency is."
+msgstr ""
+
+#: src/0517-io-os-reform.md:398
+msgid ""
+"The APIs in these submodules are intended to have the same flavor as other "
+"`io` APIs and should interoperate seamlessly with cross-platform types, but:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:401
+msgid ""
+"They should be named according to the underlying system services when there "
+"is a close correspondence."
+msgstr ""
+
+#: src/0517-io-os-reform.md:404
+msgid ""
+"They may reveal the underlying OS type if there is nothing to be gained by "
+"hiding it behind an abstraction."
+msgstr ""
+
+#: src/0517-io-os-reform.md:407
+msgid ""
+"For example, the `os::unix` module could provide a `stat` function that "
+"takes a standard `Path` and yields a custom struct. More interestingly, `os::"
+"linux` might include an `epoll` function that could operate _directly_ on "
+"many `io` types (e.g. various socket types), without any explicit conversion "
+"to a file descriptor; that's what \"seamless\" means."
+msgstr ""
+
+#: src/0517-io-os-reform.md:413
+msgid ""
+"Each of the platform modules will offer a custom `prelude` submodule, "
+"intended for glob import, that includes all of the extension traits applied "
+"to standard IO objects."
+msgstr ""
+
+#: src/0517-io-os-reform.md:417
+msgid ""
+"The precise design of these modules is in the very early stages and will "
+"likely remain `#[unstable]` for some time."
+msgstr ""
+
+#: src/0517-io-os-reform.md:420
+msgid "Proposed organization"
+msgstr ""
+
+#: src/0517-io-os-reform.md:423
+msgid ""
+"The `io` module is currently the biggest in `std`, with an entire hierarchy "
+"nested underneath; it mixes general abstractions/tools with specific IO "
+"objects. The `os` module is currently a bit of a dumping ground for "
+"facilities that don't fit into the `io` category."
+msgstr ""
+
+#: src/0517-io-os-reform.md:428
+msgid ""
+"This RFC proposes the revamp the organization by flattening out the "
+"hierarchy and clarifying the role of each module:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:446
+msgid "In particular:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:448
+msgid ""
+"The contents of `os` will largely move to `env`, a new module for inspecting "
+"and updating the \"environment\" (including environment variables, CPU "
+"counts, arguments to `main`, and so on)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:452
+msgid ""
+"The `io` module will include things like `Reader` and `BufferedWriter` -- "
+"cross-cutting abstractions that are needed throughout IO."
+msgstr ""
+
+#: src/0517-io-os-reform.md:455
+msgid ""
+"The `prelude` submodule will export all of the traits and most of the types "
+"for IO-related APIs; a single glob import should suffice to set you up for "
+"working with IO. (Note: this goes hand-in-hand with _removing_ the bits of "
+"`io` currently in the prelude, as [recently proposed](https://github.com/"
+"rust-lang/rfcs/pull/503).)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:461
+msgid ""
+"The root `os` module is used purely to house the platform submodules "
+"discussed [above](#platform-specific-opt-in)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:464
+msgid ""
+"The `os_str` module is part of the solution to the Unicode problem; see "
+"[String handling](#string-handling) below."
+msgstr ""
+
+#: src/0517-io-os-reform.md:467
+msgid ""
+"The `process` module over time will grow to include querying/manipulating "
+"already-running processes, not just spawning them."
+msgstr ""
+
+#: src/0517-io-os-reform.md:470
+msgid "Revising `Reader` and `Writer`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:473
+msgid ""
+"The `Reader` and `Writer` traits are the backbone of IO, representing the "
+"ability to (respectively) pull bytes from and push bytes to an IO object. "
+"The core operations provided by these traits follows a very long tradition "
+"for blocking IO, but they are still surprisingly subtle \\-- and they need "
+"to be revised."
+msgstr ""
+
+#: src/0517-io-os-reform.md:479
+msgid ""
+"**Atomicity and data loss**. As discussed [above](#atomicity-and-the-reader-"
+"writer-traits), the `Reader` and `Writer` traits currently expose methods "
+"that involve multiple actual reads or writes, and data is lost when an error "
+"occurs after some (but not all) operations have completed."
+msgstr ""
+
+#: src/0517-io-os-reform.md:485
+msgid ""
+"The proposed strategy for `Reader` operations is to (1) separate out various "
+"deserialization methods into a distinct framework, (2) _never_ have the "
+"internal `read` implementations loop on errors, (3) cut down on the number "
+"of non-atomic read operations and (4) adjust the remaining operations to "
+"provide more flexibility when possible."
+msgstr ""
+
+#: src/0517-io-os-reform.md:491
+msgid ""
+"For writers, the main change is to make `write` only perform a single "
+"underlying write (returning the number of bytes written on success), and "
+"provide a separate `write_all` method."
+msgstr ""
+
+#: src/0517-io-os-reform.md:496
+msgid ""
+"**Parsing/serialization**. The `Reader` and `Writer` traits currently "
+"provide a large number of default methods for (de)serialization of various "
+"integer types to bytes with a given endianness. Unfortunately, these "
+"operations pose atomicity problems as well (e.g., a read could fail after "
+"reading two of the bytes needed for a `u32` value)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:503
+msgid ""
+"Rather than complicate the signatures of these methods, the "
+"(de)serialization infrastructure is removed entirely -- in favor of instead "
+"eventually introducing a much richer parsing/formatting/(de)serialization "
+"framework that works seamlessly with `Reader` and `Writer`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:509
+msgid ""
+"Such a framework is out of scope for this RFC, but the endian-sensitive "
+"functionality will be provided elsewhere (likely out of tree)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:513
+msgid "With those general points out of the way, let's look at the details."
+msgstr ""
+
+#: src/0517-io-os-reform.md:515
+msgid "`Read`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:518
+msgid "The updated `Reader` trait (and its extension) is as follows:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:527
+msgid "// extension trait needed for object safety\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:532
+msgid "// more to come later in the RFC\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:537
+msgid ""
+"Following the [trait naming conventions](https://github.com/rust-lang/rfcs/"
+"pull/344), the trait is renamed to `Read` reflecting the clear primary "
+"method it provides."
+msgstr ""
+
+#: src/0517-io-os-reform.md:542
+msgid ""
+"The `read` method should not involve internal looping (even over errors like "
+"`EINTR`). It is intended to faithfully represent a single call to an "
+"underlying system API."
+msgstr ""
+
+#: src/0517-io-os-reform.md:546
+msgid ""
+"The `read_to_end` and `read_to_string` methods now take explicit buffers as "
+"input. This has multiple benefits:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:549
+msgid ""
+"Performance. When it is known that reading will involve some large number of "
+"bytes, the buffer can be preallocated in advance."
+msgstr ""
+
+#: src/0517-io-os-reform.md:552
+msgid ""
+"\"Atomicity\" concerns. For `read_to_end`, it's possible to use this API to "
+"retain data collected so far even when a `read` fails in the middle. For "
+"`read_to_string`, this is not the case, because UTF-8 validity cannot be "
+"ensured in such cases; but if intermediate results are wanted, one can use "
+"`read_to_end` and convert to a `String` only at the end."
+msgstr ""
+
+#: src/0517-io-os-reform.md:559
+msgid ""
+"Convenience methods like these will retry on `EINTR`. This is partly under "
+"the assumption that in practice, EINTR will _most often_ arise when "
+"interfacing with other code that changes a signal handler. Due to the global "
+"nature of these interactions, such a change can suddenly cause your own code "
+"to get an error irrelevant to it, and the code should probably just retry in "
+"those cases. In the case where you are using EINTR explicitly, `read` and "
+"`write` will be available to handle it (and you can always build your own "
+"abstractions on top)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:568
+msgid "Removed methods"
+msgstr ""
+
+#: src/0517-io-os-reform.md:570
+msgid ""
+"The proposed `Read` trait is much slimmer than today's `Reader`. The vast "
+"majority of removed methods are parsing/deserialization, which were "
+"discussed above."
+msgstr ""
+
+#: src/0517-io-os-reform.md:574
+msgid ""
+"The remaining methods (`read_exact`, `read_at_least`, `push`, "
+"`push_at_least`) were removed for various reasons:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:577
+msgid ""
+"`read_exact`, `read_at_least`: these are somewhat more obscure conveniences "
+"that are not particularly robust due to lack of atomicity."
+msgstr ""
+
+#: src/0517-io-os-reform.md:581
+msgid ""
+"`push`, `push_at_least`: these are special-cases for working with `Vec`, "
+"which this RFC proposes to replace with a more general mechanism described "
+"next."
+msgstr ""
+
+#: src/0517-io-os-reform.md:585
+msgid ""
+"To provide some of this functionality in a more composition way, extend "
+"`Vec<T>` with an unsafe method:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:592
+msgid ""
+"This method is equivalent to calling `reserve(n)` and then providing a slice "
+"to the memory starting just after `len()` entries. Using this method, "
+"clients of `Read` can easily recover the `push` method."
+msgstr ""
+
+#: src/0517-io-os-reform.md:596
+msgid "`Write`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:599
+msgid "The `Writer` trait is cut down to even smaller size:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:611
+msgid ""
+"The biggest change here is to the semantics of `write`. Instead of "
+"repeatedly writing to the underlying IO object until all of `buf` is "
+"written, it attempts a _single_ write and on success returns the number of "
+"bytes written. This follows the long tradition of blocking IO, and is a more "
+"fundamental building block than the looping write we currently have. Like "
+"`read`, it will propagate EINTR."
+msgstr ""
+
+#: src/0517-io-os-reform.md:618
+msgid ""
+"For convenience, `write_all` recovers the behavior of today's `write`, "
+"looping until either the entire buffer is written or an error occurs. To "
+"meaningfully recover from an intermediate error and keep writing, code "
+"should work with `write` directly. Like the `Read` conveniences, `EINTR` "
+"results in a retry."
+msgstr ""
+
+#: src/0517-io-os-reform.md:624
+msgid ""
+"The `write_fmt` method, like `write_all`, will loop until its entire input "
+"is written or an error occurs."
+msgstr ""
+
+#: src/0517-io-os-reform.md:627
+msgid ""
+"The other methods include endian conversions (covered by serialization) and "
+"a few conveniences like `write_str` for other basic types. The latter, at "
+"least, is already uniformly (and extensibly) covered via the `write!` macro. "
+"The other helpers, as with `Read`, should migrate into a more general "
+"(de)serialization library."
+msgstr ""
+
+#: src/0517-io-os-reform.md:633
+msgid "String handling"
+msgstr ""
+
+#: src/0517-io-os-reform.md:636
+msgid ""
+"The fundamental problem with Rust's full embrace of UTF-8 strings is that "
+"not all strings taken or returned by system APIs are Unicode, let alone "
+"UTF-8 encoded."
+msgstr ""
+
+#: src/0517-io-os-reform.md:640
+msgid ""
+"In the past, `std` has assumed that all strings are _either_ in some form of "
+"Unicode (Windows), _or_ are simply `u8` sequences (Unix). Unfortunately, "
+"this is wrong, and the situation is more subtle:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:644
+msgid ""
+"Unix platforms do indeed work with arbitrary `u8` sequences (without "
+"interior nulls) and today's platforms usually interpret them as UTF-8 when "
+"displayed."
+msgstr ""
+
+#: src/0517-io-os-reform.md:647
+msgid ""
+"Windows, however, works with _arbitrary `u16` sequences_ that are roughly "
+"interpreted at UTF-16, but may not actually be valid UTF-16 -- an "
+"\"encoding\" often called UCS-2; see http://justsolve.archiveteam.org/wiki/"
+"UCS-2 for a bit more detail."
+msgstr ""
+
+#: src/0517-io-os-reform.md:652
+msgid ""
+"What this means is that all of Rust's platforms go beyond Unicode, but they "
+"do so in different and incompatible ways."
+msgstr ""
+
+#: src/0517-io-os-reform.md:655
+msgid ""
+"The current solution of providing both `str` and `[u8]` versions of APIs is "
+"therefore problematic for multiple reasons. For one, **the `[u8]` versions "
+"are not actually cross-platform** -- even today, they panic on Windows when "
+"given non-UTF-8 data, a platform-specific behavior. But they are also "
+"incomplete, because on Windows you should be able to work directly with "
+"UCS-2 data."
+msgstr ""
+
+#: src/0517-io-os-reform.md:662
+msgid "Key observations"
+msgstr ""
+
+#: src/0517-io-os-reform.md:665
+msgid ""
+"Fortunately, there is a solution that fits well with Rust's UTF-8 strings "
+"_and_ offers the possibility of platform-specific APIs."
+msgstr ""
+
+#: src/0517-io-os-reform.md:668
+msgid ""
+"**Observation 1**: it is possible to re-encode UCS-2 data in a way that is "
+"also compatible with UTF-8. This is the [WTF-8 encoding format](http://"
+"simonsapin.github.io/wtf-8/) proposed by Simon Sapin. This encoding has some "
+"remarkable properties:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:673
+msgid ""
+"Valid UTF-8 data is valid WTF-8 data. When decoded to UCS-2, the result is "
+"exactly what would be produced by going straight from UTF-8 to UTF-16. In "
+"other words, making up some methods:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:681
+msgid ""
+"Valid UTF-16 data re-encoded as WTF-8 produces the corresponding UTF-8 data:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:687
+msgid ""
+"These two properties mean that, when working with Unicode data, the WTF-8 "
+"encoding is highly compatible with both UTF-8 _and_ UTF-16. In particular, "
+"the conversion from a Rust string to a WTF-8 string is a no-op, and the "
+"conversion in the other direction is just a validation."
+msgstr ""
+
+#: src/0517-io-os-reform.md:692
+msgid ""
+"**Observation 2**: all platforms can _consume_ Unicode data (suitably re-"
+"encoded), and it's also possible to validate the data they produce as "
+"Unicode and extract it."
+msgstr ""
+
+#: src/0517-io-os-reform.md:696
+msgid ""
+"**Observation 3**: the non-Unicode spaces on various platforms are deeply "
+"incompatible: there is no standard way to port non-Unicode data from one to "
+"another. Therefore, the only cross-platform APIs are those that work "
+"entirely with Unicode."
+msgstr ""
+
+#: src/0517-io-os-reform.md:701
+msgid "The design: `os_str`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:704
+msgid ""
+"The observations above lead to a somewhat radical new treatment of strings, "
+"first proposed in the [Path Reform RFC](https://github.com/rust-lang/rfcs/"
+"pull/474). This RFC proposes to introduce new string and string slice types "
+"that (opaquely) represent _platform-sensitive strings_, housed in the `std::"
+"os_str` module."
+msgstr ""
+
+#: src/0517-io-os-reform.md:710
+msgid ""
+"The `OsString` type is analogous to `String`, and `OsStr` is analogous to "
+"`str`. Their backing implementation is platform-dependent, but they offer a "
+"cross-platform API:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:716
+msgid "/// Owned OS strings\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:720
+msgid "/// Slices into OS strings\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:725
+msgid "// Platform-specific implementation details:\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:735
+msgid "// See https://github.com/SimonSapin/rust-wtf8\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:747
+msgid ""
+"// and ultimately other functionality typically found on vectors,\n"
+"        // but CRUCIALLY NOT as_bytes\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:758
+msgid ""
+"// and ultimately other functionality typically found on slices,\n"
+"        // but CRUCIALLY NOT as_bytes\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:773
+msgid ""
+"These APIs make OS strings appear roughly as opaque vectors (you cannot see "
+"the byte representation directly), and can always be produced starting from "
+"Unicode data. They make it possible to collapse functions like `getenv` and "
+"`getenv_as_bytes` into a single function that produces an OS string, "
+"allowing the client to decide how (or whether) to extract Unicode data. It "
+"will be possible to do things like concatenate OS strings without ever going "
+"through Unicode."
+msgstr ""
+
+#: src/0517-io-os-reform.md:781
+msgid ""
+"It will also likely be possible to do things like search for Unicode "
+"substrings. The exact details of the API are left open and are likely to "
+"grow over time."
+msgstr ""
+
+#: src/0517-io-os-reform.md:785
+msgid ""
+"In addition to APIs like the above, there will also be platform-specific "
+"ways of viewing or constructing OS strings that reveals more about the space "
+"of possible values:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:812
+msgid "// The following extension traits provide a UCS-2 view of OS strings\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:833
+msgid ""
+"By placing these APIs under `os`, using them requires a clear _opt in_ to "
+"platform-specific functionality."
+msgstr ""
+
+#: src/0517-io-os-reform.md:836
+msgid "The future"
+msgstr ""
+
+#: src/0517-io-os-reform.md:839
+msgid ""
+"Introducing an additional string type is a bit daunting, since many existing "
+"APIs take and consume only standard Rust strings. Today's solution demands "
+"that strings coming from the OS be assumed or turned into Unicode, and the "
+"proposed API continues to allow that (with more explicit and finer-grained "
+"control)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:845
+msgid ""
+"In the long run, however, robust applications are likely to work opaquely "
+"with OS strings far beyond the boundary to the system to avoid data loss and "
+"ensure maximal compatibility. If this situation becomes common, it should be "
+"possible to introduce an abstraction over various string types and "
+"generalize most functions that work with `String`/`str` to instead work "
+"generically. This RFC does _not_ propose taking any such steps now -- but "
+"it's important that we _can_ do so later if Rust's standard strings turn out "
+"to not be sufficient and OS strings become commonplace."
+msgstr ""
+
+#: src/0517-io-os-reform.md:855
+msgid "Deadlines"
+msgstr ""
+
+#: src/0517-io-os-reform.md:858 src/0517-io-os-reform.md:863
+msgid "To be added in a follow-up PR."
+msgstr ""
+
+#: src/0517-io-os-reform.md:860
+msgid "Splitting streams and cancellation"
+msgstr ""
+
+#: src/0517-io-os-reform.md:865
+msgid "Modules"
+msgstr ""
+
+#: src/0517-io-os-reform.md:868
+msgid ""
+"Now that we've covered the core principles and techniques used throughout "
+"IO, we can go on to explore the modules in detail."
+msgstr ""
+
+#: src/0517-io-os-reform.md:871
+msgid "`core::io`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:874
+msgid ""
+"Ideally, the `io` module will be split into the parts that can live in "
+"`libcore` (most of it) and the parts that are added in the `std::io` facade. "
+"This part of the organization is non-normative, since it requires changes to "
+"today's `IoError` (which currently references `String`); if these changes "
+"cannot be performed, everything here will live in `std::io`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:881
+msgid "Adapters"
+msgstr ""
+
+#: src/0517-io-os-reform.md:884
+msgid ""
+"The current `std::io::util` module offers a number of `Reader` and `Writer` "
+"\"adapters\". This RFC refactors the design to more closely follow `std::"
+"iter`. Along the way, it generalizes the `by_ref` adapter:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:890
+msgid "// ... eliding the methods already described above\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:892 src/0517-io-os-reform.md:907
+msgid "// Postfix version of `(&mut self)`\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:895
+msgid "// Read everything from `self`, then read from `next`\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:898
+msgid "// Adapt `self` to yield only the first `limit` bytes\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:901
+msgid "// Whenever reading from `self`, push the bytes read to `out`\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:902 src/0517-io-os-reform.md:911
+msgid "// uncertain semantics of errors \"halfway through the operation\"\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:910
+msgid ""
+"// Whenever bytes are written to `self`, write them to `other` as well\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:914
+msgid "// An adaptor converting an `Iterator<u8>` to `Read`.\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:919
+msgid ""
+"As with `std::iter`, these adapters are object unsafe and hence placed in an "
+"extension trait with a blanket `impl`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:922 src/0517-io-os-reform.md:1420
+msgid "Free functions"
+msgstr ""
+
+#: src/0517-io-os-reform.md:925
+msgid ""
+"The current `std::io::util` module also includes a number of primitive "
+"readers and writers, as well as `copy`. These are updated as follows:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:929
+msgid "// A reader that yields no bytes\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:930
+msgid "// in theory just returns `impl Read`\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:933
+msgid ""
+"// A reader that yields `byte` repeatedly (generalizes today's ZeroReader)\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:938
+msgid "// A writer that ignores the bytes written to it (/dev/null)\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:943
+msgid ""
+"// Copies all data from a `Read` to a `Write`, returning the amount of data\n"
+"// copied.\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:949
+msgid ""
+"Like `write_all`, the `copy` method will discard the amount of data already "
+"written on any error and also discard any partially read data on a `write` "
+"error. This method is intended to be a convenience and `write` should be "
+"used directly if this is not desirable."
+msgstr ""
+
+#: src/0517-io-os-reform.md:954
+msgid "Seeking"
+msgstr ""
+
+#: src/0517-io-os-reform.md:957
+msgid ""
+"The seeking infrastructure is largely the same as today's, except that "
+"`tell` is removed and the `seek` signature is refactored with more precise "
+"types:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:963
+msgid "// returns the new position after seeking\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:974
+msgid ""
+"The old `tell` function can be regained via `seek(SeekFrom::Current(0))`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:976
+msgid "Buffering"
+msgstr ""
+
+#: src/0517-io-os-reform.md:979
+msgid ""
+"The current `Buffer` trait will be renamed to `BufRead` for clarity (and to "
+"open the door to `BufWrite` at some later point):"
+msgstr ""
+
+#: src/0517-io-os-reform.md:993
+msgid "// Split is an iterator over Result<Vec<u8>, Error>\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:996
+msgid "// Lines is an iterator over Result<String, Error>\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:999
+msgid "// Chars is an iterator over Result<char, Error>\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1004
+msgid ""
+"The `read_until` and `read_line` methods are changed to take explicit, "
+"mutable buffers, for similar reasons to `read_to_end`. (Note that buffer "
+"reuse is particularly common for `read_line`). These functions include the "
+"delimiters in the strings they produce, both for easy cross-platform "
+"compatibility (in the case of `read_line`) and for ease in copying data "
+"without loss (in particular, distinguishing whether the last line included a "
+"final delimiter)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1012
+msgid ""
+"The `split` and `lines` methods provide iterator-based versions of "
+"`read_until` and `read_line`, and _do not_ include the delimiter in their "
+"output. This matches conventions elsewhere (like `split` on strings) and is "
+"usually what you want when working with iterators."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1017
+msgid ""
+"The `BufReader`, `BufWriter` and `BufStream` types stay essentially as they "
+"are today, except that for streams and writers the `into_inner` method "
+"yields the structure back in the case of a write error, and its behavior is "
+"clarified to writing out the buffered data without flushing the underlying "
+"reader:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1023
+msgid "// If writing fails, you get the unwritten data back\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1035
+msgid "`Cursor`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1038
+msgid ""
+"Many applications want to view in-memory data as either an implementor of "
+"`Read` or `Write`. This is often useful when composing streams or creating "
+"test cases. This functionality primarily comes from the following "
+"implementations:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1048
+msgid ""
+"While efficient, none of these implementations support seeking (via an "
+"implementation of the `Seek` trait). The implementations of `Read` and "
+"`Write` for these types is not quite as efficient when `Seek` needs to be "
+"used, so the `Seek`\\-ability will be opted-in to with a new `Cursor` "
+"structure with the following API:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1064
+msgid "// Error indicating that a negative offset was seeked to.\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1084
+msgid ""
+"A sample implementation can be found in [a gist](https://gist.github.com/"
+"alexcrichton/8224f57ed029929447bd). Using one `Cursor` structure allows to "
+"emphasize that the only ability added is an implementation of `Seek` while "
+"still allowing all possible I/O operations for various types of buffers."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1091
+msgid ""
+"It is not currently proposed to unify these implementations via a trait. For "
+"example a `Cursor<Rc<[u8]>>` is a reasonable instance to have, but it will "
+"not have an implementation listed in the standard library to start out. It "
+"is considered a backwards-compatible addition to unify these various `impl` "
+"blocks with a trait."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1097
+msgid ""
+"The following types will be removed from the standard library and replaced "
+"as follows:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1100
+msgid "`MemReader` -> `Cursor<Vec<u8>>`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1101
+msgid "`MemWriter` -> `Cursor<Vec<u8>>`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1102
+msgid "`BufReader` -> `Cursor<&[u8]>` or `Cursor<&mut [u8]>`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1103
+msgid "`BufWriter` -> `Cursor<&mut [u8]>`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1105
+msgid "The `std::io` facade"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1108
+msgid ""
+"The `std::io` module will largely be a facade over `core::io`, but it will "
+"add some functionality that can live only in `std`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1111
+msgid "`Errors`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1114
+msgid ""
+"The `IoError` type will be renamed to `std::io::Error`, following our [non-"
+"prefixing convention](https://github.com/rust-lang/rfcs/pull/356). It will "
+"remain largely as it is today, but its fields will be made private. It may "
+"eventually grow a field to track the underlying OS error code."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1120
+msgid ""
+"The `std::io::IoErrorKind` type will become `std::io::ErrorKind`, and "
+"`ShortWrite` will be dropped (it is no longer needed with the new `Write` "
+"semantics), which should decrease its footprint. The `OtherIoError` variant "
+"will become `Other` now that `enum`s are namespaced. Other variants may be "
+"added over time, such as `Interrupted`, as more errors are classified from "
+"the system."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1127
+msgid ""
+"The `EndOfFile` variant will be removed in favor of returning `Ok(0)` from "
+"`read` on end of file (or `write` on an empty slice for example). This "
+"approach clarifies the meaning of the return value of `read`, matches Posix "
+"APIs, and makes it easier to use `try!` in the case that a \"real\" error "
+"should be bubbled out. (The main downside is that higher-level operations "
+"that might use `Result<T, IoError>` with some `T != usize` may need to wrap "
+"`IoError` in a further enum if they wish to forward unexpected EOF.)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1135
+msgid "Channel adapters"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1138
+msgid ""
+"The `ChanReader` and `ChanWriter` adapters will be left as they are today, "
+"and they will remain `#[unstable]`. The channel adapters currently suffer "
+"from a few problems today, some of which are inherent to the design:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1142
+msgid ""
+"Construction is somewhat unergonomic. First a `mpsc` channel pair must be "
+"created and then each half of the reader/writer needs to be created."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1144
+msgid ""
+"Each call to `write` involves moving memory onto the heap to be sent, which "
+"isn't necessarily efficient."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1146
+msgid ""
+"The design of `std::sync::mpsc` allows for growing more channels in the "
+"future, but it's unclear if we'll want to continue to provide a reader/"
+"writer adapter for each channel we add to `std::sync`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1150
+msgid ""
+"These types generally feel as if they're from a different era of Rust (which "
+"they are!) and may take some time to fit into the current standard library. "
+"They can be reconsidered for stabilization after the dust settles from the I/"
+"O redesign as well as the recent `std::sync` redesign. At this time, "
+"however, this RFC recommends they remain unstable."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1156
+msgid "`stdin`, `stdout`, `stderr`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1159
+msgid ""
+"The current `stdio` module will be removed in favor of these constructors in "
+"the `io` module:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1168
+msgid ""
+"`stdin` - returns a handle to a **globally shared** standard input of the "
+"process which is buffered as well. Due to the globally shared nature of this "
+"handle, all operations on `Stdin` directly will acquire a lock internally to "
+"ensure access to the shared buffer is synchronized. This implementation "
+"detail is also exposed through a `lock` method where the handle can be "
+"explicitly locked for a period of time so relocking is not necessary."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1175
+msgid ""
+"The `Read` trait will be implemented directly on the returned `Stdin` handle "
+"but the `BufRead` trait will not be (due to synchronization concerns). The "
+"locked version of `Stdin` (`StdinLock`) will provide an implementation of "
+"`BufRead`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1180
+msgid ""
+"The design will largely be the same as is today with the `old_io` module."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1193
+msgid ""
+"`stderr` - returns a **non buffered** handle to the standard error output "
+"stream for the process. Each call to `write` will roughly translate to a "
+"system call to output data when written to `stderr`. This handle is locked "
+"like `stdin` to ensure, for example, that calls to `write_all` are atomic "
+"with respect to one another. There will also be an RAII guard to lock the "
+"handle and use the result as an instance of `Write`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1208
+msgid ""
+"`stdout` - returns a **globally buffered** handle to the standard output of "
+"the current process. The amount of buffering can be decided at runtime to "
+"allow for different situations such as being attached to a TTY or being "
+"redirected to an output file. The `Write` trait will be implemented for this "
+"handle, and like `stderr` it will be possible to lock it and then use the "
+"result as an instance of `Write` as well."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1223
+msgid "Windows and stdio"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1226
+msgid ""
+"On Windows, standard input and output handles can work with either arbitrary "
+"`[u8]` or `[u16]` depending on the state at runtime. For example a program "
+"attached to the console will work with arbitrary `[u16]`, but a program "
+"attached to a pipe would work with arbitrary `[u8]`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1231
+msgid ""
+"To handle this difference, the following behavior will be enforced for the "
+"standard primitives listed above:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1234
+msgid ""
+"If attached to a pipe then no attempts at encoding or decoding will be done, "
+"the data will be ferried through as `[u8]`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1237
+msgid ""
+"If attached to a console, then `stdin` will attempt to interpret all input "
+"as UTF-16, re-encoding into UTF-8 and returning the UTF-8 data instead. This "
+"implies that data will be buffered internally to handle partial reads/"
+"writes. Invalid UTF-16 will simply be discarded returning an `io::Error` "
+"explaining why."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1243
+msgid ""
+"If attached to a console, then `stdout` and `stderr` will attempt to "
+"interpret input as UTF-8, re-encoding to UTF-16. If the input is not valid "
+"UTF-8 then an error will be returned and no data will be written."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1247
+msgid "Raw stdio"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1250
+msgid ""
+"**Note**: This section is intended to be a sketch of possible raw stdio "
+"support, but it is not planned to implement or stabilize this implementation "
+"at this time."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1254
+msgid ""
+"The above standard input/output handles all involve some form of locking or "
+"buffering (or both). This cost is not always wanted, and hence raw variants "
+"will be provided. Due to platform differences across unix/windows, the "
+"following structure will be supported:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1286
+msgid "// same constructors StdioConsole\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1292
+msgid "// returns slice of what was read\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1294
+msgid "// returns remaining part of `buf` to be written\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1302
+msgid "There are some key differences from today's API:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1304
+msgid ""
+"On unix, the API has not changed much except that the handles have been "
+"consolidated into one type which implements both `Read` and `Write` "
+"(although writing to stdin is likely to generate an error)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1307
+msgid ""
+"On windows, there are two sets of handles representing the difference "
+"between \"console mode\" and not (e.g. a pipe). When not a console the "
+"normal I/O traits are implemented (delegating to `ReadFile` and `WriteFile`. "
+"The console mode operations work with `OsStr`, however, to show how they "
+"work with UCS-2 under the hood."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1313
+msgid "Printing functions"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1316
+msgid ""
+"The current `print`, `println`, `print_args`, and `println_args` functions "
+"will all be \"removed from the public interface\" by [prefixing them with "
+"`__` and marking `#[doc(hidden)]`](https://github.com/rust-lang/rust/"
+"issues/22607). These are all implementation details of the `print!` and "
+"`println!` macros and don't need to be exposed in the public interface."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1324
+msgid ""
+"The `set_stdout` and `set_stderr` functions will be removed with no "
+"replacement for now. It's unclear whether these functions should indeed "
+"control a thread local handle instead of a global handle as whether they're "
+"justified in the first place. It is a backwards-compatible extension to "
+"allow this sort of output to be redirected and can be considered if the need "
+"arises."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1330
+msgid "`std::env`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1333
+msgid ""
+"Most of what's available in `std::os` today will move to `std::env`, and the "
+"signatures will be updated to follow this RFC's [Design principles](#design-"
+"principles) as follows."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1337
+msgid "**Arguments**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1339
+msgid ""
+"`args`: change to yield an iterator rather than vector if possible; in any "
+"case, it should produce an `OsString`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1342
+msgid "**Environment variables**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1344
+msgid ""
+"`vars` (renamed from `env`): yields a vector of `(OsString, OsString)` pairs."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1345
+msgid ""
+"`var` (renamed from `getenv`): take a value bounded by `AsOsStr`, allowing "
+"Rust strings and slices to be ergonomically passed in. Yields an "
+"`Option<OsString>`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1348
+msgid ""
+"`var_string`: take a value bounded by `AsOsStr`, returning `Result<String, "
+"VarError>` where `VarError` represents a non-unicode `OsString` or a \"not "
+"present\" value."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1351
+msgid ""
+"`set_var` (renamed from `setenv`): takes two `AsOsStr`\\-bounded values."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1352
+msgid ""
+"`remove_var` (renamed from `unsetenv`): takes a `AsOsStr`\\-bounded value."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1354
+msgid ""
+"`join_paths`: take an `IntoIterator<T>` where `T: AsOsStr`, yield a "
+"`Result<OsString, JoinPathsError>`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1356
+msgid "`split_paths` take a `AsOsStr`, yield an `Iterator<Path>`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1358
+msgid "**Working directory**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1360
+msgid "`current_dir` (renamed from `getcwd`): yields a `PathBuf`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1361
+msgid "`set_current_dir` (renamed from `change_dir`): takes an `AsPath` value."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1363
+msgid "**Important locations**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1365
+msgid ""
+"`home_dir` (renamed from `homedir`): returns home directory as a `PathBuf`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1366
+msgid ""
+"`temp_dir` (renamed from `tmpdir`): returns a temporary directly as a "
+"`PathBuf`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1367
+msgid ""
+"`current_exe` (renamed from `self_exe_name`): returns the full path to the "
+"current binary as a `PathBuf` in an `io::Result` instead of an `Option`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1371
+msgid "**Exit status**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1373
+msgid ""
+"`get_exit_status` and `set_exit_status` stay as they are, but with updated "
+"docs that reflect that these only affect the return value of `std::rt::"
+"start`. These will remain `#[unstable]` for now and a future RFC will "
+"determine their stability."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1378
+msgid "**Architecture information**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1380
+msgid ""
+"`num_cpus`, `page_size`: stay as they are, but remain `#[unstable]`. A "
+"future RFC will determine their stability and semantics."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1383
+msgid "**Constants**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1385
+msgid ""
+"Stabilize `ARCH`, `DLL_PREFIX`, `DLL_EXTENSION`, `DLL_SUFFIX`, "
+"`EXE_EXTENSION`, `EXE_SUFFIX`, `FAMILY` as they are."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1387
+msgid "Rename `SYSNAME` to `OS`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1388
+msgid "Remove `TMPBUF_SZ`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1390
+msgid ""
+"This brings the constants into line with our naming conventions elsewhere."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1392 src/0517-io-os-reform.md:1522
+msgid "Items to move to `os::platform`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1394
+msgid ""
+"`pipe` will move to `os::unix`. It is currently primarily used for hooking "
+"to the IO of a child process, which will now be done behind a trait object "
+"abstraction."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1398
+msgid "Removed items"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1400
+msgid ""
+"`errno`, `error_string` and `last_os_error` provide redundant, platform-"
+"specific functionality and will be removed for now. They may reappear later "
+"in `os::unix` and `os::windows` in a modified form."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1404
+msgid ""
+"`dll_filename`: deprecated in favor of working directly with the constants."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1405
+msgid "`_NSGetArgc`, `_NSGetArgv`: these should never have been public."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1406
+msgid ""
+"`self_exe_path`: deprecated in favor of `current_exe` plus path operations."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1407
+msgid ""
+"`make_absolute`: deprecated in favor of explicitly joining with the working "
+"directory."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1408
+msgid ""
+"all `_as_bytes` variants: deprecated in favor of yielding `OsString` values"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1410
+msgid "`std::fs`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1413
+msgid ""
+"The `fs` module will provide most of the functionality it does today, but "
+"with a stronger cross-platform orientation."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1416
+msgid ""
+"Note that all path-consuming functions will now take an `AsPath`\\-bounded "
+"parameter for ergonomic reasons (this will allow passing in Rust strings and "
+"literals directly, for example)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1423
+msgid "**Files**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1425
+msgid "`copy`. Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1426
+msgid "`rename`. Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1427
+msgid "`remove_file` (renamed from `unlink`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1429
+msgid ""
+"`metadata` (renamed from `stat`). Take `AsPath` bound. Yield a new struct, "
+"`Metadata`, with no public fields, but `len`, `is_dir`, `is_file`, `perms`, "
+"`accessed` and `modified` accessors. The various `os::platform` modules will "
+"offer extension methods on this structure."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1435
+msgid ""
+"`set_perms` (renamed from `chmod`). Take `AsPath` bound, and a `Perms` "
+"value. The `Perms` type will be revamped as a struct with private "
+"implementation; see below."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1439
+msgid "**Directories**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1441
+msgid "`create_dir` (renamed from `mkdir`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1442
+msgid "`create_dir_all` (renamed from `mkdir_recursive`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1443
+msgid ""
+"`read_dir` (renamed from `readdir`). Take `AsPath` bound. Yield a newtypes "
+"iterator, which yields a new type `DirEntry` which has an accessor for "
+"`Path`, but will eventually provide other information as well (possibly via "
+"platform-specific extensions)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1447
+msgid "`remove_dir` (renamed from `rmdir`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1448
+msgid "`remove_dir_all` (renamed from `rmdir_recursive`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1450
+msgid ""
+"`walk_dir`. Take `AsPath` bound. Yield an iterator over `IoResult<DirEntry>`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1452
+msgid "**Links**:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1454
+msgid "`hard_link` (renamed from `link`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1455
+msgid "`soft_link` (renamed from `symlink`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1456
+msgid "`read_link` (renamed form `readlink`). Take `AsPath` bound."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1458
+msgid "Files"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1461
+msgid ""
+"The `File` type will largely stay as it is today, except that it will use "
+"the `AsPath` bound everywhere."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1464
+msgid ""
+"The `stat` method will be renamed to `metadata`, yield a `Metadata` "
+"structure (as described above), and take `&self`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1467
+msgid ""
+"The `fsync` method will be renamed to `sync_all`, and `datasync` will be "
+"renamed to `sync_data`. (Although the latter is not available on Windows, it "
+"can be considered an optimization for `flush` and on Windows behave "
+"identically to `sync_all`, just as it does on some Unix filesystems.)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1473
+msgid ""
+"The `path` method will remain `#[unstable]`, as we do not yet want to commit "
+"to its API."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1476
+msgid ""
+"The `open_mode` function will be removed in favor of and will take an "
+"`OpenOptions` struct, which will encompass today's `FileMode` and "
+"`FileAccess` and support a builder-style API."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1480
+msgid "File kinds"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1483
+msgid ""
+"The `FileType` type will be removed. As mentioned above, `is_file` and "
+"`is_dir` will be provided directly on `Metadata`; the other types need to be "
+"audited for compatibility across platforms. Platform-specific kinds will be "
+"relegated to extension traits in `std::os::platform`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1489
+msgid ""
+"It's possible that an [extensible](https://github.com/rust-lang/rfcs/"
+"pull/757) `Kind` will be added in the future."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1493
+msgid "File permissions"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1496
+msgid ""
+"The permission models on Unix and Windows vary greatly -- even between "
+"different filesystems within the same OS. Rather than offer an API that has "
+"no meaning on some platforms, we will initially provide a very limited "
+"`Perms` structure in `std::fs`, and then rich extension traits in `std::os::"
+"unix` and `std::os::windows`. Over time, if clear cross-platform patterns "
+"emerge for richer permissions, we can grow the `Perms` structure."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1504
+msgid ""
+"On the Unix side, the constructors and accessors for `Perms` will resemble "
+"the flags we have today; details are left to the implementation."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1507
+msgid ""
+"On the Windows side, initially there will be no extensions, as Windows has a "
+"very complex permissions model that will take some time to build out."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1511
+msgid ""
+"For `std::fs` itself, `Perms` will provide constructors and accessors for "
+"\"world readable\" -- and that is all. At the moment, that is all that is "
+"known to be compatible across the platforms that Rust supports."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1516
+msgid "`PathExt`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1519
+msgid ""
+"This trait will essentially remain stay as it is (renamed from "
+"`PathExtensions`), following the same changes made to `fs` free functions."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1524
+msgid ""
+"`lstat` will move to `os::unix` and remain `#[unstable]` _for now_ since it "
+"is not yet implemented for Windows."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1527
+msgid ""
+"`chown` will move to `os::unix` (it currently does _nothing_ on Windows), "
+"and eventually `os::windows` will grow support for Windows's permission "
+"model. If at some point a reasonable intersection is found, we will re-"
+"introduce a cross-platform function in `std::fs`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1533
+msgid ""
+"In general, offer all of the `stat` fields as an extension trait on "
+"`Metadata` (e.g. `os::unix::MetadataExt`)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1536
+msgid "`std::net`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1539
+msgid ""
+"The contents of `std::io::net` submodules `tcp`, `udp`, `ip` and `addrinfo` "
+"will be retained but moved into a single `std::net` module; the other "
+"modules are being moved or removed and are described elsewhere."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1544
+msgid "SocketAddr"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1546
+msgid ""
+"This structure will represent either a `sockaddr_in` or `sockaddr_in6` which "
+"is commonly just a pairing of an IP address and a port."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1570
+msgid "Ipv4Addr"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1572
+msgid "Represents a version 4 IP address. It has the following interface:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1584
+msgid "Ipv6Addr"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1586
+msgid "Represents a version 6 IP address. It has the following interface:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1597
+msgid "TCP"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1600
+msgid ""
+"The current `TcpStream` struct will be pared back from where it is today to "
+"the following interface:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1604
+msgid "// TcpStream, which contains both a reader and a writer\n"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1622
+msgid ""
+"`clone` has been replaced with a `try_clone` function. The implementation of "
+"`try_clone` will map to using `dup` on Unix platforms and "
+"`WSADuplicateSocket` on Windows platforms. The `TcpStream` itself will no "
+"longer be reference counted itself under the hood."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1626
+msgid ""
+"`close_{read,write}` are both removed in favor of binding the `shutdown` "
+"function directly on sockets. This will map to the `shutdown` function on "
+"both Unix and Windows."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1629
+msgid ""
+"`set_timeout` has been removed for now (as well as other timeout-related "
+"functions). It is likely that this may come back soon as a binding to "
+"`setsockopt` to the `SO_RCVTIMEO` and `SO_SNDTIMEO` options. This RFC does "
+"not currently proposed adding them just yet, however."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1633
+msgid ""
+"Implementations of `Read` and `Write` are provided for `&TcpStream`. These "
+"implementations are not necessarily ergonomic to call (requires taking an "
+"explicit reference), but they express the ability to concurrently read and "
+"write from a `TcpStream`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1638
+msgid ""
+"Various other options such as `nodelay` and `keepalive` will be left "
+"`#[unstable]` for now. The `TcpStream` structure will also adhere to both "
+"`Send` and `Sync`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1642
+msgid ""
+"The `TcpAcceptor` struct will be removed and all functionality will be "
+"folded into the `TcpListener` structure. Specifically, this will be the "
+"resulting API:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1662
+msgid "Some major changes from today's API include:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1664
+msgid ""
+"The static distinction between `TcpAcceptor` and `TcpListener` has been "
+"removed (more on this in the [socket](#sockets) section)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1666
+msgid ""
+"The `clone` functionality has been removed in favor of `try_clone` (same "
+"caveats as `TcpStream`)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1668
+msgid ""
+"The `close_accept` functionality is removed entirely. This is not currently "
+"implemented via `shutdown` (not supported well across platforms) and is "
+"instead implemented via `select`. This functionality can return at a later "
+"date with a more robust interface."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1672
+msgid ""
+"The `set_timeout` functionality has also been removed in favor of returning "
+"at a later date in a more robust fashion with `select`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1674
+msgid ""
+"The `accept` function no longer takes `&mut self` and returns `SocketAddr`. "
+"The change in mutability is done to express that multiple `accept` calls can "
+"happen concurrently."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1677
+msgid ""
+"For convenience the iterator does not yield the `SocketAddr` from `accept`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1679
+msgid "The `TcpListener` type will also adhere to `Send` and `Sync`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1681
+msgid "UDP"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1684
+msgid ""
+"The UDP infrastructure will receive a similar face-lift as the TCP "
+"infrastructure will:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1700
+msgid "Some important points of note are:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1702
+msgid ""
+"The `send` and `recv` function take `&self` instead of `&mut self` to "
+"indicate that they may be called safely in concurrent contexts."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1704
+msgid ""
+"All configuration options such as `multicast` and `ttl` are left as "
+"`#[unstable]` for now."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1706
+msgid ""
+"All timeout support is removed. This may come back in the form of "
+"`setsockopt` (as with TCP streams) or with a more general implementation of "
+"`select`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1708
+msgid "`clone` functionality has been replaced with `try_clone`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1710
+msgid "The `UdpSocket` type will adhere to both `Send` and `Sync`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1712
+msgid "Sockets"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1715
+msgid ""
+"The current constructors for `TcpStream`, `TcpListener`, and `UdpSocket` are "
+"largely \"convenience constructors\" as they do not expose the underlying "
+"details that a socket can be configured before it is bound, connected, or "
+"listened on. One of the more frequent configuration options is "
+"`SO_REUSEADDR` which is set by default for `TcpListener` currently."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1721
+msgid ""
+"This RFC leaves it as an open question how best to implement this pre-"
+"configuration. The constructors today will likely remain no matter what as "
+"convenience constructors and a new structure would implement consuming "
+"methods to transform itself to each of the various `TcpStream`, "
+"`TcpListener`, and `UdpSocket`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1727
+msgid ""
+"This RFC does, however, recommend not adding multiple constructors to the "
+"various types to set various configuration options. This pattern is best "
+"expressed via a flexible socket type to be added at a future date."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1731
+msgid "Addresses"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1734
+msgid "For the current `addrinfo` module:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1736
+msgid "The `get_host_addresses` should be renamed to `lookup_host`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1737
+msgid "All other contents should be removed."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1739
+msgid "For the current `ip` module:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1741
+msgid "The `ToSocketAddr` trait should become `ToSocketAddrs`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1742
+msgid "The default `to_socket_addr_all` method should be removed."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1744
+msgid "The following implementations of `ToSocketAddrs` will be available:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1757
+msgid "`std::process`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1760
+msgid ""
+"Currently `std::io::process` is used only for spawning new processes. The re-"
+"envisioned `std::process` will ultimately support inspecting currently-"
+"running processes, although this RFC does not propose any immediate support "
+"for doing so -- it merely future-proofs the module."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1766
+msgid "`Command`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1769
+msgid ""
+"The `Command` type is a builder API for processes, and is largely in good "
+"shape, modulo a few tweaks:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1772
+msgid "Replace `ToCStr` bounds with `AsOsStr`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1773
+msgid "Replace `env_set_all` with `env_clear`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1774
+msgid "Rename `cwd` to `current_dir`, take `AsPath`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1775
+msgid "Rename `spawn` to `run`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1776
+msgid "Move `uid` and `gid` to an extension trait in `os::unix`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1777
+msgid ""
+"Make `detached` take a `bool` (rather than always setting the command to "
+"detached mode)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1780
+msgid ""
+"The `stdin`, `stdout`, `stderr` methods will undergo a more significant "
+"change. By default, the corresponding options will be considered \"unset\", "
+"the interpretation of which depends on how the process is launched:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1785
+msgid ""
+"For `run` or `status`, these will inherit from the current process by "
+"default."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1786
+msgid "For `output`, these will capture to new readers/writers by default."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1788
+msgid ""
+"The `StdioContainer` type will be renamed to `Stdio`, and will not be "
+"exposed directly as an enum (to enable growth and change over time). It will "
+"provide a `Capture` constructor for capturing input or output, an `Inherit` "
+"constructor (which just means to use the current IO object -- it does not "
+"take an argument), and a `Null` constructor. The equivalent of today's "
+"`InheritFd` will be added at a later point."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1795
+msgid "`Child`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1798
+msgid ""
+"We propose renaming `Process` to `Child` so that we can add a more general "
+"notion of non-child `Process` later on (every `Child` will be able to give "
+"you a `Process`)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1802
+msgid ""
+"`stdin`, `stdout` and `stderr` will be retained as public fields, but their "
+"types will change to newtyped readers and writers to hide the internal pipe "
+"infrastructure."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1805
+msgid ""
+"The `kill` method is dropped, and `id` and `signal` will move to `os::"
+"platform` extension traits."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1806
+msgid ""
+"`signal_exit`, `signal_kill`, `wait`, and `forget` will all stay as they are."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1807
+msgid ""
+"`set_timeout` will be changed to use the `with_deadline` infrastructure."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1809
+msgid "There are also a few other related changes to the module:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1811
+msgid "Rename `ProcessOutput` to `Output`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1812
+msgid ""
+"Rename `ProcessExit` to `ExitStatus`, and hide its representation. Remove "
+"`matches_exit_status`, and add a `status` method yielding an `Option<i32>`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1815
+msgid "Remove `MustDieSignal`, `PleaseExitSignal`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1816
+msgid "Remove `EnvMap` (which should never have been exposed)."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1818
+msgid "`std::os`"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1821
+msgid ""
+"Initially, this module will be empty except for the platform-specific `unix` "
+"and `windows` modules. It is expected to grow additional, more specific "
+"platform submodules (like `linux`, `macos`) over time."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1825
+msgid "Odds and ends"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1828
+msgid "To be expanded in a follow-up PR."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1830
+msgid "The `io` prelude"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1833
+msgid ""
+"The `prelude` submodule will contain most of the traits, types, and modules "
+"discussed in this RFC; it is meant to provide maximal convenience when "
+"working with IO of any kind. The exact contents of the module are left as an "
+"open question."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1838
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1841
+msgid ""
+"This RFC is largely about cleanup, normalization, and stabilization of our "
+"IO libraries -- work that needs to be done, but that also represents "
+"nontrivial churn."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1845
+msgid ""
+"However, the actual implementation work involved is estimated to be "
+"reasonably contained, since all of the functionality is already in place in "
+"some form (including `os_str`, due to @SimonSapin's [WTF-8 implementation]"
+"(https://github.com/SimonSapin/rust-wtf8))."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1850
+msgid "Alternatives"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1853
+msgid ""
+"The main alternative design would be to continue staying with the Posix "
+"tradition in terms of naming and functionality (for which there is precedent "
+"in some other languages). However, Rust is already well-known for its strong "
+"cross-platform compatibility in `std`, and making the library more Windows-"
+"friendly will only increase its appeal."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1859
+msgid ""
+"More radically different designs (in terms of different design principles or "
+"visions) are outside the scope of this RFC."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1862
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1865
+msgid "To be expanded in follow-up PRs."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1867
+msgid "Wide string representation"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1869
+msgid "(Text from @SimonSapin)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1871
+msgid ""
+"Rather than WTF-8, `OsStr` and `OsString` on Windows could use potentially-"
+"ill-formed UTF-16 (a.k.a. \"wide\" strings), with a different cost trade off."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1875
+msgid "Upside:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1876
+msgid "No conversion between `OsStr` / `OsString` and OS calls."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1878
+msgid "Downsides:"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1879
+msgid ""
+"More expensive conversions between `OsStr` / `OsString` and `str` / `String`."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1880
+msgid ""
+"These conversions have inconsistent performance characteristics between "
+"platforms. (Need to allocate on Windows, but not on Unix.)"
+msgstr ""
+
+#: src/0517-io-os-reform.md:1881
+msgid "Some of them return `Cow`, which has some ergonomic hit."
+msgstr ""
+
+#: src/0517-io-os-reform.md:1883
+msgid "The API (only parts that differ) could look like:"
+msgstr ""

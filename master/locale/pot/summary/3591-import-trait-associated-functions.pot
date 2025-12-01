@@ -1,0 +1,403 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3591-import-trait-associated-functions.md:1
+msgid "Feature Name: `import-trait-associated-functions`"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:2
+msgid "Start Date: 2024-03-19"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3591](https://github.com/rust-lang/rfcs/pull/3591)"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#134691](https://github.com/rust-lang/rust/"
+"issues/134691)"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:9
+msgid ""
+"Allow importing associated functions and constants from traits and then "
+"using them like regular items."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:14
+msgid ""
+"There has for a long time been a desire to shorten the duplication needed to "
+"access certain associated functions, such as `Default::default`. Codebases "
+"like [Bevy](https://github.com/bevyengine/bevy/"
+"blob/7c7d1e8a6442a4258896b6c605beb1bf50399396/crates/bevy_utils/src/default."
+"rs#L27) provide wrapper functions to shorten this call, and a previous, now-"
+"rejected, [RFC](https://github.com/rust-lang/rust/pull/73001) aimed to "
+"provide this function as part of the standard library. This RFC was rejected "
+"with a note that there is a desire for a more general capability to import "
+"any trait associated functions."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:16
+msgid ""
+"Additionally, if you pull in a crate like [num_traits](https://docs.rs/num-"
+"traits/latest/num_traits/), then this feature will allow access to numeric "
+"functions such as `sin` using the `sin(x)` syntax that is more common in "
+"mathematics. More generally, it will make calls to trait associated "
+"functions shorter without having to write a wrapper function."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:18
+msgid ""
+"Similarly, associated constants, which act much like constant functions, can "
+"be imported to give easier access to them."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:20
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:23
+msgid ""
+"Importing an associated functions from a trait is the same as importing a "
+"function from any module:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:28
+msgid ""
+"Once you have done this, the function is made available in your current "
+"scope just like any other regular function."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:44
+msgid ""
+"You can also use this with trait methods (i.e. associated functions that "
+"take a `self` argument):"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:54
+msgid ""
+"Importing an associated function from a trait does not import the trait. If "
+"you want to call `self` methods on a trait or `impl` it, then you can import "
+"the trait and its associated functions in a single import statement:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:85
+msgid ""
+"Associated functions can also be renamed when they are imported using the "
+"usual `as` syntax:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:102
+msgid "You cannot import a parent trait associated function from a sub-trait:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:105
+msgid "// Error: try `use num_traits::identities::Zero::zero` instead.\n"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:109
+msgid "\"{}\""
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:113
+msgid "Importing an associated constant is allowed too:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:121
+msgid "// Impl for every numeric type...\n"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:131
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:134
+msgid "When"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:139
+msgid ""
+"occurs, a new item `m` is made available in the value namespace of the "
+"current module. Any attempts to use this item are treated as using the "
+"associated item explicitly qualified. `item` must be either an associated "
+"function or an associated constant. As always, the `as` qualifier is "
+"optional, in which case the name of the new item is identical with the name "
+"of the associated item in the trait. In other words, the example:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:156
+#: src/3591-import-trait-associated-functions.md:175
+#: src/3591-import-trait-associated-functions.md:197
+msgid "desugars to"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:170
+msgid "And a call"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:180
+msgid "Additionally, the syntax"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:184
+msgid "is sugar for"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:190
+msgid ""
+"The restriction on importing parent trait associated functions is a "
+"consequence of this desugaring, see https://play.rust-lang.org/?"
+"version=stable&mode=debug&edition=2021&gist=51bef9ba69ce1fc20248e987bf106bd4 "
+"for examples of the errors you get when you try to call parent trait "
+"associated functions through a child trait. We will likely want better error "
+"messages than this if a user tries to import a parent function."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:192
+msgid ""
+"Note that trait generics are handled by this desugaring using type "
+"inference. As above, given `Trait<T>`,"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:201
+msgid ""
+"which compiles if and only if `T` and `Self` can be inferred from the "
+"function call. For example, if `func` was"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:205
+msgid ""
+"then `Trait<T>` would be inferred to be `<typeof(x) as Trait<typeof(y)>`. "
+"Generics on `Trait` are not directly specifiable when a function is called "
+"in this way. To call a function with explicit types specified you must use "
+"the usual fully qualified syntax."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:207
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:210
+msgid ""
+"Calls to `default` are less explicit than calls to `Default::default` or to "
+"`T::default`, likewise for any other trait. Some users may see this lack of "
+"explicitness as bad style."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:212
+msgid ""
+"To expand on this, [the book](https://doc.rust-lang.org/book/ch07-04-"
+"bringing-paths-into-scope-with-the-use-keyword.html#creating-idiomatic-use-"
+"paths) currently recommends that functions should be called using their "
+"parent module's name:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:213
+msgid ""
+"Although both Listing 7-11 and 7-13 accomplish the same task, Listing 7-11 "
+"is the idiomatic way to bring a function into scope with use. Bringing the "
+"function’s parent module into scope with use means we have to specify the "
+"parent module when calling the function. Specifying the parent module when "
+"calling the function makes it clear that the function isn’t locally defined "
+"while still minimizing repetition of the full path."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:215
+msgid ""
+"This recommendation makes the most sense when there is a possibility of "
+"ambiguity in the mind of the reader. For example, a function like `sin` is "
+"unlikely to be ambiguous, because there is only one mathematical function of "
+"that name. If a codebase is likely to be making use of multiple different "
+"implementations of `sin`, then it makes more sense to require specifically "
+"naming the one you are going to use. Similar considerations apply to traits "
+"like `Default::default`, or more generally in cases like `Frobnicator::"
+"frobnicate`."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:217
+msgid ""
+"Because of this context sensitivity, we should allow developers to choose "
+"when removing the extra context makes sense for their codebase."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:219
+msgid ""
+"Another drawback mentioned during review for this RFC was that this adds "
+"more complication to the name resolution rules. On an implementation side, I "
+"am assured that this feature is straightforward to implement in rustc. From "
+"a user perspective, the name lookup rules for the function name are exactly "
+"the same as those used to look up any other function name. The lookup rules "
+"used to resolve the `impl` are also exactly the same ones used for non-fully "
+"qualified trait function calls. There is no fundamentally new kind of lookup "
+"happening here, just a remixing of existing lookup rules."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:221
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:224
+msgid "Why is this design the best in the space of possible designs?"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:226
+msgid ""
+"This design is minimalist, it adds no extra syntax, instead providing a "
+"natural extension of existing syntax to support a feature that is frequently "
+"requested. Users might very well already expect this feature, with this "
+"exact syntax, to be present in Rust, and surprised when it isn't."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:228
+msgid ""
+"What other designs have been considered and what is the rationale for not "
+"choosing them?"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:230
+msgid ""
+"In [Zulip](https://rust-lang.zulipchat.com/#narrow/stream/213817-t-lang/"
+"topic/Writing.20an.20RFC.20for.20.60use.20Default.3A.3Adefault.60/"
+"near/427795694), there was some discussion of whether `use Trait::func` "
+"should bring `Trait` into scope. There are three possibilities:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:232
+msgid "It does not - this may be unexpected, but maybe not"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:233
+msgid ""
+"It does - then `value.other_func_from_the_same_trait()` will work as well, "
+"this may be unexpected too"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:234
+msgid ""
+"It does, but only for `func`, that's something new for the language (need "
+"new more fine-grained tracking of traits in scope)"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:236
+msgid ""
+"Option 1 is what is proposed here. It has the simplest semantics, and I "
+"believe it best matches the user intent when they import an associated "
+"function; the desire is to make that function available as-if it were a "
+"regular function. Furthermore, it is more minimalist than the other two "
+"options in the sense that you can get to option 2 simply by importing the "
+"trait also. Option 3 seems like extra complexity for almost no added value."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:238
+msgid ""
+"We considered allowing `use Trait::parent_method`, but decided against it, "
+"as you can always explicitly import from the parent instead."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:240
+msgid "What is the impact of not doing this?"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:242
+msgid ""
+"Users of the language continue to create helper functions to access "
+"associated with regular function syntax. More specifically, each such "
+"instance requires a minimum of three lines when using normal rust "
+"formatting, corresponding to the following example:"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:248
+msgid ""
+"Such code is boilerplate that serves nobody's time to have to write "
+"repeatedly."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:250
+msgid ""
+"If this is a language proposal, could this be done in a library or macro "
+"instead? Does the proposed change make Rust code easier or harder to read, "
+"understand, and maintain?"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:252
+msgid ""
+"A library solution has already been rejected for this. This solves the same "
+"problem as a library solution in a much more general way, that doesn't "
+"require adding new library functions every time we want shorthand access to "
+"trait function names."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:254
+msgid "Prior art"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:257
+msgid ""
+"As mentioned in [motivation](#motivation), there was a rejected [RFC]"
+"(https://github.com/rust-lang/rust/pull/73001) for adding a function `std::"
+"default::default` to make calling `Default::default` less repetitive. This "
+"RFC was rejected, with a desire to see something like what this RFC proposes "
+"replace it."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:259
+msgid ""
+"[This issue](https://github.com/rust-lang/rfcs/issues/1995) also lists some "
+"further motivation for this feature."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:261
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:264
+msgid ""
+"Is specifying this in terms of desugaring sufficient to give the desired "
+"semantics?"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:266
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:269
+msgid ""
+"This RFC does not propose the ability to import `Type::method` where "
+"`method` is contained in an `impl` block. Such a feature would be a natural "
+"extension of this work, and would enable numeric features like that "
+"discussed in [motivation](#motivation) without the need for the [num_traits]"
+"(https://docs.rs/num-traits/latest/num_traits/) crate. This feature is not "
+"proposed in this RFC since initial investigations revealed that it would be "
+"[difficult](https://rust-lang.zulipchat.com/#narrow/stream/213817-t-lang/"
+"topic/Writing.20an.20RFC.20for.20.60use.20Default.3A.3Adefault.60/"
+"near/427804375) to implement in today's rustc."
+msgstr ""
+
+#: src/3591-import-trait-associated-functions.md:271
+msgid ""
+"If we add a compatibility mechanism to implement a supertrait method when "
+"implementing its subtrait, without having to separately implement the "
+"supertrait (such that a new supertrait can be extracted from a trait without "
+"breaking compatibility), we would also need to lift the limitation on using "
+"a supertrait method via a subtrait."
+msgstr ""

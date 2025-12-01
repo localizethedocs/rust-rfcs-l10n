@@ -1,0 +1,144 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0059-remove-tilde.md:1
+msgid "Start Date: 2014-04-30"
+msgstr ""
+
+#: src/0059-remove-tilde.md:2
+msgid "RFC PR: [rust-lang/rfcs#59](https://github.com/rust-lang/rfcs/pull/59)"
+msgstr ""
+
+#: src/0059-remove-tilde.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#13885](https://github.com/rust-lang/rust/"
+"issues/13885)"
+msgstr ""
+
+#: src/0059-remove-tilde.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0059-remove-tilde.md:7
+msgid ""
+"The tilde (`~`) operator and type construction do not support allocators and "
+"therefore should be removed in favor of the `box` keyword and a language "
+"item for the type."
+msgstr ""
+
+#: src/0059-remove-tilde.md:9
+msgid "Motivation"
+msgstr ""
+
+#: src/0059-remove-tilde.md:11
+msgid ""
+"There will be a unique pointer type in the standard library, `Box<T,A>` "
+"where `A` is an allocator. The `~T` type syntax does not allow for custom "
+"allocators. Therefore, in order to keep `~T` around while still supporting "
+"allocators, we would need to make it an alias for `Box<T,Heap>`. In the "
+"spirit of having one way to do things, it seems better to remove `~` "
+"entirely as a type notation."
+msgstr ""
+
+#: src/0059-remove-tilde.md:13
+msgid ""
+"`~EXPR` and `box EXPR` are duplicate functionality; the former does not "
+"support allocators. Again in the spirit of having one and only one way to do "
+"things, I would like to remove `~EXPR`."
+msgstr ""
+
+#: src/0059-remove-tilde.md:15
+msgid ""
+"Some people think `~` is confusing, as it is less self-documenting than "
+"`Box`."
+msgstr ""
+
+#: src/0059-remove-tilde.md:17
+msgid ""
+"`~` can encourage people to blindly add sigils attempting to get their code "
+"to compile instead of consulting the library documentation."
+msgstr ""
+
+#: src/0059-remove-tilde.md:19
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0059-remove-tilde.md:21
+msgid ""
+"`~T` may be seen as convenient sugar for a common pattern in some situations."
+msgstr ""
+
+#: src/0059-remove-tilde.md:23
+msgid "Detailed design"
+msgstr ""
+
+#: src/0059-remove-tilde.md:25
+msgid ""
+"The `~EXPR` production is removed from the language, and all such uses are "
+"converted into `box`."
+msgstr ""
+
+#: src/0059-remove-tilde.md:27
+msgid ""
+"Add a lang item, `box`. That lang item will be defined in `liballoc` (NB: "
+"not `libmetal`/`libmini`, for bare-metal programming) as follows:"
+msgstr ""
+
+#: src/0059-remove-tilde.md:29
+msgid ""
+"    #[lang=\"box\"]\n"
+"    pub struct Box<T,A=Heap>(*T);\n"
+"    "
+msgstr ""
+
+#: src/0059-remove-tilde.md:32
+msgid ""
+"All parts of the compiler treat instances of `Box<T>` identically to the way "
+"it treats `~T` today."
+msgstr ""
+
+#: src/0059-remove-tilde.md:34
+msgid "The destructuring form for `Box<T>` will be `box PAT`, as follows:"
+msgstr ""
+
+#: src/0059-remove-tilde.md:36
+msgid ""
+"    let box(x) = box(10);\n"
+"    println!(\"{}\", x); // prints 10\n"
+"    "
+msgstr ""
+
+#: src/0059-remove-tilde.md:39
+msgid "Alternatives"
+msgstr ""
+
+#: src/0059-remove-tilde.md:41
+msgid ""
+"The other possible design here is to keep `~T` as sugar. The impact of doing "
+"this would be that a common pattern would be terser, but I would like to not "
+"do this for the reasons stated in \"Motivation\" above."
+msgstr ""
+
+#: src/0059-remove-tilde.md:43
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0059-remove-tilde.md:45
+msgid "The allocator design is not yet fully worked out."
+msgstr ""
+
+#: src/0059-remove-tilde.md:47
+msgid ""
+"It may be possible that unforeseen interactions will appear between the "
+"struct nature of `Box<T>` and the built-in nature of `~T` when merged."
+msgstr ""

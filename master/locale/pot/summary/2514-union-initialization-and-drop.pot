@@ -1,0 +1,578 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2514-union-initialization-and-drop.md:1
+msgid "Feature Name: `union_initialization_and_drop`"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:2
+msgid "Start Date: 2018-08-03"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2514](https://github.com/rust-lang/rfcs/pull/2514)"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#55149](https://github.com/rust-lang/rust/"
+"issues/55149)"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:9
+msgid ""
+"Unions do not allow fields of types that require drop glue (the code that is "
+"automatically run when a variables goes out of scope: recursively dropping "
+"the variable and all its fields), but they may still `impl Drop` "
+"themselves.  We specify when one may move out of a union field and when the "
+"union's `drop` is called.  To avoid undesired implicit calls of drop, we "
+"also restrict the use of `DerefMut` when unions are involved."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:16
+msgid "Motivation"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:19
+msgid ""
+"Currently, it is unstable to have a non-`Copy` field in the union.  The main "
+"reason for this is that having fields which need drop glue raises some hard "
+"questions about whether to call that drop glue when assigning a union field, "
+"and how to make programming with such unions less of a time bomb (triggered "
+"by accidentally dropping data one meant to just overwrite).  Not much "
+"progress has been made on stabilizing the unstable union features.  This RFC "
+"proposes a route forwards that side-steps the time bomb: Do not allow fields "
+"with drop glue."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:27
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:30
+msgid "Union Definition"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:32
+msgid ""
+"When defining a union, it is a hard error to use a field type that requires "
+"drop glue. Examples:"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:35
+msgid "// Accepted\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:37
+msgid "// `ManuallyDrop<T>` never has drop glue, even if `T` does.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:39
+msgid "// `RefCell<i32>` is a fully known type, and does not have drop glue.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:43
+msgid "// `Copy` types never have drop glue.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:48
+msgid "// `T::Assoc` is `Copy` and hence cannot have drop glue.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:51
+msgid "// Rejected\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:54
+msgid "// `T` might have drop glue, and then `RefCell<T>` would as well.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:59
+msgid "// `T::Assoc` might have drop glue.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:64
+msgid ""
+"Ruling out possibly dropping types may seem restrictive, but thanks to "
+"`ManuallyDrop` it in fact is not: If the compiler rejects a union "
+"definition, you can always wrap field types in `ManuallyDrop` to obtain a "
+"working definition.  This means you have to manually take care of when to "
+"drop the data, but that is already something to be concerned with when "
+"working on unions."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:70
+msgid ""
+"As a consequence, it is quite obvious that writing to a union field will "
+"never implicitly call `drop`.  Such a write is hence always a safe "
+"operation.  This removes a whole class of pitfalls related to `drop` being "
+"called in tricky unsafe code when you might not expect that to happen.  "
+"(However, see below for some pitfalls that remain.)"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:76
+msgid ""
+"Reading from a union field and creating a reference remain unsafe: We cannot "
+"guarantee that the field contains valid data."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:79
+msgid "Union initialization and `Drop`"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:81
+msgid ""
+"In two cases, the compiler cares about whether a (field of a) variable is "
+"initialized: When deciding whether a move from the field/variable is allowed "
+"(for cases where the type is not `Copy`), and when deciding whether or not "
+"the variable has to be dropped when it goes out of scope."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:86
+msgid ""
+"A union just does very simple initialization tracking: There is a single "
+"boolean state for the entire union and all of its fields.  Nested inner "
+"fields are tracked just like they are for structs; however, when the union "
+"becomes (un)initialized, then all nested inner fields of all union fields "
+"are (un)initialized at once.  So, (un)initializing a union field also "
+"(un)initializes its siblings.  For example:"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:94
+#: src/2514-union-initialization-and-drop.md:143
+msgid ""
+"// This code creates bad references and transmutes to `Vec` in incorrect "
+"ways.\n"
+"// This is just to demonstrate what the compiler would accept in terms of\n"
+"// tracking initialization.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:98
+#: src/2514-union-initialization-and-drop.md:147
+msgid "// not `Copy`, no drop glue\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:101
+msgid ""
+"// Now `u` is not initialized: `&u`, `&u.f2` and `&u.f2.0` are all "
+"rejected.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:103
+msgid "// We can write into uninitialized inner fields:\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:106
+msgid ""
+"// This field is initialized now.\n"
+"// But this does not change the initialization state of the union itself,\n"
+"// or any other (inner) field.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:109
+msgid "// We can initialize by assigning an entire field:\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:111
+msgid ""
+"// Now *all (nested) fields* of `u` are initialized, including the siblings "
+"of `f1`:\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:115
+msgid "// Equivalently, we can assign the entire union:\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:117
+#: src/2514-union-initialization-and-drop.md:121
+msgid "// Now `u` is still initialized.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:119
+msgid "// Copying does not change anything:\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:123
+msgid "// We can move out of an initialized union:\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:125
+msgid ""
+"// Now `f1` *and its siblings* are no longer initialized (they got \"moved "
+"out of\"):\n"
+"// `let _x = u.f2;` would hence get rejected, as would `&u.f1` and "
+"`foo(u)`.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:128
+msgid ""
+"// Now `u` and all of its fields are initialized again (\"moving back "
+"in\").\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:130
+msgid ""
+"// When we move out of an inner field, the other union fields become "
+"uninitialized\n"
+"// even if they are `Copy`.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:133
+msgid "// Now `u.f1` and `u.f3` are no longer initialized.  But `u.f2.0` is:\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:138
+msgid ""
+"If the union implements `Drop`, the same restrictions as for structs apply: "
+"It is not possible to initialize a field before initializing the entire "
+"variable, and it is not possible to move out of a field.  For example:"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:152
+msgid "\"Goodbye!\""
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:156
+msgid ""
+"// `u.f1 = ...;` gets rejected: Cannot initialize a union with `Drop` by "
+"assigning a field.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:158
+msgid "// Now `u` is initialized.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:160
+msgid ""
+"// `let v = u.f1;` gets rejected: Cannot move out of union that implements "
+"`Drop`.\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:162
+msgid "// creating a reference is allowed\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:163
+msgid "// copying out is allowed\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:166
+msgid ""
+"When a union implementing `Drop` goes out of scope, its destructor gets "
+"called if and only if the union is currently considered initialized: "
+"(Continuing the example from above.)"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:172
+msgid "// drop gets called\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:177
+msgid "// drop does NOT get called\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:181
+#: src/2514-union-initialization-and-drop.md:281
+msgid "Potential pitfalls around `DerefMut`"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:183
+msgid ""
+"There is still a potential pitfall left around assigning to union fields: If "
+"the assignment implicitly happens through a `DerefMut`, it may call drop "
+"glue.  For example:"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:196
+msgid "// uninitialized `Vec` being dropped\n"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:199
+msgid ""
+"This requires `unsafe` because it desugars to `ManuallyDrop::deref_mut(&mut "
+"u.f).0`, and while writing to a union field is safe, taking a reference is "
+"not."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:202
+msgid ""
+"For this reason, `DerefMut` auto-deref is not applied when working on a "
+"union or its fields.  However, note that manually dereferencing is still "
+"possible, so `(*u.f).0 = Vec::new()` is still a way to drop an uninitialized "
+"field!  But this can never happen when no `*` is involved, and hopefully "
+"dereferencing an element of a union is a clear enough signal that the union "
+"better be initialized properly for this to make sense."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:209
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:212
+msgid "Union definition"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:214
+msgid ""
+"When defining a union, it is a hard error to use a field type that requires "
+"drop glue. This is checked as follows:"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:217
+msgid ""
+"Proceed recursively down the given type, insofar as the type involved is "
+"known at compile-time.  For example, `u32`, `&mut T` and `ManuallyDrop<T>` "
+"are known to not have drop glue no matter the choice of `T`."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:220
+msgid ""
+"When hitting a type variable where no progress can be made, check that `T: "
+"Copy` as a proxy for `T` not requiring drop glue."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:223
+msgid ""
+"Note: Currently, union fields with drop glue are allowed on nightly with an "
+"unstable feature.  This RFC proposes to remove support for that entirely; "
+"code using nightly might have to be changed."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:227
+msgid "Writing to union fields"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:229
+msgid ""
+"Writing to union fields is currently unsafe when the field has drop glue.  "
+"This check is no longer needed, because union fields will never have drop "
+"glue. Moreover, writing to a nested field (e.g., `u.f1.x = 0;`) is currently "
+"unsafe as well, this should also become a safe operation as long as the path "
+"(expanded, i.e., after auto-derefs are inserted) consists _only of field "
+"projections, not deref's_.  Note that this is sound only because "
+"`ManuallyDrop`'s only field is private (so, in fact, this is _not_ sound "
+"inside the module that defines `ManuallyDrop`)."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:238
+msgid "Union initialization tracking"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:240
+msgid ""
+"A \"fragment\" is a place of the form `local_var.field.field.field`, without "
+"any implicit derefs.  A fragment can be either _initialized_ or "
+"_uninitialized_. This state is approximated statically: The type system will "
+"only allow accesses to definitely initialized fragments.  Drop elaboration "
+"needs to know the precise state of a fragment, for which purpose it adds run-"
+"time drop flags as needed."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:246
+msgid ""
+"If a fragment has some uninitialized nested fragments then it is still "
+"uninitialized and accesses to this fragment as a whole are prevented. This "
+"applies even if it also has a nested initialized fragment (in which case we "
+"speak of a _partially initialized_ fragment).  If a fragment has only "
+"initialized nested fragments then it is initialized as a whole and can be "
+"accessed."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:252
+msgid ""
+"A fragment becomes initialized when it is assigned to, or created using an "
+"initializer, or it is a union field and a sibling becomes initialized, or "
+"all its nested fragments become initialized.  A fragment becomes "
+"uninitialized when it doesn't implement `Copy` and is moved out from, or it "
+"is a union field (possibly `Copy`) and its sibling becomes uninitialized, or "
+"some of its nested fragments becomes uninitialized."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:259
+msgid ""
+"In other words, union fields behave a lot like struct fields except that if "
+"one field changes initialization state, the others follow suit.  In "
+"particular, if one union field becomes partially initialized (because one of "
+"its nested fragments got uninitialized), all its siblings become _entirely_ "
+"uninitialized, including their nested fragments."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:265
+msgid ""
+"If a fragment is of a type which has an `impl Drop`, then its nested "
+"fragments cannot be separately (un)initialized.  Only the entire fragment "
+"can be initialized by assignment, and the entire fragment can be "
+"uninitialized by moving out."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:270
+msgid ""
+"NOTE: To my knowledge, this already mostly matches the current "
+"implementation. The only exception is that \"fragment becomes initialized "
+"when all its nested fragments become initialized\" rule is not currently "
+"implemented for neither structs nor unions, so the compiler accepts less "
+"code than it should.  However, `impl Drop for Union` and non-`Copy` union "
+"fields are behind a feature gate, so the effects of this on unions cannot "
+"currently be observed on stable compilers."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:278
+msgid ""
+"(This closely follows a [previously proposed RFC by @petrochenkov](https://"
+"github.com/petrochenkov/rfcs/blob/e5266bd105f592f7408b8592c5c3deaccba7f1ec/"
+"text/1444-union.md#initialization-state).)"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:283
+msgid ""
+"When adding auto-derefs on the left-hand side of an assignment, as we "
+"traverse the path, once we hit a `union`, we stop adding further auto-"
+"derefs.  So with `s: Struct` and `u: Union`, when encountering `s.u.f.x`, "
+"auto-deref _does_ happen on `s`, but not on `s.u` or any of the later "
+"components."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:288
+msgid ""
+"Notice that this relies crucially on the only field of `ManuallyDrop` being "
+"private!  If we could project directly through that field, no `DerefMut` "
+"would be needed to reproduce the problematic example from the \"guide\" "
+"section."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:292
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:295
+msgid ""
+"This makes working with unions involving types that may have drop glue "
+"slightly more verbose than today: One has to write `ManuallyDrop` more often "
+"than one may want to."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:299
+msgid ""
+"The restriction placed on `DerefMut` is not fully backwards compatible: A "
+"type could implement `Copy + DerefMut` and actually rely on the deref "
+"coercion inside a union.  That seems very unlikely, but should be tested "
+"with a crater run."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:303
+msgid ""
+"The initialization tracking rules are somewhat surprising, and one might "
+"prefer the compiler to just not track anything when it comes to unions.  "
+"After all, the compiler fundamentally cannot know what part of the union is "
+"properly initialized.  Unfortunately, not having any initialization tracking "
+"is not an option when non-`Copy` fields are involved: We have to decide if "
+"moving out of a union field is allowed."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:310
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:313
+msgid ""
+"Ruling out fields with drop glue does not, in fact, reduce the "
+"expressiveness of unions because one can use `ManuallyDrop<T>` to obtain a "
+"drop-glue-free version of `T`.  If anything, having the `ManuallyDrop` in "
+"the union definition should help to drive home the point that no automatic "
+"dropping is happening, ever. (Before this RFC, automatic dropping is "
+"happening when assigning to a union field but not when the union goes out of "
+"scope.  That seems to be the result of necessity, not of a coherent design.)"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:321
+msgid ""
+"An alternative approach to proceed with unions has been [previously proposed "
+"by @petrochenkov](https://github.com/petrochenkov/rfcs/blob/"
+"e5266bd105f592f7408b8592c5c3deaccba7f1ec/text/1444-union.md#initialization-"
+"state). That proposal replaces RFC 1444 and goes into a lot more points than "
+"this much more limited proposal.  In particular, it allows fields with drop "
+"glue.  However, it can be pretty hard for the programmer to predict when "
+"drop glue will be automatically invoked on assignment or not, because the "
+"initialization tracking (which this RFC adapts from @petrochenkov's "
+"proposal) can sometimes be a little surprising when looking at individual "
+"fields: Whether `u.f2 = ...;` drops depends on whether `u.f1` has been "
+"previously initialized.  We hence have a lint to warn people that unions "
+"with drop-glue fields are not always very well-behaved.  This RFC, on the "
+"other hand, side-steps the entire question by not allowing fields with drop "
+"glue.  Initialization tracking thus has no effect on the code executed "
+"during an assignment of a union field.  For unions that `impl Drop`, it "
+"still has an effect on what happens when the union goes out of scope, but in "
+"that case initialization is so restricted that I cannot think of any "
+"surprises.  Together with the `DerefMut` restriction, that should make it "
+"very unlikely to accidentally call `drop` when it was not intended."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:339
+msgid ""
+"We could significantly simplify the initialization tracking by always "
+"applying the rules that are currently only applied to unions that `impl "
+"Drop`.  However, that does not actually help with the pitfall described "
+"above.  The more complex rules allow more code that many will reasonably "
+"expect to work, and do not seem to introduce any additional pitfalls."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:345
+msgid ""
+"We could reduce the relevance of state tracking further by not to allowing "
+"`impl Drop for Union`.  It is still possible to add a wrapper struct around "
+"the union which has drop glue, so this does not restrict expressiveness.  "
+"However, this seems unnecessarily cumbersome, and it does not seem to help "
+"avoid any surprises.  State tracking around unions that `impl Drop` is "
+"pretty much as simple as it gets."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:352
+msgid "Prior art"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:355
+msgid ""
+"I do not know of any language combining initialization tracking and "
+"destructors with unions: C++ [never runs destructors for fields of unions]"
+"(https://en.cppreference.com/w/cpp/language/union), and it does not track "
+"whether fields of a data structures are initialized to (dis)allow references "
+"or moves."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:362
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:365
+msgid ""
+"Should we even try to avoid the `DerefMut`\\-related pitfall?  And if yes, "
+"should we maybe try harder, e.g. lint against using `*` below a union type "
+"when describing a place?  That would make people write `let v = &mut u.f; *v "
+"= Vec::new();`.  It is not clear that this helps in terms of pointing out "
+"that an automatic drop may be happening."
+msgstr ""
+
+#: src/2514-union-initialization-and-drop.md:371
+msgid ""
+"We could allow moving out of a union field even if it implements `Drop`.  "
+"That would have the effect of making the union considered uninitialized, i."
+"e., it would not be dropped implicitly when it goes out of scope.  However, "
+"it might be useful to not let people do this accidentally.  The same effect "
+"can always be achieved by having a dropless union wrapped in a newtype "
+"`struct` with the desired `Drop`."
+msgstr ""

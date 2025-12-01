@@ -1,0 +1,585 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0529-conversion-traits.md:1
+msgid "Feature Name: convert"
+msgstr ""
+
+#: src/0529-conversion-traits.md:2
+msgid "Start Date: 2014-11-21"
+msgstr ""
+
+#: src/0529-conversion-traits.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#529](https://github.com/rust-lang/rfcs/pull/529)"
+msgstr ""
+
+#: src/0529-conversion-traits.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#23567](https://github.com/rust-lang/rust/"
+"issues/23567)"
+msgstr ""
+
+#: src/0529-conversion-traits.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/0529-conversion-traits.md:8
+msgid ""
+"This RFC proposes several new _generic conversion_ traits. The motivation is "
+"to remove the need for ad hoc conversion traits (like `FromStr`, `AsSlice`, "
+"`ToSocketAddr`, `FromError`) whose _sole role_ is for generics bounds. Aside "
+"from cutting down on trait proliferation, centralizing these traits also "
+"helps the ecosystem avoid incompatible ad hoc conversion traits defined "
+"downstream from the types they convert to or from. It also future-proofs "
+"against eventual language features for ergonomic conversion-based "
+"overloading."
+msgstr ""
+
+#: src/0529-conversion-traits.md:17
+msgid "Motivation"
+msgstr ""
+
+#: src/0529-conversion-traits.md:19
+msgid ""
+"The idea of generic conversion traits has come up from [time](https://github."
+"com/rust-lang/rust/issues/7080) [to](http://discuss.rust-lang.org/t/pre-rfc-"
+"add-a-coerce-trait-to-get-rid-of-the-as-slice-calls/415) [time](http://"
+"discuss.rust-lang.org/t/pre-rfc-remove-fromerror-trait-add-from-"
+"trait/783/3), and now that multidispatch is available they can be made to "
+"work reasonably well. They are worth considering due to the problems they "
+"solve (given below), and considering _now_ because they would obsolete "
+"several ad hoc conversion traits (and several more that are in the pipeline) "
+"for `std`."
+msgstr ""
+
+#: src/0529-conversion-traits.md:29
+msgid "Problem 1: overloading over conversions"
+msgstr ""
+
+#: src/0529-conversion-traits.md:31
+msgid ""
+"Rust does not currently support arbitrary, implicit conversions -- and for "
+"some good reasons. However, it is sometimes important ergonomically to allow "
+"a single function to be _explicitly_ overloaded based on conversions."
+msgstr ""
+
+#: src/0529-conversion-traits.md:36
+msgid ""
+"For example, the [recently proposed path APIs](https://github.com/rust-lang/"
+"rfcs/pull/474) introduce an `AsPath` trait to make various path operations "
+"ergonomic:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:52
+msgid ""
+"The idea in particular is that, given a path, you can join using a string "
+"literal directly. That is:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:56
+msgid "// write this:\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:57 src/0529-conversion-traits.md:60
+msgid "\"fixed_subdir_name\""
+msgstr ""
+
+#: src/0529-conversion-traits.md:58
+msgid "// not this:\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:63
+msgid ""
+"It's a shame to have to introduce new ad hoc traits every time such an "
+"overloading is desired. And because the traits are ad hoc, it's also not "
+"possible to program generically over conversions themselves."
+msgstr ""
+
+#: src/0529-conversion-traits.md:67
+msgid "Problem 2: duplicate, incompatible conversion traits"
+msgstr ""
+
+#: src/0529-conversion-traits.md:69
+msgid ""
+"There's a somewhat more subtle problem compounding the above: if the author "
+"of the path API neglects to include traits like `AsPath` for its core types, "
+"but downstream crates want to overload on those conversions, those "
+"downstream crates may each introduce their own conversion traits, which will "
+"not be compatible with one another."
+msgstr ""
+
+#: src/0529-conversion-traits.md:75
+msgid ""
+"Having standard, generic conversion traits cuts down on the total number of "
+"traits, and also ensures that all Rust libraries have an agreed-upon way to "
+"talk about conversions."
+msgstr ""
+
+#: src/0529-conversion-traits.md:79
+msgid "Non-goals"
+msgstr ""
+
+#: src/0529-conversion-traits.md:81
+msgid ""
+"When considering the design of generic conversion traits, it's tempting to "
+"try to do away will _all_ ad hoc conversion methods.  That is, to replace "
+"methods like `to_string` and `to_vec` with a single method `to::<String>` "
+"and `to::<Vec<u8>>`."
+msgstr ""
+
+#: src/0529-conversion-traits.md:86
+msgid "Unfortunately, this approach carries several ergonomic downsides:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:88
+msgid ""
+"The required `::< _ >` syntax is pretty unfriendly. Something like "
+"`to<String>` would be much better, but is unlikely to happen given the "
+"current grammar."
+msgstr ""
+
+#: src/0529-conversion-traits.md:92
+msgid ""
+"Designing the traits to allow this usage is surprisingly subtle -- it "
+"effectively requires _two traits_ per type of generic conversion, with "
+"blanket `impl`s mapping one to the other. Having such complexity for _all "
+"conversions_ in Rust seems like a non-starter."
+msgstr ""
+
+#: src/0529-conversion-traits.md:97
+msgid ""
+"Discoverability suffers somewhat. Looking through a method list and seeing "
+"`to_string` is easier to comprehend (for newcomers especially) than having "
+"to crawl through the `impl`s for a trait on the side -- especially given the "
+"trait complexity mentioned above."
+msgstr ""
+
+#: src/0529-conversion-traits.md:102
+msgid ""
+"Nevertheless, this is a serious alternative that will be laid out in more "
+"detail below, and merits community discussion."
+msgstr ""
+
+#: src/0529-conversion-traits.md:105
+msgid "Detailed design"
+msgstr ""
+
+#: src/0529-conversion-traits.md:107
+msgid "Basic design"
+msgstr ""
+
+#: src/0529-conversion-traits.md:109
+msgid ""
+"The design is fairly simple, although perhaps not as simple as one might "
+"expect: we introduce a total of _four_ traits:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:130
+msgid ""
+"The first three traits mirror our `as`/`into` conventions, but add a bit "
+"more structure to them: `as`\\-style conversions are from references to "
+"references and `into`\\-style conversions are between arbitrary types "
+"(consuming their argument)."
+msgstr ""
+
+#: src/0529-conversion-traits.md:135
+msgid ""
+"A `To` trait, following our `to` conventions and converting from references "
+"to arbitrary types, is possible but is deferred for now."
+msgstr ""
+
+#: src/0529-conversion-traits.md:138
+msgid ""
+"The final trait, `From`, mimics the `from` constructors. This trait is "
+"expected to outright replace most custom `from` constructors. See below."
+msgstr ""
+
+#: src/0529-conversion-traits.md:141
+msgid "**Why the reference restrictions?**"
+msgstr ""
+
+#: src/0529-conversion-traits.md:143
+msgid ""
+"If all of the conversion traits were between arbitrary types, you would have "
+"to use generalized where clauses and explicit lifetimes even for simple "
+"cases:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:147
+msgid "// Possible alternative:\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:151
+msgid "// But then you get this:\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:154
+msgid "// Instead of this:\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:159
+msgid ""
+"If you need a conversion that works over any lifetime, you need to use "
+"higher-ranked trait bounds:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:166
+msgid ""
+"This case is particularly important when you cannot name a lifetime in "
+"advance, because it will be created on the stack within the function. It "
+"might be possible to add sugar so that `where &T: As<&MyType>` expands to "
+"the above automatically, but such an elision might have other problems, and "
+"in any case it would preclude writing direct bounds like `fn foo<P: AsPath>`."
+msgstr ""
+
+#: src/0529-conversion-traits.md:173
+msgid ""
+"The proposed trait definition essentially _bakes in_ the needed lifetime "
+"connection, capturing the most common mode of use for `as`/`to`/`into` "
+"conversions. In the future, an HKT-based version of these traits could "
+"likely generalize further."
+msgstr ""
+
+#: src/0529-conversion-traits.md:178
+msgid "**Why have multiple traits at all**?"
+msgstr ""
+
+#: src/0529-conversion-traits.md:180
+msgid ""
+"The biggest reason to have multiple traits is to take advantage of the "
+"lifetime linking explained above. In addition, however, it is a basic "
+"principle of Rust's libraries that conversions are distinguished by cost and "
+"consumption, and having multiple traits makes it possible to (by convention) "
+"restrict attention to e.g. \"free\" `as`\\-style conversions by bounding "
+"only by `AsRef`."
+msgstr ""
+
+#: src/0529-conversion-traits.md:187
+msgid "Why have both `Into` and `From`? There are a few reasons:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:189
+msgid ""
+"Coherence issues: the order of the types is significant, so `From` allows "
+"extensibility in some cases that `Into` does not."
+msgstr ""
+
+#: src/0529-conversion-traits.md:192
+msgid ""
+"To match with existing conventions around conversions and constructors (in "
+"particular, replacing many `from` constructors)."
+msgstr ""
+
+#: src/0529-conversion-traits.md:195
+msgid "Blanket `impl`s"
+msgstr ""
+
+#: src/0529-conversion-traits.md:197
+msgid ""
+"Given the above trait design, there are a few straightforward blanket "
+"`impl`s as one would expect:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:201
+msgid "// AsMut implies Into\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:207
+msgid "// Into implies From\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:214
+msgid "An example"
+msgstr ""
+
+#: src/0529-conversion-traits.md:216
+msgid "Using all of the above, here are some example `impl`s and their use:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:237 src/0529-conversion-traits.md:389
+#: src/0529-conversion-traits.md:517
+msgid "\"hello\""
+msgstr ""
+
+#: src/0529-conversion-traits.md:244
+msgid ""
+"This use of generic conversions within a function body is expected to be "
+"rare, however; usually the traits are used for generic functions:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:257
+msgid ""
+"In this very typical pattern, you introduce an \"inner\" function that takes "
+"the converted value, and the public API is a thin wrapper around that. The "
+"main reason to do so is to avoid code bloat: given that the generic bound is "
+"used only for a conversion that can be done up front, there is no reason to "
+"monomorphize the entire function body for each input type."
+msgstr ""
+
+#: src/0529-conversion-traits.md:264
+msgid "An aside: codifying the generics pattern in the language"
+msgstr ""
+
+#: src/0529-conversion-traits.md:266
+msgid ""
+"This pattern is so common that we probably want to consider sugar for it, e."
+"g. something like:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:277
+msgid ""
+"that would desugar into exactly the above (assuming that the `~` sigil was "
+"restricted to `AsRef` conversions). Such a feature is out of scope for this "
+"RFC, but it's a natural and highly ergonomic extension of the traits being "
+"proposed here."
+msgstr ""
+
+#: src/0529-conversion-traits.md:282
+msgid "Preliminary conventions"
+msgstr ""
+
+#: src/0529-conversion-traits.md:284
+msgid ""
+"Would _all_ conversion traits be replaced by the proposed ones? Probably "
+"not, due to the combination of two factors (using the example of `To`, "
+"despite its being deferred for now):"
+msgstr ""
+
+#: src/0529-conversion-traits.md:288
+msgid "You still want blanket `impl`s like `ToString` for `Show`, but:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:289
+msgid ""
+"This RFC proposes that specific conversion _methods_ like `to_string` stay "
+"in common use."
+msgstr ""
+
+#: src/0529-conversion-traits.md:292
+msgid ""
+"On the other hand, you'd expect a blanket `impl` of `To<String>` for any `T: "
+"ToString`, and one should prefer bounding over `To<String>` rather than "
+"`ToString` for consistency. Basically, the role of `ToString` is just to "
+"provide the ad hoc method name `to_string` in a blanket fashion."
+msgstr ""
+
+#: src/0529-conversion-traits.md:298
+msgid "So a rough, preliminary convention would be the following:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:300
+msgid ""
+"An _ad hoc conversion method_ is one following the normal convention of "
+"`as_foo`, `to_foo`, `into_foo` or `from_foo`. A \"generic\" conversion "
+"method is one going through the generic traits proposed in this RFC. An _ad "
+"hoc conversion trait_ is a trait providing an ad hoc conversion method."
+msgstr ""
+
+#: src/0529-conversion-traits.md:306
+msgid ""
+"Use ad hoc conversion methods for \"natural\", _outgoing_ conversions that "
+"should have easy method names and good discoverability. A conversion is "
+"\"natural\" if you'd call it directly on the type in normal code; "
+"\"unnatural\" conversions usually come from generic programming."
+msgstr ""
+
+#: src/0529-conversion-traits.md:312
+msgid ""
+"For example, `to_string` is a natural conversion for `str`, while "
+"`into_string` is not; but the latter is sometimes useful in a generic "
+"context -- and that's what the generic conversion traits can help with."
+msgstr ""
+
+#: src/0529-conversion-traits.md:317
+msgid "On the other hand, favor `From` for all conversion constructors."
+msgstr ""
+
+#: src/0529-conversion-traits.md:319
+msgid ""
+"Introduce ad hoc conversion _traits_ if you need to provide a blanket `impl` "
+"of an ad hoc conversion method, or need special functionality. For example, "
+"`to_string` needs a trait so that every `Show` type automatically provides "
+"it."
+msgstr ""
+
+#: src/0529-conversion-traits.md:324
+msgid ""
+"For any ad hoc conversion method, _also_ provide an `impl` of the "
+"corresponding generic version; for traits, this should be done via a blanket "
+"`impl`."
+msgstr ""
+
+#: src/0529-conversion-traits.md:328
+msgid ""
+"When using generics bounded over a conversion, always prefer to use the "
+"generic conversion traits. For example, bound `S: To<String>` not `S: "
+"ToString`. This encourages consistency, and also allows clients to take "
+"advantage of the various blanket generic conversion `impl`s."
+msgstr ""
+
+#: src/0529-conversion-traits.md:334
+msgid "Use the \"inner function\" pattern mentioned above to avoid code bloat."
+msgstr ""
+
+#: src/0529-conversion-traits.md:337
+msgid "Prelude changes"
+msgstr ""
+
+#: src/0529-conversion-traits.md:339
+msgid ""
+"_All_ of the conversion traits are added to the prelude. There are two "
+"reasons for doing so:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:342
+msgid ""
+"For `AsRef`/`AsMut`/`Into`, the reasoning is similar to the inclusion of "
+"`PartialEq` and friends: they are expected to appear ubiquitously as bounds."
+msgstr ""
+
+#: src/0529-conversion-traits.md:346
+msgid ""
+"For `From`, bounds are somewhat less common but the use of the `from` "
+"constructor is expected to be rather widespread."
+msgstr ""
+
+#: src/0529-conversion-traits.md:349
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0529-conversion-traits.md:351
+msgid "There are a few drawbacks to the design as proposed:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:353
+msgid ""
+"Since it does not replace all conversion traits, there's the unfortunate "
+"case of having both a `ToString` trait and a `To<String>` trait bound. The "
+"proposed conventions go some distance toward at least keeping APIs "
+"consistent, but the redundancy is unfortunate. See Alternatives for a more "
+"radical proposal."
+msgstr ""
+
+#: src/0529-conversion-traits.md:359
+msgid ""
+"It may encourage more overloading over coercions, and also more generics "
+"code bloat (assuming that the \"inner function\" pattern isn't followed). "
+"Coercion overloading is not necessarily a bad thing, however, since it is "
+"still explicit in the signature rather than wholly implicit. If we do go in "
+"this direction, we can consider language extensions that make it ergonomic "
+"_and_ avoid code bloat."
+msgstr ""
+
+#: src/0529-conversion-traits.md:366
+msgid "Alternatives"
+msgstr ""
+
+#: src/0529-conversion-traits.md:368
+msgid ""
+"The original form of this RFC used the names `As.convert_as`, `AsMut."
+"convert_as_mut`, `To.convert_to` and `Into.convert_into` (though still `From."
+"from`). After discussion `As` was changed to `AsRef`, removing the keyword "
+"collision of a method named `as`, and the `convert_` prefixes were removed."
+msgstr ""
+
+#: src/0529-conversion-traits.md:376
+msgid ""
+"The main alternative is one that attempts to provide methods that "
+"_completely replace_ ad hoc conversion methods. To make this work, a form of "
+"double dispatch is used, so that the methods are added to _every type_ but "
+"bounded by a separate set of conversion traits."
+msgstr ""
+
+#: src/0529-conversion-traits.md:381
+msgid ""
+"In this strawman proposal, the name \"view shift\" is used for `as` "
+"conversions, \"conversion\" for `to` conversions, and \"transformation\" for "
+"`into` conversions. These names are not too important, but needed to "
+"distinguish the various generic methods."
+msgstr ""
+
+#: src/0529-conversion-traits.md:386
+msgid "The punchline is that, in the end, we can write"
+msgstr ""
+
+#: src/0529-conversion-traits.md:393
+msgid ""
+"or, put differently, replace `as_bytes` with `shift_view::<[u8]>` -- for "
+"better or worse."
+msgstr ""
+
+#: src/0529-conversion-traits.md:396
+msgid ""
+"In addition to the rather large jump in complexity, this alternative design "
+"also suffers from poor error messages. For example, if you accidentally "
+"typed `shift_view::<u8>` instead, you receive:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:404
+msgid ""
+"which takes a bit of thought and familiarity with the traits to fully "
+"digest.  Taken together, the complexity, error messages, and poor ergonomics "
+"of things like `convert::<u8>` rather than `as_bytes` led the author to "
+"discard this alternative design."
+msgstr ""
+
+#: src/0529-conversion-traits.md:410
+msgid "// VIEW SHIFTS\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:411
+msgid ""
+"// \"Views\" here are always lightweight, non-lossy, always\n"
+"// successful view shifts between reference types\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:414
+msgid "// Immutable views\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:430
+msgid "// Mutable coercions\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:446
+msgid "// CONVERSIONS\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:468
+msgid "// TRANSFORMATION\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:502
+msgid "// Example\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:522
+msgid "Possible further work"
+msgstr ""
+
+#: src/0529-conversion-traits.md:524
+msgid "We could add a `To` trait."
+msgstr ""
+
+#: src/0529-conversion-traits.md:532
+msgid "As far as blanket `impl`s are concerned, there are a few simple ones:"
+msgstr ""
+
+#: src/0529-conversion-traits.md:535
+msgid "// AsRef implies To\n"
+msgstr ""
+
+#: src/0529-conversion-traits.md:541
+msgid "// To implies Into\n"
+msgstr ""

@@ -1,0 +1,1359 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3498-lifetime-capture-rules-2024.md:1
+msgid "Feature Name: `lifetime_capture_rules_2024`"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:2
+msgid "Start Date: 2023-07-26"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3498](https://github.com/rust-lang/rfcs/pull/3498)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#117587](https://github.com/rust-lang/rust/"
+"issues/117587)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:5
+msgid ""
+"Initiative: [`impl Trait` Initiative](https://github.com/rust-lang/impl-"
+"trait-initiative)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:9
+#: src/3498-lifetime-capture-rules-2024.md:234
+msgid ""
+"In Rust 2024 and later editions, return position `impl Trait` (RPIT) opaque "
+"types will automatically capture all in-scope type _and_ lifetime "
+"parameters.  In preparation for this, new RPIT-like `impl Trait` features "
+"introduced into earlier editions will also automatically capture all in-"
+"scope type and lifetime parameters."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:11
+msgid "Background"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:13
+msgid ""
+"Rust's rules in the 2021 and earlier editions around capturing lifetimes in "
+"return position `impl Trait` (RPIT) opaque types are inconsistent, "
+"unergonomic, and not helpful to users.  In common scenarios, doing the "
+"correct thing requires a _trick_ that is not well known and whose purpose is "
+"commonly not well understood."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:15
+msgid ""
+"As we look forward to the 2024 edition and move toward stabilizing features "
+"such as type alias `impl Trait` (TAIT), associated type position `impl "
+"Trait` (ATPIT), return position `impl Trait` in trait (RPITIT), and `async "
+"fn` in trait (AFIT), we must decide on a clear vision of how lifetimes "
+"should be captured in Rust."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:17
+msgid ""
+"We want the upcoming features in the stabilization pipeline to capture "
+"lifetimes in a way that's consistent with each other and with the way we "
+"want Rust to work and develop going forward."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:19
+msgid ""
+"This RFC specifies a [solution](#solution) that achieves this.  But first, "
+"we'll describe the problem in further detail.  The descriptions and examples "
+"in this section use the semantics of Rust 2021."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:21
+msgid "Capturing lifetimes"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:23
+msgid ""
+"In return position `impl Trait` (RPIT) and `async fn`, an **opaque type** is "
+"a type that can only be used for its specified trait bounds (and for the "
+"\"leaked\" auto trait bounds of its hidden type).  A **hidden type** is the "
+"actual concrete type of the values hidden behind the opaque type."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:25
+msgid ""
+"A hidden type is only allowed to name lifetime parameters when those "
+"lifetime parameters have been _\"captured\"_ by the corresponding opaque "
+"type. For example:[^ref-captures-trait-ltps]"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:28
+msgid "// Returns: `impl Future<Output = ()> + Captures<&'a ()>`\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:32
+msgid ""
+"In the above, we would say that the lifetime parameter `'a` has been "
+"captured in the returned opaque type."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:34
+msgid ""
+"For an opaque type that _does not_ specify an outlives bound (e.g. `+ "
+"'other`), when a caller receives a value of that opaque type and wants to "
+"prove that it outlives some lifetime, the caller must prove that all of the "
+"captured lifetime components of the opaque type outlive that lifetime.  The "
+"captured lifetime components are the set of lifetimes contained within "
+"captured type parameters and the lifetimes represented by captured lifetime "
+"parameters."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:36
+msgid ""
+"For an opaque type that _does_ specify an outlives bound (e.g. `+ 'other`), "
+"when a caller receives a value of that opaque type and wants to prove that "
+"it outlives some lifetime, it's enough to prove that the lifetime "
+"substituted for the specified lifetime parameter in the bounds of the opaque "
+"outlives that other lifetime after transitively taking into account all "
+"known lifetime bounds.  For such an opaque type, the _callee_ must prove "
+"that all lifetime and type parameters that are used in the hidden type "
+"outlive the specified bound."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:38
+msgid ""
+"See [Appendix H](#appendix-h-examples-of-outlives-rules-on-opaque-types) for "
+"examples and further exposition of these rules."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:40
+msgid ""
+"See [\"The `Captures` trick\"](#the-captures-trick) for the definition of "
+"`Captures`."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:42
+msgid "Capturing lifetimes in type parameters"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:44
+msgid ""
+"In return position `impl Trait` (RPIT) and `async fn`, lifetimes contained "
+"within all in-scope type parameters are captured in the opaque type.  For "
+"example:[^ref-captures-trait-tps]"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:47
+msgid "// Returns: `impl Future<Output = ()> + Captures<T>`\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:52
+msgid ""
+"//  ^^^^^^^^^^^\n"
+"    //  ^ Captures 'a.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:57
+msgid ""
+"In the above, we would say that `foo` captures the type parameter `T` or "
+"that it \"captures all lifetime components contained in the type parameter "
+"`T`\".  Consequently, the call to `foo` captures the lifetime `'a` in its "
+"returned opaque type."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:59
+msgid ""
+"See [\"The `Captures` trick\"](#the-captures-trick) for the definition of "
+"`Captures`.  Note that in this example, the `Captures` trick would not be "
+"needed, but it is notated explicitly for exposition."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:61
+msgid "Behavior of `async fn`"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:63
+msgid ""
+"As we saw in the examples above, `async` functions automatically capture in "
+"their returned opaque types all type and lifetime parameters in scope."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:65
+msgid ""
+"This is different than the rule for return position `impl Trait` (RPIT) in "
+"Rust 2021 and earlier editions which requires that lifetime parameters (but "
+"not type parameters) be captured by writing them in the bound.  As we'll see "
+"below, RPIT requires users to use the `Captures` trick to get the correct "
+"behavior."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:67
+msgid ""
+"The inconsistency is visible to users when desugaring from `async fn` to "
+"RPIT.  As that's something users commonly do, users have to be aware of this "
+"complexity in Rust 2021."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:69
+msgid "For example, given this `async fn`:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:77
+msgid "To correctly desugar this to RPIT, we must write:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:86
+msgid ""
+"//                            ^^^^^^^^^^^^^^^^\n"
+"//                            ^ Capture of lifetime.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:93
+msgid ""
+"(As we'll discuss below, other seemingly simpler desugarings are incorrect.)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:95
+msgid ""
+"Given how `async fn` captures all type and lifetime parameters in scope in "
+"its returned opaque type, we could imagine that if it had happened first, "
+"the original lifetime capture rules for RPIT might have done that as well."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:97
+msgid "Behavior of `async fn` with lifetimes in outer impl"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:99
+msgid ""
+"Lifetimes in scope from an outer impl are also captured automatically by an "
+"`async fn`.  For example:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:105
+msgid ""
+"//       ^^^^^^^^^^^^^^\n"
+"    //       ^ The lifetime `'a` is automatically\n"
+"    //       captured in the opaque return type.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:111
+msgid ""
+"Note that the lifetime is captured in the returned opaque type whether or "
+"not the lifetime appears in the `async fn` return type and whether or not "
+"the lifetime is actually used in the hidden type at all."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:113
+msgid "Working with the lifetime capture rules in RPIT"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:115
+msgid ""
+"For the borrow checker to function with an opaque type it must know what "
+"lifetimes it captures (and consequently what lifetimes may be used by the "
+"hidden type), so it's important that this information can be deduced from "
+"the signature, either by writing it out or by an automatic rule."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:117
+msgid ""
+"As we saw in the previous examples, for RPIT (but not for `async fn`), the "
+"rule in Rust 2021 is that opaque types automatically capture lifetimes "
+"within the type parameters but only capture lifetime parameters when those "
+"lifetime parameters are mentioned in their bounds."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:119
+msgid ""
+"When someone wants to capture a lifetime parameter not already in the "
+"bounds, that person must use one of the tricks we'll describe next."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:121
+msgid "The outlives trick"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:123
+msgid "Consider this example:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:126
+#: src/3498-lifetime-capture-rules-2024.md:152
+msgid ""
+"// error[E0700]: hidden type captures lifetime\n"
+"//               that does not appear in bounds\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:131
+msgid ""
+"This does not compile in Rust 2021 because the `'a` lifetime is not "
+"mentioned in the bounds of the opaque type.  We can make this work by "
+"writing:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:137
+msgid ""
+"This is called the \"outlives trick\".  But this is actually a non-solution "
+"in the general case.  Consider what `impl Sized + 'a` means.  We're "
+"returning an opaque type and promising that it outlives any lifetime `'a`."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:139
+msgid ""
+"This isn't actually what we want to promise.  We want to promise that the "
+"opaque type _captures_ some lifetime `'a`, and consequently, that for the "
+"opaque type to outlive some other lifetime, `'a` must outlive that other "
+"lifetime.  If we could say in Rust that a lifetime must outlive a type, we "
+"would say that the `'a` lifetime must outlive the returned opaque type."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:141
+msgid "That is, the promise we're making is the wrong way around."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:143
+msgid ""
+"It works anyway in this specific case only because the lifetime of the "
+"returned opaque type is _exactly_ equal to the lifetime `'a`.  Because "
+"equality is symmetric, the fact that our promise is the wrong way around "
+"doesn't matter."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:145
+msgid ""
+"This trick fails when there are multiple independent lifetimes that are "
+"captured, including lifetimes contained within type parameters (see "
+"[Appendix D](#appendix-d-the-outlives-trick-fails-with-only-one-lifetime-"
+"parameter) for an example of this).  Further, it confuses users and makes it "
+"more difficult for those users to build a consistent mental model of Rust "
+"lifetime bounds."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:147
+msgid "The `Captures` trick"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:149
+msgid ""
+"The correct way to express the capture of lifetime parameters in Rust 2021 "
+"is with the `Captures` trick.  It's the only option when multiple "
+"independent lifetimes must be captured (including lifetimes from captured "
+"type parameters).  Consider again our example:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:157
+msgid ""
+"We could solve the problem in this way using the `Captures` trick:[^captures-"
+"trait]"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:166
+msgid ""
+"Because the `'a` lifetime parameter appears in the bounds of the opaque "
+"type, Rust 2021 captures that lifetime parameter in the opaque type and "
+"accepts this code."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:168
+msgid "We can extend this trick to multiple lifetimes.  For example:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:176
+msgid ""
+"While this does work, the `Captures` trick is ungainly, it's not widely "
+"known, and its purpose is not commonly well understood."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:178
+msgid ""
+"Note that there are various ways to define the `Captures` trait.  In most "
+"discussions about this trick, it has been defined as above.  However, "
+"internally in the Rust compiler it is currently defined instead as `trait "
+"Captures<'a> {}`.  These notational differences do not affect the semantics "
+"described in this RFC.  Note, however, that `Captures<'a> + Captures<'b>` is "
+"not equivalent to `Captures<(&'a (), &'b ())>` because lifetimes do not "
+"participate in trait selection in Rust.  To get equivalent semantics, one "
+"would have to define `trait Captures2<'a, 'b> {}`, `trait Captures3<'a, 'b, "
+"'c> {}`, etc."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:180
+msgid "Behavior of RPIT in Rust 2021 with type parameters"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:182
+msgid ""
+"The Rust 2021 rules for capturing lifetime parameters in opaque types are "
+"also inconsistent with the rules for capturing lifetime components within "
+"type parameters.  Consider:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:185
+msgid ""
+"//                 ^^^^^^^^^^\n"
+"//                 ^ Captures any lifetimes within `T`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:190
+msgid "// Captures `'a`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:194
+msgid ""
+"Rust captures all type parameters automatically in the opaque type.  This "
+"results in all lifetime components within those type parameters being "
+"captured automatically.  It can be surprising for lifetime parameters to not "
+"work in the same way as lifetime components contained within captured type "
+"parameters."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:196
+#: src/3498-lifetime-capture-rules-2024.md:316
+msgid "Overcapturing"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:198
+msgid ""
+"The rules that cause us to capture all generic parameters in the opaque type "
+"might cause us to capture too much.  This is already a problem in Rust "
+"2021.  E.g.:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:201
+msgid ""
+"//                 ^^^^^^^^^^\n"
+"//                 The returned opaque type captures `T`\n"
+"//                 but the hidden type does not.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:205
+msgid ""
+"// error[E0515]: cannot return value referencing function parameter `x`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:208
+msgid "// Captures local lifetime.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:212
+msgid ""
+"In Rust 2021, lifetimes within type parameters are automatically captured in "
+"RPIT opaque types, and both lifetime parameters and lifetimes within type "
+"parameters are automatically captured in `async fn` opaque types.  "
+"Additionally capturing lifetime parameters in RPIT opaque types may make "
+"this problem somewhat worse."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:214
+msgid ""
+"There are a number of possible solutions to this problem.  One appealing "
+"partial solution is to more fully implement the rules specified in [RFC 1214]"
+"(https://github.com/rust-lang/rfcs/blob/master/text/1214-projections-"
+"lifetimes-and-wf.md).  This would allow type and lifetime parameters that do "
+"not outlive a specified bound to mostly act as if they were not captured.  "
+"See [Appendix G](#appendix-g-future-possibility-inferred-precise-capturing) "
+"for a full discussion of this."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:216
+msgid ""
+"Another solution would be to add syntax for precisely specifying which type "
+"and lifetime parameters to capture.  One proposal for this syntax is "
+"described in [Appendix F](#appendix-f-future-possibility-precise-capturing-"
+"syntax)."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:218
+msgid ""
+"Type alias `impl Trait` (TAIT) is another solution.  It has accepted RFCs "
+"(see [RFC 2515](https://github.com/rust-lang/rfcs/blob/master/text/2515-"
+"type_alias_impl_trait.md), [RFC 2071](https://github.com/rust-lang/rfcs/blob/"
+"master/text/2071-impl-trait-existential-types.md)), it's implemented and "
+"actively maintained in nightly Rust, and there is a consensus to stabilize "
+"it in some form.  The stabilization of TAIT would allow all currently "
+"accepted code to continue to be expressed with precisely the same "
+"semantics.  See [Appendix I](#appendix-i-precise-capturing-with-tait) for "
+"further details on how TAIT can be used to precisely control the capturing "
+"of type and lifetime parameters."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:220
+#: src/3498-lifetime-capture-rules-2024.md:320
+#: src/3498-lifetime-capture-rules-2024.md:820
+msgid ""
+"The stabilization of the 2024 lifetime capture rules in this RFC is "
+"contingent on the stabilization of some solution for precise capturing that "
+"will allow all code that is allowed under Rust 2021 to be expressed, in some "
+"cases with syntactic changes, in Rust 2024."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:224
+msgid "Summary of problems"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:226
+msgid ""
+"In summary, in Rust 2021, the lifetime capture rules for RPIT opaque types "
+"are unergonomic and require unobvious tricks.  The rules for capturing "
+"lifetime parameters are inconsistent with the rules for capturing lifetimes "
+"within type parameters.  The rules for RPIT are inconsistent with the rules "
+"for `async fn`, and this is exposed to users because of the common need to "
+"switch between these two equivalent forms."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:228
+msgid "Solution"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:232
+msgid "This section is normative."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:236
+msgid "Apply `async fn` rule to RPIT in 2024 edition"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:238
+msgid ""
+"Under this RFC, in the Rust 2024 edition, RPIT opaque types will "
+"automatically capture all lifetime parameters in scope, just as `async fn` "
+"does in Rust 2021, and just as RPIT does in Rust 2021 when capturing type "
+"parameters."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:240
+msgid ""
+"This updates and supersedes the behavior specified in [RFC 1522](https://"
+"github.com/rust-lang/rfcs/blob/master/text/1522-conservative-impl-trait.md) "
+"and [RFC 1951](https://github.com/rust-lang/rfcs/blob/master/text/1951-"
+"expand-impl-trait.md)."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:246
+msgid "Consequently, the following examples will become legal in Rust 2024:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:248
+msgid "Capturing lifetimes from a free function signature"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:251
+msgid ""
+"//                         ^^^^^^^^^^\n"
+"//                         ^ Captures `'a` and `T`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:256
+msgid "Capturing lifetimes from outer inherent impl"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:262
+msgid ""
+"//              ^^^^^^^^^^\n"
+"    //              ^ Captures `'a` and `T`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:267
+msgid "Capturing lifetimes from an inherent associated function signature"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:273
+msgid ""
+"//                      ^^^^^^^^^^\n"
+"    //                      ^ Captures `'a` and `T`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:278
+msgid "Capturing lifetimes from an inherent method signature"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:284
+msgid ""
+"//                              ^^^^^^^^^^\n"
+"    // Captures `'_`, `'a`, and `T`.^\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:289
+msgid "Capturing lifetimes from `for<..>` binders"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:291
+msgid ""
+"Once higher ranked lifetime bounds on nested opaque types are supported in "
+"Rust (see [\\#104288](https://github.com/rust-lang/rust/issues/104288)), the "
+"following code will become legal:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:303
+msgid ""
+"//                                     ^^^^^^^^^^\n"
+"    //                      Captures `'a`. ^\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:310
+msgid ""
+"That is, the `'a` lifetime parameter from the higher ranked trait bounds "
+"(HRTBs) `for<..>` binder is in scope for the `impl Sized` opaque type, so it "
+"is captured under the rules of this RFC."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:312
+msgid ""
+"Note that support for higher ranked lifetime bounds is not required by this "
+"RFC and is not a blocker to stabilizing the rules specified in this RFC."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:318
+#: src/3498-lifetime-capture-rules-2024.md:784
+msgid ""
+"Sometimes the capture rules result in unwanted type and lifetime parameters "
+"being captured.  This happens in Rust 2021 due to the RPIT rules for "
+"capturing lifetimes from all in-scope type parameters and the `async fn` "
+"rules for capturing all in-scope type and lifetime parameters.  Under this "
+"RFC, in Rust 2024, lifetime parameters could also be overcaptured by RPIT."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:322
+msgid "Type alias `impl Trait` (TAIT)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:324
+msgid ""
+"Under this RFC, the opaque type in type alias `impl Trait` (TAIT) in all "
+"editions will automatically capture all type and lifetime parameters present "
+"in the type alias.  For example:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:329
+msgid ""
+"//                ^^^^^^^^^^\n"
+"//                ^ Captures `'a` and `T`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:336
+#: src/3498-lifetime-capture-rules-2024.md:370
+msgid ""
+"This updates and supersedes the behavior specified in [RFC 2071](https://"
+"github.com/rust-lang/rfcs/blob/master/text/2071-impl-trait-existential-types."
+"md) and [RFC 2515](https://github.com/rust-lang/rfcs/blob/master/text/2515-"
+"type_alias_impl_trait.md)."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:342
+msgid "Associated type position `impl Trait` (ATPIT)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:344
+msgid ""
+"Under this RFC, the opaque type in associated type position `impl Trait` "
+"(ATPIT) in all editions will automatically capture all type and lifetime "
+"parameters present in the GAT and in the outer impl.  For example:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:350
+msgid "// Bound required by existing GAT rules.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:357
+msgid ""
+"//             ^^^^^^^^^^\n"
+"    //             ^ Captures:\n"
+"    //\n"
+"    //                 - `'g` from the GAT.\n"
+"    //                 - `'f` from the method signature (via the GAT).\n"
+"    //                 - `'t` from the outer impl and a trait input.\n"
+"    //                 - `'s` from the outer impl and Self type.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:372
+msgid "Return position `impl Trait` in Trait (RPITIT)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:374
+msgid ""
+"Under this RFC, when an associated function or method in a trait definition "
+"contains in its return type a return position `impl Trait` in trait "
+"(RPITIT), the impl of that item may capture in the returned opaque type, in "
+"all editions, all trait input type and lifetime parameters, all type and "
+"lifetime parameters present in the `Self` type, and all type and lifetime "
+"parameters in the associated function or method signature."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:376
+#: src/3498-lifetime-capture-rules-2024.md:415
+msgid ""
+"When such an associated function or method in a trait definition provides a "
+"default implementation, the opaque return type will automatically capture "
+"all trait input type and lifetime parameters, all type and lifetime "
+"parameters present in the `Self` type, and all type and lifetime parameters "
+"in the associated function or method signature."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:378
+msgid ""
+"In trait impls, return position `impl Trait` (RPIT), in all editions, will "
+"automatically capture all type and lifetime parameters from the outer impl "
+"and from the associated function or method signature.  This ensures that "
+"signatures are copyable from trait definitions to impls."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:380
+#: src/3498-lifetime-capture-rules-2024.md:421
+msgid "For example:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:387
+msgid ""
+"//                                        ^^^^^^^^^^\n"
+"    // Method signature lifetimes, trait input lifetimes, and\n"
+"    // lifetimes in the Self type may all be captured in this opaque\n"
+"    // type in the impl.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:396
+msgid ""
+"//                                    ^^^^^^^^^^\n"
+"        // The opaque type captures:\n"
+"        //\n"
+"        //   - `'f` from the method signature.\n"
+"        //   - `'t` from the outer impl and a trait input lifetime.\n"
+"        //   - `'s` from the outer impl and the Self type.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:407
+#: src/3498-lifetime-capture-rules-2024.md:448
+msgid ""
+"This updates and supersedes the behavior specified in [RFC 3425](https://"
+"github.com/rust-lang/rfcs/blob/master/text/3425-return-position-impl-trait-"
+"in-traits.md)."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:411
+msgid "`async fn` in trait (AFIT)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:413
+msgid ""
+"Under this RFC, when an associated function or method in a trait definition "
+"is an `async fn` in trait (AFIT), the impl of that item may capture in the "
+"returned opaque type, in all editions, all trait input type and lifetime "
+"parameters, all type and lifetime parameters present in the `Self` type, and "
+"all type and lifetime parameters in the associated function or method "
+"signature."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:417
+msgid ""
+"In the trait impls, AFIT will automatically capture all type and lifetime "
+"parameters from the outer impl and from the associated function or method "
+"signature.  This ensures that signatures are copyable from trait definitions "
+"to impls."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:419
+msgid ""
+"This behavior of AFIT will be parsimonious with the current stable capture "
+"behavior of `async fn` in inherent impls."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:428
+msgid ""
+"//                                              ^^^^^^^^^^^^^^^^^^^^^^\n"
+"    // Method signature lifetimes, trait input lifetimes, and\n"
+"    // lifetimes in the Self type may all be captured in this opaque\n"
+"    // type in the impl.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:437
+msgid ""
+"//                                          ^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+"        // The opaque type captures:\n"
+"        //\n"
+"        //   - `'f` from the method signature.\n"
+"        //   - `'t` from the outer impl and a trait input lifetime.\n"
+"        //   - `'s` from the outer impl and the Self type.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:450
+msgid "Acknowledgments"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:452
+msgid ""
+"Thanks to Tyler Mandry (@tmandry) for his collaboration on the earlier "
+"design document for the 2024 lifetime capture rules, and thanks to Michael "
+"Goulet (@compiler-errors) for helpful discussions and insights on this topic."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:454
+msgid "All errors and omissions remain those of the author alone."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:456
+msgid "Appendix A: Other resources"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:458
+msgid "Other resources:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:460
+msgid ""
+"[Lifetime capture rules 2024 T-lang design meeting](https://hackmd.io/"
+"sFaSIMJOQcuwCdnUvCxtuQ)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:461
+msgid ""
+"[Capturing lifetimes in RPITIT](https://hackmd.io/zgairrYRSACgTeZHP1x0Zg)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:463
+msgid "Appendix B: Matrix of capturing effects"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:465
+msgid "2021: _Outer LP_"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:465
+msgid "2021: _Item LP_"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:465
+msgid "2024: _Outer LP_"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:465
+msgid "2024: _Item LP_"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:467
+msgid "RPIT"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:467
+msgid "N"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:467
+#: src/3498-lifetime-capture-rules-2024.md:468
+#: src/3498-lifetime-capture-rules-2024.md:469
+#: src/3498-lifetime-capture-rules-2024.md:470
+#: src/3498-lifetime-capture-rules-2024.md:471
+#: src/3498-lifetime-capture-rules-2024.md:472
+#: src/3498-lifetime-capture-rules-2024.md:473
+msgid "Y"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:468
+msgid "`async fn`"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:469
+msgid "GATs"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:470
+msgid "TAIT"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:470
+msgid "N/A"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:471
+msgid "ATPIT"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:472
+msgid "RPITIT: trait"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:473
+msgid "RPITIT: impl"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:475
+msgid "In the table above, \"LP\" refers to \"lifetime parameters\"."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:477
+msgid ""
+"The 2024 behavior described for all items is the behavior under this RFC."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:479
+msgid ""
+"The 2021 behavior described for RPIT and `async fn` is the stable behavior "
+"in Rust 2021.  The other 2021 behaviors described are the behaviors that "
+"will be implemented for the features ahead of stabilization."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:481
+msgid ""
+"_All_ of the features above automatically capture all lifetimes from all "
+"type parameters in scope in both the 2021 and the 2024 editions."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:483
+msgid "Appendix C: The 2021 edition rules fail for RPITIT"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:485
+msgid ""
+"Under the 2021 edition RPIT semantics, RPITs on inherent associated "
+"functions and methods do not capture any lifetime parameters automatically.  "
+"E.g.:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:491
+#: src/3498-lifetime-capture-rules-2024.md:508
+msgid ""
+"//^ Error: hidden type captures lifetime\n"
+"    //         that does not appear in bounds.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:496
+msgid ""
+"If we were to apply this rule directly to RPITIT, we'd have an unworkable "
+"situation.  E.g.:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:513
+msgid ""
+"There's nowhere that we could put `+ 'a` (or `+ Captures<&'a ()>`) in the "
+"above code to make it compile.  The trait has no way of naming `'a` at all.  "
+"It's part of the `Self` type.  The trait itself knows nothing about that."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:515
+msgid "Under the 2021 edition capture rules, our options would be to:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:517
+msgid ""
+"Allow implicit captures of outer lifetime parameters for all RPITITs.  That "
+"would create an inconsistency between RPITIT and Rust 2021 RPIT for inherent "
+"associated functions and methods."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:519
+msgid ""
+"Require that only the impl list the outer lifetime parameters it captures.  "
+"This would create an inconsistency between signatures in the trait "
+"definition and in the trait impl.  Even more strangely, copying the "
+"signature from a trait definition to a trait impl would result in "
+"_refinement_ of the signature because the impl would be saying it does not "
+"capture the outer lifetime parameters."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:521
+msgid ""
+"Don't allow useful impls of RPITITs on types with lifetime parameters.  This "
+"would limit the expressiveness of the language."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:523
+msgid ""
+"For RPITIT, the Rust 2021 lifetime capture rules would necessarily lead to "
+"some kind of inconsistency or loss of expressiveness.  Conversely, the rules "
+"in this RFC obviate the problem and allow RPIT to be fully consistent, "
+"whether it is used in an inherent impl, in a trait impl, or in a trait "
+"definition."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:525
+msgid "Appendix D: The outlives trick fails with only one lifetime parameter"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:529
+msgid ""
+"In the past, people often thought that the outlives trick was OK as long as "
+"there was only one lifetime parameter.  This is not in fact true.  Consider:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:532
+msgid ""
+"// This is a demonstration of why the Captures trick is needed even\n"
+"// when there is only one lifetime parameter.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:534
+msgid "// ERROR: the parameter type `T` may not live long enough.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:537
+msgid ""
+"//                                         ^^\n"
+"    // We don't need for `T` to outlived `'x`, |\n"
+"    // and we don't want to require that, so   |\n"
+"    // the Captures trick must be used here. --+\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:549
+msgid "Appendix E: Adding a `'static` bound"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:551
+msgid ""
+"Adding a `+ 'static` bound will work in Rust 2024 in exactly the same way "
+"that it works in Rust 2021.  E.g.:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:558
+msgid ""
+"// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+"    // In Rust 2021, this opaque type automatically captures the type\n"
+"    // `T`.  Additionally, we have captured the lifetime `'x` using\n"
+"    // the `Captures` trick.\n"
+"    //\n"
+"    // Since there is no `T: 'static` bound and no `'x: 'static`\n"
+"    // bound, this opaque type would not be `'static` without the\n"
+"    // specified bound on the opaque type above.  *With* that\n"
+"    // specified bound, the opaque type is `'static`, and this code\n"
+"    // compiles in Rust 2021.\n"
+"    //\n"
+"    // In Rust 2024, this opaque type will automatically capture the\n"
+"    // lifetime parameter in addition to the type parameter.  The\n"
+"    // `Captures` trick will not be needed in the signature.  However,\n"
+"    // specifically bounding the opaque type by `'static` will still\n"
+"    // work, exactly as it does in Rust 2021.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:584
+msgid "Appendix F: Future possibility: Precise capturing syntax"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:588
+msgid ""
+"If other solutions for precise capturing of type and lifetime parameters "
+"turn out to be unergonomic or needed too often, we may want to consider "
+"adding new syntax to `impl Trait` to allow for precise capturing.  One "
+"proposal for that would look like this:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:591
+msgid ""
+"//                        ^^^^^^^^^^^\n"
+"//                        ^ Captures `'x` and `T` in the opaque type\n"
+"//                        but not `'y` or `U`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:597
+msgid "Appendix G: Future possibility: Inferred precise capturing"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:601
+msgid ""
+"When an outlives bound is stated for the opaque type, we can use that bound "
+"to allow code to compile that does not currently.  Consider:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:605
+msgid "// error[E0597]: `x` does not live long enough.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:610
+msgid "// error[E0503]: cannot use `x` because it was mutably borrowed.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:616
+#: src/3498-lifetime-capture-rules-2024.md:644
+#: src/3498-lifetime-capture-rules-2024.md:814
+msgid "// OK.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:624
+msgid ""
+"In these examples, we're capturing a lifetime that's local to the function.  "
+"Even though Rust recognizes that the returned opaque type from `capture` "
+"outlives any other lifetime (due to the `+ 'o` bound on the opaque), the "
+"fact that the opaque type _captures_ the lifetime components within `T` "
+"results in the compilation errors above."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:626
+msgid ""
+"Notably, this behavior is not specific to RPIT-like opaque types.  It can "
+"also be demonstrated using GATs:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:633
+msgid "// error[E0597]: `x` does not live long enough\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:638
+msgid "// error[E0505]: cannot move out of `x` because it is borrowed\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:652
+msgid ""
+"Future work may relax this current limitation of the compiler by more fully "
+"implementing the rules of [RFC 1214](https://github.com/rust-lang/rfcs/blob/"
+"master/text/1214-projections-lifetimes-and-wf.md) (see, e.g., [\\#116733]"
+"(https://github.com/rust-lang/rust/pull/116733)).  Fixing this completely is "
+"believed to require support in the compiler for existential lifetimes (see "
+"[\\#60670](https://github.com/rust-lang/rust/issues/60670))."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:654
+msgid ""
+"The end result of these improvements would be that, when an outlives bound "
+"is specified for the opaque type, any type or lifetime parameters that the "
+"compiler could prove to not outlive that bound would mostly act as if it "
+"were not captured by the opaque type."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:656
+msgid ""
+"This would not be quite the same as those type and lifetime parameters not "
+"actually being captured.  By checking type equality between opaque types "
+"where different captured type or lifetime parameters have been substituted, "
+"one could tell the difference."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:658
+msgid ""
+"Still, this improvement would allow for solving many cases of overcapturing "
+"elegantly.  Consider this transformation:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:661
+#: src/3498-lifetime-capture-rules-2024.md:773
+msgid "//-------------------------------------------------------------\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:666
+msgid ""
+"Using this transformation (which is described more fully in [Appendix H]"
+"(#appendix-h-examples-of-outlives-rules-on-opaque-types)), we can add a "
+"specified outlives bound to an RPIT opaque type without changing the "
+"effective proof requirements on either the caller or the callee.  We can "
+"then drop the `Pi: 'o` outlives bound from any type or lifetime parameter "
+"that we would like to act as if it were not captured."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:668
+msgid ""
+"This comes at the cost of adding an extra early-bound lifetime parameter in "
+"the general case.  Adding that lifetime parameter may require changing the "
+"externally visible API of the function.  However, for the common case of "
+"adding a `+ 'static` bound, or for any other case where an existing lifetime "
+"parameter suffices to specify the needed bounds, this is not a problem."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:673
+msgid "Appendix H: Examples of outlives rules on opaque types"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:677
+msgid ""
+"There is some subtlety in understanding the rules for outlives relationships "
+"on RPIT-like `impl Trait` opaque types as [described above](#capturing-"
+"lifetimes).  In this appendix, we provide annotated examples to make these "
+"rules more clear."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:679
+msgid "Caller proof for opaque without a specified bound"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:681
+#: src/3498-lifetime-capture-rules-2024.md:705
+#: src/3498-lifetime-capture-rules-2024.md:730
+msgid "Consider:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:684
+msgid "// For an opaque type that *does not* specify an outlives bound...\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:689
+#: src/3498-lifetime-capture-rules-2024.md:713
+msgid "// ...when a caller receives a value of that opaque type...\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:691
+msgid ""
+"// ...and wants to prove that it outlives some lifetime\n"
+"    // (`'short`), the caller must prove that all of the captured\n"
+"    // lifetime components of the opaque type (the lifetimes within\n"
+"    // `T` and `U`) outlive that lifetime (`'short`).\n"
+"    //\n"
+"    // The caller proves this because `T: 'short, U: 'short`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:701
+msgid ""
+"In this example, the caller wants to prove that the returned opaque type "
+"outlives the lifetime `'short`.  To prove this, since there is no specified "
+"outlives bound on the opaque type, it must prove that all lifetimes captured "
+"by the opaque type outlive `'short`.  To do that, it must prove that `T` and "
+"`U` outlive `'short`, since those type parameters are captured by the opaque "
+"type and may contain lifetimes.  The caller is able to prove this since `T: "
+"'short, U: 'short`."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:703
+msgid "Caller proof for opaque with a specified bound"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:708
+msgid "// For an opaque type that *does* specify an outlives bound...\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:715
+msgid ""
+"// ...and wants to prove that it outlives some lifetime\n"
+"    // (`'short`), it's enough to prove that the lifetime substituted\n"
+"    // (`'long`) for the specified lifetime parameter (`'o` in\n"
+"    // `callee`) in the bounds of the opaque type outlives that other\n"
+"    // lifetime (`'short`).\n"
+"    //\n"
+"    // The caller proves this because `'long: 'short`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:726
+msgid ""
+"In this example, the caller wants to prove that the returned opaque type "
+"outlives the lifetime `'short`.  To prove this, since there is a specified "
+"outlives bound on the opaque type (`+ 'o` in `callee`), it must prove only "
+"that the lifetime substituted for that lifetime parameter outlives "
+"`'short`.  Since `'long` is substituted for `'o`, and since `'long: 'short`, "
+"the caller is able to prove this.  Note that the caller does _not_ need to "
+"prove that `T: 'short` or that `U: 'short`."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:728
+msgid "Callee proof for opaque with a specified bound"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:733
+msgid ""
+"// For an opaque type that *does* specify an outlives bound, the\n"
+"// callee must prove that all lifetime and type parameters that are\n"
+"// used in the hidden type (`T` in this example) outlive the specified\n"
+"// bound (`'o`).\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:740
+msgid ""
+"In this example, the callee has specified an outlives bound on the opaque "
+"type (`+ 'o`).  For this code to be valid, the callee must prove that all "
+"lifetime and type parameters used in the returned _hidden_ type (`T` in this "
+"example) outlive `'o`.  Since `T: 'o`, the callee is able to prove this.  "
+"Note that even though `U` is also captured in the opaque type, the callee "
+"does _not_ need to prove `U: 'o` since it is not used in the hidden type."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:742
+msgid "Rough equivalence between opaques with and without a specified bound"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:744
+msgid "Consider these two roughly equivalent examples."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:746
+msgid "Example H.1:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:756
+msgid "Example H.2:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:766
+msgid ""
+"In the first example, to prove that the opaque type outlives `'short`, the "
+"_caller_ has to prove that each of the captured lifetime components outlives "
+"`'short`.  In the second example, to prove that same thing, it only needs to "
+"prove that `'long: 'short`."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:768
+msgid ""
+"(Obviously, the caller then still needs to prove the outlives relationships "
+"necessary to satisfy the other specified bounds in the signature of "
+"`callee`.)"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:770
+msgid ""
+"That is, at the cost of an extra early-bound lifetime parameter in the "
+"signature of the callee, we can always express an RPIT without a specified "
+"outlives bound as an RPIT with a specified outlives bound in a way that does "
+"not change the requirements on the caller or the callee.  We do this by "
+"applying the following transformation:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:778
+msgid ""
+"One application of this transformation to solve problems created by "
+"overcapturing is described in [Appendix G](#appendix-g-future-possibility-"
+"inferred-precise-capturing)."
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:780
+msgid "Appendix I: Precise capturing with TAIT"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:786
+msgid ""
+"Type alias `impl Trait` (TAIT) provides a precise solution.  It works as "
+"follows.  Consider this overcaptures scenario in Rust 2024:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:789
+msgid ""
+"//                                ^^^^^^^^^^\n"
+"// The returned opaque type captures `'a` and `T`\n"
+"// but the hidden type does not use either.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:797
+msgid ""
+"//        ^^^^^^^^^\n"
+"    // Error: `foo` captures `'a` and `'b`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:802
+msgid ""
+"In the above code, we want to rely on the fact that `foo` does not actually "
+"use any lifetimes in the returned hidden type.  We can't do that using RPIT "
+"because there's no way to prevent the opaque type from capturing too much.  "
+"However, we can use TAIT to solve this problem elegantly as follows:"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:808
+msgid ""
+"//                                ^^^^^^\n"
+"// The returned opaque type does NOT capture `'a` or `T`.\n"
+msgstr ""
+
+#: src/3498-lifetime-capture-rules-2024.md:818
+msgid ""
+"The type alias `FooRet` has no generic parameters, so none are captured in "
+"the opaque type.  It's always possible to desugar an RPIT opaque type into a "
+"TAIT opaque type that expresses precisely which generic parameters to "
+"capture."
+msgstr ""

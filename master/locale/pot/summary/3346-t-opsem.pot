@@ -1,0 +1,433 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3346-t-opsem.md:1
+msgid "Feature Name: n/a"
+msgstr ""
+
+#: src/3346-t-opsem.md:2
+msgid "Start Date: 2022-11-07"
+msgstr ""
+
+#: src/3346-t-opsem.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3346](https://github.com/rust-lang/rfcs/pull/3346)"
+msgstr ""
+
+#: src/3346-t-opsem.md:4
+msgid "Rust Issue: n/a"
+msgstr ""
+
+#: src/3346-t-opsem.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3346-t-opsem.md:8
+msgid ""
+"Create an operational semantics team that is tasked with owning the "
+"semantics of unsafe code. This responsibility would be transferred from [T-"
+"types](3254-types-team.md), which had previously been given ownership of "
+"this domain. Additionally, this team replaces the Unsafe Code Guidelines "
+"working group, which has been doing much of the work in this space."
+msgstr ""
+
+#: src/3346-t-opsem.md:10
+msgid "Mission and responsibilities"
+msgstr ""
+
+#: src/3346-t-opsem.md:12
+msgid ""
+"As of this RFC, many of the questions around the rules governing unsafe code "
+"in Rust are unanswered. The team is responsible for answering these question "
+"by producing an operational semantics that specifies those rules. As a part "
+"of this semantics, questions around memory and aliasing models, multi-"
+"threading and atomics, and generally \"what constitutes undefined behavior\" "
+"will be answered. This is expected to be a massive undertaking requiring "
+"lots of work and collaboration. As such, it is worth calling out that a very "
+"important part of T-opsem's responsibility is in the organizational role it "
+"plays. The team is responsible for creating a plan, ensuring that all "
+"interested parties have a chance to provide input, and ensuring that the end "
+"result aligns with the goals and values of the Rust project and T-lang."
+msgstr ""
+
+#: src/3346-t-opsem.md:14
+msgid ""
+"Furthermore, the team is responsible for ensuring that while a stable "
+"operational semantics does not yet exist for the language, the project "
+"remains on track for eventually having one. Concretely, this means that any "
+"decisions made by other teams which add new requirements to the operational "
+"semantics or make new promises about what is or is not undefined behavior "
+"must be approved by T-opsem."
+msgstr ""
+
+#: src/3346-t-opsem.md:16
+msgid "Scope"
+msgstr ""
+
+#: src/3346-t-opsem.md:18
+msgid ""
+"It is not possible to precisely define where the scope of the team's "
+"responsibilities ends. At minimum, any behavior that is only observable in "
+"unsafe code is definitely within scope of T-opsem. However, there are parts "
+"of the language that do not satisfy the \"only observable in unsafe code\" "
+"condition, and yet interact very heavily with optimizations, "
+"implementability of Miri, and other topics core to T-opsem's interests. As "
+"such, T-opsem may at any point come to an agreement with any of the other "
+"teams to take (possibly partial) ownership of such questions."
+msgstr ""
+
+#: src/3346-t-opsem.md:20
+msgid "Examples"
+msgstr ""
+
+#: src/3346-t-opsem.md:22
+msgid ""
+"**When may a raw pointer be used to write to memory that a unique reference "
+"also points to?**"
+msgstr ""
+
+#: src/3346-t-opsem.md:24
+msgid ""
+"Writing via a raw pointer requires `unsafe` code, meaning this question is "
+"in scope for T-opsem. The answer to this question also has broad "
+"implications for the usability of the `unsafe` subset of the Rust language. "
+"As such, the lang team will need to approve the high-level answer."
+msgstr ""
+
+#: src/3346-t-opsem.md:26
+msgid "**Do match guards have semantic meaning?**"
+msgstr ""
+
+#: src/3346-t-opsem.md:28
+msgid ""
+"Match guards are inserted by the compiler around match statements to ensure "
+"that if guards cannot change the value being matched on. Whether match "
+"guards should exist at all primarily affects exhaustiveness checking, and so "
+"is a question for T-types and T-lang to answer, not T-opsem."
+msgstr ""
+
+#: src/3346-t-opsem.md:30
+msgid ""
+"However, T-opsem is responsible for deciding whether these match guards have "
+"semantic meaning at runtime, as that is only observable to `unsafe` code in "
+"if-guards."
+msgstr ""
+
+#: src/3346-t-opsem.md:32
+msgid "**Should an `Unordered` atomic ordering be added to the language?**"
+msgstr ""
+
+#: src/3346-t-opsem.md:34
+msgid ""
+"The behavior of an `Unordered` ordering is distinguishable from a `Relaxed` "
+"ordering in strictly safe code. However, T-lang should still consult T-opsem "
+"on this question, because T-opsem is expected to be the team that is most "
+"familiar with and has the most interest in the semantics of atomic memory "
+"models."
+msgstr ""
+
+#: src/3346-t-opsem.md:36
+msgid "Relationships to other teams"
+msgstr ""
+
+#: src/3346-t-opsem.md:38
+msgid ""
+"**T-lang**: The team is a subteam of T-lang. It has the same relationship to "
+"T-lang as [T-types](3254-types-team.md) has. This means decisions about "
+"\"details\" will be made by the team alone, but decisions around the big "
+"picture \"direction\" will require consultation with T-lang."
+msgstr ""
+
+#: src/3346-t-opsem.md:40
+msgid ""
+"**T-types**: As [T-types](3254-types-team.md) will no longer own semantics "
+"questions, the responsibilities of T-opsem and T-types are not expected to "
+"overlap. However, like other teams, T-types is expected to consult T-opsem "
+"on any changes that require support from the operational semantics. For "
+"example, if T-types wants to extend the borrow checker to allow more code "
+"patterns, T-opsem must confirm that the code that this permits can be "
+"supported by a reasonable operational semantics. Conversely, when T-opsem "
+"wants to declare some unsafe code UB, it better be the case that T-types "
+"does not have plans to allow the same action to be expressible in safe code. "
+"Additionally, T-types and T-opsem are expected to need to collaborate "
+"heavily on the syntax and semantics of MIR, since MIR is pivotal to both "
+"teams' interests."
+msgstr ""
+
+#: src/3346-t-opsem.md:42
+msgid ""
+"**T-compiler**: Unlike T-types, T-opsem is not a subteam of T-compiler as it "
+"does not own any implementations. However, T-compiler is still expected to "
+"request approval from T-opsem before adding any optimization that depends on "
+"new theorems about the operational semantics. T-opsem will ensure that these "
+"theorems are expected to be true and are reasonable things for the compiler "
+"to depend on now."
+msgstr ""
+
+#: src/3346-t-opsem.md:44
+msgid "Processes"
+msgstr ""
+
+#: src/3346-t-opsem.md:46
+msgid ""
+"For most decisions, T-opsem will use a standard FCP process. This includes "
+"at least those cases where other teams are asking T-opsem for approval, and "
+"internal team decisions that don't affect the language or other teams."
+msgstr ""
+
+#: src/3346-t-opsem.md:48
+msgid ""
+"Because of the size and complexity inherent to attempting to stabilize an "
+"operational semantics, this RFC does not propose any particular process for "
+"achieving that. How an operational semantics is planned, evaluated, and "
+"stabilized is an important set of questions that will need to be answered, "
+"but requires more work and is sufficiently thorny to deserve its own RFC."
+msgstr ""
+
+#: src/3346-t-opsem.md:50
+msgid "Membership"
+msgstr ""
+
+#: src/3346-t-opsem.md:52
+msgid ""
+"New members will be added to the team using a process identical to one "
+"already used by the libs and style teams. Specifically:"
+msgstr ""
+
+#: src/3346-t-opsem.md:54
+msgid ""
+"Proposed new members of the team are nominated by existing members. All "
+"existing members of the team must affirmatively agree to the addition of a "
+"member, with zero objections; if there is any objection to a nomination, the "
+"new member will not be added. In addition, the team lead or another team "
+"member will check with the moderation team regarding any person nominated "
+"for membership, to provide an avenue for awareness of concerns or red flags."
+msgstr ""
+
+#: src/3346-t-opsem.md:56
+msgid ""
+"When considering someone for membership, the qualifications below will all "
+"be taken into account:"
+msgstr ""
+
+#: src/3346-t-opsem.md:58
+msgid ""
+"Is this person **familiar with the current state of operational semantics** "
+"work in Rust?"
+msgstr ""
+
+#: src/3346-t-opsem.md:59
+msgid ""
+"Has this person **contributed signifiantly** to the problem space around "
+"operational semantics?"
+msgstr ""
+
+#: src/3346-t-opsem.md:60
+msgid ""
+"There is no specific area in which this contribution must have taken place - "
+"proposing new designs, preparing a formalized version of the spec, writing "
+"libraries that make use of the semantics, writing optimizations that make "
+"use of the semantics, contributing to miri and related tooling, or preparing "
+"documentation and teaching materials are all possibilities."
+msgstr ""
+
+#: src/3346-t-opsem.md:61
+msgid ""
+"Does this person have a **good understanding of the tradeoffs** that affect "
+"operational semantics work?"
+msgstr ""
+
+#: src/3346-t-opsem.md:62
+msgid ""
+"Have they demonstrated a desire and ability to find solutions that balance "
+"and support all of these interests?"
+msgstr ""
+
+#: src/3346-t-opsem.md:63
+msgid "Is this person **responsible**?"
+msgstr ""
+
+#: src/3346-t-opsem.md:64
+msgid ""
+"When they agree to take on a task, do they either get it done or identify "
+"that they are not able to follow through and ask for help?"
+msgstr ""
+
+#: src/3346-t-opsem.md:65
+msgid "Is this person able to **lead others to a productive conversation**?"
+msgstr ""
+
+#: src/3346-t-opsem.md:66
+msgid ""
+"Are there times when a conversation was stalled out and this person was able "
+"to step in and get the design discussion back on track?"
+msgstr ""
+
+#: src/3346-t-opsem.md:67
+msgid ""
+"This could have been by suggesting a compromise, but it may also be by "
+"asking the right questions or encouraging the right tone."
+msgstr ""
+
+#: src/3346-t-opsem.md:68
+msgid "Is this person able to **disagree productively**?"
+msgstr ""
+
+#: src/3346-t-opsem.md:69
+msgid ""
+"When they are having a debate, do they make an active effort to understand "
+"and repeat back others' points of view?"
+msgstr ""
+
+#: src/3346-t-opsem.md:70
+msgid ""
+"Do they \"steelman\", looking for ways to restate others' points in the most "
+"convincing way?"
+msgstr ""
+
+#: src/3346-t-opsem.md:71
+msgid "Is this person **active**?"
+msgstr ""
+
+#: src/3346-t-opsem.md:72
+msgid "Are they attending meetings regularly?"
+msgstr ""
+
+#: src/3346-t-opsem.md:73
+msgid ""
+"Either in meeting or elsewhere, do they comment on discussions and otherwise?"
+msgstr ""
+
+#: src/3346-t-opsem.md:75
+msgid ""
+"The last four bullets are lightly edited versions of a subset of the [T-lang "
+"membership qualifications](https://lang-team.rust-lang.org/membership.html)."
+msgstr ""
+
+#: src/3346-t-opsem.md:79
+msgid ""
+"Like for many teams, membership is kept up to date and team members who are "
+"inactive for more than 6 months may be moved to the alumni team."
+msgstr ""
+
+#: src/3346-t-opsem.md:81
+msgid "Team Leads"
+msgstr ""
+
+#: src/3346-t-opsem.md:83
+msgid "Leads are responsible for:"
+msgstr ""
+
+#: src/3346-t-opsem.md:85
+msgid "Leading and scheduling team meetings"
+msgstr ""
+
+#: src/3346-t-opsem.md:86
+msgid "Selecting the deep dive meetings"
+msgstr ""
+
+#: src/3346-t-opsem.md:87
+msgid "Making decisions regarding team membership"
+msgstr ""
+
+#: src/3346-t-opsem.md:88
+msgid "General \"buck stops here\"-type decisions"
+msgstr ""
+
+#: src/3346-t-opsem.md:90
+msgid ""
+"Leads typically serve for 6 months to 1 year, at which point the team will "
+"consider whether to rotate."
+msgstr ""
+
+#: src/3346-t-opsem.md:92
+msgid ""
+"The initial team leads are Ralf Jung and Jakob Degen. The leads will decide "
+"the remaining members after the RFC has been accepted."
+msgstr ""
+
+#: src/3346-t-opsem.md:94
+msgid "Meetings"
+msgstr ""
+
+#: src/3346-t-opsem.md:96
+msgid ""
+"The team will have a monthly planning meeting during which the remaining "
+"meetings are scheduled."
+msgstr ""
+
+#: src/3346-t-opsem.md:98
+msgid ""
+"The majority of the remaining meetings are expected to be deep dive "
+"meetings: Someone either presents a problem they have discovered and why it "
+"is difficult or they present a proposed solution to a pre-existing problem. "
+"For example, most individual issues on the unsafe-code-guidelines repository "
+"might be a good candidate for a meeting."
+msgstr ""
+
+#: src/3346-t-opsem.md:100
+msgid ""
+"As noted above, the team and certainly all of its members are expected to "
+"have interests that extend past the strict scope of the team. Because of "
+"this meetings might also be used to hold discussions about topics in the "
+"broader problem space. Some possible examples are \"how does weak memory "
+"modeling work in miri\" or \"what are common ergonomics problems users face "
+"when writing unsafe code.\""
+msgstr ""
+
+#: src/3346-t-opsem.md:102
+msgid "Drawbacks and Alternatives"
+msgstr ""
+
+#: src/3346-t-opsem.md:104
+msgid ""
+"This further complicates ownership. There would now be a third team in "
+"addition to T-lang and T-types that might be responsible for deciding on a "
+"particular language question."
+msgstr ""
+
+#: src/3346-t-opsem.md:106
+msgid ""
+"This is not always necessarily a drawback. It can instead be seen as a "
+"concession to the reality that as the language matures, the questions that "
+"must be answered require increasingly careful consideration from more than "
+"one perspective."
+msgstr ""
+
+#: src/3346-t-opsem.md:108
+msgid ""
+"Unlike T-types, this team does not own any code. As such, there is no "
+"procedural processes in place to, for example, ensure that Miri remains in "
+"line with the decisions of T-opsem."
+msgstr ""
+
+#: src/3346-t-opsem.md:110
+msgid ""
+"Still, because of the overlapping interests between people working on Miri "
+"and T-opsem, it seems unlikely that there is a real risk of divergence."
+msgstr ""
+
+#: src/3346-t-opsem.md:112
+msgid ""
+"One alternative is to maintain the status quo, that is to have T-types "
+"continue to be responsible for these decisions."
+msgstr ""
+
+#: src/3346-t-opsem.md:114
+msgid ""
+"Currently, the intersection between the members of WG-unsafe-code-guidelines "
+"and T-types is small. This means this option seems non-ideal, as it is "
+"unlikely that individuals interested in the topics that remain with T-types "
+"after this RFC are the same people who are most interested in working on "
+"opsem topics."
+msgstr ""

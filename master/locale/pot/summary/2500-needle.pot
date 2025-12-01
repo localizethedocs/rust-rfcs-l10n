@@ -1,0 +1,2394 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2500-needle.md:1
+msgid "Feature Name: `needle`"
+msgstr ""
+
+#: src/2500-needle.md:2
+msgid "Start Date: 2018-07-06"
+msgstr ""
+
+#: src/2500-needle.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2500](https://github.com/rust-lang/rfcs/pull/2500)"
+msgstr ""
+
+#: src/2500-needle.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#56345](https://github.com/rust-lang/rust/"
+"issues/56345)"
+msgstr ""
+
+#: src/2500-needle.md:6
+msgid "This RFC was previously approved, but later **withdrawn**"
+msgstr ""
+
+#: src/2500-needle.md:8
+msgid ""
+"For details see the [summary comment](https://github.com/rust-lang/rust/"
+"pull/76901#issuecomment-880169952)."
+msgstr ""
+
+#: src/2500-needle.md:12
+msgid "Summary"
+msgstr ""
+
+#: src/2500-needle.md:15
+msgid ""
+"Generalize the needle (née pattern) API to support `&str`, `&mut str`, "
+"`&[T]`, `&mut [T]`, `Vec<T>` and `&OsStr`."
+msgstr ""
+
+#: src/2500-needle.md:19
+msgid "[Summary](#summary)"
+msgstr ""
+
+#: src/2500-needle.md:20
+msgid "[Motivation](#motivation)"
+msgstr ""
+
+#: src/2500-needle.md:21
+msgid "[Stabilize the Pattern API](#stabilize-the-pattern-api)"
+msgstr ""
+
+#: src/2500-needle.md:22
+msgid "[Implement OMG-WTF-8](#implement-omg-wtf-8)"
+msgstr ""
+
+#: src/2500-needle.md:23
+msgid "[Guide-level explanation](#guide-level-explanation)"
+msgstr ""
+
+#: src/2500-needle.md:24
+msgid "[Reference-level explanation](#reference-level-explanation)"
+msgstr ""
+
+#: src/2500-needle.md:25
+msgid "[API](#api)"
+msgstr ""
+
+#: src/2500-needle.md:26
+msgid "[Standard library changes](#standard-library-changes)"
+msgstr ""
+
+#: src/2500-needle.md:27
+msgid "[Performance](#performance)"
+msgstr ""
+
+#: src/2500-needle.md:28
+msgid "[Drawbacks](#drawbacks)"
+msgstr ""
+
+#: src/2500-needle.md:29
+msgid "[Rationale and alternatives](#rationale-and-alternatives)"
+msgstr ""
+
+#: src/2500-needle.md:30
+msgid "[Principles](#principles)"
+msgstr ""
+
+#: src/2500-needle.md:31
+msgid "[Design rationales](#design-rationales)"
+msgstr ""
+
+#: src/2500-needle.md:32
+msgid "[Miscellaneous decisions](#miscellaneous-decisions)"
+msgstr ""
+
+#: src/2500-needle.md:33
+msgid "[Alternatives](#alternatives)"
+msgstr ""
+
+#: src/2500-needle.md:34
+msgid "[Prior art](#prior-art)"
+msgstr ""
+
+#: src/2500-needle.md:35
+msgid "[Previous attempts](#previous-attempts)"
+msgstr ""
+
+#: src/2500-needle.md:36
+msgid "[Haskell](#haskell)"
+msgstr ""
+
+#: src/2500-needle.md:37
+msgid "[Unresolved questions](#unresolved-questions)"
+msgstr ""
+
+#: src/2500-needle.md:41
+msgid "Motivation"
+msgstr ""
+
+#: src/2500-needle.md:44
+msgid "Stabilize the Pattern API"
+msgstr ""
+
+#: src/2500-needle.md:46
+msgid ""
+"Pattern API v1.0 ([RFC 528](https://github.com/rust-lang/rfcs/pull/528) / "
+"[issue 27721](https://github.com/rust-lang/rust/issues/27721)) has been "
+"implemented for nearly 3 years, but we still haven't decided to stabilize. "
+"One of the blockers is attempting to generalize the API to support `str`, "
+"`[T]` and `OsStr`, though it only exists as sketches and never finalized."
+msgstr ""
+
+#: src/2500-needle.md:50
+msgid "This RFC is raised as attempt to"
+msgstr ""
+
+#: src/2500-needle.md:52
+msgid ""
+"Generalize the pattern API so that all built-in slice-like types `&str`, "
+"`&mut str`, `&[T]`, `&mut [T]`, `Vec<T>` and `&OsStr` can be searched."
+msgstr ""
+
+#: src/2500-needle.md:55
+msgid ""
+"Revise the API to address some performance and usability issues identified "
+"in the previous attempts."
+msgstr ""
+
+#: src/2500-needle.md:58
+msgid ""
+"We hope that this RFC could revitalize the Pattern API development and make "
+"its stabilization foreseeable."
+msgstr ""
+
+#: src/2500-needle.md:61
+msgid "Implement OMG-WTF-8"
+msgstr ""
+
+#: src/2500-needle.md:63
+msgid ""
+"The OMG-WTF-8 encoding was introduced to allow slicing an `&OsStr`, and thus "
+"enable extending the Pattern API to `&OsStr` without special-casing ([RFC "
+"2295](https://github.com/rust-lang/rfcs/pull/2295) / [issue 49802](https://"
+"github.com/rust-lang/rust/issues/49802)). That RFC expects a Pattern API "
+"working with `OsStr` to generalize some methods (e.g. `OsStr::ends_with()`). "
+"This RFC would unblock the implementation of RFC 2295, as to decide whether "
+"to integrate with a Pattern API, or just go with the non-generic version."
+msgstr ""
+
+#: src/2500-needle.md:69
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2500-needle.md:72
+msgid ""
+"You may check the prototype package [`pattern-3`](https://crates.io/crates/"
+"pattern-3) for API documentation and source code."
+msgstr ""
+
+#: src/2500-needle.md:74
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2500-needle.md:77
+msgid "Key concepts:"
+msgstr ""
+
+#: src/2500-needle.md:79
+msgid ""
+"Searching is based on _trisection_, splitting a string into 3 parts: the "
+"substring before, being, and after the match. `\"ab123cedf\" == \"ab\" ++ "
+"\"123\" ++ \"cdef\"`."
+msgstr ""
+
+#: src/2500-needle.md:81
+msgid ""
+"_Haystack_ teaches the search algorithm how to perform splitting with proper "
+"ownership transfer."
+msgstr ""
+
+#: src/2500-needle.md:82
+msgid "_Searcher_ is responsible for finding the range of the match."
+msgstr ""
+
+#: src/2500-needle.md:83
+msgid ""
+"Utilizing these together to safely construct many useful algorithms related "
+"to string matching."
+msgstr ""
+
+#: src/2500-needle.md:85
+msgid "API"
+msgstr ""
+
+#: src/2500-needle.md:87
+msgid ""
+"All items below should be placed in the `core::needle` module, re-exported "
+"as `std::needle`."
+msgstr ""
+
+#: src/2500-needle.md:89
+msgid ""
+"We renamed \"Pattern API\" into \"Needle API\" to avoid confusion with the "
+"language's pattern matching i.e. the `match` expression."
+msgstr ""
+
+#: src/2500-needle.md:92
+msgid "Hay"
+msgstr ""
+
+#: src/2500-needle.md:94
+msgid ""
+"A `Hay` is the core type which the search algorithm will run on. It is "
+"implemented on the unsized slice-like types like `str`, `OsStr` and `[T]`."
+msgstr ""
+
+#: src/2500-needle.md:113
+msgid ""
+"The trait is unsafe to implement because it needs to guarantee all methods "
+"(esp. `.start_index()` and `.end_index()`) follow the documented "
+"requirements, which cannot be checked automatically."
+msgstr ""
+
+#: src/2500-needle.md:116
+msgid ""
+"We allow a hay to customize the `Index` type. While `str`, `[T]` and `OsStr` "
+"all  use `usize` as the index, we do want the Needle API to support other "
+"linear structures like `LinkedList<T>`, where a cursor/pointer would be more "
+"suitable for allowing sub-linear splitting."
+msgstr ""
+
+#: src/2500-needle.md:134
+msgid "Haystack"
+msgstr ""
+
+#: src/2500-needle.md:136
+msgid ""
+"A `Haystack` is any linear structure which we can do string/array matching "
+"on, and can be sliced or split so they could be returned from the "
+"`matches()` and `split()` iterators."
+msgstr ""
+
+#: src/2500-needle.md:139
+msgid ""
+"Haystack is implemented on the reference or collection itself e.g. `&[T]`, "
+"`&mut [T]` and `Vec<T>`. A hay can _borrowed_ from a haystack."
+msgstr ""
+
+#: src/2500-needle.md:157
+msgid ""
+"// we assume either RFC 2089 (issue #44491) or RFC 2289 is implemented.\n"
+"// for simplicity we're ignoring issue #38078 which forces us to write "
+"`<Self::Target as Hay>::Index`.\n"
+msgstr ""
+
+#: src/2500-needle.md:162
+msgid ""
+"We assume either Implied Bounds ([RFC 2089](https://github.com/rust-lang/"
+"rfcs/pull/2089) / [issue 44491](https://github.com/rust-lang/rust/"
+"issues/44491)) is implemented (thus fixing \\[issue 20671\\]), or Associated "
+"Type Bounds ([RFC 2289](https://github.com/rust-lang/rfcs/pull/2289)) has "
+"been accepted and implemented."
+msgstr ""
+
+#: src/2500-needle.md:165
+msgid ""
+"For simplicity we are ignoring [issue 38078](https://github.com/rust-lang/"
+"rust/issues/38078), which forces us to write `<Self::Target as Hay>::Index` "
+"instead of `Self::Target::Index`."
+msgstr ""
+
+#: src/2500-needle.md:168
+msgid ""
+"The `self.restore_range(original, parent)` method is implemented to solve:"
+msgstr ""
+
+#: src/2500-needle.md:170
+msgid "given haystacks `a` and `b`"
+msgstr ""
+
+#: src/2500-needle.md:171
+msgid "given `a = b[original]` and `self = a[parent]`"
+msgstr ""
+
+#: src/2500-needle.md:172
+msgid "find `range` such that `self == b[original][parent] == b[range]`"
+msgstr ""
+
+#: src/2500-needle.md:174
+msgid ""
+"This method is used to recover the original range in functions like `find()` "
+"and `match_indices()`. It is usually just implemented as `(original.start + "
+"parent.start)..(original.start + parent.end)`."
+msgstr ""
+
+#: src/2500-needle.md:177
+msgid ""
+"When an index is based on a pointer, splitting a haystack will _invalidate_ "
+"those pointers. However, a pointer is persisted with slicing, so they could "
+"implement this method simply as `self.start_index()..self.end_index()`."
+msgstr ""
+
+#: src/2500-needle.md:181
+msgid "Shared haystack"
+msgstr ""
+
+#: src/2500-needle.md:183
+msgid ""
+"A `SharedHaystack` is a marker sub-trait which tells the compiler this "
+"haystack can cheaply be cheaply cloned (i.e. shared), e.g. a `&H` or "
+"`Rc<H>`. Implementing this trait alters some behavior of the `Span` "
+"structure discussed next section."
+msgstr ""
+
+#: src/2500-needle.md:191
+msgid ""
+"`.restore_range()` will never be called with a shared haystack and should be "
+"implemented as `unreachable!()`."
+msgstr ""
+
+#: src/2500-needle.md:194
+msgid "Span"
+msgstr ""
+
+#: src/2500-needle.md:196
+msgid ""
+"A `Span` is a haystack coupled with information where the original span is "
+"found."
+msgstr ""
+
+#: src/2500-needle.md:199
+msgid "/* hidden */"
+msgstr ""
+
+#: src/2500-needle.md:220
+msgid ""
+"The behavior of a span differs slightly between a shared haystack and unique "
+"haystack (this is also the main reason why the `Span` structure is "
+"introduced)."
+msgstr ""
+
+#: src/2500-needle.md:254
+msgid ""
+"A span of shared haystack will always store a copy of the original haystack "
+"when splitting, because the haystack can be cheaply cloned. Splitting is "
+"thus just manipulation of the range only. Slicing is only done when "
+"returning from an algorithm."
+msgstr ""
+
+#: src/2500-needle.md:258
+msgid ""
+"A non-shared haystack needs to maintain unique ownership for each haystack "
+"slice. Therefore, a haystack will be split as soon as the span is split. The "
+"\"original range\" becomes a value disconnected from the haystack, and this "
+"is where `.restore_range()` is needed: to recover the indices in the middle "
+"(`5 == 3 + 2` and `7 == 3 + 4`)."
+msgstr ""
+
+#: src/2500-needle.md:263
+msgid "Searcher"
+msgstr ""
+
+#: src/2500-needle.md:265
+msgid ""
+"A searcher only provides a single method: `.search()`. It takes a span as "
+"input, and returns the first sub-range where the given needle is found."
+msgstr ""
+
+#: src/2500-needle.md:280
+msgid ""
+"The `.search()` function is safe because there is no safe ways to construct "
+"a `Span<&A>` with invalid ranges. Implementations of `.search()` often start "
+"with:"
+msgstr ""
+
+#: src/2500-needle.md:286
+msgid "// search for needle from `hay` restricted to `range`.\n"
+msgstr ""
+
+#: src/2500-needle.md:290
+msgid ""
+"The trait is unsafe to implement because it needs to guarantee the returned "
+"range is valid."
+msgstr ""
+
+#: src/2500-needle.md:292
+msgid ""
+"There is a \"reverse\" version of the trait, which supports searching from "
+"the end with the `.rsearch()` method besides from the start."
+msgstr ""
+
+#: src/2500-needle.md:295
+msgid ""
+"Furthermore, there is a \"double-ended\" version, which is a marker trait "
+"saying that searching from both ends will give consistent results. The "
+"searcher of a substring needle is an example which implements "
+"`ReverseSearcher` but not `DoubleEndedSearcher`, e.g."
+msgstr ""
+
+#: src/2500-needle.md:299
+msgid ""
+"Forward searching the needle `xx` in the haystack `xxxxx` will yield `[xx]"
+"[xx]x`"
+msgstr ""
+
+#: src/2500-needle.md:300
+msgid ""
+"Backward searching the needle `xx` in the haystack `xxxxx` will yield `x[xx]"
+"[xx]`"
+msgstr ""
+
+#: src/2500-needle.md:302 src/2500-needle.md:1098
+msgid "Consumer"
+msgstr ""
+
+#: src/2500-needle.md:304
+msgid ""
+"A consumer provides the `.consume()` method to implement `starts_with()` and "
+"`trim_start()`. It takes a span as input, and if the beginning matches the "
+"needle, returns the end index of the match."
+msgstr ""
+
+#: src/2500-needle.md:319
+msgid ""
+"Comparing searcher and consumer, the `.search()` method will look for the "
+"first slice matching the searcher's needle in the span, and returns the "
+"range where the slice is found (relative to the hay's start index). The `."
+"consume()` method is similar, but anchored to the start of the span."
+msgstr ""
+
+#: src/2500-needle.md:325
+msgid "\"CDEFG\""
+msgstr ""
+
+#: src/2500-needle.md:325
+msgid "// we can find \"CD\" at the start of the span.\n"
+msgstr ""
+
+#: src/2500-needle.md:327 src/2500-needle.md:328
+msgid "\"CD\""
+msgstr ""
+
+#: src/2500-needle.md:328
+msgid "// we can only find \"EF\" in the middle of the span.\n"
+msgstr ""
+
+#: src/2500-needle.md:330 src/2500-needle.md:331
+msgid "\"EF\""
+msgstr ""
+
+#: src/2500-needle.md:331
+msgid "// we cannot find \"GH\" in the span.\n"
+msgstr ""
+
+#: src/2500-needle.md:333 src/2500-needle.md:334
+msgid "\"GH\""
+msgstr ""
+
+#: src/2500-needle.md:337
+msgid ""
+"The trait also provides a `.trim_start()` method in case a faster "
+"specialization exists."
+msgstr ""
+
+#: src/2500-needle.md:339
+msgid ""
+"Similar to searchers, the consumers also have the \"reverse\" and \"double-"
+"ended\" variants."
+msgstr ""
+
+#: src/2500-needle.md:341
+msgid "Needle"
+msgstr ""
+
+#: src/2500-needle.md:343
+msgid "A needle is simply a \"factory\" of a searcher and consumer."
+msgstr ""
+
+#: src/2500-needle.md:355
+msgid ""
+"Needles are the types where users used to supply into the algorithms. "
+"Needles are usually immutable (stateless), while searchers sometimes require "
+"pre-computation and mutable state when implementing some more sophisticated "
+"string searching algorithms."
+msgstr ""
+
+#: src/2500-needle.md:359
+msgid ""
+"The relation between `Needle` and `Searcher`/`Consumer` is thus like "
+"`IntoIterator` and `Iterator`."
+msgstr ""
+
+#: src/2500-needle.md:361
+msgid ""
+"There are two required methods `.into_searcher()` and `.into_consumer()`. In "
+"some needles (e.g. substring search), checking if a prefix match will "
+"require much less pre-computation than checking if any substring match. "
+"Therefore, a consumer could use a more efficient structure with this "
+"specialized purpose."
+msgstr ""
+
+#: src/2500-needle.md:372
+msgid "// create a searcher based on Two-Way algorithm.\n"
+msgstr ""
+
+#: src/2500-needle.md:377
+msgid ""
+"// create a searcher based on naive search (which requires no pre-"
+"computation)\n"
+msgstr ""
+
+#: src/2500-needle.md:383
+msgid ""
+"Note that, unlike `IntoIterator`, the standard library is unable to provide "
+"a blanket impl:"
+msgstr ""
+
+#: src/2500-needle.md:398
+msgid "This is because there is already an existing Needle impl:"
+msgstr ""
+
+#: src/2500-needle.md:407
+msgid ""
+"and a type can implement all of `(FnMut(char) -> bool) + Searcher<str> + "
+"Consumer<str>`, causing impl conflict."
+msgstr ""
+
+#: src/2500-needle.md:410
+msgid "Algorithms"
+msgstr ""
+
+#: src/2500-needle.md:412
+msgid ""
+"Standard algorithms are provided as _functions_ in the `core::needle::ext` "
+"module."
+msgstr ""
+
+#: src/2500-needle.md:416
+msgid "**Starts with, ends with**"
+msgstr ""
+
+#: src/2500-needle.md:430
+msgid "**Trim**"
+msgstr ""
+
+#: src/2500-needle.md:449
+msgid "**Matches**"
+msgstr ""
+
+#: src/2500-needle.md:451
+msgid ""
+"(These function do return concrete iterators in the actual implementation.)"
+msgstr ""
+
+#: src/2500-needle.md:510
+msgid "**Split**"
+msgstr ""
+
+#: src/2500-needle.md:544
+msgid "**Replace**"
+msgstr ""
+
+#: src/2500-needle.md:564
+msgid ""
+"Most algorithms are very simple to implement using trisection (`."
+"split_around()`). For instance, `split()` can be implemented as:"
+msgstr ""
+
+#: src/2500-needle.md:584
+msgid ""
+"These functions are forwarded as _inherent methods_ of the haystack type, e."
+"g."
+msgstr ""
+
+#: src/2500-needle.md:611
+msgid "Standard library changes"
+msgstr ""
+
+#: src/2500-needle.md:613
+msgid ""
+"Remove the entire `core::str::pattern` module from public, as this is "
+"unstable."
+msgstr ""
+
+#: src/2500-needle.md:615
+msgid "Add the `core::needle` module with traits and structs shown above."
+msgstr ""
+
+#: src/2500-needle.md:617
+msgid "Implement `Hay` to `str`, `[T]` and `OsStr`."
+msgstr ""
+
+#: src/2500-needle.md:619
+msgid "Implement `Haystack` to `∀H: Hay. &H`, `&mut str` and `&mut [T]`."
+msgstr ""
+
+#: src/2500-needle.md:621
+msgid "Implement `Needle` as following:"
+msgstr ""
+
+#: src/2500-needle.md:623
+msgid "`Needle<&{mut} str>` for `char`"
+msgstr ""
+
+#: src/2500-needle.md:624
+msgid "`Needle<&{mut} str>` for `&[char]` and `FnMut(char)->bool`"
+msgstr ""
+
+#: src/2500-needle.md:625
+msgid "`Needle<&{mut} str>` for `&str`, `&&str` and `&String`"
+msgstr ""
+
+#: src/2500-needle.md:626
+msgid "`Needle<&{mut} [T]>` for `FnMut(&T)->bool`"
+msgstr ""
+
+#: src/2500-needle.md:627
+msgid "`Needle<&{mut} [T]>` for `&[T]` where `T: PartialEq`"
+msgstr ""
+
+#: src/2500-needle.md:628
+msgid "`Needle<&OsStr>` for `&OsStr` and `&str`"
+msgstr ""
+
+#: src/2500-needle.md:630
+msgid "Change the following methods of `str` to use the Needle API:"
+msgstr ""
+
+#: src/2500-needle.md:632
+msgid "`.contains()`, `.starts_with()`, `.ends_with()`"
+msgstr ""
+
+#: src/2500-needle.md:633
+msgid "`.find()`, `.rfind()`"
+msgstr ""
+
+#: src/2500-needle.md:634
+msgid "`.split()`, `.rsplit()`"
+msgstr ""
+
+#: src/2500-needle.md:635
+msgid "`.split_terminator()`, `.rsplit_terminator()`"
+msgstr ""
+
+#: src/2500-needle.md:636
+msgid "`.splitn()`, `.rsplitn()`"
+msgstr ""
+
+#: src/2500-needle.md:637
+msgid "`.matches()`, `.rmatches()`"
+msgstr ""
+
+#: src/2500-needle.md:638
+msgid "`.match_indices()`, `.rmatch_indices()`"
+msgstr ""
+
+#: src/2500-needle.md:639
+msgid "`.trim_matches()`, `.trim_left_matches()`, `.trim_right_matches()`"
+msgstr ""
+
+#: src/2500-needle.md:640
+msgid "`.replace()`, `.replacen()`"
+msgstr ""
+
+#: src/2500-needle.md:642
+msgid ""
+"Note also [issue 30459](https://github.com/rust-lang/rust/issues/30459) "
+"suggests deprecating `trim_{left, right}` and rename them to `trim_{start, "
+"end}`."
+msgstr ""
+
+#: src/2500-needle.md:645
+msgid "Add the following range-returning methods to `str`:"
+msgstr ""
+
+#: src/2500-needle.md:647
+msgid "`.find_range()`, `.rfind_range()`"
+msgstr ""
+
+#: src/2500-needle.md:648
+msgid "`.match_ranges()`, `.rmatch_ranges()`"
+msgstr ""
+
+#: src/2500-needle.md:650
+msgid ""
+"Add the following mutable methods to `str`, they should all take `&mut self`:"
+msgstr ""
+
+#: src/2500-needle.md:652
+msgid "`.split_mut()`, `.rsplit_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:653
+msgid "`.split_terminator_mut()`, `.rsplit_terminator_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:654
+msgid "`.splitn_mut()`, `.rsplitn_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:655
+msgid "`.matches_mut()`, `.rmatches_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:656
+msgid "`.match_indices_mut()`, `.rmatch_indices_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:657
+msgid "`.match_ranges_mut()`, `.rmatch_ranges_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:659
+msgid ""
+"Modify the following iterators in `core::str` to type alias of the "
+"corresponding Needle API iterators, and mark them as deprecated:"
+msgstr ""
+
+#: src/2500-needle.md:678
+msgid ""
+"Rust allows the type alias to be stable while the underlying type be "
+"unstable."
+msgstr ""
+
+#: src/2500-needle.md:680
+msgid "Generalize these methods of `[T]` to use the new Needle API:"
+msgstr ""
+
+#: src/2500-needle.md:682
+msgid "`.split()`, `.split_mut()`, `.rsplit()`, `.rsplit_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:683
+msgid "`.splitn()`, `.splitn_mut()`, `.rsplitn()`, `rsplitn_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:684
+msgid "`.starts_with()`, `.ends_with()`"
+msgstr ""
+
+#: src/2500-needle.md:686
+msgid "Add the following methods to `[T]`:"
+msgstr ""
+
+#: src/2500-needle.md:688
+msgid ""
+"`.contains_match()` (_note_: the existing `.contains()` method is "
+"incompatible with Needle API)"
+msgstr ""
+
+#: src/2500-needle.md:690
+msgid "`.find()`, `.rfind()`, `.find_range()`, `.rfind_range()`"
+msgstr ""
+
+#: src/2500-needle.md:691
+msgid "`.matches()`, `.matches_mut()`, `.rmatches()`, `.rmatches_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:692
+msgid ""
+"`.match_indices()`, `.match_indices_mut()`, `.rmatch_indices()`, `."
+"rmatch_indices_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:693
+msgid ""
+"`.match_ranges()`, `.match_ranges_mut()`, `.rmatch_ranges()`, `."
+"rmatch_ranges_mut()`"
+msgstr ""
+
+#: src/2500-needle.md:694
+msgid "`.trim_matches()`, `.trim_start_matches()`, `.trim_end_matches()`"
+msgstr ""
+
+#: src/2500-needle.md:695
+msgid "`.replace()`, `.replacen()` (produce a `Vec<T>`)"
+msgstr ""
+
+#: src/2500-needle.md:697
+msgid ""
+"Modify the following iterators in `core::slice` to type alias of the "
+"corresponding Needle API iterators, and mark them as deprecated:"
+msgstr ""
+
+#: src/2500-needle.md:720
+msgid ""
+"Add all immutable Needle API algorithms to `OsStr`. The `.replace()` and `."
+"replacen()` methods should produce an `OsString`."
+msgstr ""
+
+#: src/2500-needle.md:723
+msgid "Performance"
+msgstr ""
+
+#: src/2500-needle.md:725
+msgid ""
+"The benchmark of the `pattern_3` package shows that algorithms using the "
+"Needle API (\"v3.0 API\") is close to or much faster than the corresponding "
+"methods in libstd using v1.0."
+msgstr ""
+
+#: src/2500-needle.md:728
+msgid ""
+"The main performance improvement comes from `trim()`. In v1.0, `trim()` "
+"depends on the `Searcher::next_reject()` method, which requires initializing "
+"a searcher and compute the critical constants for the Two-Way search "
+"algorithm. Search algorithms mostly concern about quickly skip through "
+"mismatches, but the purpose of `.next_reject()` is to find mismatches, so a "
+"searcher would be a job mismatch for `trim()`. This justifies the `Consumer` "
+"trait in v3.0."
+msgstr ""
+
+#: src/2500-needle.md:736
+msgid "(The lower the number, the better)"
+msgstr ""
+
+#: src/2500-needle.md:738
+msgid "Test case"
+msgstr ""
+
+#: src/2500-needle.md:738
+msgid "v3.0 time change"
+msgstr ""
+
+#: src/2500-needle.md:740
+msgid "`contains('!')`"
+msgstr ""
+
+#: src/2500-needle.md:740
+msgid "−75%"
+msgstr ""
+
+#: src/2500-needle.md:741
+msgid "`contains(\"!\")`"
+msgstr ""
+
+#: src/2500-needle.md:741 src/2500-needle.md:747
+msgid "−26%"
+msgstr ""
+
+#: src/2500-needle.md:742
+msgid "`ends_with('/')`"
+msgstr ""
+
+#: src/2500-needle.md:742
+msgid "−31%"
+msgstr ""
+
+#: src/2500-needle.md:743
+msgid "`ends_with('💤')`"
+msgstr ""
+
+#: src/2500-needle.md:743
+msgid "+32%"
+msgstr ""
+
+#: src/2500-needle.md:744
+msgid "`find('_')`"
+msgstr ""
+
+#: src/2500-needle.md:744
+msgid "−80%"
+msgstr ""
+
+#: src/2500-needle.md:745
+msgid "`find('💤')`"
+msgstr ""
+
+#: src/2500-needle.md:745
+msgid "−74%"
+msgstr ""
+
+#: src/2500-needle.md:746
+msgid "`find(_ == ' ')`"
+msgstr ""
+
+#: src/2500-needle.md:746
+msgid "−30%"
+msgstr ""
+
+#: src/2500-needle.md:747
+msgid "`match_indices(\"\").count()`"
+msgstr ""
+
+#: src/2500-needle.md:748
+msgid "`match_indices(\"a\").count()`"
+msgstr ""
+
+#: src/2500-needle.md:748
+msgid "−5%"
+msgstr ""
+
+#: src/2500-needle.md:749
+msgid "`rfind('_')`"
+msgstr ""
+
+#: src/2500-needle.md:749 src/2500-needle.md:750
+msgid "−18%"
+msgstr ""
+
+#: src/2500-needle.md:750
+msgid "`rfind('💤')`"
+msgstr ""
+
+#: src/2500-needle.md:751
+msgid "`rfind(_ == ' ')`"
+msgstr ""
+
+#: src/2500-needle.md:751
+msgid "−8%"
+msgstr ""
+
+#: src/2500-needle.md:752
+msgid "`split(\" \").count()`"
+msgstr ""
+
+#: src/2500-needle.md:752
+msgid "−4%"
+msgstr ""
+
+#: src/2500-needle.md:753
+msgid "`split(\"a\").count()`"
+msgstr ""
+
+#: src/2500-needle.md:753
+msgid "−1%"
+msgstr ""
+
+#: src/2500-needle.md:754
+msgid "`split(\"ad\").count()`"
+msgstr ""
+
+#: src/2500-needle.md:754
+msgid "−20%"
+msgstr ""
+
+#: src/2500-needle.md:755
+msgid "`starts_with('/')`"
+msgstr ""
+
+#: src/2500-needle.md:755
+msgid "−70%"
+msgstr ""
+
+#: src/2500-needle.md:756
+msgid "`starts_with('💤')`"
+msgstr ""
+
+#: src/2500-needle.md:756
+msgid "−56%"
+msgstr ""
+
+#: src/2500-needle.md:757
+msgid "`starts_with(\"💩💩\")`"
+msgstr ""
+
+#: src/2500-needle.md:757
+msgid "−40%"
+msgstr ""
+
+#: src/2500-needle.md:758
+msgid "`starts_with(_.is_ascii())`"
+msgstr ""
+
+#: src/2500-needle.md:758
+msgid "−11%"
+msgstr ""
+
+#: src/2500-needle.md:759
+msgid "`trim_end('!')`"
+msgstr ""
+
+#: src/2500-needle.md:759
+msgid "−19%"
+msgstr ""
+
+#: src/2500-needle.md:760
+msgid "`trim_end(\"m!\")`"
+msgstr ""
+
+#: src/2500-needle.md:760 src/2500-needle.md:764
+msgid "−97%"
+msgstr ""
+
+#: src/2500-needle.md:761
+msgid "`trim_left(_.is_ascii())`"
+msgstr ""
+
+#: src/2500-needle.md:761
+msgid "−57%"
+msgstr ""
+
+#: src/2500-needle.md:762
+msgid "`trim_right(_.is_ascii())`"
+msgstr ""
+
+#: src/2500-needle.md:762
+msgid "−54%"
+msgstr ""
+
+#: src/2500-needle.md:763
+msgid "`trim_start('💩')`"
+msgstr ""
+
+#: src/2500-needle.md:763
+msgid "−32%"
+msgstr ""
+
+#: src/2500-needle.md:764
+msgid "`trim_start(\"💩💩\")`"
+msgstr ""
+
+#: src/2500-needle.md:768
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2500-needle.md:771
+msgid ""
+"This RFC suggests generalizing some stabilized methods of `str` and `[T]` to "
+"adapt the Needle API. This might cause inference breakage."
+msgstr ""
+
+#: src/2500-needle.md:774
+msgid ""
+"Some parts of the Haystack trait (e.g. the `.restore_range()` method) may "
+"not be intuitive enough."
+msgstr ""
+
+#: src/2500-needle.md:776
+msgid ""
+"This RFC does not address some problems raised in [issue 27721](https://"
+"github.com/rust-lang/rust/issues/27721):"
+msgstr ""
+
+#: src/2500-needle.md:778
+msgid ""
+"v3.0 still assumes strict left-to-right or right-to-left searching. Some "
+"niche data structures like [suffix table](https://docs.rs/suffix/1.0.0/"
+"suffix/struct.SuffixTable.html#method.positions) as a haystack would return "
+"matches without any particular order, and thus cannot be supported."
+msgstr ""
+
+#: src/2500-needle.md:784
+msgid ""
+"Needles are still moved when converting to a Searcher or Consumer. Taking "
+"the entire ownership of the needle might prevent some use cases... ?"
+msgstr ""
+
+#: src/2500-needle.md:787
+msgid ""
+"Stabilization of this RFC is blocked by [RFC 1672](https://github.com/rust-"
+"lang/rfcs/pull/1672) (disjointness based on associated types) which is "
+"postponed."
+msgstr ""
+
+#: src/2500-needle.md:790
+msgid ""
+"The default Needle implementation currently uses an impl that covers all "
+"haystacks (`impl<H: Haystack<Target = A>> Needle<H> for N`) for some types, "
+"and several impls for individual types for others (`impl<'h> Needle<&'h A> "
+"for N`). Ideally _every_ such impl should use the blanket impl. "
+"Unfortunately, due to lack of RFC 1672, there would be conflict between "
+"these impls:"
+msgstr ""
+
+#: src/2500-needle.md:797
+msgid "// 1.\n"
+msgstr ""
+
+#: src/2500-needle.md:802
+msgid "// `T` can be `char`\n"
+msgstr ""
+
+#: src/2500-needle.md:808
+msgid "// 2.\n"
+msgstr ""
+
+#: src/2500-needle.md:817
+msgid "// `F` can impl both `FnMut(char)->bool` and `FnMut(&T)->bool`.\n"
+msgstr ""
+
+#: src/2500-needle.md:821
+msgid "// 3.\n"
+msgstr ""
+
+#: src/2500-needle.md:832
+msgid ""
+"We currently provide concrete impls like `impl<'h, 'p> Needle<&'h OsStr> for "
+"&'p str` as workaround, but if we stabilize the `Needle` trait before RFC "
+"1672 is implemented, a third-party crate can sneak in an impl:"
+msgstr ""
+
+#: src/2500-needle.md:847
+msgid ""
+"and causes the standard library not able to further generalize (this is a "
+"breaking change)."
+msgstr ""
+
+#: src/2500-needle.md:849
+msgid ""
+"RFC 1672 is currently blocked by `chalk` integration before it could be "
+"reopened."
+msgstr ""
+
+#: src/2500-needle.md:851
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2500-needle.md:854
+msgid "Principles"
+msgstr ""
+
+#: src/2500-needle.md:856
+msgid "These are some guiding principles v3.0 will adhere to."
+msgstr ""
+
+#: src/2500-needle.md:858
+msgid "Generic algorithms"
+msgstr ""
+
+#: src/2500-needle.md:860
+msgid ""
+"The Needle API should define an interface which can be used to easily "
+"implement all algorithms the standard library currently provides:"
+msgstr ""
+
+#: src/2500-needle.md:863
+msgid "`starts_with()`, `ends_with()`"
+msgstr ""
+
+#: src/2500-needle.md:864
+msgid "`trim_left_matches()`, `trim_right_matches()`, `trim_matches()`"
+msgstr ""
+
+#: src/2500-needle.md:865
+msgid "`contains()`, `find()`, `rfind()`"
+msgstr ""
+
+#: src/2500-needle.md:866
+msgid "`matches()`, `rmatches()`, `match_indices()`, `rmatch_indices()`"
+msgstr ""
+
+#: src/2500-needle.md:867
+msgid "`split()`, `rsplit()`, `split_terminator()`, `rsplit_terminator()`"
+msgstr ""
+
+#: src/2500-needle.md:868
+msgid "`splitn()`, `rsplitn()`"
+msgstr ""
+
+#: src/2500-needle.md:869
+msgid "`replace()`, `replacen()`"
+msgstr ""
+
+#: src/2500-needle.md:871
+msgid ""
+"We should not need \"non-local unsafety\" when writing these algorithms. "
+"Mainly, we should not need to do borrowck by hand (e.g. ensuring there is no "
+"overlapping mutable slices across functions)."
+msgstr ""
+
+#: src/2500-needle.md:874
+msgid "Haystack implementor"
+msgstr ""
+
+#: src/2500-needle.md:876
+msgid ""
+"The standard slice types must be supported: `&str`, `&mut str`, `&[T]`, "
+"`&mut [T]`, `Vec<T>`, and `&OsStr`."
+msgstr ""
+
+#: src/2500-needle.md:879
+msgid ""
+"The API should be compatible with linked list and rope data structure as "
+"haystack, assuming we get either custom DST or GATs implemented."
+msgstr ""
+
+#: src/2500-needle.md:882
+msgid "Needle/Searcher implementor"
+msgstr ""
+
+#: src/2500-needle.md:884
+msgid "The existing needle for `&str` and `&mut str` should be supported:"
+msgstr ""
+
+#: src/2500-needle.md:886
+msgid "`char`"
+msgstr ""
+
+#: src/2500-needle.md:887
+msgid "`FnMut(char) -> bool`, `&[char]`"
+msgstr ""
+
+#: src/2500-needle.md:888
+msgid "`&str`, `&&str`, `&String`"
+msgstr ""
+
+#: src/2500-needle.md:890
+msgid ""
+"Additionally, these re-implementations should not be slower than the "
+"existing ones in the standard library."
+msgstr ""
+
+#: src/2500-needle.md:893
+msgid "These needles for `&[T]`, `&mut [T]` and `Vec<T>` should be supported:"
+msgstr ""
+
+#: src/2500-needle.md:895
+msgid "`FnMut(&T) -> bool`"
+msgstr ""
+
+#: src/2500-needle.md:896
+msgid "`&[T]` where `T: PartialEq`"
+msgstr ""
+
+#: src/2500-needle.md:898
+msgid "These needles for `&OsStr` should be supported:"
+msgstr ""
+
+#: src/2500-needle.md:900
+msgid "`&str`"
+msgstr ""
+
+#: src/2500-needle.md:901
+msgid "`&OsStr`"
+msgstr ""
+
+#: src/2500-needle.md:903
+msgid ""
+"It should be possible to implement `Needle` for `&Regex` within the `regex` "
+"package."
+msgstr ""
+
+#: src/2500-needle.md:905
+msgid ""
+"One should not need to implement a `Searcher` three times to support `&[T]`, "
+"`&mut [T]` and `Vec<T>`. The searcher should rely on that these all can be "
+"borrowed as an `&[T]`."
+msgstr ""
+
+#: src/2500-needle.md:908
+msgid "Design rationales"
+msgstr ""
+
+#: src/2500-needle.md:910
+msgid "The section lists some important use cases which shape v3.0."
+msgstr ""
+
+#: src/2500-needle.md:912
+msgid "No more `.next_reject()`"
+msgstr ""
+
+#: src/2500-needle.md:914
+msgid ""
+"In v1.0 a searcher provides a `.next()` method which returns what is being "
+"seen ahead: a match, no-match, or end-to-string, and then advance the cursor."
+msgstr ""
+
+#: src/2500-needle.md:917
+msgid ""
+"None of the generic algorithms besides `starts_with()`/`ends_with()` uses "
+"the full power of `.next()`. The rest depend entirely on filtered versions "
+"of `.next()`:"
+msgstr ""
+
+#: src/2500-needle.md:920
+msgid ""
+"`.next_match()`, which produces ranges of matches, is used for `matches()` "
+"and `split()` etc."
+msgstr ""
+
+#: src/2500-needle.md:921
+msgid ""
+"`.next_reject()`, which produces ranges of non-matches, is used for `trim()`."
+msgstr ""
+
+#: src/2500-needle.md:923
+msgid ""
+"Implementing `.next()` is sometimes not trivial. In v1.2 this method is "
+"entirely abolished in favor of implementing `.next_match()` and `."
+"next_reject()` directly. The `starts_with()` methods are supported instead "
+"via a specialized method in the Needle trait."
+msgstr ""
+
+#: src/2500-needle.md:927
+msgid ""
+"However, we see that even `.next_reject()` is not something obvious. Given "
+"that `.next_reject()` is only used in `trim()`, in v3.0 we decide to remove "
+"this method as well, and instead make the Needle implement `trim()` directly."
+msgstr ""
+
+#: src/2500-needle.md:931
+msgid "Searching in a `&mut str`"
+msgstr ""
+
+#: src/2500-needle.md:933
+msgid ""
+"In all versions of Pattern APIs up to v2.0, the \"haystack\" is directly "
+"managed by the searcher."
+msgstr ""
+
+#: src/2500-needle.md:936 src/2500-needle.md:1103
+msgid "// v2.0\n"
+msgstr ""
+
+#: src/2500-needle.md:942
+msgid "// e.g. returns (*mut u8, *mut u8) for H = &mut str\n"
+msgstr ""
+
+#: src/2500-needle.md:948
+msgid ""
+"The generic algorithms like `matches()` and `split()` would turn the cursor "
+"pair back into slices. With mutable slices, this means logically both the "
+"searcher and the `matches()`/`split()` iterators would hold a copy of the "
+"same mutable slice, which violates the \"Aliasing XOR Mutability\" rule."
+msgstr ""
+
+#: src/2500-needle.md:952
+msgid ""
+"This could be avoid by having the searcher carefully written to not look "
+"back into parts given out via `next_match()`/`next_reject()`/"
+"`next_match_back()`/`next_reject_back()`, however this kind of unsafety is "
+"very un-rustic (contradicts with \"fearless concurrency\")."
+msgstr ""
+
+#: src/2500-needle.md:956
+msgid ""
+"A better way to avoid this is to ensure there is a unique owner to the "
+"haystack. Therefore, the generic algorithm must now _borrow_ the haystack "
+"for the searcher to work with:"
+msgstr ""
+
+#: src/2500-needle.md:960 src/2500-needle.md:976
+msgid "// v3.0-alpha.1\n"
+msgstr ""
+
+#: src/2500-needle.md:964
+msgid "//^ searcher no longer captures the haystack.\n"
+msgstr ""
+
+#: src/2500-needle.md:967
+msgid "// no more haystack() method.\n"
+msgstr ""
+
+#: src/2500-needle.md:972
+msgid ""
+"The `matches()` algorithm can then take the whole responsibility to split "
+"out non-overlapping slices of the haystack it owns:"
+msgstr ""
+
+#: src/2500-needle.md:980
+msgid "// split the haystack into 3 parts.\n"
+msgstr ""
+
+#: src/2500-needle.md:988
+msgid "Matching a `&Regex`"
+msgstr ""
+
+#: src/2500-needle.md:990
+msgid ""
+"In the prototype above, we always feed the remaining haystack into `."
+"search()`. This works fine for built-in needle types like `char` and `&str`, "
+"but is totally broken for more advanced regular expression needles."
+msgstr ""
+
+#: src/2500-needle.md:994
+msgid ""
+"The main issue is due to anchors and look-around. Anchors like `^` and `$` "
+"depend on the actual position where the slice appears. Look-around like `(?"
+"=foo)`, `(?<!foo)` and `\\b` depend on parts which may have already matched. "
+"These means to make regex work, we must pass the entire haystack (not just "
+"the remaining part), and a range indicating what's the part should be "
+"matched."
+msgstr ""
+
+#: src/2500-needle.md:1000
+msgid ""
+"In fact, this behavior is consistent with all regex libraries in the wild, e."
+"g. [`regex`](https://crates.io/crates/regex), [`onig`](https://crates.io/"
+"crates/onig) and [`pcre`](https://crates.io/crates/pcre)."
+msgstr ""
+
+#: src/2500-needle.md:1004
+msgid "// v3.0-alpha.2\n"
+msgstr ""
+
+#: src/2500-needle.md:1010
+msgid ""
+"This API completely conflicts with `&mut str` as a haystack though. This is "
+"fine as a `&mut str` is incompatible with look-around anyway, but it is not "
+"OK for `matches()` which need to support both \"matching `&mut str` with "
+"`char`\" and \"matching `&str` with `&Regex`\"."
+msgstr ""
+
+#: src/2500-needle.md:1014
+msgid ""
+"We fix this problem by treating the haystack and range as a single entity we "
+"call **span**:"
+msgstr ""
+
+#: src/2500-needle.md:1017
+msgid "// v3.0-alpha.3\n"
+msgstr ""
+
+#: src/2500-needle.md:1025
+msgid "// split the span into 3 parts.\n"
+msgstr ""
+
+#: src/2500-needle.md:1033
+msgid ""
+"For a span of `&str`, we will implement `.split_around()` to keep the "
+"original haystack, and only split the ranges. While for `&mut str`, this "
+"method will split the haystack apart."
+msgstr ""
+
+#: src/2500-needle.md:1036
+msgid ""
+"The call the these a _shared span_ and _unique span_ respectively. The split "
+"behavior of shared span in fact is independent of haystack, and the "
+"operation is done entirely on the Range alone. Thus we could reduce "
+"repetitive implementation by providing `Span<H>` in the standard library. "
+"The Haystack implementation only needs to specify which flavor is chosen by "
+"a marker trait."
+msgstr ""
+
+#: src/2500-needle.md:1042
+msgid "// v3.0-alpha.4\n"
+msgstr ""
+
+#: src/2500-needle.md:1067
+msgid "Hay: Don't repeat yourself"
+msgstr ""
+
+#: src/2500-needle.md:1069
+msgid ""
+"When we support searching both `&str` and `&mut str`, we'll often need to "
+"implement the same algorithm to both types. v2.0 solves this by using "
+"macros, which works but is not elegant."
+msgstr ""
+
+#: src/2500-needle.md:1072
+msgid ""
+"Since both `&str` and `&mut str` can be borrowed as a `str`, we could force "
+"every haystack to implement `Borrow`. We call the borrowed type a **hay**. "
+"The searcher can then only work on the hay, instead of haystack."
+msgstr ""
+
+#: src/2500-needle.md:1077 src/2500-needle.md:1091
+msgid "// v3.0-alpha.5\n"
+msgstr ""
+
+#: src/2500-needle.md:1086
+msgid ""
+"Unfortunately, a Needle must be associated with the Haystack, because we "
+"must not allow \"match `&mut str` with `&Regex`\" to happen. Thus macros "
+"would still be needed, though not surrounding the entire module."
+msgstr ""
+
+#: src/2500-needle.md:1100
+msgid ""
+"In v2.0 and before, a pattern (needle) will need to specialize "
+"`starts_with()` and `ends_with()`."
+msgstr ""
+
+#: src/2500-needle.md:1111
+msgid ""
+"In v3.0, we have removed `.next_reject()` from Searcher, and thus Needle "
+"needs to provide `.trim_start()` and `.trim_end()` as well, making the "
+"`Needle` trait quite large."
+msgstr ""
+
+#: src/2500-needle.md:1114
+msgid ""
+"There are many disadvantages by putting these specialization methods "
+"directly inside `Needle`:"
+msgstr ""
+
+#: src/2500-needle.md:1116
+msgid ""
+"[Issue 20021](https://github.com/rust-lang/rust/issues/20021) means the "
+"`Needle` impl for `&Regex` will still need to implement `.is_suffix_of()` "
+"and `.trim_end()` even if they are `unimplemented!()`"
+msgstr ""
+
+#: src/2500-needle.md:1118
+msgid ""
+"These two methods do not use the searcher directly, but is bounded by `where "
+"Self::Searcher: ReverseSearcher<H>` which feels strange."
+msgstr ""
+
+#: src/2500-needle.md:1120
+msgid ""
+"More code needs to be repeated to delegate an implementation e.g. from "
+"`&str` to `&[u8]`."
+msgstr ""
+
+#: src/2500-needle.md:1122
+msgid ""
+"A solution move `.is_prefix_of()` and `.trim_start()` directly into "
+"`Searcher`. However, a searcher sometimes requires preprocessing unnecessary "
+"for these operations. Therefore, instead we put them into a separate entity "
+"called a _consumer_."
+msgstr ""
+
+#: src/2500-needle.md:1127
+msgid "// v3.0-alpha.6\n"
+msgstr ""
+
+#: src/2500-needle.md:1139
+msgid ""
+"We observed that `.is_prefix_of()` and `.trim_start()` have one thing in "
+"common: they both only match the beginning of text. This allows us to "
+"require only a single method in the `Consumer` trait."
+msgstr ""
+
+#: src/2500-needle.md:1144
+msgid "// v3.0-alpha.7\n"
+msgstr ""
+
+#: src/2500-needle.md:1147
+msgid "/* default impl */"
+msgstr ""
+
+#: src/2500-needle.md:1151
+msgid ""
+"Both `starts_with()` and `trim()` can be efficiently implemented in terms of "
+"`.consume()`, though for some needles a specialized `trim()` can be even "
+"faster, so we keep this default method."
+msgstr ""
+
+#: src/2500-needle.md:1154
+msgid "Miscellaneous decisions"
+msgstr ""
+
+#: src/2500-needle.md:1156
+msgid "`usize` as index instead of pointers"
+msgstr ""
+
+#: src/2500-needle.md:1158
+msgid ""
+"Pattern API v1.3–v2.0 all used cursors (pointers) as the primary indexing "
+"method. v3.0 still supports cursor-based indexing, but reverts to `usize` "
+"for the built-in slice types (`str`, `[T]` and `OsStr`). There are two "
+"reasons for this:"
+msgstr ""
+
+#: src/2500-needle.md:1162
+msgid ""
+"**Zero-sized types**. All elements of a slice of ZSTs e.g. `[()]` have the "
+"same pointer. A proper haystack/searcher implementation would need to check "
+"`size_of::<T>()` and encode the index into (non-zero) pointers when the size "
+"is 0. This made the code very ugly and easy to get wrong (the v2.0 "
+"implementation does not consider ZSTs for instance)."
+msgstr ""
+
+#: src/2500-needle.md:1167
+msgid ""
+"**No performance advantage**. We have tested the performance and found that "
+"using integer index or cursor pointer have similar performance."
+msgstr ""
+
+#: src/2500-needle.md:1170
+msgid "DSTs instead of GATs"
+msgstr ""
+
+#: src/2500-needle.md:1172
+msgid ""
+"We share a searcher implementation by introducing the `Hay` trait, as the "
+"dereference target of the `Haystack` trait, i.e. `&[T]`, `&mut [T]` and "
+"`Vec<T>` will all be delegated to `[T]`:"
+msgstr ""
+
+#: src/2500-needle.md:1184
+msgid ""
+"The problem is not every haystack can be dereferenced. Proper support of any "
+"types beyond slices would require custom dynamic-sized types (DSTs)."
+msgstr ""
+
+#: src/2500-needle.md:1187
+msgid ""
+"An alternative formation is delegating to a shared haystack by generic "
+"associated types (GATs):"
+msgstr ""
+
+#: src/2500-needle.md:1200
+msgid "We have decided to go with the DSTs approach because:"
+msgstr ""
+
+#: src/2500-needle.md:1202
+msgid ""
+"**Non-slice haystacks are rare**. The built-in types that v3.0 aims to "
+"support all have corresponding built-in DSTs (`str`, `[T]` and `OsStr`), "
+"making the problem of custom DSTs irrelevant in the standard library."
+msgstr ""
+
+#: src/2500-needle.md:1206
+msgid ""
+"**GATs is still unimplemented**. While the RFC for GATs has been accepted, "
+"the implementation has still not landed on the Rust compiler, making it "
+"impossible to create a test prototype."
+msgstr ""
+
+#: src/2500-needle.md:1209
+msgid "`Deref` instead of `Borrow`"
+msgstr ""
+
+#: src/2500-needle.md:1211
+msgid ""
+"The `Haystack` trait inherits `Deref` and requires its `Target` to implement "
+"`Hay`. An alternative is extending `Borrow` instead:"
+msgstr ""
+
+#: src/2500-needle.md:1221
+msgid ""
+"The advantage of `Borrow` is that it does not force us to rely on custom DST "
+"because `∀T. T: Borrow<T>`, but that is not the whole picture — the owned "
+"type `LinkedList<T>` cannot implement `Hay`, because it cannot properly "
+"implement `slice_unchecked(&self, ...) -> &Self` (we cannot magically make "
+"up a borrowed sub-list)."
+msgstr ""
+
+#: src/2500-needle.md:1226
+msgid ""
+"And thus the more general `Borrow` trait offers no advantage over `Deref`."
+msgstr ""
+
+#: src/2500-needle.md:1228
+msgid "Searcher makes Hay an input type instead of associated type"
+msgstr ""
+
+#: src/2500-needle.md:1230
+msgid ""
+"The `Searcher` and `Consumer` traits makes the hay as input type. This makes "
+"any algorithm relying on a `ReverseSearcher` need to spell out the hay as "
+"well."
+msgstr ""
+
+#: src/2500-needle.md:1242
+msgid "// <---\n"
+msgstr ""
+
+#: src/2500-needle.md:1245
+msgid "An alternative is to make Hay an associated type:"
+msgstr ""
+
+#: src/2500-needle.md:1260
+msgid ""
+"This would mean a searcher type can only search on one haystack. It turns "
+"out a searcher is shared quite frequently, e.g. the two-way search algorithm "
+"is shared among the needles of `&[T]`, `&str` and `&OsStr`. Associated type "
+"would force creation of many wrapper types which is annoying."
+msgstr ""
+
+#: src/2500-needle.md:1264
+msgid ""
+"Therefore we stay with having the hay as the input type, the same choice "
+"taken in v2.0 and before."
+msgstr ""
+
+#: src/2500-needle.md:1266
+msgid "Specialization of `contains()`"
+msgstr ""
+
+#: src/2500-needle.md:1268
+msgid ""
+"v3.0 removed the `Needle::is_contained_in()` method. The `contains()` "
+"algorithm simply returned `searcher.search(span).is_some()`. The micro-"
+"benchmarks shows no performance decrease, thus the method is removed to "
+"reduce the API surface."
+msgstr ""
+
+#: src/2500-needle.md:1272
+msgid "Needle for `&[T]` only requires `T: PartialEq`"
+msgstr ""
+
+#: src/2500-needle.md:1274
+msgid ""
+"Sub-slice searching nowadays uses the Two-Way search algorithm, which "
+"requires ordered alphabet i.e. `T: Ord`. However, there are already two "
+"stabilized APIs only assuming `T: PartialEq`:"
+msgstr ""
+
+#: src/2500-needle.md:1289
+msgid ""
+"While we could allow only `starts_with`/`ends_with` to be bound on "
+"`PartialEq` and make the rest of the array searching algorithm require `T: "
+"Ord`, it feels very inconsistent to do so."
+msgstr ""
+
+#: src/2500-needle.md:1292
+msgid ""
+"With specialization, this dilemma can be easily fixed: we will fallback to "
+"an algorithm which only requires `T: PartialEq` (e.g. [`galil-seiferas`]"
+"(https://crates.io/crates/galil-seiferas) or even naive search), and use the "
+"faster Two-Way algorithm when `T: Ord`."
+msgstr ""
+
+#: src/2500-needle.md:1296
+msgid "Not having default implementations for `search` and `consume`"
+msgstr ""
+
+#: src/2500-needle.md:1298
+msgid ""
+"In the `Searcher` and `Consumer` traits, `.search()` and `.consume()` can be "
+"implemented in terms of each other:"
+msgstr ""
+
+#: src/2500-needle.md:1308
+msgid "// we can implement `search` in terms of `consume`\n"
+msgstr ""
+
+#: src/2500-needle.md:1330
+msgid "// we can implement `consume` in terms of `search`\n"
+msgstr ""
+
+#: src/2500-needle.md:1342
+msgid ""
+"These fallbacks should only be used when the needle does not allow more "
+"efficient implementations, which is often not the case. To encourage needle "
+"implementations to support both primitives, where they should have full "
+"control of the details, we keep them as required methods."
+msgstr ""
+
+#: src/2500-needle.md:1346
+msgid "Names of everything"
+msgstr ""
+
+#: src/2500-needle.md:1348
+msgid ""
+"**Haystack**. Inherited from the v1.0 method `Searcher::haystack()`. v2.0 "
+"called it `PatternHaystack` since `Haystack` is an associated type referring "
+"to a range of cursors, but v3.0 does away the exclusive cursor-based design "
+"and thus can choose the shorter name for the trait."
+msgstr ""
+
+#: src/2500-needle.md:1353
+msgid ""
+"**Hay**. Chosen as a shorter but related name from \"Haystack\", similar to "
+"the relation in `String` → `str` and `PathBuf` → `Path`."
+msgstr ""
+
+#: src/2500-needle.md:1356
+msgid ""
+"**Needle**. Renamed from `Pattern` to clear confusion with the language's "
+"pattern matching. Calling it \"needle\" to pair up with \"haystack\"."
+msgstr ""
+
+#: src/2500-needle.md:1359
+msgid ""
+"**Searcher::search()**. The name \"Searcher\" is the same as v1.0. The "
+"method is renamed from `.next_match()` since it needs to take a span as "
+"input and thus no longer iterator-like. It is renamed to `.search()` as a "
+"shorter verb and also consistent with the trait name."
+msgstr ""
+
+#: src/2500-needle.md:1363
+msgid ""
+"**Consumer::consume()**. The name is almost randomly chosen as there's no "
+"good name for this operation. This name is taken from the same function in "
+"the [`re2` library](https://github.com/google/re2/blob/2018-07-01/re2/re2."
+"h#L330-L334)."
+msgstr ""
+
+#: src/2500-needle.md:1366
+msgid ""
+"`Consumer` is totally different from `Searcher`. Calling it `PrefixSearcher` "
+"or `AnchoredSearcher` would imply a non-existing sub-classing relationship."
+msgstr ""
+
+#: src/2500-needle.md:1369
+msgid "We would also like a name which is only a single word."
+msgstr ""
+
+#: src/2500-needle.md:1371
+msgid ""
+"We want the name _not_ start with the letter **S** so we could easily "
+"distinguish between this and `Searcher` when quick-scanning the code, in "
+"particular when `ReverseXxxer` is involved."
+msgstr ""
+
+#: src/2500-needle.md:1375
+msgid ""
+"\"Matcher\" (using name from Python) is incompatible with the existing `."
+"matches()` method. Besides, the meaning of \"match\" is very ambiguous among "
+"other libraries."
+msgstr ""
+
+#: src/2500-needle.md:1380
+msgid "Library"
+msgstr ""
+
+#: src/2500-needle.md:1380
+msgid "Substring"
+msgstr ""
+
+#: src/2500-needle.md:1380
+msgid "Start of text"
+msgstr ""
+
+#: src/2500-needle.md:1380
+msgid "Entire string"
+msgstr ""
+
+#: src/2500-needle.md:1382
+msgid ""
+"[C# (.NET)](https://docs.microsoft.com/en-us/dotnet/api/system.text."
+"regularexpressions.regex)"
+msgstr ""
+
+#: src/2500-needle.md:1382
+msgid "`Match`"
+msgstr ""
+
+#: src/2500-needle.md:1382 src/2500-needle.md:1383 src/2500-needle.md:1384
+#: src/2500-needle.md:1385 src/2500-needle.md:1386 src/2500-needle.md:1387
+#: src/2500-needle.md:1388 src/2500-needle.md:1391 src/2500-needle.md:1392
+#: src/2500-needle.md:1393 src/2500-needle.md:1394 src/2500-needle.md:1395
+#: src/2500-needle.md:1396 src/2500-needle.md:1398 src/2500-needle.md:1401
+#: src/2500-needle.md:1402 src/2500-needle.md:1403 src/2500-needle.md:1404
+msgid "\\-"
+msgstr ""
+
+#: src/2500-needle.md:1383
+msgid "[C++](https://en.cppreference.com/w/cpp/regex)"
+msgstr ""
+
+#: src/2500-needle.md:1383
+msgid "`regex_search`"
+msgstr ""
+
+#: src/2500-needle.md:1383
+msgid "`regex_match`"
+msgstr ""
+
+#: src/2500-needle.md:1384
+msgid "[D](https://dlang.org/phobos/std_regex.html)"
+msgstr ""
+
+#: src/2500-needle.md:1384
+msgid "`matchFirst`"
+msgstr ""
+
+#: src/2500-needle.md:1385
+msgid ""
+"[Dart](https://api.dartlang.org/stable/1.24.3/dart-core/Pattern-class.html)"
+msgstr ""
+
+#: src/2500-needle.md:1385 src/2500-needle.md:1404
+msgid "`firstMatch`"
+msgstr ""
+
+#: src/2500-needle.md:1385
+msgid "`matchAsPrefix`"
+msgstr ""
+
+#: src/2500-needle.md:1386
+msgid "[Erlang](http://erlang.org/doc/man/re.html)"
+msgstr ""
+
+#: src/2500-needle.md:1386
+msgid "`run`"
+msgstr ""
+
+#: src/2500-needle.md:1386
+msgid "(`anchored`)"
+msgstr ""
+
+#: src/2500-needle.md:1387
+msgid "[Go](https://golang.org/pkg/regexp/)"
+msgstr ""
+
+#: src/2500-needle.md:1387
+msgid "`Find`"
+msgstr ""
+
+#: src/2500-needle.md:1388
+msgid ""
+"[Haskell](https://hackage.haskell.org/package/regex-base-0.93.2/docs/Text-"
+"Regex-Base-RegexLike.html)"
+msgstr ""
+
+#: src/2500-needle.md:1388 src/2500-needle.md:1394 src/2500-needle.md:1399
+#: src/2500-needle.md:1401
+msgid "`match`"
+msgstr ""
+
+#: src/2500-needle.md:1389
+msgid "[ICU](http://icu-project.org/apiref/icu4c/classRegexMatcher.html)"
+msgstr ""
+
+#: src/2500-needle.md:1389 src/2500-needle.md:1390 src/2500-needle.md:1392
+#: src/2500-needle.md:1394 src/2500-needle.md:1402
+msgid "`find`"
+msgstr ""
+
+#: src/2500-needle.md:1389 src/2500-needle.md:1390
+msgid "`lookingAt`"
+msgstr ""
+
+#: src/2500-needle.md:1389 src/2500-needle.md:1390
+msgid "`matches`"
+msgstr ""
+
+#: src/2500-needle.md:1390
+msgid ""
+"[Java (JVM)](https://docs.oracle.com/javase/10/docs/api/java/util/regex/"
+"Matcher.html)"
+msgstr ""
+
+#: src/2500-needle.md:1391
+msgid ""
+"[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/"
+"Regular_Expressions)"
+msgstr ""
+
+#: src/2500-needle.md:1391
+msgid "`exec`/`match`"
+msgstr ""
+
+#: src/2500-needle.md:1392
+msgid ""
+"[Kotlin](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/)"
+msgstr ""
+
+#: src/2500-needle.md:1392
+msgid "`matchEntire`"
+msgstr ""
+
+#: src/2500-needle.md:1393
+msgid "[Lua](https://www.lua.org/manual/5.3/manual.html#6.4)"
+msgstr ""
+
+#: src/2500-needle.md:1393
+msgid "`find`/`match`"
+msgstr ""
+
+#: src/2500-needle.md:1394
+msgid "[Nim](https://nim-lang.org/docs/re.html)"
+msgstr ""
+
+#: src/2500-needle.md:1395
+msgid "[OCaml](http://caml.inria.fr/pub/docs/manual-ocaml/libref/Str.html)"
+msgstr ""
+
+#: src/2500-needle.md:1395
+msgid "`search_forward`"
+msgstr ""
+
+#: src/2500-needle.md:1395
+msgid "`string_match`"
+msgstr ""
+
+#: src/2500-needle.md:1396
+msgid "[Oniguruma](https://github.com/kkos/oniguruma/blob/master/doc/API)"
+msgstr ""
+
+#: src/2500-needle.md:1396
+msgid "`onig_search`"
+msgstr ""
+
+#: src/2500-needle.md:1396
+msgid "`onig_match`"
+msgstr ""
+
+#: src/2500-needle.md:1397
+msgid "[PCRE2](https://pcre.org/current/doc/html/pcre2api.html#SEC27)"
+msgstr ""
+
+#: src/2500-needle.md:1397
+msgid "`pcre2_match`"
+msgstr ""
+
+#: src/2500-needle.md:1397
+msgid "(`PCRE2_ANCHORED`)"
+msgstr ""
+
+#: src/2500-needle.md:1397
+msgid "(`PCRE2_ENDANCHORED`)"
+msgstr ""
+
+#: src/2500-needle.md:1398
+msgid ""
+"[POSIX](http://pubs.opengroup.org/onlinepubs/9699919799//functions/regexec."
+"html)"
+msgstr ""
+
+#: src/2500-needle.md:1398
+msgid "`regexec`"
+msgstr ""
+
+#: src/2500-needle.md:1399
+msgid "[Python](https://docs.python.org/3/library/re.html)"
+msgstr ""
+
+#: src/2500-needle.md:1399
+msgid "`search`"
+msgstr ""
+
+#: src/2500-needle.md:1399
+msgid "`fullmatch`"
+msgstr ""
+
+#: src/2500-needle.md:1400
+msgid "[re2](https://github.com/google/re2/blob/master/re2/re2.h)"
+msgstr ""
+
+#: src/2500-needle.md:1400
+msgid "`PartialMatch`"
+msgstr ""
+
+#: src/2500-needle.md:1400
+msgid "`Consume`"
+msgstr ""
+
+#: src/2500-needle.md:1400
+msgid "`FullMatch`"
+msgstr ""
+
+#: src/2500-needle.md:1401
+msgid "[Ruby](https://ruby-doc.org/core-2.5.0/Regexp.html)"
+msgstr ""
+
+#: src/2500-needle.md:1402
+msgid "[Rust](https://docs.rs/regex/1.0.1/regex/struct.Regex.html)"
+msgstr ""
+
+#: src/2500-needle.md:1403
+msgid ""
+"[Scala](https://www.scala-lang.org/api/current/scala/util/matching/Regex."
+"html)"
+msgstr ""
+
+#: src/2500-needle.md:1403
+msgid "`findFirstIn`"
+msgstr ""
+
+#: src/2500-needle.md:1403
+msgid "`findPrefixOf`"
+msgstr ""
+
+#: src/2500-needle.md:1404
+msgid ""
+"[Swift](https://developer.apple.com/documentation/foundation/"
+"nsregularexpression)"
+msgstr ""
+
+#: src/2500-needle.md:1432
+msgid ""
+"**rsearch()**, **rconsume()**. The common naming convention of algorithms "
+"for reverse searching is adding an `r` prefix, so we do the same for the "
+"trait methods as well."
+msgstr ""
+
+#: src/2500-needle.md:1435
+msgid "**Span**. The name is taken from the rustc compiler."
+msgstr ""
+
+#: src/2500-needle.md:1437
+msgid "Alternatives"
+msgstr ""
+
+#: src/2500-needle.md:1439
+msgid ""
+"The names of everything except `Searcher` and `Haystack` are not finalized."
+msgstr ""
+
+#: src/2500-needle.md:1441
+msgid "Prior art"
+msgstr ""
+
+#: src/2500-needle.md:1443
+msgid "Previous attempts"
+msgstr ""
+
+#: src/2500-needle.md:1445
+msgid "v1.0"
+msgstr ""
+
+#: src/2500-needle.md:1447
+msgid ""
+"The existing `Pattern` API was introduced in [RFC 528](https://github.com/"
+"rust-lang/rfcs/pull/528) to provide a common interface for several search-"
+"related operations on a string. There were several minor revisions after the "
+"RFC was accepted, but till nowadays is still an unstable API."
+msgstr ""
+
+#: src/2500-needle.md:1451
+msgid "A `Pattern` is currently implemented for the following types:"
+msgstr ""
+
+#: src/2500-needle.md:1453
+msgid "`char` — search for a single character in a string."
+msgstr ""
+
+#: src/2500-needle.md:1454
+msgid "`&[char]` — search for a character set in a string."
+msgstr ""
+
+#: src/2500-needle.md:1455
+msgid "`&str`, `&&str`, `&String` — search for a substring."
+msgstr ""
+
+#: src/2500-needle.md:1456
+msgid "`FnMut(char) -> bool` — search by property of a character."
+msgstr ""
+
+#: src/2500-needle.md:1457
+msgid ""
+"`&regex::Regex` — search by regular expression (provided through the `regex` "
+"package)."
+msgstr ""
+
+#: src/2500-needle.md:1470
+msgid ""
+"The `Pattern` trait is a builder object. To perform searching, "
+"implementations will convert itself into a `Searcher` object. This "
+"conversion serves two purposes:"
+msgstr ""
+
+#: src/2500-needle.md:1473
+msgid ""
+"Preprocess the pattern to allow for faster algorithm, e.g. the `Pattern::"
+"into_search` for substring search will calculate critical information to "
+"perform the Two-Way search algorithm."
+msgstr ""
+
+#: src/2500-needle.md:1475
+msgid "Store the mutable search states."
+msgstr ""
+
+#: src/2500-needle.md:1486
+msgid "Calling `next_match()` or `next_reject()` will yield a range:"
+msgstr ""
+
+#: src/2500-needle.md:1488
+msgid ""
+"`next_match()` — returns the next substring range of the haystack which "
+"matches a single instance of the pattern."
+msgstr ""
+
+#: src/2500-needle.md:1490
+msgid ""
+"`next_reject()` — returns the next longest substring range of the haystack "
+"which contains no pattern at all."
+msgstr ""
+
+#: src/2500-needle.md:1493
+msgid "(The `next()` call interleaves both methods above.)"
+msgstr ""
+
+#: src/2500-needle.md:1496
+msgid ""
+"// for simplicity, `where` clauses involving ReverseSearcher and "
+"DoubleEndedSearcher are omitted.\n"
+msgstr ""
+
+#: src/2500-needle.md:1510
+msgid ""
+"// The following requires the Pattern's Searcher to additionally be "
+"constrained by `ReverseSearcher`\n"
+msgstr ""
+
+#: src/2500-needle.md:1520
+msgid ""
+"// The following requires the Pattern's Searcher to additionally be "
+"constrained by `DoubleEndedSearcher`\n"
+msgstr ""
+
+#: src/2500-needle.md:1525
+msgid ""
+"Using the result from the `SearchStep` stream, the `Pattern` API can be used "
+"to implement the above string methods."
+msgstr ""
+
+#: src/2500-needle.md:1528
+msgid ""
+"While the pattern-to-searcher conversion is beneficial when searching the "
+"entire haystack, it is often wasteful in simple functions like `starts_with` "
+"and `ends_with` (a sub-slice equality check is optimal). Therefore, the "
+"specialized methods like `Pattern::is_prefix_of` are provided."
+msgstr ""
+
+#: src/2500-needle.md:1532
+msgid "v1.2–v1.5"
+msgstr ""
+
+#: src/2500-needle.md:1534
+msgid ""
+"The `Pattern` API in Rust only supports searching a string. An [attempt]"
+"(https://github.com/rust-lang/rust/issues/27721#issuecomment-185405392) to "
+"evolve this to arbitrary haystack type can be found in the repository "
+"[Kimundi/pattern_api_sketch](https://github.com/Kimundi/pattern_api_sketch)."
+msgstr ""
+
+#: src/2500-needle.md:1551
+msgid ""
+"The most obvious change is to replace all `&'a str` by an arbitrary type "
+"`H`. The type still needs to \"behave like a string\" though, thus the "
+"`SearchPtrs` bound, which will be used to turn a pair of cursors (equivalent "
+"to byte offsets) into a \"substring\" of the haystack for the `split` and "
+"`match` methods."
+msgstr ""
+
+#: src/2500-needle.md:1557
+msgid "// e.g. implemented for &str\n"
+msgstr ""
+
+#: src/2500-needle.md:1558
+msgid "// e.g. (*const u8, *const u8)\n"
+msgstr ""
+
+#: src/2500-needle.md:1559
+msgid "// e.g. *const u8\n"
+msgstr ""
+
+#: src/2500-needle.md:1568
+msgid "v2.0"
+msgstr ""
+
+#: src/2500-needle.md:1570
+msgid ""
+"The [v2.0 API](https://github.com/Kimundi/rust_pattern_api_v2) was "
+"introduced due to [RFC 1309](https://github.com/rust-lang/rfcs/pull/1309), "
+"trying to cover `OsStr` as well. But other than `OsStr` support the v2.0 API "
+"is essentially the same as the v1.5 API."
+msgstr ""
+
+#: src/2500-needle.md:1587
+msgid "// same as SearchPtrs in v1.5\n"
+msgstr ""
+
+#: src/2500-needle.md:1590
+msgid "// yielded item types from `matches()` and `split()`\n"
+msgstr ""
+
+#: src/2500-needle.md:1601
+msgid "Haskell"
+msgstr ""
+
+#: src/2500-needle.md:1603
+msgid ""
+"Haskell is perhaps one of the few languages where a generic string matching "
+"API is found, since it also has so many string types like Rust 😝, and there "
+"isn't an official regex implementation (unlike C++ which won't give insight "
+"how a `Searcher` interface should be designed)."
+msgstr ""
+
+#: src/2500-needle.md:1607
+msgid ""
+"Haskell's [`regex-base`](https://hackage.haskell.org/package/regex-base) is "
+"the base package which provides the type classes for regex matching."
+msgstr ""
+
+#: src/2500-needle.md:1609
+msgid "The type class `Extract` is corresponding to `Haystack` in this RFC."
+msgstr ""
+
+#: src/2500-needle.md:1619 src/2500-needle.md:1637
+msgid "// equivalent meaning in terms of Rust.\n"
+msgstr ""
+
+#: src/2500-needle.md:1627
+msgid "The type class `RegexLike` is corresponding to `Searcher` in this RFC."
+msgstr ""
+
+#: src/2500-needle.md:1633
+msgid ""
+"-- the rest are default implementations depending on these two functions.\n"
+msgstr ""
+
+#: src/2500-needle.md:1641
+msgid "// ...\n"
+msgstr ""
+
+#: src/2500-needle.md:1645
+msgid ""
+"Similar to this RFC, the primary search method `matchOnceText` is trisection-"
+"based."
+msgstr ""
+
+#: src/2500-needle.md:1647
+msgid "Unlike this RFC, the `Extract` class is much simpler."
+msgstr ""
+
+#: src/2500-needle.md:1649
+msgid ""
+"Haskell doesn't have the shared/mutable/owned variant of the same type of "
+"string. Therefore it does not need the `Hay`/`Haystack` trait separation, "
+"and also does not need a dedicated `split :: Int -> source -> (source, "
+"source)` method."
+msgstr ""
+
+#: src/2500-needle.md:1652
+msgid ""
+"Haskell's strings do not enforce a particular encoding on its string types, "
+"thus `next_index` and `prev_index` become simply `(+ 1)` and `(− 1)`."
+msgstr ""
+
+#: src/2500-needle.md:1654
+msgid ""
+"The `Extract` class only supports indexing using an integer, so "
+"`start_index` must be `0`. `end_index` is also not needed since `before` and "
+"`after` (the slicing operations) will automatically clamp the index."
+msgstr ""
+
+#: src/2500-needle.md:1658
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2500-needle.md:1661
+msgid ""
+"Currently, due to RFC 2089 and/or 2289 not being implemented, using a "
+"`Haystack` in any algorithm would need to a redundant where clause:"
+msgstr ""
+
+#: src/2500-needle.md:1669
+msgid "// <-- this line\n"
+msgstr ""
+
+#: src/2500-needle.md:1673
+msgid ""
+"This RFC assumes that before stabilizing, either RFC should have been "
+"implemented."
+msgstr ""
+
+#: src/2500-needle.md:1675
+msgid ""
+"For simplicity the prototype implementation fallbacks to the \"naive search "
+"algorithm\" when `T: !Ord` by always factorizing the needle `arr` into "
+"`arr[..1] ++ arr[1..]`. It is not proven that this is equivalent to the "
+"\"naive search\", though unit testing does suggest this works."
+msgstr ""
+
+#: src/2500-needle.md:1680
+msgid ""
+"As mentioned in the RFC, there are faster algorithms for searching a `T: !"
+"Ord` slice. It is not decided if we should complicate the standard library "
+"to support this though."
+msgstr ""
+
+#: src/2500-needle.md:1683
+msgid ""
+"We could represent `SharedHaystack` using a more general concept of "
+"\"cheaply cloneable\":"
+msgstr ""
+
+#: src/2500-needle.md:1692
+msgid ""
+"and all `H: SharedHaystack` bound can be replaced by `H: Haystack + "
+"ShallowClone`. But this generalization brings more questions e.g. should "
+"`[u32; N]: ShallowClone`. This should be better left to a new RFC, and since "
+"`SharedHaystack` is mainly used for the core type `&A` only, we could keep "
+"`SharedHaystack` unstable longer (a separate track from the main Needle API) "
+"until this question is resolved."
+msgstr ""
+
+#: src/2500-needle.md:1698
+msgid ""
+"With a benefit of simplified API, we may want to merge `Consumer` and "
+"`Searcher` into a single trait."
+msgstr ""

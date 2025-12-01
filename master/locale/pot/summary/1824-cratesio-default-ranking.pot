@@ -1,0 +1,1688 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1824-crates.io-default-ranking.md:1
+msgid "Feature Name: crates_io_default_ranking"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:2
+msgid "Start Date: 2016-12-19"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1824](https://github.com/rust-lang/rfcs/pull/1824)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#41616](https://github.com/rust-lang/rust/"
+"issues/41616)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:9
+msgid ""
+"Crates.io has many useful libraries for a variety of purposes, but it's "
+"difficult to find which crates are meant for a particular purpose and then "
+"to decide among the available crates which one is most suitable in a "
+"particular context. [Categorization](https://github.com/rust-lang/crates.io/"
+"pull/473) and [badges](https://github.com/rust-lang/crates.io/pull/481) are "
+"coming to crates.io; categories help with finding a set of crates to "
+"consider and badges help communicate attributes of crates."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:16
+msgid ""
+"**This RFC aims to create a default ranking of crates within a list of "
+"crates that have a category or keyword in order to make a recommendation to "
+"crate users about which crates are likely to deserve further manual "
+"evaluation.**"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:23
+msgid "Motivation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:26
+msgid ""
+"Finding and evaluating crates can be time consuming. People already familiar "
+"with the Rust ecosystem often know which crates are best for which puproses, "
+"but we want to share that knowledge with everyone. For example, someone "
+"looking for a crate to help create a parser should be able to navigate to a "
+"category for that purpose and get a list of crates to consider. This list "
+"would include crates such as [nom](https://crates.io/crates/nom) and "
+"[peresil](https://crates.io/crates/peresil), and the order in which they "
+"appear should be significant and should help make the decision between the "
+"crates in this category easier."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:38
+msgid ""
+"This helps address the goal of \"Rust should provide easy access to high "
+"quality crates\" as stated in the [Rust 2017 Roadmap](https://github.com/"
+"rust-lang/rfcs/pull/1774)."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:43
+msgid "Detailed design"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:46
+msgid ""
+"Please see the [Appendix: Comparative Research](#appendix-comparative-"
+"research) section for ways that other package manager websites have solved "
+"this problem, and the [Appendix: User Research](#appendix-user-research) "
+"section for results of a user research survey we did on how people evaluate "
+"crates by hand today."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:51
+msgid "A few assumptions we made:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:53
+msgid ""
+"Measures that can be made automatically are preferred over measures that "
+"would need administrators, curators, or the community to spend time on "
+"manually."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:56
+msgid ""
+"Measures that can be made for any crate regardless of that crate's choice of "
+"version control, repository host, or CI service are preferred over measures "
+"that would only be available or would be more easily available with git, "
+"GitHub, Travis, and Appveyor. Our thinking is that when this additional "
+"information is available, it would be better to display a badge indicating "
+"it since this is valuable information, but it should not influence the "
+"ranking of the crates."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:63
+msgid ""
+"There are some measures, like \"suitability for the current task\" or "
+"\"whether I like the way the crate is implemented\" that crates.io shouldn't "
+"even attempt to assess, since those could potentially differ across "
+"situations for the same person looking for a crate."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:67
+msgid ""
+"We assume we will be able to calculate these in a reasonable amount of time "
+"either on-demand or by a background job initiated on crate publish and saved "
+"in the database as appropriate. We think the measures we have proposed can "
+"be done without impacting the performance of either publishing or browsing "
+"crates noticeably. If this does not turn out to be the case, we will have to "
+"adjust the formula."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:74
+msgid "Order by recent downloads"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:76
+msgid ""
+"Through the iterations of this RFC, there was no consensus around a way to "
+"order crates that would be useful, understandable, resistant to being gamed, "
+"and not require work of curators, reviewers, or moderators. Furthermore, "
+"different people in different situations may value different aspects of "
+"crates."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:81
+msgid ""
+"Instead of attempting to order crates as a majority of people would rank "
+"them, we propose a coarser measure to expose the set of crates worthy of "
+"further consideration on the first page of a category or keyword. At that "
+"point, the person looking for a crate can use other indicators on the page "
+"to decide which crates best meet their needs."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:87
+msgid ""
+"**The default ordering of crates within a keyword or category will be "
+"changed to be the number of downloads in the last 90 days.**"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:90
+msgid ""
+"While coarse, downloads show how many people or other crates have found this "
+"crate to be worthy of using. By limiting to the last 90 days, crates that "
+"have been around the longest won't have an advantage over new crates that "
+"might be better. Crates that are lower in the \"stack\", such as `libc`, "
+"will always have a higher number of downloads than those higher in the stack "
+"due to the number of crates using a lower-level crate as a dependency. "
+"Within a category or keyword, however, crates are likely to be from the same "
+"level of the stack and thus their download numbers will be comparable."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:99
+msgid ""
+"Crates are currently ordered by all-time downloads and the sort option "
+"button says \"Downloads\". We will:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:102
+msgid "change the ordering to be downloads in the last 90 days"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:103
+msgid ""
+"change the number of downloads displayed with each crate to be those made in "
+"the last 90 days"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:105
+msgid "change the sort option button to say \"Recent Downloads\"."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:107
+msgid ""
+"\"All-time Downloads\" could become another sort option in the menu, "
+"alongside \"Alphabetical\"."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:110
+msgid "Add more badges, filters, and sorting options"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:112
+msgid ""
+"Crates.io now has badges for master branch CI status, and [will soon have a "
+"badge indicating the version(s) of Rust a particular version builds "
+"successfully on](https://github.com/rust-lang/crates.io/pull/540)."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:118
+msgid ""
+"To enable a person to narrow down relevant crates to find the one that will "
+"best meet their needs, we will add more badges and indicators. **Badges will "
+"not influence crate ordering**."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:122
+msgid ""
+"Some badges may require use of third-party services such as GitHub. We "
+"recognize that not everyone uses these services, but note a specific badge "
+"is only one factor that people can consider out of many."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:126
+msgid ""
+"Through [the survey we conducted](#appendix-user-research), we found that "
+"when people evaluate crates, they are primarily looking for signals of:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:129
+#: src/1824-crates.io-default-ranking.md:138
+msgid "Ease of use"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:130
+#: src/1824-crates.io-default-ranking.md:221
+#: src/1824-crates.io-default-ranking.md:714
+msgid "Maintenance"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:131
+#: src/1824-crates.io-default-ranking.md:306
+#: src/1824-crates.io-default-ranking.md:738
+msgid "Quality"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:133
+msgid "Secondary signals that were used to infer the primary signals:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:135
+msgid "Popularity (covered by the default ordering by recent downloads)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:136
+#: src/1824-crates.io-default-ranking.md:322
+msgid "Credibility"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:140
+msgid ""
+"By far, the most common attribute people said they considered in the survey "
+"was whether a crate had good documentation. Frequently mentioned when "
+"discussing documentation was the desire to quickly find an example of how to "
+"use the crate."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:144
+msgid "This would be addressed in two ways."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:146
+msgid "Render README on a crate's page"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:148
+msgid ""
+"[Render README files on a crate's page on crates.io](https://github.com/rust-"
+"lang/crates.io/issues/81) so that people can quickly see for themselves the "
+"information that a crate author chooses to make available in their README. "
+"We can nudge towards having an example in the README by adding a template "
+"README that includes an Examples section [in what `cargo new` generates]"
+"(https://github.com/rust-lang/cargo/issues/3506)."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:157
+msgid "\"Well Documented\" badge"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:159
+msgid ""
+"For each crate published, in a background job, unpack the crate files and "
+"calculate the ratio of lines of documentation to lines of code as follows:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:162
+msgid ""
+"Find the number of lines of documentation in Rust files: `grep -r \"//[!/]\" "
+"--binary-files=without-match --include=*.rs . | wc -l`"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:164
+msgid "Find the number of lines in the README file, if specified in Cargo.toml"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:165
+msgid ""
+"Find the number of lines in Rust files: `find . -name '*.rs' | xargs wc -l`"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:167
+msgid ""
+"We would then add the lines in the README to the lines of documentation, "
+"subtract the lines of documentation from the total lines of code, and divide "
+"the lines of documentation by the lines of non-documentation in order to get "
+"the ratio of documentation to code. Test code (and any documentation within "
+"test code) _is_ part of this calculation."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:173
+msgid ""
+"Any crate getting in the top 20% of all crates would get a badge saying "
+"\"well documented\"."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:176
+msgid ""
+"This measure is gameable if a crate adds many lines that match the "
+"documentation regex but don't provide meaningful content, such as `/// lol`. "
+"While this may be easy to implement, a person looking at the documentation "
+"for a crate using this technique would immediately be able to see that the "
+"author is trying to game the system and reject it. If this becomes a common "
+"problem, we can re-evaluate this situation, but we believe the community of "
+"crate authors genuinely want to provide great documentation to crate users. "
+"We want to encourage and reward well-documented crates, and this outweighs "
+"the risk of potential gaming of the system."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:186
+msgid "combine:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:187
+msgid "1,195 lines of documentation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:188
+msgid "99 lines in README.md"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:189
+msgid "5,815 lines of Rust"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:190
+msgid "(1195 + 99) / (5815 - 1195) = 1294/4620 = .28"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:192
+msgid "nom:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:193
+msgid "2,263 lines of documentation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:194
+msgid "372 lines in README.md"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:195
+msgid "15,661 lines of Rust"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:196
+msgid "(2263 + 372) / (15661 - 2263) = 2635/13398 = .20"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:198
+msgid "peresil:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:199
+msgid "159 lines of documentation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:200
+msgid "20 lines in README.md"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:201
+msgid "1,341 lines of Rust"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:202
+msgid "(159 + 20) / (1341 - 159) = 179/1182 = .15"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:204
+msgid ""
+"lalrpop: ([in the /lalrpop directory in the repo](https://github.com/"
+"nikomatsakis/lalrpop/tree/master/lalrpop))"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:205
+msgid "742 lines of documentation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:206
+msgid "110 lines in ../README.md"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:207
+msgid "94,104 lines of Rust"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:208
+msgid "(742 + 110) / (94104 - 742) = 852/93362 = .01"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:210
+msgid "peg:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:211
+msgid "3 lines of documentation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:212
+msgid "no readme specified in Cargo.toml"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:213
+msgid "1,531 lines of Rust"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:214
+msgid "(3 + 0) / (1531 - 3) = 3/1528 = .00"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:218
+msgid ""
+"If we assume these are all the crates on crates.io for this example, then "
+"combine is the top 20% and would get a badge."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:223
+msgid ""
+"We will add a way for maintainers to communicate their intended level of "
+"maintenance and support. We will add indicators of issues resolved from the "
+"various code hosting services."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:227
+msgid "Self-reported maintenance intention"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:229
+msgid ""
+"We will add an optional attribute to Cargo.toml that crate authors could use "
+"to self-report their maintenance intentions. The valid values would be along "
+"the lines of the following, and would influence the ranking in the order "
+"they're presented:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:271
+msgid "These would be displayed as badges on lists of crates."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:273
+msgid ""
+"These levels would not have any time commitments attached to them-- "
+"maintainers who would like to batch changes into releases every 6 months "
+"could report \"actively developed\" just as much as maintainers who like to "
+"release every 6 weeks. This would need to be clearly communicated to set "
+"crate user expectations properly."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:279
+msgid ""
+"This is also inherently a crate author's statement of current intentions, "
+"which may get out of sync with the reality of the crate's maintenance over "
+"time."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:282
+msgid ""
+"If I had to guess for the maintainers of the parsing crates, I would assume:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:284
+msgid "nom: actively developed"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:285
+msgid "combine: actively developed"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:286
+msgid "lalrpop: actively developed"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:287
+msgid "peg: actively developed"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:288
+msgid "peresil: passively maintained"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:290
+msgid "GitHub issue badges"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:292
+msgid ""
+"[isitmaintained.com](http://isitmaintained.com/) provides badges indicating "
+"the time to resolution of GitHub issues and percentage of GitHub issues that "
+"are open."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:296
+msgid "We will enable maintainers to add these badges to their crate."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:298
+msgid "Crate"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:298
+msgid "Issue Resolution"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:298
+msgid "Open Issues"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:300
+msgid "combine"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:300
+msgid ""
+"[![Average time to resolve an issue](http://isitmaintained.com/badge/"
+"resolution/Marwes/combine.svg)](http://isitmaintained.com/project/Marwes/"
+"combine \"Average time to resolve an issue\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:300
+msgid ""
+"[![Percentage of issues still open](http://isitmaintained.com/badge/open/"
+"Marwes/combine.svg)](http://isitmaintained.com/project/Marwes/combine "
+"\"Percentage of issues still open\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:301
+msgid "nom"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:301
+msgid ""
+"[![Average time to resolve an issue](http://isitmaintained.com/badge/"
+"resolution/Geal/nom.svg)](http://isitmaintained.com/project/Geal/nom "
+"\"Average time to resolve an issue\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:301
+msgid ""
+"[![Percentage of issues still open](http://isitmaintained.com/badge/open/"
+"Geal/nom.svg)](http://isitmaintained.com/project/Geal/nom \"Percentage of "
+"issues still open\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:302
+msgid "lalrpop"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:302
+msgid ""
+"[![Average time to resolve an issue](http://isitmaintained.com/badge/"
+"resolution/nikomatsakis/lalrpop.svg)](http://isitmaintained.com/project/"
+"nikomatsakis/lalrpop \"Average time to resolve an issue\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:302
+msgid ""
+"[![Percentage of issues still open](http://isitmaintained.com/badge/open/"
+"nikomatsakis/lalrpop.svg)](http://isitmaintained.com/project/nikomatsakis/"
+"lalrpop \"Percentage of issues still open\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:303
+msgid "peg"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:303
+msgid ""
+"[![Average time to resolve an issue](http://isitmaintained.com/badge/"
+"resolution/kevinmehall/rust-peg.svg)](http://isitmaintained.com/project/"
+"kevinmehall/rust-peg \"Average time to resolve an issue\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:303
+msgid ""
+"[![Percentage of issues still open](http://isitmaintained.com/badge/open/"
+"kevinmehall/rust-peg.svg)](http://isitmaintained.com/project/kevinmehall/"
+"rust-peg \"Percentage of issues still open\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:304
+msgid "peresil"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:304
+msgid ""
+"[![Average time to resolve an issue](http://isitmaintained.com/badge/"
+"resolution/shepmaster/peresil.svg)](http://isitmaintained.com/project/"
+"shepmaster/peresil \"Average time to resolve an issue\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:304
+msgid ""
+"[![Percentage of issues still open](http://isitmaintained.com/badge/open/"
+"shepmaster/peresil.svg)](http://isitmaintained.com/project/shepmaster/"
+"peresil \"Percentage of issues still open\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:308
+msgid ""
+"We will enable maintainers to add [Coveralls](https://coveralls.io) badges "
+"to indicate the crate's test coverage. If there are other services offering "
+"test coverage reporting and badges, we will add support for those as well, "
+"but this is the only service we know of at this time that offers code "
+"coverage reporting that works with Rust projects."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:316
+msgid ""
+"This excludes projects that cannot use Coveralls, which only currently "
+"supports repositories hosted on GitHub or BitBucket that use CI on Travis, "
+"CircleCI, Jenkins, Semaphore, or Codeship."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:320
+msgid ""
+"nom has coveralls.io configured: [![Coverage Status](https://coveralls.io/"
+"repos/Geal/nom/badge.svg?branch=master)](https://coveralls.io/r/Geal/nom?"
+"branch=master)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:324
+msgid ""
+"We have [an idea for a \"favorite authors\" list](https://github.com/rust-"
+"lang/crates.io/issues/494) that we think would help indicate credibility. "
+"With this proposed feature, each person can define \"credibility\" for "
+"themselves, which makes this measure less gameable and less of a popularity "
+"contest."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:331
+msgid "Out of scope"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:333
+msgid ""
+"This proposal is not advocating to change the default order of **search "
+"results**; those should still be ordered by relevancy to the query based on "
+"the indexed content. We will add the ability to sort search results by "
+"recent downloads."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:338
+msgid "Evaluation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:340
+msgid ""
+"If ordering by number of recent downloads and providing more indicators is "
+"not helpful, we expect to get bug reports from the community and feedback on "
+"the users forum, reddit, IRC, etc."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:344
+msgid ""
+"In the community survey scheduled to be taken around May 2017, we will ask "
+"about people's satisfaction with the information that crates.io provides."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:347
+msgid ""
+"If changes are needed that are significant, we will open a new RFC. If "
+"smaller tweaks need to be made, the process will be managed through crates."
+"io's issues. We will consult with the tools team and core team to determine "
+"whether a change is significant enough to warrant a new RFC."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:352
+msgid "How do we teach this?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:354
+msgid ""
+"We will change the label on the default ordering button to read \"Recent "
+"Downloads\" rather than \"Downloads\"."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:357
+msgid "Badges will have tooltips on hover that provide additional information."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:359
+msgid ""
+"We will also add a page to doc.crates.io that details all possible "
+"indicators and their values, and explains to crate authors how to configure "
+"or earn the different badges."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:363
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:366
+msgid ""
+"We might create a system that incentivizes attributes that are not useful, "
+"or worse, actively harmful to the Rust ecosystem. For example, the "
+"documentation percentage could be gamed by having one line of uninformative "
+"documentation for all public items, thus giving a score of 100% without the "
+"value that would come with a fully documented library. We hope the community "
+"at large will agree these attributes are valuable to approach in good faith, "
+"and that trying to game the badges will be easily discoverable. We could "
+"have a reporting mechanism for crates that are attempting to gain badges "
+"artificially, and implement a way for administrators to remove badges from "
+"those crates."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:376
+msgid "Alternatives"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:379
+msgid "Manual curation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:381
+msgid ""
+"We could keep the default ranking as number of downloads, and leave further "
+"curation to sites like [Awesome Rust](https://github.com/kud1ing/awesome-"
+"rust)."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:386
+msgid ""
+"We could build entirely manual ranking into crates.io, as [Ember Observer]"
+"(https://emberobserver.com/about) does. This would be a lot of work that "
+"would need to be done by someone, but would presumably result in higher "
+"quality evaluations and be less vulnerable to gaming."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:393
+msgid ""
+"We could add user ratings or reviews in the form of upvote/downvote, 1-5 "
+"stars, and/or free text, and weight more recent ratings higher than older "
+"ratings. This could have the usual problems that come with online rating "
+"systems, such as spam, paid reviews, ratings influenced by personal "
+"disagreements, etc."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:399
+msgid "More sorting and filtering options"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:401
+msgid ""
+"There are even more options for interacting with the metadata that crates.io "
+"has than we are proposing in this RFC at this time. For example:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:404
+msgid ""
+"We could add filtering options for metadata, so that each user could choose, "
+"for example, \"show me only crates that work on stable\" or \"show me only "
+"crates that have a version greater than 1.0\"."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:408
+msgid ""
+"We could add independent axes of sorting criteria in addition to the "
+"existing alphabetical and number of downloads, such as by number of owners "
+"or most recent version release date."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:412
+msgid ""
+"We would probably want to implement saved search configurations per user, so "
+"that people wouldn't have to re-enter their criteria every time they wanted "
+"to do a similar search."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:416
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:419
+msgid "All questions have now been resolved."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:421
+msgid "Appendix: Comparative Research"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:424
+msgid ""
+"This is how other package hosting websites handle default sorting within "
+"categories."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:427
+msgid "Django Packages"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:429
+msgid ""
+"[Django Packages](https://djangopackages.org/) has the concept of [grids]"
+"(https://djangopackages.org/grids/), which are large tables of packages in a "
+"particular category. Each package is a column, and each row is some "
+"attribute of packages. The default ordering from left to right appears to be "
+"GitHub stars."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:439
+msgid "Libhunt"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:441
+msgid ""
+"[Libhunt](https://rust.libhunt.com/) pulls libraries and categories from "
+"[Awesome Rust](https://github.com/kud1ing/awesome-rust), then adds some "
+"metadata and navigation."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:444
+msgid ""
+"The default ranking is relative popularity, measured by GitHub stars and "
+"scaled to be a number out of 10 as compared to the most popular crate. The "
+"other ordering offered is dev activity, which again is a score out of 10, "
+"relative to all other crates, and calculated by giving a higher weight to "
+"more recent commits."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:454
+msgid "You can also choose to compare two libraries on a number of attributes:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:458
+msgid "Maven Repository"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:460
+msgid ""
+"[Maven Repository](http://mvnrepository.com) appears to order by the number "
+"of reverse dependencies (\"# usages\"):"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:467
+msgid "Pypi"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:469
+msgid ""
+"[Pypi](https://pypi.python.org/pypi?%3Aaction=browse) lets you choose "
+"multiple categories, which are not only based on topic but also other "
+"attributes like library stability and operating system:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:476
+msgid ""
+"Once you've selected categories and click the \"show all\" packages in these "
+"categories link, the packages are in alphabetical order... but the alphabet "
+"starts over multiple times... it's unclear from the interface why this is "
+"the case."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:483
+msgid "GitHub Showcases"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:485
+msgid ""
+"To get incredibly meta, GitHub has the concept of [showcases](https://github."
+"com/showcases) for a variety of topics, and they have [a showcase of package "
+"managers](https://github.com/showcases/package-managers). The default "
+"ranking is by GitHub stars (cargo is 17/27 currently)."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:494
+msgid "Ruby toolbox"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:496
+msgid ""
+"[Ruby toolbox](https://www.ruby-toolbox.com) sorts by a relative popularity "
+"score, which is calculated from a combination of GitHub stars/watchers and "
+"number of downloads:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:503
+msgid ""
+"Category pages have a bar graph showing the top gems in that category, which "
+"looks like a really useful way to quickly see the differences in relative "
+"popularity. For example, this shows nokogiri is far and away the most "
+"popular HTML parser:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:510
+msgid ""
+"Also of note is the amount of information shown by default, but with a "
+"magnifying glass icon that, on hover or tap, reveals more information "
+"without a page load/reload:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:516
+msgid "npms"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:518
+msgid ""
+"While [npms](https://npms.io) doesn't have categories, its search appears to "
+"do some exact matching of the query and then rank the rest of the results "
+"[weighted](https://api-docs.npms.io/) by three different scores:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:522
+msgid ""
+"score-effect:14: Set the effect that package scores have for the final "
+"search score, defaults to 15.3"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:524
+msgid ""
+"quality-weight:1: Set the weight that quality has for the each package "
+"score, defaults to 1.95"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:526
+msgid ""
+"popularity-weight:1: Set the weight that popularity has for the each package "
+"score, defaults to 3.3"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:528
+msgid ""
+"maintenance-weight:1: Set the weight that the quality has for the each "
+"package score, defaults to 2.05"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:536
+msgid ""
+"There are [many factors](https://npms.io/about) that go into the three "
+"scores, and more are planned to be added in the future. Implementation "
+"details are available in the [architecture documentation](https://github.com/"
+"npms-io/npms-analyzer/blob/master/docs/architecture.md)."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:545
+msgid "Package Control (Sublime)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:547
+msgid ""
+"[Package Control](https://packagecontrol.io/) is for Sublime Text packages. "
+"It has Labels that are roughly equivalent to categories:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:554
+msgid ""
+"The only available ordering within a label is alphabetical, but each result "
+"has the number of downloads plus badges for Sublime Text version "
+"compatibility, OS compatibility, Top 25/100, and new/trending:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:560
+msgid "Appendix: User Research"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:563
+msgid "Demographics"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:565
+msgid ""
+"We ran a survey for 1 week and got 134 responses. The responses we got seem "
+"to be representative of the current Rust community: skewing heavily towards "
+"more experienced programmers and just about evenly distributed between Rust "
+"experience starting before 1.0, since 1.0, in the last year, and in the last "
+"6 months, with a slight bias towards longer amounts of experience. 0 "
+"Graydons responded to the survey."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:576
+msgid ""
+"Since this matches about what we'd expect of the Rust community, we believe "
+"this survey is representative. Given the bias towards more experience "
+"programming, we think the answers are worthy of using to inform "
+"recommendations crates.io will be making to programmers of all experience "
+"levels."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:581
+msgid "Crate ranking agreement"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:583
+msgid ""
+"The community ranking of the 5 crates presented in the survey for which "
+"order people would try them out for parsing comes out to be:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:586
+msgid "1.) nom"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:588
+msgid "2.) combine"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:590
+msgid "3.) and 4.) peg and lalrpop, in some order"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:592
+msgid "5.) peresil"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:594
+msgid "This chart shows how many people ranked the crates in each slot:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:598
+msgid ""
+"This chart shows the cumulative number of votes: each slot contains the "
+"number of votes each crate got for that ranking or above."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:603
+msgid ""
+"Whatever default ranking formula we come up with in this RFC, when applied "
+"to these 5 crates, it should generate an order for the crates that aligns "
+"with the community ordering. Also, not everyone will agree with the crates."
+"io ranking, so we should display other information and provide alternate "
+"filtering and sorting mechanisms so that people who prioritize different "
+"attributes than the majority of the community will be able to find what they "
+"are looking for."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:610
+msgid "Factors considered when ranking crates"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:612
+msgid ""
+"The following table shows the top 25 mentioned factors for the two free "
+"answer sections. We asked both \"Please explain what information you used to "
+"evaluate the crates and how that information influenced your ranking.\" and "
+"\"Was there any information you wish was available, or that would have taken "
+"more than 15 minutes for you to get?\", but some of the same factors were "
+"deemed to take too long to find out or not be easily available, while others "
+"did consider those, so we've ranked by the combination of mentions of these "
+"factors in both questions."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:621
+msgid ""
+"Far and away, good documentation was the most mentioned factor people used "
+"to evaluate which crates to try."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:624
+msgid "Feature"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:624
+msgid "Used in evaluation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:624
+msgid "Not available/too much time needed"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:624
+msgid "Total"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:624
+msgid "Notes"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:626
+#: src/1824-crates.io-default-ranking.md:647
+msgid "1"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:626
+msgid "Good documentation"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:626
+msgid "94"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:626
+#: src/1824-crates.io-default-ranking.md:635
+msgid "10"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:626
+msgid "104"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:627
+#: src/1824-crates.io-default-ranking.md:649
+msgid "2"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:627
+msgid "README"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:627
+msgid "42"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:627
+#: src/1824-crates.io-default-ranking.md:644
+#: src/1824-crates.io-default-ranking.md:647
+msgid "19"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:627
+msgid "61"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:628
+#: src/1824-crates.io-default-ranking.md:632
+#: src/1824-crates.io-default-ranking.md:637
+#: src/1824-crates.io-default-ranking.md:646
+msgid "3"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:628
+msgid "Number of downloads"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:628
+msgid "58"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:628
+#: src/1824-crates.io-default-ranking.md:629
+#: src/1824-crates.io-default-ranking.md:635
+#: src/1824-crates.io-default-ranking.md:638
+#: src/1824-crates.io-default-ranking.md:640
+#: src/1824-crates.io-default-ranking.md:641
+#: src/1824-crates.io-default-ranking.md:643
+#: src/1824-crates.io-default-ranking.md:644
+msgid "0"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:629
+msgid "4"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:629
+msgid "Most recent version date"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:629
+msgid "54"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:630
+#: src/1824-crates.io-default-ranking.md:633
+#: src/1824-crates.io-default-ranking.md:642
+msgid "5"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:630
+msgid "Obvious / easy to find usage examples"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:630
+msgid "37"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:630
+#: src/1824-crates.io-default-ranking.md:639
+msgid "14"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:630
+msgid "51"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:631
+#: src/1824-crates.io-default-ranking.md:636
+#: src/1824-crates.io-default-ranking.md:639
+#: src/1824-crates.io-default-ranking.md:648
+msgid "6"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:631
+msgid "Examples in the repo"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:631
+msgid "38"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:631
+msgid "44"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:632
+#: src/1824-crates.io-default-ranking.md:634
+msgid "7"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:632
+msgid "Reputation of the author"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:632
+msgid "36"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:632
+msgid "39"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:633
+#: src/1824-crates.io-default-ranking.md:645
+#: src/1824-crates.io-default-ranking.md:650
+msgid "8"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:633
+msgid ""
+"Description or README containing Introduction / goals / value prop / use "
+"cases"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:633
+#: src/1824-crates.io-default-ranking.md:636
+#: src/1824-crates.io-default-ranking.md:637
+msgid "29"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:633
+msgid "34"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:634
+msgid "9"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:634
+msgid "Number of reverse dependencies (Dependent Crates)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:634
+#: src/1824-crates.io-default-ranking.md:636
+#: src/1824-crates.io-default-ranking.md:648
+msgid "23"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:634
+#: src/1824-crates.io-default-ranking.md:635
+msgid "30"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:635
+msgid "Version >= 1.0.0"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:636
+msgid "11"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:636
+msgid "Commit activity"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:636
+#: src/1824-crates.io-default-ranking.md:648
+msgid "Depends on VCS"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:637
+#: src/1824-crates.io-default-ranking.md:648
+msgid "12"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:637
+msgid "Fits use case"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:637
+msgid "26"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:637
+#: src/1824-crates.io-default-ranking.md:640
+#: src/1824-crates.io-default-ranking.md:643
+#: src/1824-crates.io-default-ranking.md:644
+msgid "Situational"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:638
+#: src/1824-crates.io-default-ranking.md:645
+msgid "13"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:638
+msgid "Number of dependencies (more = worse)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:638
+#: src/1824-crates.io-default-ranking.md:639
+msgid "28"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:639
+msgid "Number of open issues, activity on issues\""
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:639
+#: src/1824-crates.io-default-ranking.md:642
+#: src/1824-crates.io-default-ranking.md:643
+#: src/1824-crates.io-default-ranking.md:644
+#: src/1824-crates.io-default-ranking.md:647
+msgid "22"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:639
+msgid "Depends on GitHub"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:640
+#: src/1824-crates.io-default-ranking.md:649
+msgid "15"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:640
+msgid "Easy to use or understand"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:640
+msgid "27"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:641
+#: src/1824-crates.io-default-ranking.md:650
+msgid "16"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:641
+msgid "Publicity (blog posts, reddit, urlo, \"have I heard of it\")"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:641
+#: src/1824-crates.io-default-ranking.md:650
+msgid "25"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:642
+#: src/1824-crates.io-default-ranking.md:649
+msgid "17"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:642
+msgid "Most recent commit date"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:642
+msgid "Dependent on VCS"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:643
+#: src/1824-crates.io-default-ranking.md:646
+#: src/1824-crates.io-default-ranking.md:648
+msgid "18"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:643
+msgid "Implementation details"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:644
+msgid "Nice API"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:645
+#: src/1824-crates.io-default-ranking.md:647
+msgid "20"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:645
+msgid "Mentioned using/wanting to use docs.rs"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:645
+#: src/1824-crates.io-default-ranking.md:646
+msgid "21"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:646
+msgid "Tutorials"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:647
+msgid "Number or frequency of released versions"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:648
+msgid "Number of maintainers/contributors"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:649
+msgid "24"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:649
+msgid "CI results"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:649
+msgid "Depends on CI service"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:650
+msgid "Whether the crate works on nightly, stable, particular stable versions"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:652
+msgid "Relevant quotes motivating our choice of factors"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:654
+msgid "Easy to use"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:656
+msgid ""
+"Documentation linked from crates.io  2) Documentation contains decent "
+"example on front page"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:661
+msgid ""
+"\"Docs Coverage\" info - I'm not sure if there's a way to get that right "
+"now, but this is almost more important that test coverage."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:666
+msgid ""
+"rust docs:  Is there an intro and example on the top-level page?  are the "
+"rustdoc examples detailed enough to cover a range of usecases?  can i avoid "
+"reading through the files in the examples folder?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:672
+msgid "Documentation:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:673
+msgid ""
+"Is there a README? Does it give me example usage of the library? Point me to "
+"more details?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:675
+msgid "Are functions themselves documented?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:676
+msgid "Does the documentation appear to be up to date?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:680
+msgid ""
+"The GitHub repository pages, because there are no examples or detailed "
+"descriptions on crates.io. From the GitHub readme I first checked the readme "
+"itself for a code example, to get a feeling for the library. Then I looked "
+"for links to documentation or tutorials and examples. The crates that did "
+"not have this I discarded immediately."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:688
+msgid ""
+"When evaluating any library from crates.io, I first follow the repository "
+"link -- often the readme is enough to know whether or not I like the actual "
+"library structure. For me personally a library's usability is much more "
+"important than performance concerns, so I look for code samples that show me "
+"how the library is used.    In the examples given, only peresil forces me to "
+"look at the actual documentation to find an example of use. I want something "
+"more than \"check the docs\" in a readme in regards to getting started."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:698
+msgid ""
+"I would like the entire README.md of each package to be visible on crates.io "
+"I would like a culture where each README.md contains a runnable example"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:703
+msgid ""
+"Ok, this one isn't from the survey, it's from [a Sept 2015 internals thread]"
+"(https://users.rust-lang.org/t/lets-talk-about-ecosystem-"
+"documentation/2791/24?u=carols10cents):"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:707
+msgid ""
+"there should be indicator in Crates.io that show how much code is "
+"documented, this would help with choosing well done package."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:710
+msgid ""
+"I really love this idea! Showing a percentage or a little progress bar next "
+"to each crate with the proportion of public items with at least some docs "
+"would be a great starting point."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:716
+msgid ""
+"On nom's crates.io page I checked the version (2.0.0) and when the latest "
+"version came out (less than a month ago). I know that versioning is "
+"inconsistent across crates, but I'm reassured when a crate has V >= 1.0 "
+"because it typically indicates that the authors are confident the crate is "
+"production-ready. I also like to see multiple, relatively-recent releases "
+"because it signals the authors are serious about maintenance."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:725
+msgid ""
+"Answering yes scores points:  crates.io page:  Does the crate have a major "
+"version >= 1?  Has there been a release recently, and maybe even a steady "
+"stream of minor or patch-level releases?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:731
+msgid "From github:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:732
+msgid ""
+"Number of commits and of contributors (A small number of commits (\\< 100) "
+"and of contributors (\\< 3) is often the sign of a personal project, "
+"probably not very much used except by its author. All other things equal, I "
+"tend to prefer active projects.);"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:740
+msgid "Tests:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:741
+msgid "Is critical functionality well tested?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:742
+msgid "Is the entire package well tested?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:743
+msgid "Are the tests clear and descriptive?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:744
+msgid "Could I reimplement the library based on these tests?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:745
+msgid "Does the project have CI?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:746
+msgid "Is master green?"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:748
+msgid "Popularity/credibility"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:750
+msgid ""
+"I look  at the number of download. If it is too small (~ \\<1000), I assume "
+"the crate has not yet reached a good quality. nom catches my attention "
+"because it has 200K download: I assume it is a high quality crate."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:756
+msgid ""
+"Compare the number of downloads: More downloads = more popular = should be "
+"the best"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:761
+msgid ""
+"Popularity:  - Although not being a huge factor, it can help tip the scale "
+"when one is more popular or well supported than another when all other "
+"factors are close."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:765
+msgid "Overall"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:767
+msgid ""
+"I can't pick a most important trait because certain ones outweigh others "
+"when combined, etc. I.e. number of downloads is OK, but may only suggest "
+"that it's been around the longest. Same with number of dependent crates "
+"(which probably spikes number of downloads). I like a crate that is well "
+"documented, has a large user base (# dependent crates + downloads + stars), "
+"is post 1.0, is active (i.e. a release within the past 6 months?), and it "
+"helps when it's a prominent author (but that I feel is an unfair metric)."
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:775
+msgid "Relevant bugs capturing other feedback"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:777
+msgid ""
+"There was a wealth of good ideas and feedback in the survey answers, but not "
+"all of it pertained to crate ranking directly. Commonly mentioned "
+"improvements that could greatly help the usability and usefulness of crates."
+"io included:"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:781
+msgid ""
+"[Rendering the README on crates.io](https://github.com/rust-lang/crates.io/"
+"issues/81)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:782
+msgid ""
+"[Linking to docs.rs if the crate hasn't specified a Documentation link]"
+"(https://github.com/rust-lang/crates.io/pull/459)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:783
+msgid ""
+"[`cargo doc` should render crate examples and link to them on main "
+"documentation page](https://github.com/rust-lang/cargo/issues/2760)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:784
+msgid ""
+"[`cargo doc` could support building/testing standalone markdown files]"
+"(https://github.com/rust-lang/cargo/issues/739)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:785
+msgid ""
+"[Allow documentation to be read from an external file](https://github.com/"
+"rust-lang/rust/issues/15470)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:786
+msgid ""
+"[Have \"favorite authors\" and highlight crates by your favorite authors in "
+"crate lists](https://github.com/rust-lang/crates.io/issues/494)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:787
+msgid ""
+"[Show the number of reverse dependencies next to the link](https://github."
+"com/rust-lang/crates.io/issues/496)"
+msgstr ""
+
+#: src/1824-crates.io-default-ranking.md:788
+msgid ""
+"[Reverse dependencies should be ordered by number of downloads by default]"
+"(https://github.com/rust-lang/crates.io/issues/495)"
+msgstr ""

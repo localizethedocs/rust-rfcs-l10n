@@ -1,0 +1,196 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1102-rename-connect-to-join.md:1
+msgid "Feature Name: `rename_connect_to_join`"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:2
+msgid "Start Date: 2015-05-02"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1102](https://github.com/rust-lang/rfcs/pull/1102)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#26900](https://github.com/rust-lang/rust/"
+"issues/26900)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:8
+msgid "Rename `.connect()` to `.join()` in `SliceConcatExt`."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:10
+msgid "Motivation"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:12
+msgid ""
+"Rust has a string concatenation method named `.connect()` in "
+"`SliceConcatExt`. However, this does not align with the precedents in other "
+"languages. Most languages use `.join()` for that purpose, as seen later."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:16
+msgid ""
+"This is probably because, in the ancient Rust, `join` was a keyword to join "
+"a task. However, `join` retired as a keyword in 2011 with the commit rust-"
+"lang/rust@d1857d3. While `.connect()` is technically correct, the name may "
+"not be directly inferred by the users of the mainstream languages. There was "
+"[a question](http://www.reddit.com/r/rust/comments/336rj3/"
+"whats_the_best_way_to_join_strings_with_a_space/) about this on reddit."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:24
+msgid "The languages that use the name of `join` are:"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:26
+msgid ""
+"Python: [str.join](https://docs.python.org/3/library/stdtypes.html#str.join)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:27
+msgid ""
+"Ruby: [Array.join](http://ruby-doc.org/core-2.2.0/Array.html#method-i-join)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:28
+msgid ""
+"JavaScript: [Array.prototype.join](https://developer.mozilla.org/en-US/docs/"
+"Web/JavaScript/Reference/Global_Objects/Array/join)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:29
+msgid "Go: [strings.Join](https://golang.org/pkg/strings/#Join)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:30
+msgid ""
+"C#: [String.Join](https://msdn.microsoft.com/en-us/library/"
+"dd783876%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:31
+msgid ""
+"Java: [String.join](http://docs.oracle.com/javase/8/docs/api/java/lang/"
+"String.html#join-java.lang.CharSequence-java.lang.Iterable-)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:32
+msgid "Perl: [join](http://perldoc.perl.org/functions/join.html)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:34
+msgid ""
+"The languages not using `join` are as follows. Interestingly, they are all "
+"functional-ish languages."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:37
+msgid ""
+"Haskell: [intercalate](http://hackage.haskell.org/package/text-1.2.0.4/docs/"
+"Data-Text.html#v:intercalate)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:38
+msgid ""
+"OCaml: [String.concat](http://caml.inria.fr/pub/docs/manual-ocaml/libref/"
+"String.html#VALconcat)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:39
+msgid ""
+"F#: [String.concat](https://msdn.microsoft.com/en-us/library/ee353761.aspx)"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:41
+msgid ""
+"Note that Rust also has `.concat()` in `SliceConcatExt`, which is a "
+"specialized version of `.connect()` that uses an empty string as a separator."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:44
+msgid ""
+"Another reason is that the term \"join\" already has similar usage in the "
+"standard library. There are `std::path::Path::join` and `std::env::"
+"join_paths` which are used to join the paths."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:48
+msgid "Detailed design"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:50
+msgid ""
+"While the `SliceConcatExt` trait is unstable, the `.connect()` method itself "
+"is marked as stable. So we need to:"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:53
+msgid "Deprecate the `.connect()` method."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:54
+msgid "Add the `.join()` method."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:56
+msgid ""
+"Or, if we are to achieve the [instability guarantee](https://github.com/rust-"
+"lang/rust/issues/24928), we may remove the old method entirely, as it's "
+"still pre-1.0. However, the author considers that this may require even more "
+"consensus."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:62
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:64
+msgid "Having a deprecated method in a newborn language is not pretty."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:66
+msgid ""
+"If we do remove the `.connect()` method, the language becomes pretty again, "
+"but it breaks the stability guarantee at the same time."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:69
+msgid "Alternatives"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:71
+msgid ""
+"Keep the status quo. Improving searchability in the docs will help newcomers "
+"find the appropriate method."
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:74
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1102-rename-connect-to-join.md:76
+msgid ""
+"Are there even more clever names for the method? How about `.homura()`, or `."
+"madoka()`?"
+msgstr ""

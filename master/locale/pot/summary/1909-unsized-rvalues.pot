@@ -1,0 +1,472 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:03Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1909-unsized-rvalues.md:1
+msgid "Feature Name: unsized_locals"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:2
+msgid "Start Date: 2017-02-11"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1909](https://github.com/rust-lang/rfcs/pull/1909)"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#48055](https://github.com/rust-lang/rust/"
+"issues/48055)"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:9
+msgid ""
+"Allow for local variables, function arguments, and some expressions to have "
+"an unsized type, and implement it by storing the temporaries in variably-"
+"sized allocas."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:11
+msgid ""
+"Have repeat expressions with a length that captures local variables be such "
+"an expression, returning an `[T]` slice."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:13
+msgid ""
+"Provide some optimization guarantees that unnecessary temporaries will not "
+"create unnecessary allocas."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:18
+msgid "There are 2 motivations for this RFC:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:20
+msgid ""
+"Passing unsized values, such as trait objects, to functions by value is "
+"often desired. Currently, this must be done through a `Box<T>` with an "
+"unnecessary allocation."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:22
+msgid ""
+"One particularly common example is passing closures that consume their "
+"environment without using monomorphization. One would like for this code to "
+"work:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:28
+msgid "But today you have to use a hack, such as taking a `Box<FnBox<()>>`."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:30
+msgid ""
+"Allocating a runtime-sized variable on the stack is important for good "
+"performance in some use-cases - see RFC #1808, which this is intended to "
+"supersede."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:32
+msgid "Detailed design"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:35
+msgid "Unsized Rvalues - language"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:37
+msgid ""
+"Remove the rule that requires all locals and rvalues to have a sized type. "
+"Instead, require the following:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:39
+msgid "The following expressions must always return a Sized type:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:40
+msgid "Function calls, method calls, operator expressions"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:41
+msgid ""
+"implementing unsized return values for function calls would require the "
+"_called function_ to do the alloca in our stack frame."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:42
+msgid "ADT expressions"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:43
+msgid "see alternatives"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:44
+msgid "cast expressions"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:45
+msgid ""
+"this seems like an implementation simplicity thing. These can only be "
+"trivial casts."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:46
+msgid "The RHS of assignment expressions must always have a Sized type."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:47
+msgid ""
+"Assigning an unsized type is impossible because we don't know how much "
+"memory is available at the destination. This applies to ExprAssign "
+"assignments and not to StmtLet let-statements."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:49
+msgid ""
+"This also allows passing unsized values to functions, with the ABI being as "
+"if a `&move` pointer was passed (a `(by-move-data, extra)` pair). This also "
+"means that methods taking `self` by value are object-safe, though vtable "
+"shims are sometimes needed to translate the ABI (as the callee-side "
+"intentionally does not pass `extra` to the fn in the vtable, no vtable shim "
+"is needed if the vtable function already takes its argument indirectly)."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:51
+msgid "For example:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:60
+msgid ""
+"// this creates a VLA copy of either `s1.1` or `s2.1` on\n"
+"    // the stack.\n"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:74
+msgid "// aka FnOnce::call_once(f, (x,));\n"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:78
+msgid "VLA expressions"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:80
+msgid ""
+"Allow repeat expressions to capture variables from their surrounding "
+"environment. If a repeat expression captures such a variable, it has type "
+"`[T]` with the length being evaluated at run-time. If the repeat expression "
+"does not capture any variable, the length is evaluated at compile-time. For "
+"example:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:82
+msgid "\"C\""
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:87 src/1909-unsized-rvalues.md:88
+msgid "// x: [u8]\n"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:89
+msgid "// x: [u8; 42], like today\n"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:90
+msgid "//~ ERROR constant evaluation error\n"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:93
+msgid ""
+"\"captures a variable\" - as in RFC #1558 - is used as the condition for "
+"making the return be `[T]` because it is simple, easy to understand, and  "
+"introduces no type-checking complications."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:95
+msgid ""
+"The last error message could have a user-helpful note, for example \"extract "
+"the length to a local variable if you want a variable-length array\"."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:97
+msgid "Unsized Rvalues - MIR"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:99
+msgid ""
+"The way this is implemented in MIR is that operands, rvalues, and "
+"temporaries are allowed to be unsized. An unsized operand is always \"by-"
+"ref\". Unsized rvalues are either a `Use` or a `Repeat` and both can be "
+"translated easily."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:101
+msgid ""
+"Unsized locals can never be reassigned within a scope. When first assigning "
+"to an unsized local, a stack allocation is made with the correct size."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:103
+msgid "MIR construction remains unchanged."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:105
+msgid "Guaranteed Temporary Elision"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:107
+msgid ""
+"MIR likes to create lots of temporaries for OOE reason. We should optimize "
+"them out in a guaranteed way in these cases (FIXME: extend these guarantees "
+"to locals aka NRVO?)."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:109
+msgid "TODO: add description of problem & solution."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:111
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:114
+msgid ""
+"Passing arguments to functions by value should not be too complicated to "
+"teach. I would like VLAs to be mentioned in the book."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:116
+msgid ""
+"The \"guaranteed temporary elimination\" rules require more work to teach. "
+"It might be better to come up with new rules entirely."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:118
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:121
+msgid ""
+"In Unsafe code, it is very easy to create unintended temporaries, such as in:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:123
+msgid "/* .. */"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:126
+msgid ""
+"// here, `a` must be copied to a temporary, because\n"
+"    // `poke(ptr)` might access the original.\n"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:132
+msgid ""
+"If we make `[u8]` be `Copy`, that would be even easier, because even uses of "
+"`poke(ptr);` after the function call could potentially access the supposedly-"
+"valid data behind `a`."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:134
+msgid ""
+"And even if it is not as easy, it is possible to accidentally create "
+"temporaries in safe code."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:136
+msgid ""
+"Unsized temporaries are dangerous - they can easily cause aborts through "
+"stack overflow."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:138
+msgid "Alternatives"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:141
+msgid "The bikeshed"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:143
+msgid "There are several alternative options for the VLA syntax."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:145
+msgid ""
+"The RFC choice, `[t; φ]` has type `[T; φ]` if `φ` captures no variables and "
+"type `[T]` if φ captures a variable."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:146
+msgid "pro: can be understood using \"HIR\"/resolution only."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:147 src/1909-unsized-rvalues.md:152
+#: src/1909-unsized-rvalues.md:156
+msgid "pro: requires no additional syntax."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:148
+msgid "con: might be confusing at first glance."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:149
+msgid "con: `[t; foo()]` requires the length to be extracted to a local."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:150
+msgid ""
+"The \"permissive\" choice: `[t; φ]` has type `[T; φ]` if `φ` is a constexpr, "
+"otherwise `[T]`"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:151
+msgid "pro: allows the most code"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:153
+msgid ""
+"con: depends on what is exactly a const expression. This is a big issue "
+"because that is both non-local and might change between rustc versions."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:154
+msgid ""
+"Use the expected type - `[t; φ]` has type `[T]` if it is evaluated in a "
+"context that expects that type (for example `[t; foo()]: [T]`) and `[T; _]` "
+"otherwise."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:155
+msgid "pro: in most cases, very human-visible."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:157
+msgid ""
+"con: relies on the notion of \"expected type\". While I think we _do_ have "
+"to rely on that in the unsafe code semantics of `&foo` borrow expressions "
+"(as in, whether a borrow is treated as a \"safe\" or \"unsafe\" borrow - "
+"I'll write more details sometime), it might be better to not rely on "
+"expected types too much."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:158
+msgid "use an explicit syntax, for example `[t; virtual φ]`."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:159
+msgid "bikeshed: exact syntax."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:160
+msgid "pro: very explicit and visible."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:161
+msgid "con: more syntax."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:162
+msgid "use an intrinsic, `std::intrinsics::repeat(t, n)` or something."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:163
+msgid "pro: theoretically minimizes changes to the language."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:164
+msgid "con: requires returning unsized values from intrinsics."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:165
+msgid "con: unergonomic to use."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:167
+msgid "Unsized ADT Expressions"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:169
+msgid ""
+"Allowing unsized ADT expressions would make unsized structs constructible "
+"without using unsafe code, as in:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:178
+msgid ""
+"However, without some way to guarantee that this can be done without "
+"allocas, that might be a large footgun."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:180
+msgid "Copy Slices"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:182
+msgid ""
+"One somewhat-orthogonal proposal that came up was to make `Clone` (and "
+"therefore `Copy`) not depend on `Sized`, and to make `[u8]` be `Copy`, by "
+"moving the `Self: Sized` bound from the trait to the methods, i.e. using the "
+"following declaration:"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:187
+msgid "// ...\n"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:192
+msgid ""
+"That would be a backwards-compatibility-breaking change, because today `T: "
+"Clone + ?Sized` (or of course `Self: Clone` in a trait context, with no "
+"implied `Self: Sized`) implies that `T: Sized`, but it might be that its "
+"impact is small enough to allow (and even if not, it might be worth it for "
+"Rust 2.0)."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:194
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:197
+msgid ""
+"How can we mitigate the risk of unintended unsized or large allocas? Note "
+"that the problem already exists today with large structs/arrays. A MIR lint "
+"against large/variable stack sizes would probably help users avoid these "
+"stack overflows. Do we want it in Clippy? rustc?"
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:199
+msgid ""
+"How do we handle truly-unsized DSTs when we get them? They can theoretically "
+"be passed to functions, but they can never be put in temporaries."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:201
+msgid ""
+"Accumulative allocas (aka `'fn` borrows) are beyond the scope of this RFC."
+msgstr ""
+
+#: src/1909-unsized-rvalues.md:203
+msgid "See alternatives."
+msgstr ""

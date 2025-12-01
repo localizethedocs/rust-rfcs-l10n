@@ -1,0 +1,1039 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:05Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2906-cargo-workspace-deduplicate.md:1
+msgid "Feature Name: `workspace-deduplicate`"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:2
+msgid "Start Date: 2020-04-13"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2906](https://github.com/rust-lang/rfcs/pull/2906)"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:4
+msgid ""
+"Rust Issue: [rust-lang/cargo#8415](https://github.com/rust-lang/cargo/"
+"issues/8415)"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:6
+msgid ""
+"**Note**: This feature was stabilized in Rust 1.64. Several design changes "
+"were made in the course of the implementation. Please see the documentation "
+"for [`[workspace.package]`](https://doc.rust-lang.org/nightly/cargo/"
+"reference/workspaces.html#the-package-table) and [`[workspace.dependencies]`]"
+"(https://doc.rust-lang.org/nightly/cargo/reference/workspaces.html#the-"
+"dependencies-table) for details on how to use this feature."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:8
+msgid "Summary"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:11
+msgid ""
+"Deduplicate common dependency and metadata directives amongst a set of "
+"workspace crates in Cargo with extensions to the `[workspace]` section in "
+"`Cargo.toml`."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:17
+msgid ""
+"Cargo has supported workspaces for quite some time now but when managing a "
+"large workspace there is often a good deal of redundancy between member "
+"crates in a workspace. Currently this proposal attempts to tackle a few "
+"major areas of duplication. Many of these areas of duplication are managed "
+"either manually or with scripts, and the goal of this proposal is to largely "
+"eliminate the need for scripts and also the need to manually manage so much."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:24
+msgid "Duplication of `[dependencies]` sections"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:26
+msgid ""
+"Often when managing a workspace you'll have a lot of crates that all depend "
+"on the same crate. For example many of your crates may depend on `log`. "
+"Today you must write down the same `log` directive in all your manifests:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:30
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"log = \"0.3.1\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:35
+msgid ""
+"Depending on how many crates you're working on, that's a lot of times to "
+"remember `0.3.1`! Additionally if you'd like to update this dependency, say "
+"if a `1.0.0` release is made, you need to edit every single `Cargo.toml` to "
+"make sure they all stay in sync. This is a lot of duplicated work!"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:40
+msgid ""
+"This duplication gets even worse when you start modifying the features of "
+"each crate. For example:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:43
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"log = { version = \"0.3.1\", features = ['release_max_level_warn'] }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:48
+msgid ""
+"If you wanted to consistently write this across many crates it can get quite "
+"cumbersome quite quickly."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:51
+msgid "Duplication in inter-dependent crates"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:53
+msgid ""
+"When managing a workspace you'll often have a lot workspace members that all "
+"depend on each other. The \"blessed\" way to do this is actually quite "
+"verbose:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:56
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"other-workspace-member = { path = \"../other-member\", version = "
+"\"0.2.3\" }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:61
+msgid ""
+"Here you need to specify _both_ `path` and `version`. Using `path` means "
+"that you're depending on exactly that copy on the local filesystem. This "
+"also means that if you depend on any workspace member via a `git` dependency "
+"later on it'll correctly pull in the other workspace members from the git "
+"repo. (note that some projects use `[patch]` to only write down `other-"
+"workspace-member = \"0.2.3\"` but this causes issues when crates later use "
+"git dependencies)"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:68
+msgid ""
+"If you never publish to crates.io, `path` is all you need. If crates "
+"eventually get published, though, they also need a `version` directive to "
+"know what version from crates.io you'll be depending on after the "
+"publication."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:72
+msgid ""
+"Naturally, with a highly-interconnected workspace which may be relatively "
+"large, this leads to a lot of duplication very quickly. This is a lot of "
+"`path` and `version` directives that you've got to manage."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:76
+msgid "Duplication in crate versions"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:78
+msgid ""
+"A frequent pattern in Cargo workspaces which publish to crates.io is to have "
+"all the crate at the same semver version. These crates all move in lockstep "
+"during publication and get bumped at the same time."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:82
+msgid ""
+"While a minor papercut this basically means that anyone and everyone who has "
+"a workspace of a lot of crates makes their own homebrew script for updating "
+"versions and managing updates/publications. It'd be quite convenient if we "
+"could standardize across the Rust ecosystem how to manage this information!"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:87
+msgid "Duplication in crate metadata"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:89
+msgid ""
+"The last primary area of duplication that this proposal attempts to tackle "
+"is in crate metadata in the `[package]` section. This includes items such as:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:92
+msgid ""
+"```toml\n"
+"[package]\n"
+"authors = []\n"
+"license = \"...\"\n"
+"repository = \"...\"\n"
+"documentation = \"...\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:100
+msgid ""
+"These metadata directives are often duplicated amongst all crates, "
+"especially author/license/repository information. This is a pretty poor "
+"experience if you'e got to keep writing down the information in so many "
+"places!"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:104
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:107
+msgid ""
+"Cargo's manifest parsing will be updated with new features to support "
+"deduplicating each of the areas above. While all of these new features are "
+"pretty small in their own right, they all add up to greatly reducing the "
+"overhead of managing a workspace of many crates. The list of new features in "
+"Cargo will look like the following:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:113
+msgid "Workspace-level Dependencies"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:115
+msgid ""
+"The `[workspace]` section can now have a `dependencies` section which works "
+"the same way as the `[dependencies]` section in `Cargo.toml`:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:118
+msgid ""
+"```toml\n"
+"# in workspace's Cargo.toml\n"
+"[workspace.dependencies]\n"
+"log = \"0.3.1\"\n"
+"log2 = { version = \"2.0.0\", package = \"log\" }\n"
+"serde = { git = 'https://github.com/serde-rs/serde' }\n"
+"wasm-bindgen-cli = { path = \"crates/cli\" }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:127
+msgid ""
+"Each workspace member can then reference this section in the workspace with "
+"a new dependency directive:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:136
+msgid ""
+"This directive indicates that the `log` dependency should be looked up from "
+"`workspace.dependencies` in the workspace root. You can reference any name "
+"defined in `[workspace.dependencies]` too:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:145
+msgid "No longer need both `version` and `path` to publish to Crates.io"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:147
+msgid ""
+"When you have a `path` dependency, Cargo's current behavior on publication "
+"looks like this:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:150
+msgid ""
+"If you have a `version` specifier as well, then the `path` key is deleted "
+"and the crate is uploaded with the specified `version` as a dependency "
+"requirement."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:153
+msgid ""
+"If you don't have a `version` specifier, then the dependency directive is "
+"deleted and crates.io will not learn about this dependency. This is only "
+"really useful for `dev-dependencies`."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:157
+msgid ""
+"Cargo's behavior will change in this second case, instead following new "
+"logic for a missing `version` specifier. For dev-dependencies where the "
+"referenced package is `publish = false`, then the dependency will be "
+"dropped. Otherwise Cargo will assume that `version = "
+"\"$dependency_version\"` was specified, meaning that it requires at least "
+"the current version and otherwise any semver-compatible version."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:164
+msgid ""
+"This behavior should mean that you no longer need to write `version = \"..."
+"\"` with `path` dependencies if you publish to crates.io. Coupled with the "
+"workspace-level dependencies above this means you never have to write the "
+"version of a path dependency anywhere!"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:169
+msgid "Package metadata can reference other workspace members"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:171
+msgid ""
+"To deduplicate `[package]` directives in `Cargo.toml` workspace members, "
+"Cargo will now support declaring that metadata directives should be "
+"inherited from the workspace. For example to version every package the same "
+"within a workspace you can specify:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:176
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"foo\"\n"
+"version = { workspace = true }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:182
+msgid ""
+"This directive tells Cargo that the version of `foo` is the same as the "
+"`workspace.version` directive found in the workspace manifest. This means "
+"that in addition to a new `[workspace.dependencies]` section, package "
+"metadata keys can now also be defined inside of a `[workspace]` section:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:187
+msgid ""
+"```toml\n"
+"[workspace]\n"
+"version = \"0.25.2\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:192
+msgid "Many other package metadata attributes are supported as well"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:200
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:203
+msgid ""
+"Cargo's `[workspace]` section will first be extended with a few new "
+"attributes. Like before the `[workspace]` table can only appear in a "
+"workspace root, not in any other manifests. Additionally the `[workspace]` "
+"table doesn't have to be associated with a package, it could be part of a "
+"virtual manifest."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:208
+msgid "Updates to `[workspace]`"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:210
+msgid ""
+"The first addition to the `[workspace]` table is a `dependencies` sub-table, "
+"like so:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:213
+msgid ""
+"```toml\n"
+"[workspace.dependencies]\n"
+"foo = \"0.1\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:218
+msgid ""
+"The `dependencies` sub-table has the same form as the `[dependencies]` table "
+"in manifests with a few exceptions:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:221
+msgid ""
+"Dependencies cannot be declared as `optional`. The `optional` key must be "
+"omitted or, if present, must be `false`."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:223
+msgid "The `workspace` key (defined later in this proposal) is not allowed."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:225
+msgid ""
+"The `[workspace]` table will not support other kinds of dependencies like "
+"`dev-dependencies`, `build-dependencies`, or `target.\"...\".dependencies`.  "
+"Only `[workspace.dependencies]` will be supported."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:229
+msgid ""
+"To review, the `[workspace.dependencies]` table will be key/value pairs. "
+"Each key is the name of a dependency while the dependency is a dependency "
+"directive. This could be a string meaning a crates.io dependency or a table "
+"which further configures the dependency."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:234
+msgid ""
+"Dependencies declared in `[workspace.dependencies]` have no meaning as-is. "
+"They do not affect the build nor do they force packages to depend on those "
+"dependencies. This part comes later below."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:238
+msgid ""
+"The `[workspace]` section will also allow the definition of a number of keys "
+"also defined in `[package]` today, namely:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:241
+msgid ""
+"```toml\n"
+"[workspace]\n"
+"version = \"1.2.3\"\n"
+"authors = [\"Nice Folks\"]\n"
+"description = \"...\"\n"
+"documentation = \"https://example.github.io/example\"\n"
+"readme = \"README.md\"\n"
+"homepage = \"https://example.com\"\n"
+"repository = \"https://github.com/example/example\"\n"
+"license = \"MIT\"\n"
+"license-file = \"./LICENSE\"\n"
+"keywords = [\"cli\"]\n"
+"categories = [\"development-tools\"]\n"
+"publish = false\n"
+"edition = \"2018\"\n"
+"\n"
+"[workspace.badges]\n"
+"# ...\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:261
+msgid ""
+"Each of these keys have no meaning in a `[workspace]` table yet, but will "
+"have meaning when they're assigned to crates internally. That part comes "
+"later though in this design! Note that the format and accepted values for "
+"these keys are the same as the `[package]` section of `Cargo.toml`."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:266
+msgid ""
+"For now the `metadata` key is explicitly left out (due to complications "
+"around merging table values), but it can always be added in the future if "
+"necessary."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:269
+msgid "Updates to a package `Cargo.toml`"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:271
+msgid ""
+"The interpretation of a `Cargo.toml` manifest within Cargo will now require "
+"a `Workspace` object to be created. This `Workspace` will be used to "
+"elaborate and expand each member's `Cargo.toml` directive. Additionally "
+"`Cargo.toml` will syntactically accept some more forms."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:276
+msgid "Placeholder Values"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:278
+msgid ""
+"Previously package metadata values must be declared explicitly in each "
+"`Cargo.toml`:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:281
+msgid ""
+"```toml\n"
+"[package]\n"
+"version = \"1.2.3\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:286
+msgid ""
+"Cargo will now accept a table definition of `package.$key` which defines the "
+"`package.$key.workspace` key as a boolean. For example you can specify:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:289
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"foo\"\n"
+"license = { workspace = true }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:295
+msgid ""
+"This directive indicates that the license of `foo` is the same as `workspace."
+"license`. If `workspace.license` isn't defined then this generates an error."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:299
+msgid ""
+"The following keys in `[package]` can be inherited from `[workspace]` with "
+"the new `workspace = true` directive."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:318
+msgid ""
+"Note that directives like `license-file` are resolved relative to their "
+"definition, so `license-file` is relative to the `[workspace]` section that "
+"defined it."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:322
+msgid "New dependency directives"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:324
+msgid ""
+"Dependencies in the `[dependencies]`, `[dev-dependencies]`, `[build-"
+"dependencies]`, and `[target.\"...\".dependencies]` sections will support "
+"the ability to reference the `[workspace.dependencies]` definition of "
+"dependencies. This is done with a new `workspace` key in the dependency "
+"directive. An example of this looks like:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:335
+msgid ""
+"The `workspace` key cannot be defined with other keys that configure the "
+"source of the dependency. This means you cannot define `workspace` with keys "
+"like `version`, `registry`, `registry-index`, `path`, `git`, `branch`, "
+"`tag`, `rev`, or `package`. The `workspace` key can be combined with other "
+"keys, however:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:340
+msgid ""
+"`optional` - this introduces an optional dependency as usual, as well as a "
+"feature named after the key (left hand side) of the dependency directive). "
+"Note that the `[workspace.dependencies]` table is not allowed to specify "
+"`optional`."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:345
+msgid ""
+"`features` - this indicates, as usual, that extra features are being enabled "
+"over the already-enabled features in the directive found in `[workspace."
+"dependencies]`. The result set of enabled features is the union of the "
+"features specified inline with the features specified in the directive in "
+"the workspace table."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:351
+msgid ""
+"For now if a `workspace = true` dependency is specified then also specifying "
+"the `default-features` value is disallowed. The `default-features` value for "
+"a directive is inherited from the `[workspace.dependencies]` declaration, "
+"which defaults to `true` if nothing else is specified."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:356
+msgid "Path dependencies infer `version` directive"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:358
+msgid ""
+"As a final change to `Cargo.toml`, dependencies using the `path` directive "
+"and not specifying a `version` directive will have the `version` directive "
+"inferred."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:361
+msgid "For example if we have:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:363
+#: src/2906-cargo-workspace-deduplicate.md:405
+msgid ""
+"```toml\n"
+"# foo/Cargo.toml\n"
+"[dependencies]\n"
+"bar = { path = \"../bar\" }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:369
+msgid "as well as"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:371
+msgid ""
+"```toml\n"
+"# bar/Cargo.toml\n"
+"[package]\n"
+"name = \"bar\"\n"
+"version = \"1.0.1\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:378
+msgid "this is equivalent in `foo/Cargo.toml` to as if this were written:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:380
+msgid ""
+"```toml\n"
+"# foo/Cargo.toml\n"
+"[dependencies]\n"
+"bar = { path = \"../bar\", version = \"1.0.1\" }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:386
+msgid ""
+"The `version` key for `path` dependencies, if not specified, will be "
+"inferred to the version of the path dependency itself. Note that this is a "
+"version requirement not an actual semver version, and the version "
+"requirement will be interpreted as \"at least the current version, and "
+"anything semver compatible with it\"."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:392
+msgid ""
+"This logic of inferring, however, will also respect the `publish` key. For "
+"example if we had this instead:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:395
+msgid ""
+"```toml\n"
+"# bar/Cargo.toml\n"
+"[package]\n"
+"name = \"bar\"\n"
+"version = \"1.0.1\"\n"
+"publish = false\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:403
+msgid "then Cargo would not alter this dependency directive:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:411
+msgid "Effect on `cargo publish`"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:413
+msgid ""
+"Cargo currently already \"elaborates\" the manifest during publication. For "
+"example it removes `path` keys in dependency lists to only have the version "
+"requirement pointing to crates.io. During publication Cargo will also "
+"elaborate any substituted information from the `[workspace]`, because "
+"`[workspace]` is also removed during publication!"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:419
+msgid ""
+"This means that `workspace = true` will never be present in `Cargo.toml` "
+"files published to crates.io, and additionally no information about "
+"`workspace = true` will make its way to the registry index. Furthermore "
+"metadata fields like `package.repository` will be filled in and will be "
+"present on crates.io's UI."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:424
+msgid ""
+"Put another way, `Cargo.toml` files published to crates.io, or metadata "
+"found through crates.io, won't change from what they are today."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:427
+msgid "Effect on `Cargo.lock`"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:429
+msgid ""
+"When creating a `Cargo.lock` file Cargo will perform crate resolution as-if "
+"all dependencies in `[workspace.dependencies]` are depended on by some "
+"crate, even if no crate actually references an entry in `[workspace."
+"dependencies]`. This means that if a crate uses an entry in `[workspace."
+"dependencies]` it's guaranteed to have an entry in the lock file indicating "
+"what its dependencies should be."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:436
+msgid ""
+"Note that for entries in `[workspace.dependencies]` which aren't used by any "
+"crates in the workspace will likely trigger a warning, however, so users can "
+"continue to prune accidentally unused entries."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:440
+msgid "Effect on `cargo metadata`"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:442
+msgid ""
+"Executing `cargo metadata` to learn about a crate graph will implicitly "
+"perform all substitution defined in this proposal. Consumers of `cargo "
+"metadata` will continue to get the same output they got before this "
+"proposal, meaning that implicit substitutions, if any, will be invisible to "
+"users of `cargo metadata`."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:447
+msgid "Effect on `cargo read-manifest`"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:449
+msgid ""
+"Similar to `cargo metadata`, the `cargo read-manifest` command will perform "
+"all necessary substitutions when presenting the output as JSON."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:452
+msgid "Effect resolution for relative `path` dependencies"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:454
+msgid ""
+"Like today, `path` dependencies will be resolved relative to the file that "
+"defines them. This means that references to dependencies defined in the "
+"workspace means paths are still relative to the workspace root itself."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:458
+msgid ""
+"For example if you write down a `[workspace.dependencies]` directive with a "
+"relative path:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:461
+msgid ""
+"```toml\n"
+"# Cargo.toml\n"
+"[workspace.dependencies]\n"
+"my-crate = { path = \"crates/my-crate\" }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:467
+msgid "And then you reference this in another crate:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:475
+msgid ""
+"then the `my-crate` dependency references the crate located at `crates/my-"
+"crate` relative to the workspace root, not located at `crates/other-crate/"
+"crates/my-crate`."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:479
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:482
+msgid ""
+"This proposal significantly complicates the process of interpreting a `Cargo."
+"toml`. One of the major purposes of using TOML to specify a crate manifest "
+"was to make it easy for other tools to parse Cargo manifests and work with "
+"them. This not only includes Rust-based tools but also tools in other "
+"languages if necessary. Previously a TOML parser for your language was all "
+"you really needed, but this proposal is adding a layer of indirection on top "
+"of TOML where you have to interpret multiple manifests to figure out what "
+"one means. For example you can no longer quickly and easily be guaranteed to "
+"parse the version of a package, but you might have to go find the workspace "
+"root or other crates to figure that out. Workspace discovery and membership "
+"is pretty nontrivial so non-Cargo based tools will have a difficult time "
+"_not_ using Cargo to figure out a full elaborated form of a manifest 100% of "
+"the time."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:495
+msgid ""
+"This proposal also extends `Cargo.toml` with changes that will break any "
+"existing tools which assume a particular format of `Cargo.toml`. For example "
+"if a tool expects `package.version` to be a `String` that runs a risk of "
+"being broken in the future due to the ability to specify a table there "
+"instead."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:500
+msgid ""
+"Additionally this proposal complicates a reader's understanding of `Cargo."
+"toml`. While verbose for maintainers having duplication of information is "
+"actually quite nice for readers of `Cargo.toml` because you don't have to "
+"chase anything else down to figure out what a dependency is. If this "
+"proposal is implemented then whenever you see `foo = { workspace = true }` "
+"you've got to go consult something else to figure out what the dependency "
+"actually is. This layer of indirection can cause surprise for readers or "
+"otherwise add a speed-bump to understanding the contents of a manifest."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:509
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:512
+msgid ""
+"Cargo's manifests have been a pretty carefully curated part of Cargo's "
+"design to ensure that they're consistently readable and concise where "
+"possible. For example many of Cargo's manifest idioms gently nudge users "
+"towards the same standards across the community by supporting many zero-"
+"configuration situations such as where to put and how to name tests."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:518
+msgid ""
+"This proposal is an extension of these design principles to provide a gentle "
+"nudge to consistently, across the Rust community, manage workspaces, "
+"dependencies, and metadata. A goal here is to increase consistency in how "
+"this is all managed across projects in a way that still preserves Cargo's "
+"existing flexibility for users."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:524
+msgid ""
+"Note that flexibility is a key part of this proposal where it's possible to "
+"intermingle shorthands with longer versions. For example if the workspace "
+"declares:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:528
+msgid ""
+"```toml\n"
+"[workspace.dependencies]\n"
+"log = \"0.3\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:533
+msgid ""
+"But you really want to try out a new version of `log` in one workspace "
+"member, you can easily do so by changing"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:541
+msgid "to"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:543
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"log = \"0.4\"\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:548
+msgid ""
+"Additionally you can always custom-version your packages, you've just got "
+"the option to reference another package as well. Overall this proposal "
+"should empower more power users of Cargo to manage workspaces easily without "
+"taking away any of the existing configurations that Cargo already supports."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:553
+msgid "Alternative Syntax"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:555
+msgid ""
+"This proposal is largely a syntactic proposal for `Cargo.toml` and changing "
+"how we can specify a few directives. Naturally that lends itself to quite a "
+"lot of possible bikeshedding! Virtually all of the aspects of the proposal "
+"that modify `Cargo.toml` can be tweaked in various ways such as names used "
+"or where they're placed. In any case discussion about compelling "
+"alternatives is always encouraged!"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:562
+msgid "Some alternative syntaxes:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:564
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"# Instead of `foo = { workspace = true }`\n"
+"foo = {}\n"
+"foo = \"ws\"\n"
+"foo = \"workspace\"\n"
+"foo.workspace = true # technically the same, but idiomatically different\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:573
+msgid "Including metadata by default"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:575
+msgid ""
+"This proposal indicates that package metadata is not inherited by default "
+"from the workspace. This may be desired in some scenarios instead of "
+"repeating `license = { workspace = true }` everywhere, and there's likely "
+"two possible ways this could happen."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:580
+msgid ""
+"Workspace directives could be implicitly and automatically inherited to "
+"members. In the future, however, Cargo will want to support nested "
+"workspaces, and it's unclear how these features will interact. In order to "
+"strik a reasonable middle-ground for now a simple solution which should "
+"address many use cases is proposed and we can continue to refine this over "
+"time as necessary."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:587
+msgid ""
+"Directives could be flagged to be explicitly inherited to workspace members "
+"as an optional way of specifying this. For now though to keep this proposal "
+"simple this is left out as a possible future extension of Cargo."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:591
+msgid "Inheriting metadata from other packages"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:593
+msgid ""
+"One possible extension of this RFC is for metadata to not only be "
+"inheritable from the `[workspace]` table but also from other packages. For "
+"example a scenario seen in the wild is that some repositories have multiple "
+"\"cliques\" of crates which are all versioned as a unit. In this scenario "
+"one \"clique\" can have its version directives deduplicated with this "
+"proposal, but not multiple ones."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:599
+msgid ""
+"It's hoped though that an eventual feature of nested workspaces would solve "
+"this issue in Cargo. That way each \"clique\" could correspond to one "
+"workspace, and that way we wouldn't need extra support to inherit directives "
+"from anywhere."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:603
+msgid "Motivating issues"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:605
+msgid ""
+"Duplication throughout workspaces has been a thorn in Cargo's since "
+"practically since the inception of workspaces. Naturally there's quite a few "
+"bugs filed on Cargo's issue tracker about this which provide some context "
+"for why make a proposal at all as well as how to design this proposal."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:610
+msgid ""
+"[\\#3931](https://github.com/rust-lang/cargo/issues/3931) - updating the "
+"version of a crate in a workspace means lots of edits"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:611
+msgid ""
+"[\\#7552](https://github.com/rust-lang/cargo/issues/7552) - crates may "
+"differ slightly in versions required from crates.io"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:612
+msgid ""
+"[\\#7964](https://github.com/rust-lang/cargo/issues/7964) - current idioms "
+"push users towards usage of `[patch]` which breaks git dependencies"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:614
+msgid ""
+"[\\#5471](https://github.com/rust-lang/cargo/issues/5471) - an issue about "
+"shared dependencies in a workspace"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:615
+msgid ""
+"[\\#6126](https://github.com/rust-lang/cargo/issues/6126) - an issue where "
+"`[patch]` tables are used seemingly to make it easier to specify "
+"dependencies in a workspace, but having everything in `[workspace."
+"dependencies]` makes it smaller to specify."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:618
+msgid ""
+"[\\#6828](https://github.com/rust-lang/cargo/issues/6828) - an issue about "
+"inheriting workspace attributes"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:627
+msgid "Full templating language"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:629
+msgid ""
+"One sort of far-out-there alternative we could go for is to be far more "
+"ambitious and make our own sort of \"templating language\" on top of TOML. "
+"This would arguably be much more flexible than the limited amount of "
+"deduplication proposed here, but you could imagine things like:"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:634
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"foo\"\n"
+"version = \"1.{workspace.vars.minor}.0\"\n"
+"\n"
+"[dependencies]\n"
+"bar = \"{workspace.dependencies.bar}\"\n"
+"baz = { version = \"1\", features = \"{workspace.vars.baz_features}\" }\n"
+"```"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:644
+msgid ""
+"or \"insert your own idea for how we can go all out\" here. In general "
+"though I think there's a lot to be gained from the simplicity of TOML and "
+"prioritizing other tools reading Cargo manifests, so we may not want to go "
+"full-blown templating language just yet."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:649
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:652
+msgid ""
+"One thing we'll want to resolve for sure is nailing down all the syntactical "
+"decision here, which is expected to evolve through consensus."
+msgstr ""
+
+#: src/2906-cargo-workspace-deduplicate.md:655
+msgid ""
+"It's not clear how complex an implementation of this proposal will be in "
+"Cargo. It could be prohibitively complex, but it's hoped that it's a "
+"relatively simple refactoring to implement this in Cargo."
+msgstr ""

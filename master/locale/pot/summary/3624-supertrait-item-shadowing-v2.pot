@@ -1,0 +1,272 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3624-supertrait-item-shadowing-v2.md:1
+msgid "Feature Name: `supertrait_item_shadowing`"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:2
+msgid "Start Date: 2024-05-04"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3624](https://github.com/rust-lang/rfcs/pull/3624)"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#89151](https://github.com/rust-lang/rust/"
+"issues/89151)"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:9
+msgid ""
+"When method selection encounters an ambiguity between two trait methods when "
+"both traits are in scope, if one trait is a subtrait of the other then "
+"select the method from the subtrait instead of reporting an ambiguity error."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:14
+msgid ""
+"The libs-api team would like to stabilize `Iterator::intersperse` but has a "
+"problem. The `itertools` crate already has:"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:17
+msgid "// itertools\n"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:23
+msgid "This method is used in crates with code similar to the following:"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:26
+msgid "// Implicit import from prelude\n"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:31
+msgid "\"1,2,3\""
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:31
+msgid "\",\""
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:31
+msgid "\"|\""
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:32
+msgid ""
+"// ^ This is ambiguous: it could refer to Iterator::intersperse or "
+"Itertools::intersperse\n"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:36
+msgid ""
+"This code actually works today because `intersperse` is an unstable API, and "
+"the compiler already has [logic](https://github.com/rust-lang/rust/"
+"pull/48552) to prefer stable methods over unstable methods when an ambiguity "
+"occurs."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:38
+msgid ""
+"Attempts to stabilize `intersperse` have failed with a large number of "
+"regressions [reported by crater](https://github.com/rust-lang/rust/"
+"issues/88967) which affect many popular crates. Even if these were to be "
+"manually corrected (since ambiguity is considered allowed breakage) we would "
+"have to go through this whole process again every time a method from "
+"`itertools` is uplifted to the standard library."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:40
+msgid "Proposed solution"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:43
+msgid ""
+"This RFC proposes to change method selection to resolve the ambiguity in the "
+"following specific circumstances:"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:45
+msgid ""
+"All method candidates are trait methods (inherent methods are already "
+"prioritized over trait methods)."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:46
+msgid ""
+"One trait is transitively a subtrait of all other traits in the candidate "
+"list."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:48
+msgid ""
+"When this happens, the subtrait method is selected instead of reporting an "
+"ambiguity error."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:50
+msgid ""
+"Note that this only happens when _both_ traits are in scope since this is "
+"required for the ambiguity to occur in the first place."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:52
+msgid ""
+"We will provide an allow-by-default lint to let users opt in to being "
+"notified when an ambiguity is resolved in this way."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:54
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:57
+msgid ""
+"This behavior might be surprising as adding a method to a subtrait can "
+"change which function is called in unrelated code. This is somewhat "
+"mitigated by the opt-in lint which, when enabled, warns users about the "
+"potential ambiguity."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:59
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:62
+msgid ""
+"If we choose not to accept this RFC then there doesn't seem to be a "
+"reasonable path for adding new methods to the `Iterator` trait if such "
+"methods are already provided by `itertools` without a lot of ecosystem churn."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:64
+msgid "Only doing this for specific traits"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:66
+msgid ""
+"One possible alternative to a general change to the method selection rules "
+"would be to only do so on a case-by-case basis for specific methods in "
+"standard library traits. This could be done by using a perma-unstable "
+"`#[shadowable]` attribute specifically on methods like `Iterator::"
+"intersperse`."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:68
+msgid ""
+"There are both advantages and inconveniences to this approach. While it "
+"allows most Rust users to avoid having to think about this issue for most "
+"traits, it does make the `Iterator` trait more \"magical\" in that it "
+"doesn't follow the same rules as the rest of the language. Having a "
+"consistent rule for how method selection works is easier to teach people."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:70
+msgid "Preferring the supertrait method instead"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:72
+msgid ""
+"In cases of ambiguity between a subtrait method and a supertrait method, "
+"there are two ways of resolving the ambiguity. This RFC proposes to resolve "
+"in favor of the subtrait since this is most likely to avoid breaking changes "
+"in practice."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:74
+msgid "Consider this situation:"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:76
+msgid "Library A has trait `Foo`."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:77
+msgid "Crate B, depending on A, has trait `FooExt` with `Foo` as a supertrait."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:78
+msgid ""
+"A adds a new method to `Foo`, but it has a default implementation so it's "
+"not breaking. B has a preexisting method with the same name."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:80
+msgid ""
+"In this general case, the reason this cannot be resolved in favor of the "
+"supertrait is that the method signatures are not necessarily compatible."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:82
+msgid ""
+"[In code](https://play.rust-lang.org/?"
+"version=stable&mode=debug&edition=2021&gist=b3919f7a8480c445d40b18a240936a07):"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:89
+msgid ""
+"// fn call(&self) -> u32 {\n"
+"        //     0\n"
+"        // }\n"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:110
+msgid "\"{}\""
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:114
+msgid ""
+"Resolving in favor of `a` is a breaking change; resolving in favor of `b` is "
+"not. The only other option is the status quo -- not compiling. Resolving to "
+"`a` simply cannot happen lest we violate backwards compatibility, and the "
+"status quo is not ideal."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:116
+msgid "Prior art"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:119
+msgid "RFC 2845"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:121
+msgid ""
+"RFC 2845 was a previous attempt, but it did not fully address the problem "
+"since it only changes method selection when trait methods are resolved due "
+"to generic bounds. In practice, most of the ambiguity from stabilizing "
+"`intersperse` comes from non-generic code."
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:123
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3624-supertrait-item-shadowing-v2.md:126
+msgid ""
+"Should we have a warn-by-default lint that fires at the definition-site of a "
+"subtrait that shadows a supertrait item?"
+msgstr ""

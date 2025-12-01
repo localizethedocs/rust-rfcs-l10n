@@ -1,0 +1,187 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0587-fn-return-should-be-an-associated-type.md:1
+msgid "Start Date: 2015-01-22"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#587](https://github.com/rust-lang/rfcs/pull/587)"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#21527](https://github.com/rust-lang/rust/"
+"issues/21527)"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:7
+msgid ""
+"The `Fn` traits should be modified to make the return type an associated "
+"type."
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:9
+msgid "Motivation"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:11
+msgid ""
+"The strongest reason is because it would permit impls like the following "
+"(example from @alexcrichton):"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:18
+msgid ""
+"This impl is currently illegal because the parameter `R` is not constrained. "
+"(This also has an impact on my attempts to add variance, which would require "
+"a \"phantom data\" annotation for `R` for the same reason; but that RFC is "
+"not quite ready yet.)"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:23
+msgid ""
+"Another related reason is that it often permits fewer type parameters. "
+"Rather than having a distinct type parameter for the return type, the "
+"associated type projection `F::Output` can be used. Consider the standard "
+"library `Map` type:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:45
+msgid "This type could be equivalently written:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:63
+msgid ""
+"This example highlights one subtle point about the `()` notation, which is "
+"covered below."
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:66
+msgid "Detailed design"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:68
+msgid ""
+"The design has been implemented. You can see it in [this pull request]"
+"(https://github.com/rust-lang/rust/pull/21019). The `Fn` trait is modified "
+"to read as follows:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:78
+msgid "The other traits are modified in an analogous fashion."
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:82
+msgid "Parentheses notation"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:84
+msgid ""
+"The shorthand `Foo(...)` expands to `Foo<(...), Output=()>`. The shorthand "
+"`Foo(..) -> B` expands to `Foo<(...), Output=B>`. This implies that if you "
+"use the parenthetical notation, you must supply a return type (which could "
+"be a new type parameter). If you would prefer to leave the return type "
+"unspecified, you must use angle-bracket notation. (Note that using angle-"
+"bracket notation with the `Fn` traits is currently feature-gated, as "
+"[described here](https://github.com/rust-lang/rust/issues/18875).)"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:94
+msgid ""
+"This can be seen in the In the `Map` example from the introduction. There "
+"the `<>` notation was used so that `F::Output` is left unbound:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:103
+msgid "An alternative would be to retain the type parameter `B`:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:110
+msgid ""
+"Or to remove the bound on `F` from the type definition and use it only in "
+"the impl:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:128
+msgid ""
+"Note that this final option is not legal without this change, because the "
+"type parameter `B` on the impl would be unconstrained."
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:131
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:133
+msgid "Cannot overload based on return type alone"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:135
+msgid ""
+"This change means that you cannot overload indexing to \"model\" a trait "
+"like `Default`:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:144
+msgid "That is, I can't do something like the following:"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:157
+msgid ""
+"This is not possible because the impl type parameter `T` is not constrained."
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:159
+msgid ""
+"This does not seem like a particularly strong limitation. Overloaded call "
+"notation is already less general than full traits in various ways (for "
+"example, it lacks the ability to define a closure that always panics; that "
+"is, the `!` notation is not a type and hence something like `FnMut() -> !` "
+"is not legal). The ability to overload based on return type is not removed, "
+"it is simply not something you can model using overloaded operators."
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:166
+msgid "Alternatives"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:168
+msgid "Special syntax to represent the lack of an `Output` binding"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:170
+msgid ""
+"Rather than having people use angle-brackets to omit the `Output` binding, "
+"we could introduce some special syntax for this purpose.  For example, "
+"`FnMut() -> ?` could desugar to `FnMut<()>` (whereas `FnMut()` alone "
+"desugars to `FnMut<(), Output=()>`). The first suggestion that is commonly "
+"made is `FnMut() -> _`, but that has an existing meaning in a function "
+"context (where `_` represents a fresh type variable)."
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:178
+msgid "Change meaning of `FnMut()` to not bind the output"
+msgstr ""
+
+#: src/0587-fn-return-should-be-an-associated-type.md:180
+msgid ""
+"We could make `FnMut()` desugar to `FnMut<()>`, and hence require an "
+"explicit `FnMut() -> ()` to bind the return type to unit.  This feels "
+"surprising and inconsistent."
+msgstr ""

@@ -1,0 +1,498 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:06Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3558-libtest-json.md:1
+msgid "Feature Name: `libtest-json`"
+msgstr ""
+
+#: src/3558-libtest-json.md:2
+msgid "Start Date: 2024-01-18"
+msgstr ""
+
+#: src/3558-libtest-json.md:3
+msgid ""
+"Pre-RFC: [Internals](https://internals.rust-lang.org/t/path-for-stabilizing-"
+"libtests-json-output/20163)"
+msgstr ""
+
+#: src/3558-libtest-json.md:4
+msgid ""
+"eRFC PR: [rust-lang/rfcs#3558](https://github.com/rust-lang/rfcs/pull/3558)"
+msgstr ""
+
+#: src/3558-libtest-json.md:5
+msgid ""
+"Tracking Issue: [rust-lang/testing-devex-team1](https://github.com/rust-lang/"
+"testing-devex-team/issues/1)"
+msgstr ""
+
+#: src/3558-libtest-json.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/3558-libtest-json.md:10
+msgid ""
+"This eRFC lays out a path for [stabilizing programmatic output for libtest]"
+"(https://github.com/rust-lang/rust/issues/49359)."
+msgstr ""
+
+#: src/3558-libtest-json.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/3558-libtest-json.md:15
+msgid ""
+"[libtest](https://github.com/rust-lang/rust/tree/master/library/test) is the "
+"test harness used by default for tests in cargo projects. It provides the "
+"CLI that cargo calls into and enumerates and runs the tests discovered in "
+"that binary. It ships with rustup and has the same compatibility guarantees "
+"as the standard library."
+msgstr ""
+
+#: src/3558-libtest-json.md:20
+msgid ""
+"Before 1.70, anyone could pass `--format json` despite it being unstable. "
+"When this was fixed to require nightly, this helped show [how much people "
+"have come to rely on programmatic output](https://www.reddit.com/r/rust/"
+"comments/13xqhbm/announcing_rust_1700/jmji422/)."
+msgstr ""
+
+#: src/3558-libtest-json.md:24
+msgid ""
+"Cargo could also benefit from programmatic test output to improve user "
+"interactions, including"
+msgstr ""
+
+#: src/3558-libtest-json.md:25
+msgid ""
+"[Wanting to run test binaries in parallel](https://github.com/rust-lang/"
+"cargo/issues/5609), like `cargo nextest`"
+msgstr ""
+
+#: src/3558-libtest-json.md:26
+msgid ""
+"[Lack of summary across all binaries](https://github.com/rust-lang/cargo/"
+"issues/4324)"
+msgstr ""
+
+#: src/3558-libtest-json.md:27
+msgid ""
+"[Noisy test output](https://github.com/rust-lang/cargo/issues/2832) (see "
+"also [\\#5089](https://github.com/rust-lang/cargo/issues/5089))"
+msgstr ""
+
+#: src/3558-libtest-json.md:28
+msgid ""
+"[Confusing command-line interactions](https://github.com/rust-lang/cargo/"
+"issues/1983) (see also [\\#8903](https://github.com/rust-lang/cargo/"
+"issues/8903), [\\#10392](https://github.com/rust-lang/cargo/issues/10392))"
+msgstr ""
+
+#: src/3558-libtest-json.md:29
+msgid ""
+"[Poor messaging when a filter doesn't match](https://github.com/rust-lang/"
+"cargo/issues/6151)"
+msgstr ""
+
+#: src/3558-libtest-json.md:30
+msgid ""
+"[Smarter test execution order](https://github.com/rust-lang/cargo/"
+"issues/6266) (see also [\\#8685](https://github.com/rust-lang/cargo/"
+"issues/8685), [\\#10673](https://github.com/rust-lang/cargo/issues/10673))"
+msgstr ""
+
+#: src/3558-libtest-json.md:31
+msgid ""
+"[JUnit output is incorrect when running multiple test binaries](https://"
+"github.com/rust-lang/rust/issues/85563)"
+msgstr ""
+
+#: src/3558-libtest-json.md:32
+msgid ""
+"[Lack of failure when test binaries exit unexpectedly](https://github.com/"
+"rust-lang/rust/issues/87323)"
+msgstr ""
+
+#: src/3558-libtest-json.md:34
+msgid ""
+"Most of that involves shifting responsibilities from the test harness to the "
+"test runner which has the side effects of:"
+msgstr ""
+
+#: src/3558-libtest-json.md:35
+msgid ""
+"Allowing more powerful experiments with custom test runners (e.g. [`cargo "
+"nextest`](https://crates.io/crates/cargo-nextest)) as they'll have more "
+"information to operate on"
+msgstr ""
+
+#: src/3558-libtest-json.md:36
+msgid ""
+"Lowering the barrier for custom test harnesses (like [`libtest-mimic`]"
+"(https://crates.io/crates/libtest-mimic)) as UI responsibilities are shifted "
+"to the test runner (`cargo test`)"
+msgstr ""
+
+#: src/3558-libtest-json.md:38
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3558-libtest-json.md:41
+msgid "The intended outcomes of this experiment are:"
+msgstr ""
+
+#: src/3558-libtest-json.md:42
+msgid "Updates to libtest's unstable output"
+msgstr ""
+
+#: src/3558-libtest-json.md:43
+msgid ""
+"A stabilization request to [T-libs-api](https://www.rust-lang.org/governance/"
+"teams/library#Library%20API%20team) using the process of their choosing"
+msgstr ""
+
+#: src/3558-libtest-json.md:45
+msgid "Additional outcomes we hope for are:"
+msgstr ""
+
+#: src/3558-libtest-json.md:46
+msgid ""
+"A change proposal for [T-cargo](https://www.rust-lang.org/governance/teams/"
+"dev-tools#Cargo%20team) for `cargo test` and `cargo bench` to provide their "
+"own UX on top of the programmatic output"
+msgstr ""
+
+#: src/3558-libtest-json.md:47
+msgid ""
+"A change proposal for [T-cargo](https://www.rust-lang.org/governance/teams/"
+"dev-tools#Cargo%20team) to allow users of custom test harnesses to opt-in to "
+"the new UX using programmatic output"
+msgstr ""
+
+#: src/3558-libtest-json.md:49
+msgid ""
+"While having a plan for evolution takes some burden off of the format, we "
+"should still do some due diligence in ensuring the format works well for our "
+"intended uses. Our rough plan for vetting a proposal is:"
+msgstr ""
+
+#: src/3558-libtest-json.md:52
+msgid ""
+"Create an experimental test harness where each `--format <mode>` is a skin "
+"over a common internal `serde` structure, emulating what `libtest` and "
+"`cargo`s relationship will be like on a smaller scale for faster iteration"
+msgstr ""
+
+#: src/3558-libtest-json.md:53
+msgid "Transition libtest to this proposed interface"
+msgstr ""
+
+#: src/3558-libtest-json.md:54
+msgid ""
+"Add experimental support for cargo to interact with test binaries through "
+"the unstable programmatic output"
+msgstr ""
+
+#: src/3558-libtest-json.md:55
+msgid ""
+"Create a stabilization report for programmatic output for T-libs-api and a "
+"cargo RFC for custom test harnesses to opt into this new protocol"
+msgstr ""
+
+#: src/3558-libtest-json.md:57
+msgid ""
+"It is expected that the experimental test harness have functional parity "
+"with `libtest`, including"
+msgstr ""
+
+#: src/3558-libtest-json.md:58
+msgid "Ignored tests"
+msgstr ""
+
+#: src/3558-libtest-json.md:59
+msgid "Parallel running of tests"
+msgstr ""
+
+#: src/3558-libtest-json.md:60
+msgid "Benches being both a bench and a test"
+msgstr ""
+
+#: src/3558-libtest-json.md:61
+msgid "Test discovery"
+msgstr ""
+
+#: src/3558-libtest-json.md:63
+msgid ""
+"We should evaluate the design against the capabilities of test runners from "
+"different ecosystems to ensure the format has the expandability for what "
+"people may do with custom test harnesses or `cargo test`, including:"
+msgstr ""
+
+#: src/3558-libtest-json.md:64
+msgid "Ability to implement different format modes on top"
+msgstr ""
+
+#: src/3558-libtest-json.md:65
+msgid "Both test running and `--list` mode"
+msgstr ""
+
+#: src/3558-libtest-json.md:66
+msgid "Ability to run test harnesses in parallel"
+msgstr ""
+
+#: src/3558-libtest-json.md:67
+msgid ""
+"[Tests with multiple failures](https://docs.rs/googletest/0.10.0/googletest/"
+"prelude/macro.expect_that.html)"
+msgstr ""
+
+#: src/3558-libtest-json.md:68
+msgid "Bench support"
+msgstr ""
+
+#: src/3558-libtest-json.md:69
+msgid ""
+"Static and dynamic [parameterized tests / test fixtures](https://crates.io/"
+"crates/rstest)"
+msgstr ""
+
+#: src/3558-libtest-json.md:70
+msgid ""
+"Static and [dynamic test skipping](https://doc.crates.io/contrib/tests/"
+"writing.html#cargo_test-attribute)"
+msgstr ""
+
+#: src/3558-libtest-json.md:71
+msgid ""
+"[Test markers](https://docs.pytest.org/en/7.4.x/example/markers.html#mark-"
+"examples)"
+msgstr ""
+
+#: src/3558-libtest-json.md:72
+msgid "doctests"
+msgstr ""
+
+#: src/3558-libtest-json.md:73
+msgid "Test location (for IDEs)"
+msgstr ""
+
+#: src/3558-libtest-json.md:74
+msgid "Collect metrics related to tests"
+msgstr ""
+
+#: src/3558-libtest-json.md:75
+msgid "Elapsed time"
+msgstr ""
+
+#: src/3558-libtest-json.md:76
+msgid "Temp dir sizes"
+msgstr ""
+
+#: src/3558-libtest-json.md:77
+msgid "RNG seed"
+msgstr ""
+
+#: src/3558-libtest-json.md:79
+msgid ""
+"**Warning:** This doesn't mean they'll all be supported in the initial "
+"stabilization just that we feel confident the format will support them)"
+msgstr ""
+
+#: src/3558-libtest-json.md:81
+msgid ""
+"We also need to evaluate how we'll support evolving the format. An important "
+"consideration is that the compile-time burden we put on custom test "
+"harnesses as that will be an important factor for people's willingness to "
+"pull them in as `libtest` comes pre-built today."
+msgstr ""
+
+#: src/3558-libtest-json.md:86
+msgid "Custom test harnesses are important for this discussion because"
+msgstr ""
+
+#: src/3558-libtest-json.md:87
+msgid ""
+"Many already exist today, directly or shoe-horned on top of `libtest`, like"
+msgstr ""
+
+#: src/3558-libtest-json.md:88
+msgid "[libtest-mimic](https://crates.io/crates/libtest-mimic)"
+msgstr ""
+
+#: src/3558-libtest-json.md:89
+msgid "[criterion](https://crates.io/crates/criterion)"
+msgstr ""
+
+#: src/3558-libtest-json.md:90
+msgid "[divan](https://crates.io/crates/divan)"
+msgstr ""
+
+#: src/3558-libtest-json.md:91
+msgid ""
+"[cargo-test-support](https://doc.rust-lang.org/nightly/nightly-rustc/"
+"cargo_test_support/index.html)"
+msgstr ""
+
+#: src/3558-libtest-json.md:92
+msgid "[rstest](https://crates.io/crates/rstest)"
+msgstr ""
+
+#: src/3558-libtest-json.md:93
+msgid "[trybuild](https://crates.io/crates/trybuild)"
+msgstr ""
+
+#: src/3558-libtest-json.md:94
+msgid ""
+"The compatibility guarantees around libtest mean that development of new "
+"ideas is easier through custom test harnesses"
+msgstr ""
+
+#: src/3558-libtest-json.md:96
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3558-libtest-json.md:99
+msgid "Resources"
+msgstr ""
+
+#: src/3558-libtest-json.md:101
+msgid "Comments made on libtests format"
+msgstr ""
+
+#: src/3558-libtest-json.md:102
+msgid ""
+"[Format is complex](https://github.com/rust-lang/rust/"
+"issues/49359#issuecomment-467994590) (see also [1](https://github.com/rust-"
+"lang/rust/issues/49359#issuecomment-1531369119))"
+msgstr ""
+
+#: src/3558-libtest-json.md:103
+msgid ""
+"[Benches need love](https://github.com/rust-lang/rust/"
+"issues/49359#issuecomment-467994590)"
+msgstr ""
+
+#: src/3558-libtest-json.md:104
+msgid ""
+"[Type field is overloaded](https://github.com/rust-lang/rust/"
+"issues/49359#issuecomment-467994590)"
+msgstr ""
+
+#: src/3558-libtest-json.md:105
+msgid ""
+"[Suite/child relationship is missing](https://github.com/rust-lang/rust/"
+"issues/49359)"
+msgstr ""
+
+#: src/3558-libtest-json.md:106
+msgid ""
+"[Lack of suite name makes it hard to use programmatic output from Cargo]"
+"(https://github.com/rust-lang/rust/issues/49359#issuecomment-533154674) (see "
+"also [1](https://github.com/rust-lang/rust/"
+"issues/49359#issuecomment-699691296))"
+msgstr ""
+
+#: src/3558-libtest-json.md:107
+msgid ""
+"[Format is underspecified](https://github.com/rust-lang/rust/"
+"issues/49359#issuecomment-706566635)"
+msgstr ""
+
+#: src/3558-libtest-json.md:108
+msgid ""
+"~~[Lacks ignored reason](https://github.com/rust-lang/rust/"
+"issues/49359#issuecomment-715877950)~~ ([resolved?](https://github.com/rust-"
+"lang/rust/issues/49359#issuecomment-1531369119))"
+msgstr ""
+
+#: src/3558-libtest-json.md:109
+msgid ""
+"[Lack of `rendered` field](https://github.com/rust-lang/rust/"
+"issues/49359#issuecomment-1531369119)"
+msgstr ""
+
+#: src/3558-libtest-json.md:111
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3558-libtest-json.md:114
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3558-libtest-json.md:117
+msgid "See also"
+msgstr ""
+
+#: src/3558-libtest-json.md:118
+msgid "https://internals.rust-lang.org/t/alternate-libtest-output-format/6121"
+msgstr ""
+
+#: src/3558-libtest-json.md:119
+msgid ""
+"https://internals.rust-lang.org/t/past-present-and-future-for-rust-"
+"testing/6354"
+msgstr ""
+
+#: src/3558-libtest-json.md:121
+msgid "Prior art"
+msgstr ""
+
+#: src/3558-libtest-json.md:124
+msgid "Existing formats"
+msgstr ""
+
+#: src/3558-libtest-json.md:125
+msgid "junit"
+msgstr ""
+
+#: src/3558-libtest-json.md:126
+msgid "[subunit](https://github.com/testing-cabal/subunit)"
+msgstr ""
+
+#: src/3558-libtest-json.md:127
+msgid "[TAP](https://testanything.org/)"
+msgstr ""
+
+#: src/3558-libtest-json.md:129
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3558-libtest-json.md:132
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3558-libtest-json.md:135
+msgid "Improve custom test harness experience"
+msgstr ""
+
+#: src/3558-libtest-json.md:137
+msgid ""
+"With less of a burden being placed on custom test harnesses, we can more "
+"easily explore what is needed for making them be a first-class experience."
+msgstr ""
+
+#: src/3558-libtest-json.md:140
+msgid "See"
+msgstr ""
+
+#: src/3558-libtest-json.md:141
+msgid ""
+"[eRFC 2318: Custom Test Frameworks](https://rust-lang.github.io/rfcs/2318-"
+"custom-test-frameworks.html)"
+msgstr ""
+
+#: src/3558-libtest-json.md:142
+msgid ""
+"[Blog Post: Iterating on Test](https://epage.github.io/blog/2023/06/"
+"iterating-on-test/)"
+msgstr ""

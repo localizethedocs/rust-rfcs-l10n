@@ -1,0 +1,158 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:02Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0003-attribute-usage.md:1
+msgid "Start Date: 2012-03-20"
+msgstr ""
+
+#: src/0003-attribute-usage.md:2
+msgid "RFC PR: [rust-lang/rfcs#3](https://github.com/rust-lang/rfcs/pull/3)"
+msgstr ""
+
+#: src/0003-attribute-usage.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#14373](https://github.com/rust-lang/rust/"
+"issues/14373)"
+msgstr ""
+
+#: src/0003-attribute-usage.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0003-attribute-usage.md:7
+msgid ""
+"Rust currently has an attribute usage lint but it does not work particularly "
+"well. This RFC proposes a new implementation strategy that should make it "
+"significantly more useful."
+msgstr ""
+
+#: src/0003-attribute-usage.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/0003-attribute-usage.md:13
+msgid "The current implementation has two major issues:"
+msgstr ""
+
+#: src/0003-attribute-usage.md:15
+msgid ""
+"There are very limited warnings for valid attributes that end up in the "
+"wrong place. Something like this will be silently ignored:"
+msgstr ""
+
+#: src/0003-attribute-usage.md:18
+msgid "// Shouldn't have put a ; here\n"
+msgstr ""
+
+#: src/0003-attribute-usage.md:21
+msgid "// Should have used #[allow(attribute-usage)] instead!\n"
+msgstr ""
+
+#: src/0003-attribute-usage.md:23
+msgid "//...\n"
+msgstr ""
+
+#: src/0003-attribute-usage.md:26
+msgid ""
+"`ItemDecorators` can now be defined outside of the compiler, and there's no "
+"way to tag them and associated attributes as valid. Something like this "
+"requires an `#[allow(attribute-usage)]`:"
+msgstr ""
+
+#: src/0003-attribute-usage.md:42
+msgid "Detailed design"
+msgstr ""
+
+#: src/0003-attribute-usage.md:44
+msgid ""
+"The current implementation is implemented as a simple fold over the AST, "
+"comparing attributes against a whitelist. Crate-level attributes use a "
+"separate whitelist, but no other distinctions are made."
+msgstr ""
+
+#: src/0003-attribute-usage.md:48
+msgid ""
+"This RFC would change the implementation to actually track which attributes "
+"are used during the compilation process. `syntax::ast::Attribute_` would be "
+"modified to add an ID field:"
+msgstr ""
+
+#: src/0003-attribute-usage.md:62
+msgid ""
+"`syntax::ast::parse::ParseSess` will generate new `AttrId`s on demand. I "
+"believe that attributes will only be created during parsing and expansion, "
+"and the `ParseSess` is accessible in both."
+msgstr ""
+
+#: src/0003-attribute-usage.md:66
+msgid ""
+"The `AttrId`s will be used to create a side table of used attributes. This "
+"will most likely be a thread local to make it easily accessible during all "
+"stages of compilation by calling a function in `syntax::attr`:"
+msgstr ""
+
+#: src/0003-attribute-usage.md:73
+msgid ""
+"The `attribute-usage` lint would run at the end of compilation and warn on "
+"all attributes whose ID does not appear in the side table."
+msgstr ""
+
+#: src/0003-attribute-usage.md:76
+msgid ""
+"One interesting edge case is attributes like `doc` that are used, but not in "
+"the normal compilation process. There could either be a separate fold pass "
+"to mark all `doc` attributes as used or `doc` could simply be whitelisted in "
+"the `attribute-usage` lint."
+msgstr ""
+
+#: src/0003-attribute-usage.md:81
+msgid ""
+"Attributes in code that has been eliminated with `#[cfg()]` will not be "
+"linted, but I feel that this is consistent with the way `#[cfg()]` works in "
+"general (e.g. the code won't be type-checked either)."
+msgstr ""
+
+#: src/0003-attribute-usage.md:85
+msgid "Alternatives"
+msgstr ""
+
+#: src/0003-attribute-usage.md:87
+msgid ""
+"An alternative would be to rewrite `rustc::middle::lint` to robustly check "
+"that attributes are used where they're supposed to be. This will be fairly "
+"complex and be prone to failure if/when more nodes are added to the AST. "
+"This also doesn't solve motivation #2, which would require externally loaded "
+"lint support."
+msgstr ""
+
+#: src/0003-attribute-usage.md:93
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0003-attribute-usage.md:95
+msgid ""
+"This implementation doesn't allow for a distinction between \"unused\" and "
+"\"unknown\" attributes. The `#[phase(syntax)]` crate loading infrastructure "
+"could be extended to pull a list of attributes from crates to use in the "
+"lint pass, but I'm not sure if the extra complexity is worth it."
+msgstr ""
+
+#: src/0003-attribute-usage.md:99
+msgid ""
+"The side table could be threaded through all of the compilation stages that "
+"need to use it instead of being a thread local. This would probably require "
+"significantly more work than the thread local approach, however. The thread "
+"local approach should not negatively impact any future parallelization work "
+"as each thread can keep its own side table, which can be merged into one for "
+"the lint pass."
+msgstr ""

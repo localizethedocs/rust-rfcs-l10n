@@ -1,0 +1,324 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-01T05:53:04Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2316-safe-unsafe-trait-methods.md:1
+msgid "Feature Name: safe_unsafe_trait_methods"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:2
+msgid "Start Date: 2018-01-30"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2316](https://github.com/rust-lang/rfcs/pull/2316)"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#87919](https://github.com/rust-lang/rust/"
+"issues/87919)"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:9
+msgid ""
+"This RFC allows safe implementations of `unsafe` trait methods. An `impl` "
+"may implement a trait with methods marked as `unsafe` without marking the "
+"methods in the `impl` as `unsafe`. This is referred to as _overconstraining_ "
+"the method in the `impl`. When the trait's `unsafe` method is called on a "
+"specific type where the method is known to be safe, that call does not "
+"require an `unsafe` block."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:16
+msgid "Motivation"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:19
+msgid ""
+"A trait which includes unsafe methods in its definition permits its impls to "
+"define methods as unsafe. Safe methods may use `unsafe { .. }` blocks inside "
+"them and so both safe and `unsafe` methods may use unsafe code internally."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:23
+msgid ""
+"The key difference between safe and unsafe methods is the same as that "
+"between safe and unsafe functions. Namely, that calling a safe method with "
+"inputs and state produced by other safe methods never leads to memory "
+"unsafety, while calling a method marked as `unsafe` may lead to such "
+"unsafety. As such, it is up to the caller of the `unsafe` method to fulfill "
+"a set of invariants as defined by the trait's documentation (the contract)."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:30
+msgid ""
+"The safe parts of Rust constitute a language which is a subset of unsafe "
+"Rust. As such, it is always permissible to use the safe subset within unsafe "
+"contexts. This is currently however not fully recognized by the language as "
+"`unsafe` trait methods must be marked as `unsafe` in `impl`s even if the "
+"method bodies in such an `impl` uses no unsafe code. This is can currently "
+"be overcome by defining a safe free function or inherent method somewhere "
+"else and then simply delegate to that function or method. Such a solution, "
+"however, has two problems."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:38
+msgid "1. Needless complexity and poor ergonomics."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:40
+msgid ""
+"When an `unsafe` method doesn't rely on any unsafe invariants, it still must "
+"be marked `unsafe`. Marking methods as `unsafe` increases the amount of "
+"scrutiny necessary during code-review. Extra care must be given to ensure "
+"that uses of the function are correct. Additionally, usage of `unsafe` "
+"functions inside an `unsafe` method does not require an `unsafe` block, so "
+"the method implementation itself requires extra scrutiny."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:47
+msgid ""
+"One way to avoid this is to break out the internals of the method into a "
+"separate safe function. Creating a separate function which is only used at a "
+"single place is cumbersome, and does not encourage the keeping of `unsafe` "
+"to a minimum. The edit distance is also somewhat increased."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:52
+msgid "2. `unsafe` method `impl`s might not require any `unsafe` invariants"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:54
+msgid ""
+"The implemented trait method for that specific type, which you know only has "
+"a safe implementation and does not really need `unsafe`, can't be used in a "
+"safe context. This invites the use of an `unsafe { .. }` block in that "
+"context, which is unfortunate since the compiler could know that the method "
+"is really safe for that specific type."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:60
+msgid "In summation"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:62
+msgid ""
+"The changes proposed in this RFC are intended to increase ergonomics and "
+"encourage keeping `unsafe` to a minimum. By doing so, a small push in favor "
+"of correctness is made."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:66
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:69
+msgid "Concretely, this RFC will permit scenarios like the following:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:71
+msgid "_Overconstraining_"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:73
+msgid ""
+"First consider a trait with one or more unsafe methods. For simplicity, we "
+"consider the case with one method as in:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:82
+msgid "You now define a type:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:88
+msgid "and you implement `Foo` for `Bar` like so:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:92
+msgid "// unsafe <-- Not necessary anymore.\n"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:97
+msgid "Before this RFC, you would get the following error message:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:113
+msgid ""
+"But with this RFC implemented, you will no longer get an error in this case."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:115
+msgid ""
+"This general approach of giving up (restricting) capabilities that a trait "
+"provides to you, such as the ability to rely on caller-upheld invariants for "
+"memory safety, is known as _overconstraining_."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:119
+msgid "Taking advantage of _overconstraining_"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:121
+msgid ""
+"You now want to use `.foo_computation()` for `Bar`, and proceed to do so as "
+"in:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:125
+msgid "// unsafe { <-- no unsafe needed!\n"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:130
+msgid "// other stuff..\n"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:132
+msgid "// }\n"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:136
+msgid ""
+"This is permitted since although `foo_computation` is an `unsafe` method as "
+"specified by `Foo`, the compiler knows that for the specific concrete type "
+"`Bar`, it is defined as being safe, and may thus be called within a safe "
+"context."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:140
+msgid "Regarding API stability and breaking changes"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:142
+msgid ""
+"Note however, that the ability to call _overconstrained_ methods with the "
+"absence of `unsafe` in a safe context means that introducing `unsafe` later "
+"is a breaking change if the type is part of a public API."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:146
+msgid "Impls for generic types"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:148
+msgid "Consider the type `Result<T, E>` in the standard library defined as:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:157
+msgid "Let's now implement `Foo` for `Result<T, E>` without using `unsafe`:"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:162
+msgid "// Let's assume the implementation does something interesting..\n"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:171
+msgid ""
+"Since `Result<T, E>` did not use `unsafe` in its implementation of `Foo`, "
+"you can still use `my_result.foo_computation()` in a safe context as shown "
+"above."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:174
+msgid "Recommendations"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:176
+msgid ""
+"If you do not plan on introducing `unsafe` for a trait implementation of "
+"your specific type that is part of a public API, you should avoid marking "
+"the `fn` as `unsafe`. If the type is internal to your crate, you should "
+"henceforth never mark it as `unsafe` unless you need to. If your needs "
+"change later, you can always mark impls for internal types as `unsafe` then."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:182
+msgid ""
+"Tools such as `clippy` should preferably lint for use of `unsafe`, where it "
+"is not needed, to promote the reduction of needless `unsafe`."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:185
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:188
+msgid ""
+"Assuming a `trait` which defines some `fn`s marked as `unsafe`, an `impl` of "
+"that trait for a given type may elect to not mark those `fn`s as `unsafe` in "
+"which case the bodies of those `fn`s in that `impl` are type checked as safe "
+"and not as `unsafe`. A Rust compiler will keep track of whether the methods "
+"were implemented as safe or `unsafe`."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:194
+msgid ""
+"When a trait method is called for a type in a safe context, the type checker "
+"will resolve the `impl` for a specific known and concrete type. If the "
+"`impl` that was resolved implemented the called method without an `unsafe` "
+"marker, the compiler will permit the call. Otherwise, the compiler will emit "
+"an error since it can't guarantee that the implementation was marked as safe."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:200
+msgid ""
+"With respect to a trait bound on a type parameter `T: Trait` for a trait "
+"with unsafe methods, calling any method of `Trait` marked as `unsafe` for "
+"`T` is only permitted within an `unsafe` context such as an `unsafe fn` or "
+"within an `unsafe { .. }` block."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:205
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:208
+msgid ""
+"While this introduces no additional syntax, it makes the rule-set of the "
+"language a bit more complex for both the compiler and the for users of the "
+"language. The largest additional complexity is probably for the compiler in "
+"this case, as additional state needs to be kept to check if the method was "
+"marked as safe or `unsafe` for an `impl`."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:214
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:219
+msgid ""
+"This RFC was designed with the goal of keeping the language compatible with "
+"potential future effects-polymorphism features. In particular, the "
+"discussion and design of [RFC 2237](https://github.com/rust-lang/rfcs/"
+"pull/2237) was considered. No issues were found with respect to that RFC."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:224
+msgid ""
+"No other alternatives have been considered. There is always the obvious "
+"alternative of not implementing the changes proposed in any RFC. For this "
+"RFC, the impact of not accepting it would be too keep the problems as "
+"explained in the [motivation](#motivation) around."
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:229
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2316-safe-unsafe-trait-methods.md:232
+msgid "There are currently no unresolved questions."
+msgstr ""
