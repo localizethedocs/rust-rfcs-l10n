@@ -1,0 +1,200 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0034-bounded-type-parameters.md:1
+msgid "Start Date: 2014-04-05"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:2
+msgid "RFC PR: [rust-lang/rfcs#34](https://github.com/rust-lang/rfcs/pull/34)"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#15759](https://github.com/rust-lang/rust/"
+"issues/15759)"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:5
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0034-bounded-type-parameters.md:7
+msgid ""
+"Check all types for well-formedness with respect to the bounds of type "
+"variables."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:9
+msgid ""
+"Allow bounds on formal type variable in structs and enums. Check these "
+"bounds are satisfied wherever the struct or enum is used with actual type "
+"parameters."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:12
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0034-bounded-type-parameters.md:14
+msgid ""
+"Makes type checking saner. Catches errors earlier in the development "
+"process. Matches behaviour with built-in bounds (I think)."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:17
+msgid ""
+"Currently formal type variables in traits and functions may have bounds and "
+"these bounds are checked whenever the item is used against the actual type "
+"variables. Where these type variables are used in types, these types should "
+"be checked for well-formedness with respect to the type definitions. E.g.,"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:23
+msgid ""
+"```\n"
+"trait U {}\n"
+"trait T<X: U> {}\n"
+"trait S<Y> {\n"
+"    fn m(x: ~T<Y>) {}  // Should be flagged as an error\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:31
+msgid ""
+"Formal type variables in structs and enums may not have bounds. It is "
+"possible to use these type variables in the types of fields, and these types "
+"cannot be checked for well-formedness until the struct is instantiated, "
+"where each field must be checked."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:36
+msgid ""
+"```\n"
+"struct St<X> {\n"
+"    f: ~T<X>, // Cannot be checked\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:42
+msgid "Likewise, impls of structs are not checked. E.g.,"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:44
+msgid ""
+"```\n"
+"impl<X> St<X> {  // Cannot be checked\n"
+"    ...\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:50
+msgid ""
+"Here, no struct can exist where `X` is replaced by something implementing "
+"`U`, so in the impl, `X` can be assumed to have the bound `U`. But the impl "
+"does not indicate this. Note, this is sound, but does not indicate "
+"programmer intent very well."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:55
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0034-bounded-type-parameters.md:57
+msgid ""
+"Whenever a type is used it must be checked for well-formedness. For "
+"polymorphic types we currently check only that the type exists. I would like "
+"to also check that any actual type parameters are valid. That is, given a "
+"type `T<U>` where `T` is declared as `T<X: B>`, we currently only check that "
+"`T` does in fact exist somewhere (I think we also check that the correct "
+"number of type parameters are supplied, in this case one). I would also like "
+"to check that `U` satisfies the bound `B`."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:65
+msgid ""
+"Work on built-in bounds is (I think) in the process of adding this behaviour "
+"for built-in bounds. I would like to apply this to user-specified bounds too."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:68
+msgid ""
+"I think no fewer programs can be expressed. That is, any errors we catch "
+"with this new check would have been caught later in the existing scheme, "
+"where exactly would depend on where the type was used. The only exception "
+"would be if the formal type variable was not used."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:73
+msgid ""
+"We would allow bounds on type variable in structs and enums. Wherever a "
+"concrete struct or enum type appears, check the actual type variables "
+"against the bounds on the formals (the type well-formedness check)."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:77
+msgid "From the above examples:"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:79
+msgid ""
+"```\n"
+"trait U {}\n"
+"trait T<X: U> {}\n"
+"trait S1<Y> {\n"
+"    fn m(x: ~T<Y>) {}  //~ ERROR\n"
+"}\n"
+"trait S2<Y: U> {\n"
+"    fn m(x: ~T<Y>) {}\n"
+"}\n"
+"\n"
+"struct St<X: U> {\n"
+"    f: ~T<X>,\n"
+"}\n"
+"\n"
+"impl<X: U> St<X> {\n"
+"    ...\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:98
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0034-bounded-type-parameters.md:100
+msgid "Keep the status quo."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:102
+msgid ""
+"We could add bounds on structs, etc. But not check them in impls. This is "
+"safe since the implementation is more general than the struct. It would mean "
+"we allow impls to be un-necessarily general."
+msgstr ""
+
+#: src/0034-bounded-type-parameters.md:106
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0034-bounded-type-parameters.md:108
+msgid ""
+"Do we allow and check bounds in type aliases? We currently do not. We should "
+"probably continue not to since these type variables (and indeed the type "
+"aliases) are substituted away early in the type checking process. So if we "
+"think of type aliases as almost macro-like, then not checking makes sense. "
+"OTOH, it is still a little bit inconsistent."
+msgstr ""

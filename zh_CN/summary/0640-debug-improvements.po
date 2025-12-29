@@ -1,0 +1,244 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0640-debug-improvements.md:1
+msgid "Start Date: 2015-01-20"
+msgstr ""
+
+#: src/0640-debug-improvements.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#640](https://github.com/rust-lang/rfcs/pull/640)"
+msgstr ""
+
+#: src/0640-debug-improvements.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#23083](https://github.com/rust-lang/rust/"
+"issues/23083)"
+msgstr ""
+
+#: src/0640-debug-improvements.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0640-debug-improvements.md:7
+msgid ""
+"The `Debug` trait is intended to be implemented by every type and display "
+"useful runtime information to help with debugging. This RFC proposes two "
+"additions to the fmt API, one of which aids implementors of `Debug`, and one "
+"which aids consumers of the output of `Debug`. Specifically, the `#` format "
+"specifier modifier will cause `Debug` output to be \"pretty printed\", and "
+"some utility builder types will be added to the `std::fmt` module to make it "
+"easier to implement `Debug` manually."
+msgstr ""
+
+#: src/0640-debug-improvements.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/0640-debug-improvements.md:17 src/0640-debug-improvements.md:107
+msgid "Pretty printing"
+msgstr ""
+
+#: src/0640-debug-improvements.md:19
+msgid ""
+"The conventions for `Debug` format state that output should resemble Rust "
+"struct syntax, without added line breaks. This can make output difficult to "
+"read in the presence of complex and deeply nested structures:"
+msgstr ""
+
+#: src/0640-debug-improvements.md:23 src/0640-debug-improvements.md:28
+msgid "\"foo\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:23 src/0640-debug-improvements.md:32
+msgid "\"/home/sfackler/rust/README.md\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:23 src/0640-debug-improvements.md:40
+msgid "\"bar\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:23 src/0640-debug-improvements.md:44
+msgid "\"/tmp/foobar\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:25
+msgid "This can be made more readable by adding appropriate indentation:"
+msgstr ""
+
+#: src/0640-debug-improvements.md:54
+msgid ""
+"However, we wouldn't want this \"pretty printed\" version to be used by "
+"default, since it's significantly more verbose."
+msgstr ""
+
+#: src/0640-debug-improvements.md:57 src/0640-debug-improvements.md:157
+msgid "Helper types"
+msgstr ""
+
+#: src/0640-debug-improvements.md:59
+msgid ""
+"For many Rust types, a Debug implementation can be automatically generated "
+"by `#[derive(Debug)]`. However, many encapsulated types cannot use the "
+"derived implementation. For example, the types in std::io::buffered all have "
+"manual `Debug` impls.  They all maintain a byte buffer that is both "
+"extremely large (64k by default) and full of uninitialized memory. Printing "
+"it in the `Debug` impl would be a terrible idea. Instead, the implementation "
+"prints the size of the buffer as well as how much data is in it at the "
+"moment: https://github.com/rust-lang/rust/"
+"blob/0aec4db1c09574da2f30e3844de6d252d79d4939/src/libstd/io/buffered.rs#L48-"
+"L60"
+msgstr ""
+
+#: src/0640-debug-improvements.md:77
+msgid ""
+"\"BufferedStream {{ stream: {:?}, write_buffer: {}/{}, read_buffer: {}/"
+"{} }}\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:85
+msgid ""
+"A purely manual implementation is tedious to write and error prone. These "
+"difficulties become even more pronounced with the introduction of the "
+"\"pretty printed\" format described above. If `Debug` is too painful to "
+"manually implement, developers of libraries will create poor implementations "
+"or omit them entirely. Some simple structures to automatically create the "
+"correct output format can significantly help ease these implementations:"
+msgstr ""
+
+#: src/0640-debug-improvements.md:96
+msgid "\"BufferedStream\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:97
+msgid "\"stream\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:98
+msgid "\"write_buffer\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:98 src/0640-debug-improvements.md:99
+msgid "\"{}/{}\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:99
+msgid "\"read_buffer\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:105
+msgid "Detailed design"
+msgstr ""
+
+#: src/0640-debug-improvements.md:109
+msgid ""
+"The `#` modifier (e.g. `{:#?}`) will be interpreted by `Debug` "
+"implementations as a request for \"pretty printed\" output:"
+msgstr ""
+
+#: src/0640-debug-improvements.md:112
+msgid ""
+"Non-compound output is unchanged from normal `Debug` output: e.g. `10`, "
+"`\"hi\"`, `None`."
+msgstr ""
+
+#: src/0640-debug-improvements.md:114
+msgid ""
+"Array, set and map output is printed with one element per line, indented "
+"four spaces, and entries printed with the `#` modifier as well: e.g."
+msgstr ""
+
+#: src/0640-debug-improvements.md:118 src/0640-debug-improvements.md:125
+#: src/0640-debug-improvements.md:132
+msgid "\"a\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:119 src/0640-debug-improvements.md:126
+#: src/0640-debug-improvements.md:133
+msgid "\"b\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:120 src/0640-debug-improvements.md:127
+#: src/0640-debug-improvements.md:134
+msgid "\"c\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:137
+msgid ""
+"Struct and tuple struct output is printed with one field per line, indented "
+"four spaces, and fields printed with the `#` modifier as well: e.g."
+msgstr ""
+
+#: src/0640-debug-improvements.md:141 src/0640-debug-improvements.md:148
+msgid "\"hi\""
+msgstr ""
+
+#: src/0640-debug-improvements.md:154
+msgid ""
+"In all cases, pretty printed and non-pretty printed output should differ "
+"_only_ in the addition of newlines and whitespace."
+msgstr ""
+
+#: src/0640-debug-improvements.md:159
+msgid ""
+"Types will be added to `std::fmt` corresponding to each of the common "
+"`Debug` output formats. They will provide a builder-like API to create "
+"correctly formatted output, respecting the `#` flag as needed. A full "
+"implementation can be found at https://gist.github.com/"
+"sfackler/6d6610c5d9e271146d11. (Note that there's a lot of almost-but-not-"
+"quite duplicated code in the various impls. It can probably be cleaned up a "
+"bit). For convenience, methods will be added to `Formatter` which create "
+"them. An example of use of the `debug_struct` method is shown in the "
+"Motivation section. In addition, the `padded` method returns a type "
+"implementing `fmt::Writer` that pads input passed to it. This is used inside "
+"of the other builders, but is provided here for use by `Debug` "
+"implementations that require formats not provided with the other helpers."
+msgstr ""
+
+#: src/0640-debug-improvements.md:181
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0640-debug-improvements.md:183
+msgid "The use of the `#` modifier adds complexity to `Debug` implementations."
+msgstr ""
+
+#: src/0640-debug-improvements.md:185
+msgid ""
+"The builder types are adding extra `#[stable]` surface area to the standard "
+"library that will have to be maintained."
+msgstr ""
+
+#: src/0640-debug-improvements.md:188
+msgid "Alternatives"
+msgstr ""
+
+#: src/0640-debug-improvements.md:190
+msgid ""
+"We could take the helper structs alone without the pretty printing format. "
+"They're still useful even if a library author doesn't have to worry about "
+"the second format."
+msgstr ""
+
+#: src/0640-debug-improvements.md:194
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0640-debug-improvements.md:196
+msgid ""
+"The indentation level is currently hardcoded to 4 spaces. We could allow "
+"that to be configured as well by using the width or precision specifiers, "
+"for example, `{:2#?}` would pretty print with a 2-space indent. It's not "
+"totally clear to me that this provides enough value to justify the extra "
+"complexity."
+msgstr ""

@@ -1,0 +1,398 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3453-f16-and-f128.md:1
+msgid "Feature Name: `f16_and_f128`"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:2
+msgid "Start Date: 2023-07-02"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3453](https://github.com/rust-lang/rfcs/pull/3453)"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#116909](https://github.com/rust-lang/rust/"
+"issues/116909)"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/3453-f16-and-f128.md:9
+msgid ""
+"This RFC proposes adding new IEEE-compliant floating point types `f16` and "
+"`f128` into the core language and standard library. We will provide a soft "
+"float implementation for all targets, and use hardware support where "
+"possible."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/3453-f16-and-f128.md:14
+msgid ""
+"The IEEE 754 standard defines many binary floating point formats. The most "
+"common of these types are the binary32 and binary64 formats, available in "
+"Rust as `f32` and `f64`. However, other formats are useful in various "
+"uncommon scenarios. The binary16 format is useful for situations where "
+"storage compactness is important and low precision is acceptable, such as "
+"HDR images, mesh quantization, and AI neural networks.[^1] The binary128 "
+"format is useful for situations where high precision is needed, such as "
+"scientific computing contexts."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:16
+msgid ""
+"This RFC proposes adding `f16` and `f128` primitive types in Rust to "
+"represent IEEE 754 binary16 and binary128, respectively. Having `f16` and "
+"`f128` types in the Rust language would allow Rust to better support the "
+"above mentioned use cases, allowing for optimizations and native support "
+"that may not be possible in a third party crate. Additionally, providing a "
+"single canonical data type for these floating point representations will "
+"make it easier to exchange data between libraries."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:18
+msgid ""
+"This RFC does not have the goal of covering the entire IEEE 754 standard, "
+"since it does not include `f256` and the decimal-float types. This RFC also "
+"does not have the goal of adding existing platform-specific float types such "
+"as x86's 80-bit double-extended-precision. This RFC does not make a "
+"judgement of whether those types should be added in the future, such "
+"discussion can be left to a future RFC, but it is not the goal of this RFC."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:20
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:23
+msgid ""
+"`f16` and `f128` are primitive floating types, they can be used like `f32` "
+"or `f64`. They always conform to binary16 and binary128 formats defined in "
+"the IEEE 754 standard, which means the size of `f16` is always 16-bit, the "
+"size of `f128` is always 128-bit, the amount of exponent and mantissa bits "
+"follows the standard, and all operations are IEEE 754-compliant. Float "
+"literals of these sizes have `f16` and `f128` suffixes respectively."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:26
+msgid "// Default type is still f64\n"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:27
+msgid "// Explicit f128 type\n"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:28
+msgid "// Explicit f16 type\n"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:29
+msgid "// Suffix of f128 literal\n"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:30
+msgid "// Suffix of f16 literal\n"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:32
+msgid "\"Size of f128 in bytes: {}\""
+msgstr ""
+
+#: src/3453-f16-and-f128.md:32
+msgid "// 16\n"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:33
+msgid "\"Size of f16 in bytes: {}\""
+msgstr ""
+
+#: src/3453-f16-and-f128.md:33
+msgid "// 2\n"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:36
+msgid ""
+"Every target should support `f16` and `f128`, either in hardware or "
+"software. Most platforms do not have hardware support and therefore will "
+"need to use a software implementation."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:38
+msgid ""
+"All [operators](https://doc.rust-lang.org/stable/std/primitive.f64."
+"html#trait-implementations), [constants](https://doc.rust-lang.org/stable/"
+"std/f64/consts/), and [math functions](https://doc.rust-lang.org/stable/std/"
+"primitive.f64.html#implementations) defined for `f32` and `f64` in `core`, "
+"must also be defined for `f16` and `f128` in `core`. Similarly, all "
+"functionality defined for `f32` and `f64` in `std` must also be defined for "
+"`f16` and `f128`."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:40
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:43
+msgid "`f16` type"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:45
+msgid ""
+"`f16` consists of 1 bit of sign, 5 bits of exponent, 10 bits of mantissa. It "
+"is exactly equivalent to the 16-bit IEEE 754 binary16 [half-precision "
+"floating-point format](https://en.wikipedia.org/wiki/Half-precision_floating-"
+"point_format)."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:47
+msgid ""
+"The following traits will be implemented for conversion between `f16` and "
+"other types:"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:50 src/3453-f16-and-f128.md:51
+#: src/3453-f16-and-f128.md:52 src/3453-f16-and-f128.md:53
+#: src/3453-f16-and-f128.md:54 src/3453-f16-and-f128.md:70
+#: src/3453-f16-and-f128.md:71 src/3453-f16-and-f128.md:72
+#: src/3453-f16-and-f128.md:73 src/3453-f16-and-f128.md:74
+#: src/3453-f16-and-f128.md:75 src/3453-f16-and-f128.md:76
+#: src/3453-f16-and-f128.md:77 src/3453-f16-and-f128.md:78
+#: src/3453-f16-and-f128.md:79 src/3453-f16-and-f128.md:80
+#: src/3453-f16-and-f128.md:81
+msgid "/* ... */"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:57
+msgid ""
+"Conversions to `f16` will also be available with `as` casts, which allow for "
+"truncated conversions."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:59
+msgid ""
+"`f16` will generate the `half` type in LLVM IR. It is also equivalent to C++ "
+"`std::float16_t`, C `_Float16`, and GCC `__fp16`. `f16` is ABI-compatible "
+"with all of these. `f16` values must be aligned in memory on a multiple of "
+"16 bits, or 2 bytes."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:61
+msgid ""
+"On the hardware level, `f16` can be accelerated on RISC-V via [the Zfh or "
+"Zfhmin extensions](https://five-embeddev.com/riscv-isa-manual/latest/zfh."
+"html), on x86 with AVX-512 via [the FP16 instruction set](https://en."
+"wikipedia.org/wiki/AVX-512#FP16), on [some Arm platforms](https://developer."
+"arm.com/documentation/100067/0607/Other-Compiler-specific-Features/Half-"
+"precision-floating-point-number-format), and on PowerISA via [VSX on "
+"PowerISA v3.1B and later](https://files.openpower.foundation/s/"
+"dAYSdGzTfW4j2r2). Most platforms do not have hardware support and therefore "
+"will need to use a software implementation."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:63
+msgid "`f128` type"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:65
+msgid ""
+"`f128` consists of 1 bit of sign, 15 bits of exponent, 112 bits of mantissa. "
+"It is exactly equivalent to the 128-bit IEEE 754 binary128 [quadruple-"
+"precision floating-point format](https://en.wikipedia.org/wiki/Quadruple-"
+"precision_floating-point_format)."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:67
+msgid ""
+"The following traits will be implemented for conversion between `f128` and "
+"other types:"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:84
+msgid ""
+"Conversions from `i128`/`u128` to `f128` will also be available with `as` "
+"casts, which allow for truncated conversions."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:86
+msgid ""
+"`f128` will generate the `fp128` type in LLVM IR. It is also equivalent to C+"
+"+ `std::float128_t`, C `_Float128`, and GCC `__float128`. `f128` is ABI-"
+"compatible with all of these. `f128` values must be aligned in memory on a "
+"multiple of 128 bits, or 16 bytes. LLVM provides support for 128-bit float "
+"math operations."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:88
+msgid ""
+"On the hardware level, `f128` can be accelerated on RISC-V via [the Q "
+"extension](https://five-embeddev.com/riscv-isa-manual/latest/q.html), on IBM "
+"[S/390x G5 and later](https://doi.org/10.1147%2Frd.435.0707), and on "
+"PowerISA via [BFP128, an optional part of PowerISA v3.0C and later](https://"
+"files.openpower.foundation/s/XXFoRATEzSFtdG8). Most platforms do not have "
+"hardware support and therefore will need to use a software implementation."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:90
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:93
+msgid ""
+"While `f32` and `f64` have very broad support in most hardware, hardware "
+"support for `f16` and `f128` is more niche. On most systems software "
+"emulation will be required. Therefore, the main drawback is implementation "
+"difficulty."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:95
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:98
+msgid "There are some crates aiming for similar functionality:"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:100
+msgid ""
+"[f128](https://github.com/jkarns275/f128) provides binding to the "
+"`__float128` type in GCC."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:101
+msgid ""
+"[half](https://crates.io/crates/half) provides an implementation of binary16 "
+"and bfloat16 types."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:103
+msgid ""
+"However, besides the disadvantage of usage inconsistency between primitive "
+"types and types from a crate, there are still issues around those bindings."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:105
+msgid ""
+"The ability to accelerate additional float types heavily depends on CPU/OS/"
+"ABI/features of different targets heavily. Evolution of LLVM may unlock "
+"possibilities of accelerating the types on new targets. Implementing them in "
+"the compiler allows the compiler to perform optimizations for hardware with "
+"native support for these types."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:107
+msgid ""
+"Crates may define their type on top of a C binding, but extended float type "
+"definition in C is complex and confusing. The meaning of C types may vary by "
+"target and/or compiler options. Implementing `f16` and `f128` in the Rust "
+"compiler helps to maintain a stable codegen interface and ensures that all "
+"users have one single canonical definition of 16-bit and 128-bit float "
+"types, making it easier to exchange data between crates and languages."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:109
+msgid "Prior art"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:112
+msgid ""
+"As noted above, there are crates that provide these types, one for `f16` and "
+"one for `f128`. Another prior art to reference is [RFC 1504 for int128]"
+"(https://rust-lang.github.io/rfcs/1504-int128.html)."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:114
+msgid ""
+"Many other languages and compilers have support for these proposed float "
+"types. As mentioned above, C has `_Float16` and `_Float128` ([IEC 60559 WG "
+"14 N2601](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2601.pdf)), and "
+"C++ has `std::float16_t` and `std::float128_t` ([P1467R9](https://www.open-"
+"std.org/jtc1/sc22/wg21/docs/papers/2022/p1467r9.html)). Glibc supports 128-"
+"bit floats in software on [many architectures](https://sourceware.org/git/?"
+"p=glibc.git;a=blob;f=NEWS;hb=81325b12b14c44887f1633a2c180a413afc2b504#l143). "
+"GCC also provides the `libquadmath` library for 128-bit float math "
+"operations."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:116
+msgid ""
+"This RFC was split from [RFC 3451](https://github.com/rust-lang/rfcs/"
+"pull/3451), which proposed adding a variety of float types beyond what is in "
+"this RFC including interoperability types like `c_longdouble`. The remaining "
+"portions [RFC 3451](https://github.com/rust-lang/rfcs/pull/3451) has since "
+"developed into [RFC 3456](https://github.com/rust-lang/rfcs/pull/3456)."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:118
+msgid ""
+"Both this RFC and RFC 3451 are built upon the discussion in [issue 2629]"
+"(https://github.com/rust-lang/rfcs/issues/2629)."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:120
+msgid ""
+"The main consensus of the discussion thus far is that more float types would "
+"be useful, especially the IEEE 754 types proposed in this RFC as `f16` and "
+"`f128`. Other types can be discussed in a future RFC."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:122
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/3453-f16-and-f128.md:125
+msgid ""
+"The main unresolved parts of this RFC are the implementation details in the "
+"context of the Rust compiler and standard library. The behavior of `f16` and "
+"`f128` is well-defined by the IEEE 754 standard, and is not up for debate. "
+"Whether these types should be included in the language is the main question "
+"of this RFC, which will be resolved when this RFC is accepted."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:127
+msgid ""
+"Several future questions are intentionally left unresolved, and should be "
+"handled by another RFC. This RFC does not have the goal of covering the "
+"entire IEEE 754 standard, since it does not include `f256` and the decimal-"
+"float types. This RFC also does not have the goal of adding existing "
+"platform-specific float types such as x86's 80-bit double-extended-precision."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:129
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3453-f16-and-f128.md:132
+msgid ""
+"See [RFC 3456](https://github.com/rust-lang/rfcs/pull/3456) for discussion "
+"about adding more float types including `f80`, `bf16`, and `c_longdouble`, "
+"which is an extension of the discussion in [RFC 3451](https://github.com/"
+"rust-lang/rfcs/pull/3451)."
+msgstr ""
+
+#: src/3453-f16-and-f128.md:134
+msgid ""
+"Existing AI neural networks often use the [16-bit brain float format]"
+"(https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) instead of 16-"
+"bit half precision, which is a truncated version of 32-bit single precision. "
+"This is done to allow performing operations with 32-bit floats and quickly "
+"convert to 16-bit for storage."
+msgstr ""

@@ -1,0 +1,986 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0243-trait-based-exception-handling.md:1
+msgid "Feature-gates: `question_mark`, `try_catch`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:2
+msgid "Start Date: 2014-09-16"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:3
+msgid ""
+"RFC PR #: [rust-lang/rfcs#243](https://github.com/rust-lang/rfcs/pull/243)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:4
+msgid ""
+"Rust Issue #: [rust-lang/rust#31436](https://github.com/rust-lang/rust/"
+"issues/31436)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:7
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0243-trait-based-exception-handling.md:9
+msgid ""
+"Add syntactic sugar for working with the `Result` type which models common "
+"exception handling constructs."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:12
+msgid "The new constructs are:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:14
+msgid "An `?` operator for explicitly propagating \"exceptions\"."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:16
+msgid ""
+"A `catch { ... }` expression for conveniently catching and handling "
+"\"exceptions\"."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:19
+msgid ""
+"The idea for the `?` operator originates from [RFC PR 204](https://github."
+"com/rust-lang/rfcs/pull/204) by [@aturon](https://github.com/aturon)."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:25
+msgid "Motivation and overview"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:27
+msgid ""
+"Rust currently uses the `enum Result` type for error handling. This solution "
+"is simple, well-behaved, and easy to understand, but often gnarly and "
+"inconvenient to work with. We would like to solve the latter problem while "
+"retaining the other nice properties and avoiding duplication of "
+"functionality."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:32
+msgid ""
+"We can accomplish this by adding constructs which mimic the exception-"
+"handling constructs of other languages in both appearance and behavior, "
+"while improving upon them in typically Rustic fashion. Their meaning can be "
+"specified by a straightforward source-to-source translation into existing "
+"language constructs, plus a very simple and obvious new one. (They may also, "
+"but need not necessarily, be implemented in this way.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:39
+msgid ""
+"These constructs are strict additions to the existing language, and apart "
+"from the issue of keywords, the legality and behavior of all currently "
+"existing Rust programs is entirely unaffected."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:43
+msgid ""
+"The most important additions are a postfix `?` operator for propagating "
+"\"exceptions\" and a `catch {..}` expression for catching them. By an "
+"\"exception\", for now, we essentially just mean the `Err` variant of a "
+"`Result`, though the Unresolved Questions includes some discussion of "
+"extending to other types."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:49
+msgid "`?` operator"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:51
+msgid ""
+"The postfix `?` operator can be applied to `Result` values and is equivalent "
+"to the current `try!()` macro. It either returns the `Ok` value directly, or "
+"performs an early exit and propagates the `Err` value further out. (So given "
+"`my_result: Result<Foo, Bar>`, we have `my_result?: Foo`.) This allows it to "
+"be used for e.g. conveniently chaining method calls which may each \"throw "
+"an exception\":"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:62
+msgid ""
+"Naturally, in this case the types of the \"exceptions thrown by\" `foo()` "
+"and `bar()` must unify. Like the current `try!()` macro, the `?` operator "
+"will also perform an implicit \"upcast\" on the exception type."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:66
+msgid ""
+"When used outside of a `catch` block, the `?` operator propagates the "
+"exception to the caller of the current function, just like the current `try!"
+"` macro does. (If the return type of the function isn't a `Result`, then "
+"this is a type error.) When used inside a `catch` block, it propagates the "
+"exception up to the innermost `catch` block, as one would expect."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:72
+msgid ""
+"Requiring an explicit `?` operator to propagate exceptions strikes a very "
+"pleasing balance between completely automatic exception propagation, which "
+"most languages have, and completely manual propagation, which we'd have "
+"apart from the `try!` macro. It means that function calls remain simply "
+"function calls which return a result to their caller, with no magic going on "
+"behind the scenes; and this also _increases_ flexibility, because one gets "
+"to choose between propagation with `?` or consuming the returned `Result` "
+"directly."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:80
+msgid ""
+"The `?` operator itself is suggestive, syntactically lightweight enough to "
+"not be bothersome, and lets the reader determine at a glance where an "
+"exception may or may not be thrown. It also means that if the signature of a "
+"function changes with respect to exceptions, it will lead to type errors "
+"rather than silent behavior changes, which is a good thing. Finally, because "
+"exceptions are tracked in the type system, and there is no silent "
+"propagation of exceptions, and all points where an exception may be thrown "
+"are readily apparent visually, this also means that we do not have to worry "
+"very much about \"exception safety\"."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:89
+msgid "Exception type upcasting"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:91
+msgid ""
+"In a language with checked exceptions and subtyping, it is clear that if a "
+"function is declared as throwing a particular type, its body should also be "
+"able to throw any of its subtypes. Similarly, in a language with structural "
+"sum types (a.k.a. anonymous `enum`s, polymorphic variants), one should be "
+"able to throw a type with fewer cases in a function declaring that it may "
+"throw a superset of those cases. This is essentially what is achieved by the "
+"common Rust practice of declaring a custom error `enum` with `From` `impl`s "
+"for each of the upstream error types which may be propagated:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:111
+msgid ""
+"Here `io::Error` and `json::Error` can be thought of as subtypes of "
+"`MyError`, with a clear and direct embedding into the supertype."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:114
+msgid ""
+"The `?` operator should therefore perform such an implicit conversion, in "
+"the nature of a subtype-to-supertype coercion. The present RFC uses the "
+"`std::convert::Into` trait for this purpose (which has a blanket `impl` "
+"forwarding from `From`). The precise requirements for a conversion to be "
+"\"like\" a subtyping coercion are an open question; see the \"Unresolved "
+"questions\" section."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:121
+msgid "`catch` expressions"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:123
+msgid ""
+"This RFC also introduces an expression form `catch {..}`, which serves to "
+"\"scope\" the `?` operator. The `catch` operator executes its associated "
+"block. If no exception is thrown, then the result is `Ok(v)` where `v` is "
+"the value of the block. Otherwise, if an exception is thrown, then the "
+"result is `Err(e)`. Note that unlike other languages, a `catch` block always "
+"catches all errors, and they must all be coercible to a single type, as a "
+"`Result` only has a single `Err` type. This dramatically simplifies thinking "
+"about the behavior of exception-handling code."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:133
+msgid ""
+"Note that `catch { foo()? }` is essentially equivalent to `foo()`. `catch` "
+"can be useful if you want to coalesce _multiple_ potential exceptions -- "
+"`catch { foo()?.bar()?.baz()? }` -- into a single `Result`, which you wish "
+"to then e.g. pass on as-is to another function, rather than analyze "
+"yourself. (The last example could also be expressed using a series of "
+"`and_then` calls.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:140
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0243-trait-based-exception-handling.md:142
+msgid ""
+"The meaning of the constructs will be specified by a source-to-source "
+"translation. We make use of an \"early exit from any block\" feature which "
+"doesn't currently exist in the language, generalizes the current `break` and "
+"`return` constructs, and is independently useful."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:147
+msgid "Early exit from any block"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:149
+msgid ""
+"The capability can be exposed either by generalizing `break` to take an "
+"optional value argument and break out of any block (not just loops), or by "
+"generalizing `return` to take an optional lifetime argument and return from "
+"any block, not just the outermost block of the function. This feature is "
+"only used in this RFC as an explanatory device, and implementing the RFC "
+"does not require exposing it, so I am going to arbitrarily choose the "
+"`break` syntax for the following and won't discuss the question further."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:157
+msgid ""
+"So we are extending `break` with an optional value argument: `break 'a "
+"EXPR`. This is an expression of type `!` which causes an early return from "
+"the enclosing block specified by `'a`, which then evaluates to the value "
+"`EXPR` (of course, the type of `EXPR` must unify with the type of the last "
+"expression in that block). This works for any block, not only loops."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:163
+msgid ""
+"\\[Note: This was since added in [RFC 2046](https://github.com/rust-lang/"
+"rfcs/blob/master/text/2046-label-break-value.md)\\]"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:165
+msgid "A completely artificial example:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:174
+msgid "\"found thing: {}\""
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:179
+msgid ""
+"Here if we don't have a thing, we escape from the block early with `None`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:181
+msgid ""
+"If no value is specified, it defaults to `()`: in other words, the current "
+"behavior. We can also imagine there is a magical lifetime `'fn` which refers "
+"to the lifetime of the whole function: in this case, `break 'fn` is "
+"equivalent to `return`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:186
+msgid ""
+"Again, this RFC does not propose generalizing `break` in this way at this "
+"time: it is only used as a way to explain the meaning of the constructs it "
+"does propose."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:191
+msgid "Definition of constructs"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:193
+msgid ""
+"Finally we have the definition of the new constructs in terms of a source-to-"
+"source translation."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:196
+msgid ""
+"In each case except the first, I will provide two definitions: a single-step "
+"\"shallow\" desugaring which is defined in terms of the previously defined "
+"new constructs, and a \"deep\" one which is \"fully expanded\"."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:200
+msgid ""
+"Of course, these could be defined in many equivalent ways: the below "
+"definitions are merely one way."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:203
+#: src/0243-trait-based-exception-handling.md:221
+#: src/0243-trait-based-exception-handling.md:290
+msgid "Construct:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:207
+#: src/0243-trait-based-exception-handling.md:229
+#: src/0243-trait-based-exception-handling.md:301
+msgid "Shallow:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:216
+msgid ""
+"Where `'here` refers to the innermost enclosing `catch` block, or to `'fn` "
+"if there is none."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:219
+msgid "The `?` operator has the same precedence as `.`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:237
+#: src/0243-trait-based-exception-handling.md:315
+msgid "Deep:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:248
+msgid ""
+"The fully expanded translations get quite gnarly, but that is why it's good "
+"that you don't have to write them!"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:251
+msgid ""
+"In general, the types of the defined constructs should be the same as the "
+"types of their definitions."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:254
+msgid ""
+"(As noted earlier, while the behavior of the constructs can be _specified_ "
+"using a source-to-source translation in this manner, they need not "
+"necessarily be _implemented_ this way.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:258
+msgid ""
+"As a result of this RFC, both `Into` and `Result` would have to become lang "
+"items."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:262
+msgid "Laws"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:264
+msgid ""
+"Without any attempt at completeness, here are some things which should be "
+"true:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:266
+msgid "`catch { foo()          }                      ` = `Ok(foo())`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:267
+msgid "`catch { Err(e)?        }                      ` = `Err(e.into())`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:268
+msgid ""
+"`catch { try_foo()?     }                      ` = `try_foo().map_err(Into::"
+"into)`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:270
+msgid ""
+"(In the above, `foo()` is a function returning any type, and `try_foo()` is "
+"a function returning a `Result`.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:273
+msgid "Feature gates"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:275
+msgid ""
+"The two major features here, the `?` syntax and `catch` expressions, will be "
+"tracked by independent feature gates. Each of the features has a distinct "
+"motivation, and we should evaluate them independently."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:279
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0243-trait-based-exception-handling.md:281
+msgid ""
+"These questions should be satisfactorily resolved before stabilizing the "
+"relevant features, at the latest."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:284
+msgid "Optional `match` sugar"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:286
+msgid ""
+"Originally, the RFC included the ability to `match` the errors caught by a "
+"`catch` by writing `catch { .. } match { .. }`, which could be translated as "
+"follows:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:332
+msgid "However, it was removed for the following reasons:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:334
+msgid ""
+"The `catch` (originally: `try`) keyword adds the real expressive \"step up\" "
+"here, the `match` (originally: `catch`) was just sugar for `unwrap_or`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:335
+msgid ""
+"It would be easy to add further sugar in the future, once we see how `catch` "
+"is used (or not used) in practice."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:336
+msgid ""
+"There was some concern about potential user confusion about two aspects:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:337
+msgid ""
+"`catch { }` yields a `Result<T,E>` but `catch { } match { }` yields just `T`;"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:338
+msgid ""
+"`catch { } match { }` handles all kinds of errors, unlike `try/catch` in "
+"other languages which let you pick and choose."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:340
+msgid ""
+"It may be worth adding such a sugar in the future, or perhaps a variant that "
+"binds irrefutably and does not immediately lead into a `match` block."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:344
+msgid "Choice of keywords"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:346
+msgid ""
+"The RFC to this point uses the keyword `catch`, but there are a number of "
+"other possibilities, each with different advantages and drawbacks:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:349
+msgid "`try { ... } catch { ... }`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:351
+msgid "`try { ... } match { ... }`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:353
+msgid "`try { ... } handle { ... }`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:355
+msgid "`catch { ... } match { ... }`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:357
+msgid "`catch { ... } handle { ... }`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:359
+msgid "`catch ...` (without braces or a second clause)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:361
+msgid "Among the considerations:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:363
+msgid "Simplicity. Brevity."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:365
+msgid ""
+"Following precedent from existing, popular languages, and familiarity with "
+"respect to their analogous constructs."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:368
+msgid ""
+"Fidelity to the constructs' actual behavior. For instance, the first clause "
+"always catches the \"exception\"; the second only branches on it."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:371
+msgid ""
+"Consistency with the existing `try!()` macro. If the first clause is called "
+"`try`, then `try { }` and `try!()` would have essentially inverse meanings."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:374
+msgid ""
+"Language-level backwards compatibility when adding new keywords. I'm not "
+"sure how this could or should be handled."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:377
+msgid "Semantics for \"upcasting\""
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:379
+msgid ""
+"What should the contract for a `From`/`Into` `impl` be? Are these even the "
+"right `trait`s to use for this feature?"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:382
+msgid "Two obvious, minimal requirements are:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:384
+msgid ""
+"It should be pure: no side effects, and no observation of side effects. (The "
+"result should depend _only_ on the argument.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:387
+msgid ""
+"It should be total: no panics or other divergence, except perhaps in the "
+"case of resource exhaustion (OOM, stack overflow)."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:390
+msgid ""
+"The other requirements for an implicit conversion to be well-behaved in the "
+"context of this feature should be thought through with care."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:393
+msgid ""
+"Some further thoughts and possibilities on this matter, only as "
+"brainstorming:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:395
+msgid ""
+"It should be \"like a coercion from subtype to supertype\", as described "
+"earlier. The precise meaning of this is not obvious."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:398
+msgid ""
+"A common condition on subtyping coercions is coherence: if you can compound-"
+"coerce to go from `A` to `Z` indirectly along multiple different paths, they "
+"should all have the same end result."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:402
+msgid ""
+"It should be lossless, or in other words, injective: it should map each "
+"observably-different element of the input type to observably-different "
+"elements of the output type. (Observably-different means that it is possible "
+"to write a program which behaves differently depending on which one it gets, "
+"modulo things that \"shouldn't count\" like observing execution time or "
+"resource usage.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:409
+msgid ""
+"It should be unambiguous, or preserve the meaning of the input: `impl "
+"From<u8> for u32` as `x as u32` feels right; as `(x as u32) * 12345` feels "
+"wrong, even though this is perfectly pure, total, and injective. What this "
+"means precisely in the general case is unclear."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:414
+msgid ""
+"The types converted between should the \"same kind of thing\": for instance, "
+"the _existing_ `impl From<u32> for Ipv4Addr` feels suspect on this count. "
+"(This perhaps ties into the subtyping angle: `Ipv4Addr` is clearly not a "
+"supertype of `u32`.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:419
+msgid "Forwards-compatibility"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:421
+msgid ""
+"If we later want to generalize this feature to other types such as `Option`, "
+"as described below, will we be able to do so while maintaining backwards-"
+"compatibility?"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:424
+msgid "Monadic do notation"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:426
+msgid ""
+"There have been many comparisons drawn between this syntax and monadic do "
+"notation. Before stabilizing, we should determine whether we plan to make "
+"changes to better align this feature with a possible `do` notation (for "
+"example, by removing the implicit `Ok` at the end of a `catch` block). Note "
+"that such a notation would have to extend the standard monadic bind to "
+"accommodate rich control flow like `break`, `continue`, and `return`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:434
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:436
+msgid "Increases the syntactic surface area of the language."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:438
+msgid ""
+"No expressivity is added, only convenience. Some object to \"there's more "
+"than one way to do it\" on principle."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:441
+msgid ""
+"If at some future point we were to add higher-kinded types and syntactic "
+"sugar for monads, a la Haskell's `do` or Scala's `for`, their functionality "
+"may overlap and result in redundancy. However, a number of challenges would "
+"have to be overcome for a generic monadic sugar to be able to fully supplant "
+"these features: the integration of higher-kinded types into Rust's type "
+"system in the first place, the shape of a `Monad` `trait` in a language with "
+"lifetimes and move semantics, interaction between the monadic control flow "
+"and Rust's native control flow (the \"ambient monad\"), automatic upcasting "
+"of exception types via `Into` (the exception (`Either`, `Result`) monad "
+"normally does not do this, and it's not clear whether it can), and "
+"potentially others."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:453
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0243-trait-based-exception-handling.md:455
+msgid "Don't."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:457
+msgid "Only add the `?` operator, but not `catch` expressions."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:459
+msgid ""
+"Instead of a built-in `catch` construct, attempt to define one using macros. "
+"However, this is likely to be awkward because, at least, macros may only "
+"have their contents as a single block, rather than two. Furthermore, macros "
+"are excellent as a \"safety net\" for features which we forget to add to the "
+"language itself, or which only have specialized use cases; but generally "
+"useful control flow constructs still work better as language features."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:467
+msgid ""
+"Add [first-class checked exceptions](https://github.com/glaebhoerl/rust-"
+"notes/blob/268266e8fbbbfd91098d3bea784098e918b42322/my_rfcs/Exceptions.txt), "
+"which are propagated automatically (without an `?` operator)."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:470
+msgid ""
+"This has the drawbacks of being a more invasive change and duplicating "
+"functionality: each function must choose whether to use checked exceptions "
+"via `throws`, or to return a `Result`. While the two are isomorphic and "
+"converting between them is easy, with this proposal, the issue does not even "
+"arise, as exception handling is defined _in terms of_ `Result`. Furthermore, "
+"automatic exception propagation raises the specter of \"exception safety\": "
+"how serious an issue this would actually be in practice, I don't know - "
+"there's reason to believe that it would be much less of one than in C++."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:479
+msgid "Wait (and hope) for HKTs and generic monad sugar."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:484
+msgid "Future possibilities"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:486
+msgid "Expose a generalized form of `break` or `return` as described"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:488
+msgid ""
+"This RFC doesn't propose doing so at this time, but as it would be an "
+"independently useful feature, it could be added as well."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:490
+msgid "`throw` and `throws`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:492
+msgid ""
+"It is possible to carry the exception handling analogy further and also add "
+"`throw` and `throws` constructs."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:495
+msgid ""
+"`throw` is very simple: `throw EXPR` is essentially the same thing as "
+"`Err(EXPR)?`; in other words it throws the exception `EXPR` to the innermost "
+"`catch` block, or to the function's caller if there is none."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:499
+msgid "A `throws` clause on a function:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:505
+msgid ""
+"would mean that instead of writing `return Ok(foo)` and `return Err(bar)` in "
+"the body of the function, one would write `return foo` and `throw bar`, and "
+"these are implicitly turned into `Ok` or `Err` for the caller. This removes "
+"syntactic overhead from both \"normal\" and \"throwing\" code paths and "
+"(apart from `?` to propagate exceptions) matches what code might look like "
+"in a language with native exceptions."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:512
+msgid "Generalize over `Result`, `Option`, and other result-carrying types"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:514
+msgid ""
+"`Option<T>` is completely equivalent to `Result<T, ()>` modulo names, and "
+"many common APIs use the `Option` type, so it would be useful to extend all "
+"of the above syntax to `Option`, and other (potentially user-defined) "
+"equivalent-to-`Result` types, as well."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:519
+msgid ""
+"This can be done by specifying a trait for types which can be used to "
+"\"carry\" either a normal result or an exception. There are several "
+"different, equivalent ways to formulate it, which differ in the set of "
+"methods provided, but the meaning in any case is essentially just that you "
+"can choose some types `Normal` and `Exception` such that `Self` is "
+"isomorphic to `Result<Normal, Exception>`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:525
+msgid "Here is one way:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:538
+msgid ""
+"For greater clarity on how these methods work, see the section on `impl`s "
+"below. (For a simpler formulation of the trait using `Result` directly, see "
+"further below.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:542
+msgid ""
+"The `translate` method says that it should be possible to translate to any "
+"_other_ `ResultCarrier` type which has the same `Normal` and `Exception` "
+"types. This may not appear to be very useful, but in fact, this is what can "
+"be used to inspect the result, by translating it to a concrete, known type "
+"such as `Result<Normal, Exception>` and then, for example, pattern matching "
+"on it."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:548
+#: src/0243-trait-based-exception-handling.md:682
+msgid "Laws:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:550
+msgid ""
+"For all `x`,       `translate(embed_normal(x): A): B      ` = "
+"`embed_normal(x): B`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:551
+msgid ""
+"For all `x`,       `translate(embed_exception(x): A): B   ` = "
+"`embed_exception(x): B`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:552
+msgid ""
+"For all `carrier`, `translate(translate(carrier: A): B): A` = `carrier: A`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:554
+msgid ""
+"Here I've used explicit type ascription syntax to make it clear that e.g. "
+"the types of `embed_` on the left and right hand sides are different."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:557
+msgid ""
+"The first two laws say that embedding a result `x` into one result-carrying "
+"type and then translating it to a second result-carrying type should be the "
+"same as embedding it into the second type directly."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:561
+msgid ""
+"The third law says that translating to a different result-carrying type and "
+"then translating back should be a no-op."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:565
+msgid "`impl`s of the trait"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:582
+msgid ""
+"As we can see, `translate` can be implemented by deconstructing ourself and "
+"then re-embedding the contained value into the other result-carrying type."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:600
+msgid "Potentially also:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:617
+msgid ""
+"The laws should be sufficient to rule out any \"icky\" impls. For example, "
+"an impl for `Vec` where an exception is represented as the empty vector, and "
+"a normal result as a single-element vector: here the third law fails, "
+"because if the `Vec` has more than one element _to begin with_, then it's "
+"not possible to translate to a different result-carrying type and then back "
+"without losing information."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:624
+msgid ""
+"The `bool` impl may be surprising, or not useful, but it _is_ well-behaved: "
+"`bool` is, after all, isomorphic to `Result<(), ()>`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:627
+msgid "Other miscellaneous notes about `ResultCarrier`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:629
+msgid ""
+"Our current lint for unused results could be replaced by one which warns for "
+"any unused result of a type which implements `ResultCarrier`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:632
+msgid ""
+"If there is ever ambiguity due to the result-carrying type being "
+"underdetermined (experience should reveal whether this is a problem in "
+"practice), we could resolve it by defaulting to `Result`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:636
+msgid ""
+"Translating between different result-carrying types with the same `Normal` "
+"and `Exception` types _should_, but may not necessarily _currently_ be, a "
+"machine-level no-op most of the time."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:640
+msgid "We could/should make it so that:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:642
+msgid "repr(`Option<T>`) = repr(`Result<T, ()>`)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:643
+msgid "repr(`bool`) = repr(`Option<()>`) = repr(`Result<(), ()>`)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:645
+msgid ""
+"If these hold, then `translate` between these types could in theory be "
+"compiled down to just a `transmute`. (Whether LLVM is smart enough to do "
+"this, I don't know.)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:649
+msgid ""
+"The `translate()` function smells to me like a natural transformation "
+"between functors, but I'm not category theorist enough for it to be obvious."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:653
+msgid "Alternative formulations of the `ResultCarrier` trait"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:655
+msgid "All of these have the form:"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:665
+msgid "and differ only in the methods, which will be given."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:667
+msgid "Explicit isomorphism with `Result`"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:674
+msgid "This is, of course, the simplest possible formulation."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:676
+msgid ""
+"The drawbacks are that it, in some sense, privileges `Result` over other "
+"potentially equivalent types, and that it may be less efficient for those "
+"types: for any non-`Result` type, every operation requires two method calls "
+"(one into `Result`, and one out), whereas with the `ResultCarrier` trait in "
+"the main text, they only require one."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:684
+msgid "For all `x`, `from_result(to_result(x))` = `x`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:685
+msgid "For all `x`, `to_result(from_result(x))` = `x`."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:687
+msgid ""
+"Laws for the remaining formulations below are left as an exercise for the "
+"reader."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:690
+msgid "Avoid privileging `Result`, most naive version"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:701
+msgid "Of course this is horrible."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:703
+msgid "Destructuring with HOFs (a.k.a. Church/Scott-encoding)"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:711
+msgid "This is probably the right approach for Haskell, but not for Rust."
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:713
+msgid ""
+"With this formulation, because they each take ownership of them, the two "
+"closures may not even close over the same variables!"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:716
+msgid "Destructuring with HOFs, round 2"
+msgstr ""
+
+#: src/0243-trait-based-exception-handling.md:736
+msgid ""
+"Here we solve the environment-sharing problem from above: instead of two "
+"objects with a single method each, we use a single object with two methods! "
+"I believe this is the most flexible and general formulation (which is "
+"however a strange thing to believe when they are all equivalent to each "
+"other). Of course, it's even more awkward syntactically."
+msgstr ""

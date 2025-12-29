@@ -1,0 +1,369 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0198-slice-notation.md:1
+msgid "Start Date: 2014-09-11"
+msgstr ""
+
+#: src/0198-slice-notation.md:2
+msgid ""
+"RFC PR #: [rust-lang/rfcs#198](https://github.com/rust-lang/rfcs/pull/198)"
+msgstr ""
+
+#: src/0198-slice-notation.md:3
+msgid ""
+"Rust Issue #: [rust-lang/rust#17177](https://github.com/rust-lang/rust/"
+"issues/17177)"
+msgstr ""
+
+#: src/0198-slice-notation.md:5
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0198-slice-notation.md:7
+msgid "This RFC adds _overloaded slice notation_:"
+msgstr ""
+
+#: src/0198-slice-notation.md:9 src/0198-slice-notation.md:75
+msgid "`foo[]` for `foo.as_slice()`"
+msgstr ""
+
+#: src/0198-slice-notation.md:10 src/0198-slice-notation.md:76
+msgid "`foo[n..m]` for `foo.slice(n, m)`"
+msgstr ""
+
+#: src/0198-slice-notation.md:11 src/0198-slice-notation.md:77
+msgid "`foo[n..]` for `foo.slice_from(n)`"
+msgstr ""
+
+#: src/0198-slice-notation.md:12 src/0198-slice-notation.md:78
+msgid "`foo[..m]` for `foo.slice_to(m)`"
+msgstr ""
+
+#: src/0198-slice-notation.md:13
+msgid "`mut` variants of all the above"
+msgstr ""
+
+#: src/0198-slice-notation.md:15
+msgid "via two new traits, `Slice` and `SliceMut`."
+msgstr ""
+
+#: src/0198-slice-notation.md:17
+msgid ""
+"It also changes the notation for range `match` patterns to `...`, to signify "
+"that they are inclusive whereas `..` in slices are exclusive."
+msgstr ""
+
+#: src/0198-slice-notation.md:20
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0198-slice-notation.md:22
+msgid "There are two primary motivations for introducing this feature."
+msgstr ""
+
+#: src/0198-slice-notation.md:24
+msgid "Ergonomics"
+msgstr ""
+
+#: src/0198-slice-notation.md:26
+msgid ""
+"Slicing operations, especially `as_slice`, are a very common and basic thing "
+"to do with vectors, and potentially many other kinds of containers.  We "
+"already have notation for indexing via the `Index` trait, and this RFC is "
+"essentially a continuation of that effort."
+msgstr ""
+
+#: src/0198-slice-notation.md:31
+msgid ""
+"The `as_slice` operator is particularly important. Since we've moved away "
+"from auto-slicing in coercions, explicit `as_slice` calls have become "
+"extremely common, and are one of the [leading ergonomic/first impression]"
+"(https://github.com/rust-lang/rust/issues/14983) problems with the language. "
+"There are a few other approaches to address this particular problem, but "
+"these alternatives have downsides that are discussed below (see "
+"\"Alternatives\")."
+msgstr ""
+
+#: src/0198-slice-notation.md:39
+msgid "Error handling conventions"
+msgstr ""
+
+#: src/0198-slice-notation.md:41
+msgid ""
+"We are gradually moving toward a Python-like world where notation like "
+"`foo[n]` calls `fail!` when `n` is out of bounds, while corresponding "
+"methods like `get` return `Option` values rather than failing. By providing "
+"similar notation for slicing, we open the door to following the same "
+"convention throughout vector-like APIs."
+msgstr ""
+
+#: src/0198-slice-notation.md:47
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0198-slice-notation.md:49
+msgid ""
+"The design is a straightforward continuation of the `Index` trait design. We "
+"introduce two new traits, for immutable and mutable slicing:"
+msgstr ""
+
+#: src/0198-slice-notation.md:68
+msgid ""
+"(Note, the mutable names here are part of likely changes to naming "
+"conventions that will be described in a separate RFC)."
+msgstr ""
+
+#: src/0198-slice-notation.md:71
+msgid "These traits will be used when interpreting the following notation:"
+msgstr ""
+
+#: src/0198-slice-notation.md:73
+msgid "_Immutable slicing_"
+msgstr ""
+
+#: src/0198-slice-notation.md:80
+msgid "_Mutable slicing_"
+msgstr ""
+
+#: src/0198-slice-notation.md:82
+msgid "`foo[mut]` for `foo.as_mut_slice()`"
+msgstr ""
+
+#: src/0198-slice-notation.md:83
+msgid "`foo[mut n..m]` for `foo.slice_mut(n, m)`"
+msgstr ""
+
+#: src/0198-slice-notation.md:84
+msgid "`foo[mut n..]` for `foo.slice_from_mut(n)`"
+msgstr ""
+
+#: src/0198-slice-notation.md:85
+msgid "`foo[mut ..m]` for `foo.slice_to_mut(m)`"
+msgstr ""
+
+#: src/0198-slice-notation.md:87
+msgid ""
+"Like `Index`, uses of this notation will auto-deref just as if they were "
+"method invocations. So if `T` implements `Slice<uint, [U]>`, and `s: "
+"Smaht<T>`, then `s[]` compiles and has type `&[U]`."
+msgstr ""
+
+#: src/0198-slice-notation.md:91
+msgid ""
+"Note that slicing is \"exclusive\" (so `[n..m]` is the interval `n <= x < "
+"m`), while `..` in `match` patterns is \"inclusive\". To avoid confusion, we "
+"propose to change the `match` notation to `...` to reflect the distinction. "
+"The reason to change the notation, rather than the interpretation, is that "
+"the exclusive (respectively inclusive) interpretation is the right default "
+"for slicing (respectively matching)."
+msgstr ""
+
+#: src/0198-slice-notation.md:99
+msgid "Rationale for the notation"
+msgstr ""
+
+#: src/0198-slice-notation.md:101
+msgid ""
+"The choice of square brackets for slicing is straightforward: it matches our "
+"indexing notation, and slicing and indexing are closely related."
+msgstr ""
+
+#: src/0198-slice-notation.md:104
+msgid ""
+"Some other languages (like Python and Go -- and Fortran) use `:` rather than "
+"`..` in slice notation. The choice of `..` here is influenced by its use "
+"elsewhere in Rust, for example for fixed-length array types `[T, ..n]`. The "
+"`..` for slicing has precedent in Perl and D."
+msgstr ""
+
+#: src/0198-slice-notation.md:109
+msgid ""
+"See [Wikipedia](http://en.wikipedia.org/wiki/Array_slicing) for more on the "
+"history of slice notation in programming languages."
+msgstr ""
+
+#: src/0198-slice-notation.md:112
+msgid "The `mut` qualifier"
+msgstr ""
+
+#: src/0198-slice-notation.md:114
+msgid ""
+"It may be surprising that `mut` is used as a qualifier in the proposed slice "
+"notation, but not for the indexing notation. The reason is that indexing "
+"includes an implicit dereference. If `v: Vec<Foo>` then `v[n]` has type "
+"`Foo`, not `&Foo` or `&mut Foo`. So if you want to get a mutable reference "
+"via indexing, you write `&mut v[n]`. More generally, this allows us to do "
+"resolution/typechecking prior to resolving the mutability."
+msgstr ""
+
+#: src/0198-slice-notation.md:122
+msgid ""
+"This treatment of `Index` matches the C tradition, and allows us to write "
+"things like `v[0] = foo` instead of `*v[0] = foo`."
+msgstr ""
+
+#: src/0198-slice-notation.md:125
+msgid ""
+"On the other hand, this approach is problematic for slicing, since in "
+"general it would yield an unsized type (under DST) -- and of course, slicing "
+"is meant to give you a fat pointer indicating the size of the slice, which "
+"we don't want to immediately deref. But the consequence is that we need to "
+"know the mutability of the slice up front, when we take it, since it "
+"determines the type of the expression."
+msgstr ""
+
+#: src/0198-slice-notation.md:132
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0198-slice-notation.md:134
+msgid ""
+"The main drawback is the increase in complexity of the language syntax. This "
+"seems minor, especially since the notation here is essentially \"finishing\" "
+"what was started with the `Index` trait."
+msgstr ""
+
+#: src/0198-slice-notation.md:138
+msgid "Limitations in the design"
+msgstr ""
+
+#: src/0198-slice-notation.md:140
+msgid ""
+"Like the `Index` trait, this forces the result to be a reference via `&`, "
+"which may rule out some generalizations of slicing."
+msgstr ""
+
+#: src/0198-slice-notation.md:143
+msgid ""
+"One way of solving this problem is for the slice methods to take `self` (by "
+"value) rather than `&self`, and in turn to implement the trait on `&T` "
+"rather than `T`. Whether this approach is viable in the long run will depend "
+"on the final rules for method resolution and auto-ref."
+msgstr ""
+
+#: src/0198-slice-notation.md:149
+msgid ""
+"In general, the trait system works best when traits can be applied to types "
+"`T` rather than borrowed types `&T`. Ultimately, if Rust gains higher-kinded "
+"types (HKT), we could change the slice type `S` in the trait to be higher-"
+"kinded, so that it is a _family_ of types indexed by lifetime. Then we could "
+"replace the `&'a S` in the return value with `S<'a>`. It should be possible "
+"to transition from the current `Index` and `Slice` trait designs to an HKT "
+"version in the future without breaking backwards compatibility by using "
+"blanket implementations of the new traits (say, `IndexHKT`) for types that "
+"implement the old ones."
+msgstr ""
+
+#: src/0198-slice-notation.md:160
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0198-slice-notation.md:162
+msgid ""
+"For improving the ergonomics of `as_slice`, there are two main alternatives."
+msgstr ""
+
+#: src/0198-slice-notation.md:164
+msgid "Coercions: auto-slicing"
+msgstr ""
+
+#: src/0198-slice-notation.md:166
+msgid ""
+"One possibility would be re-introducing some kind of coercion that "
+"automatically slices. We used to have a coercion from (in today's terms) "
+"`Vec<T>` to `&[T]`. Since we no longer coerce owned to borrowed values, we'd "
+"probably want a coercion `&Vec<T>` to `&[T]` now:"
+msgstr ""
+
+#: src/0198-slice-notation.md:176
+msgid "// automatically coerce here\n"
+msgstr ""
+
+#: src/0198-slice-notation.md:177 src/0198-slice-notation.md:206
+msgid "// equivalent\n"
+msgstr ""
+
+#: src/0198-slice-notation.md:180
+msgid ""
+"Unfortunately, adding such a coercion requires choosing between the "
+"following:"
+msgstr ""
+
+#: src/0198-slice-notation.md:182
+msgid ""
+"Tie the coercion to `Vec` and `String`. This would reintroduce special "
+"treatment of these otherwise purely library types, and would mean that other "
+"library types that support slicing would not benefit (defeating some of the "
+"purpose of DST)."
+msgstr ""
+
+#: src/0198-slice-notation.md:187
+msgid ""
+"Make the coercion extensible, via a trait. This is opening pandora's box, "
+"however: the mechanism could likely be (ab)used to run arbitrary code during "
+"coercion, so that any invocation `foo(a, b, c)` might involve running code "
+"to pre-process each of the arguments. While we may eventually want such user-"
+"extensible coercions, it is a _big_ step to take with a lot of potential "
+"downside when reasoning about code, so we should pursue more conservative "
+"solutions first."
+msgstr ""
+
+#: src/0198-slice-notation.md:195
+msgid "Deref"
+msgstr ""
+
+#: src/0198-slice-notation.md:197
+msgid ""
+"Another possibility would be to make `String` implement `Deref<str>` and "
+"`Vec<T>` implement `Deref<[T]>`, once DST lands. Doing so would allow "
+"explicit coercions like:"
+msgstr ""
+
+#: src/0198-slice-notation.md:205
+msgid "// take advantage of deref\n"
+msgstr ""
+
+#: src/0198-slice-notation.md:209
+msgid "There are at least two downsides to doing so, however:"
+msgstr ""
+
+#: src/0198-slice-notation.md:211
+msgid ""
+"It is not clear how the method resolution rules will ultimately interact "
+"with `Deref`. In particular, a leading proposal is that for a smart pointer "
+"`s: Smaht<T>` when you invoke `s.m(...)` only _inherent_ methods `m` are "
+"considered for `Smaht<T>`; _trait_ methods are only considered for the "
+"maximally-derefed value `*s`."
+msgstr ""
+
+#: src/0198-slice-notation.md:217
+msgid ""
+"With such a resolution strategy, implementing `Deref` for `Vec` would make "
+"it impossible to use trait methods on the `Vec` type except through UFCS, "
+"severely limiting the ability of programmers to usefully implement new "
+"traits for `Vec`."
+msgstr ""
+
+#: src/0198-slice-notation.md:222
+msgid ""
+"The idea of `Vec` as a smart pointer around a slice, and the use of `&*v` as "
+"above, is somewhat counterintuitive, especially for such a basic type."
+msgstr ""
+
+#: src/0198-slice-notation.md:225
+msgid ""
+"Ultimately, notation for slicing seems desirable on its own merits anyway, "
+"and if it can eliminate the need to implement `Deref` for `Vec` and "
+"`String`, all the better."
+msgstr ""

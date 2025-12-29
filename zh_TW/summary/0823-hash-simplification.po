@@ -1,0 +1,533 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0823-hash-simplification.md:1
+msgid "Feature Name: hash"
+msgstr ""
+
+#: src/0823-hash-simplification.md:2
+msgid "Start Date: 2015-02-17"
+msgstr ""
+
+#: src/0823-hash-simplification.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#823](https://github.com/rust-lang/rfcs/pull/823)"
+msgstr ""
+
+#: src/0823-hash-simplification.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#22467](https://github.com/rust-lang/rust/"
+"issues/22467)"
+msgstr ""
+
+#: src/0823-hash-simplification.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0823-hash-simplification.md:8
+msgid ""
+"Pare back the `std::hash` module's API to improve ergonomics of usage and "
+"definitions. While an alternative scheme more in line with what Java and C++ "
+"have is considered, the current `std::hash` module will remain largely as-is "
+"with modifications to its core traits."
+msgstr ""
+
+#: src/0823-hash-simplification.md:13
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0823-hash-simplification.md:15
+msgid ""
+"There are a number of motivations for this RFC, and each will be explained "
+"in term."
+msgstr ""
+
+#: src/0823-hash-simplification.md:18
+msgid "API ergonomics"
+msgstr ""
+
+#: src/0823-hash-simplification.md:20
+msgid ""
+"Today the API of the `std::hash` module is sometimes considered overly "
+"complicated and it may not be pulling its weight. As a recap, the API looks "
+"like:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:38
+msgid ""
+"The `Hash` trait is implemented by various types where the `H` type "
+"parameter signifies the hashing algorithm that the `impl` block corresponds "
+"to. Each `Hasher` is opaque when taken generically and is frequently paired "
+"with a bound of `Writer` to allow feeding in arbitrary bytes."
+msgstr ""
+
+#: src/0823-hash-simplification.md:43
+msgid ""
+"The purpose of not having a `Writer` supertrait on `Hasher` or on the `H` "
+"type parameter is to allow hashing algorithms that are _not_ byte-stream "
+"oriented (e.g. Java-like algorithms). Unfortunately all primitive types in "
+"Rust are only defined for `Hash<H> where H: Writer + Hasher`, essentially "
+"forcing a byte-stream oriented hashing algorithm for all hashing."
+msgstr ""
+
+#: src/0823-hash-simplification.md:49
+msgid "Some examples of using this API are:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:57
+msgid "// don't want to hash field2\n"
+msgstr ""
+
+#: src/0823-hash-simplification.md:69
+msgid ""
+"Forcing many `impl` blocks to require `Hasher + Writer` becomes onerous over "
+"times and also requires at least 3 imports for a custom implementation of "
+"`hash`. Taking a generically hashable `T` is also somewhat cumbersome, "
+"especially if the hashing algorithm isn't known in advance."
+msgstr ""
+
+#: src/0823-hash-simplification.md:74
+msgid ""
+"Overall the `std::hash` API is generic enough that its usage is somewhat "
+"verbose and becomes tiresome over time to work with. This RFC strives to "
+"make this API easier to work with."
+msgstr ""
+
+#: src/0823-hash-simplification.md:78
+msgid "Forcing byte-stream oriented hashing"
+msgstr ""
+
+#: src/0823-hash-simplification.md:80
+msgid ""
+"Much of the `std::hash` API today is oriented around hashing a stream of "
+"bytes (blocks of `&[u8]`). This is not a hard requirement by the API "
+"(discussed above), but in practice this is essentially what happens "
+"everywhere. This form of hashing is not always the most efficient, although "
+"it is often one of the more flexible forms of hashing."
+msgstr ""
+
+#: src/0823-hash-simplification.md:86
+msgid ""
+"Other languages such as Java and C++ have a hashing API that looks more like:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:94
+msgid ""
+"This expression of hashing is not byte-oriented but is also much less "
+"generic (an algorithm for hashing is predetermined by the type itself). This "
+"API is encodable with today's traits as:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:114
+msgid ""
+"This form of hashing (which is useful for performance sometimes) is "
+"difficult to work with primarily because of the frequent bounds on `Writer` "
+"for hashing."
+msgstr ""
+
+#: src/0823-hash-simplification.md:117
+msgid "Non-applicability for well-known hashing algorithms"
+msgstr ""
+
+#: src/0823-hash-simplification.md:119
+msgid ""
+"One of the current aspirations for the `std::hash` module was to be "
+"appropriate for hashing algorithms such as MD5, SHA\\*, etc. The current API "
+"has proven inadequate, however, for the primary reason of hashing being so "
+"generic. For example it should in theory be possible to calculate the SHA1 "
+"hash of a byte slice via:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:130
+msgid "There are a number of pitfalls to this approach:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:132
+msgid ""
+"Due to slices being able to be hashed generically, each byte will be written "
+"individually to the `Sha1` state, which is likely to not be very efficient."
+msgstr ""
+
+#: src/0823-hash-simplification.md:134
+msgid ""
+"Due to slices being able to be hashed generically, the length of the slice "
+"is first written to the `Sha1` state, which is likely not desired."
+msgstr ""
+
+#: src/0823-hash-simplification.md:137
+msgid ""
+"The key observation is that the hash values produced in a Rust program are "
+"**not** reproducible outside of Rust. For this reason, APIs for reproducible "
+"hashes to be verified elsewhere will explicitly not be considered in the "
+"design for `std::hash`. It is expected that an external crate may wish to "
+"provide a trait for these hashing algorithms and it would not be bounded by "
+"`std::hash::Hash`, but instead perhaps a \"byte container\" of some form."
+msgstr ""
+
+#: src/0823-hash-simplification.md:144
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0823-hash-simplification.md:146
+msgid ""
+"This RFC considers two possible designs as a replacement of today's `std::"
+"hash` API. One is a \"minor refactoring\" of the current API while the other "
+"is a much more radical change towards being conservative. This section will "
+"propose the minor refactoring change and the other may be found in the "
+"[Alternatives](#alternatives) section."
+msgstr ""
+
+#: src/0823-hash-simplification.md:152 src/0823-hash-simplification.md:284
+msgid "API"
+msgstr ""
+
+#: src/0823-hash-simplification.md:154 src/0823-hash-simplification.md:286
+msgid "The new API of `std::hash` would be:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:184
+msgid "This API is quite similar to today's API, but has a few tweaks:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:186
+msgid ""
+"The `Writer` trait has been removed by folding it directly into the `Hasher` "
+"trait. As part of this movement the `Hasher` trait grew a number of "
+"specialized `write_foo` methods which the primitives will call. This should "
+"help regain some performance losses where forcing a byte-oriented stream is "
+"a performance loss."
+msgstr ""
+
+#: src/0823-hash-simplification.md:192
+msgid "The `Hasher` trait no longer has a `reset` method."
+msgstr ""
+
+#: src/0823-hash-simplification.md:194
+msgid ""
+"The `Hash` trait's type parameter is on the _method_, not on the trait. This "
+"implies that the trait is no longer object-safe, but it is much more "
+"ergonomic to operate over generically."
+msgstr ""
+
+#: src/0823-hash-simplification.md:198
+msgid ""
+"The `Hash` trait now has a `hash_slice` method to slice a number of "
+"instances of `Self` at once. This will allow optimization of the `Hash` "
+"implementation of `&[u8]` to translate to a raw `write` as well as other "
+"various slices of primitives."
+msgstr ""
+
+#: src/0823-hash-simplification.md:203
+msgid ""
+"The `Output` associated type was removed in favor of an explicit `u64` "
+"return from `finish`."
+msgstr ""
+
+#: src/0823-hash-simplification.md:206
+msgid ""
+"The purpose of this API is to continue to allow APIs to be generic over the "
+"hashing algorithm used. This would allow `HashMap` continue to use a "
+"randomly keyed SipHash as its default algorithm (e.g. continuing to provide "
+"DoS protection, more information on this below). An example encoding of the "
+"alternative API (proposed below) would look like:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:220
+msgid "// and so on...\n"
+msgstr ""
+
+#: src/0823-hash-simplification.md:224
+msgid "`HashMap` and `HashState`"
+msgstr ""
+
+#: src/0823-hash-simplification.md:226
+msgid ""
+"For both this recommendation as well as the alternative below, this RFC "
+"proposes removing the `HashState` trait and `Hasher` structure (as well as "
+"the `hash_state` module) in favor of the following API:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:253
+msgid ""
+"The precise details will be affected based on which design in this RFC is "
+"chosen, but the general idea is to move from a custom trait to the standard "
+"`Fn` trait for calculating hashes."
+msgstr ""
+
+#: src/0823-hash-simplification.md:257
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0823-hash-simplification.md:259
+msgid ""
+"This design is a departure from the precedent set by many other languages. "
+"In doing so, however, it is arguably easier to implement `Hash` as it's more "
+"obvious how to feed in incremental state. We also do not lock ourselves into "
+"a particular hashing algorithm in case we need to alternate in the future."
+msgstr ""
+
+#: src/0823-hash-simplification.md:264
+msgid ""
+"Implementations of `Hash` cannot be specialized and are forced to operate "
+"generically over the hashing algorithm provided. This may cause a loss of "
+"performance in some cases. Note that this could be remedied by moving the "
+"type parameter to the trait instead of the method, but this would lead to a "
+"loss in ergonomics for generic consumers of `T: Hash`."
+msgstr ""
+
+#: src/0823-hash-simplification.md:270
+msgid ""
+"Manual implementations of `Hash` are somewhat cumbersome still by requiring "
+"a separate `Hasher` parameter which is not necessarily always desired."
+msgstr ""
+
+#: src/0823-hash-simplification.md:273
+msgid ""
+"The API of `Hasher` is approaching the realm of serialization/reflection and "
+"it's unclear whether its API should grow over time to support more basic "
+"Rust types. It would be unfortunate if the `Hasher` trait approached a full-"
+"blown `Encoder` trait (as `rustc-serialize` has)."
+msgstr ""
+
+#: src/0823-hash-simplification.md:278
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0823-hash-simplification.md:280
+msgid ""
+"As alluded to in the \"Detailed design\" section the primary alternative to "
+"this RFC, which still improves ergonomics, is to remove the generic-ness "
+"over the hashing algorithm."
+msgstr ""
+
+#: src/0823-hash-simplification.md:296
+msgid ""
+"The `Writer`, `Hasher`, and `SipHasher` structures/traits would all be "
+"removed from `std::hash`. This definition is more or less the Rust "
+"equivalent of the Java/C++ hashing infrastructure. This API is a vast "
+"simplification of what exists today and allows implementations of `Hash` as "
+"well as consumers of `Hash` to quite ergonomically work with hash values as "
+"well as hashable objects."
+msgstr ""
+
+#: src/0823-hash-simplification.md:302
+msgid ""
+"**Note**: The choice of `usize` instead of `u64` reflects [C++'s choice]"
+"(http://en.cppreference.com/w/cpp/utility/hash) here as well, but it is "
+"quite easy to use one instead of the other."
+msgstr ""
+
+#: src/0823-hash-simplification.md:306
+msgid "Hashing algorithm"
+msgstr ""
+
+#: src/0823-hash-simplification.md:308
+msgid ""
+"With this definition of `Hash`, each type must pre-ordain a particular hash "
+"algorithm that it implements. Using an alternate algorithm would require a "
+"separate newtype wrapper."
+msgstr ""
+
+#: src/0823-hash-simplification.md:312
+msgid ""
+"Most implementations would still use `#[derive(Hash)]` which will leverage "
+"`hash::combine` to combine the hash values of aggregate fields. Manual "
+"implementations which only want to hash a select number of fields would look "
+"like:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:320
+msgid "// ignore field2\n"
+msgstr ""
+
+#: src/0823-hash-simplification.md:326
+msgid ""
+"A possible implementation of combine can be found [in the boost source code]"
+"(https://github.com/boostorg/functional/blob/master/include/boost/functional/"
+"hash/hash.hpp#L209-L213)."
+msgstr ""
+
+#: src/0823-hash-simplification.md:331
+msgid "`HashMap` and DoS protection"
+msgstr ""
+
+#: src/0823-hash-simplification.md:333
+msgid ""
+"Currently one of the features of the standard library's `HashMap` "
+"implementation is that it by default provides DoS protection through two "
+"measures:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:336
+msgid ""
+"A strong hashing algorithm, SipHash 2-4, is used which is fairly difficult "
+"to find collisions with."
+msgstr ""
+
+#: src/0823-hash-simplification.md:338
+msgid ""
+"The SipHash algorithm is randomly seeded for each instance of `HashMap`. The "
+"algorithm is seeded with a 128-bit key."
+msgstr ""
+
+#: src/0823-hash-simplification.md:341
+msgid ""
+"These two measures ensure that each `HashMap` is randomly ordered, even if "
+"the same keys are inserted in the same order. As a result, it is quite "
+"difficult to mount a DoS attack against a `HashMap` as it is difficult to "
+"predict what collisions will happen."
+msgstr ""
+
+#: src/0823-hash-simplification.md:346
+msgid ""
+"The `Hash` trait proposed above, however, does not allow SipHash to be "
+"implemented generally any more. For example `#[derive(Hash)]` will no longer "
+"leverage SipHash. Additionally, there is no input of state into the `hash` "
+"function, so there is no random state per-`HashMap` to generate different "
+"hashes with."
+msgstr ""
+
+#: src/0823-hash-simplification.md:352
+msgid ""
+"Denial of service attacks against hash maps are no new phenomenon, they are "
+"[well](http://www.ocert.org/advisories/ocert-2011-003.html) [known](http://"
+"lwn.net/Articles/474912/) and have been reported in [Python](http://bugs."
+"python.org/issue13703), [Ruby](https://www.ruby-lang.org/en/news/2011/12/28/"
+"denial-of-service-attack-was-found-for-rubys-hash-algorithm-cve-2011-4815/) "
+"([other ruby](https://www.ruby-lang.org/en/news/2012/11/09/ruby19-hashdos-"
+"cve-2012-5371/)), [Perl](http://blog.booking.com/hardening-perls-hash-"
+"function.html), and many other languages/frameworks. Rust has taken a fairly "
+"proactive step from the start by using a strong and randomly seeded "
+"algorithm since `HashMap`'s inception."
+msgstr ""
+
+#: src/0823-hash-simplification.md:364
+msgid ""
+"In general the standard library does not provide many security-related "
+"guarantees beyond memory safety. For example the new `Read::read_to_end` "
+"function passes a safe buffer of uninitialized data to implementations of "
+"`read` using various techniques to prevent memory safety issues. A DoS "
+"attack against a hash map is such a common and well known exploit, however, "
+"that this RFC considers it critical to consider the design of `Hash` and its "
+"relationship with `HashMap`."
+msgstr ""
+
+#: src/0823-hash-simplification.md:372
+msgid "Mitigation of DoS attacks"
+msgstr ""
+
+#: src/0823-hash-simplification.md:374
+msgid "Other languages have mitigated DoS attacks via a few measures:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:376
+msgid ""
+"[C++ specifies](http://en.cppreference.com/w/cpp/utility/hash) that the "
+"return value of `hash` is not guaranteed to be stable across program "
+"executions, allowing for a global salt to be mixed into hashes calculated."
+msgstr ""
+
+#: src/0823-hash-simplification.md:379
+msgid ""
+"[Ruby has a global seed](https://github.com/ruby/ruby/"
+"blob/193ad64359b8ebcd77a2cba50a62d64311e26b22/random.c#L1248-L1251) which is "
+"randomly initialized on startup and is used when hashing blocks of memory (e."
+"g. strings)."
+msgstr ""
+
+#: src/0823-hash-simplification.md:381
+msgid ""
+"PHP and Tomcat have added limits to the maximum amount of keys allowed from "
+"a POST HTTP request (to limit the size of auto-generated maps). This "
+"strategy is not necessarily applicable to the standard library."
+msgstr ""
+
+#: src/0823-hash-simplification.md:388
+msgid ""
+"It [has been claimed](http://bugs.python.org/issue13703#msg150558), however, "
+"that a global seed may only mitigate some of the simplest attacks. The "
+"primary downside is that a long-running process may leak the \"global seed\" "
+"through some other form which could compromise maps in that specific process."
+msgstr ""
+
+#: src/0823-hash-simplification.md:393
+msgid ""
+"One possible route to mitigating these attacks with the `Hash` trait above "
+"could be:"
+msgstr ""
+
+#: src/0823-hash-simplification.md:396
+msgid ""
+"All primitives (integers, etc) are `combine`d with a global random seed "
+"which is initialized on first use."
+msgstr ""
+
+#: src/0823-hash-simplification.md:398
+msgid ""
+"Strings will continue to use SipHash as the default algorithm and the "
+"initialization keys will be randomly initialized on first use."
+msgstr ""
+
+#: src/0823-hash-simplification.md:401
+msgid ""
+"Given the information available about other DoS mitigations in hash maps for "
+"other languages, however, it is not clear that this will provide the same "
+"level of DoS protection that is available today. For example [@DaGenix "
+"explains well](https://github.com/rust-lang/rfcs/"
+"pull/823#issuecomment-74013800) that we may not be able to provide any form "
+"of DoS protection guarantee at all."
+msgstr ""
+
+#: src/0823-hash-simplification.md:407
+msgid "Alternative Drawbacks"
+msgstr ""
+
+#: src/0823-hash-simplification.md:409
+msgid ""
+"One of the primary drawbacks to the proposed `Hash` trait is that it is now "
+"not possible to select an algorithm that a type should be hashed with. "
+"Instead each type's definition of hashing can only be altered through the "
+"use of a newtype wrapper."
+msgstr ""
+
+#: src/0823-hash-simplification.md:414
+msgid ""
+"Today most Rust types can be hashed using a byte-oriented algorithm, so any "
+"number of these algorithms (e.g. SipHash, Fnv hashing) can be used. With "
+"this new `Hash` definition they are not easily accessible."
+msgstr ""
+
+#: src/0823-hash-simplification.md:418
+msgid ""
+"Due to the lack of input state to hashing, the `HashMap` type can no longer "
+"randomly seed each individual instance but may at best have one global seed. "
+"This consequently elevates the risk of a DoS attack on a `HashMap` instance."
+msgstr ""
+
+#: src/0823-hash-simplification.md:422
+msgid ""
+"The method of combining hashes together is not proven among other languages "
+"and is not guaranteed to provide the guarantees we want. This departure from "
+"the may have unknown consequences."
+msgstr ""
+
+#: src/0823-hash-simplification.md:426
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0823-hash-simplification.md:428
+msgid ""
+"To what degree should `HashMap` attempt to prevent DoS attacks? Is it the "
+"responsibility of the standard library to do so or should this be provided "
+"as an external crate on crates.io?"
+msgstr ""

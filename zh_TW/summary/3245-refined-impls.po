@@ -1,0 +1,947 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3245-refined-impls.md:1
+msgid "Refined trait implementations"
+msgstr ""
+
+#: src/3245-refined-impls.md:3
+msgid "Feature Name: `refined_impls`"
+msgstr ""
+
+#: src/3245-refined-impls.md:4
+msgid "Start Date: 2022-03-22"
+msgstr ""
+
+#: src/3245-refined-impls.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#3245](https://github.com/rust-lang/rfcs/pull/3245)"
+msgstr ""
+
+#: src/3245-refined-impls.md:6
+msgid ""
+"Rust Issue: [rust-lang/rust#100706](https://github.com/rust-lang/rust/"
+"issues/100706)"
+msgstr ""
+
+#: src/3245-refined-impls.md:8
+msgid "Summary"
+msgstr "摘要"
+
+#: src/3245-refined-impls.md:11
+msgid ""
+"This RFC generalizes the [`safe_unsafe_trait_methods` RFC](https://rust-lang."
+"github.io/rfcs/2316-safe-unsafe-trait-methods.html), allowing "
+"implementations of traits to add type information about the API of their "
+"methods and constants which then become part of the API for that type. "
+"Specifically, lifetimes and where clauses are allowed to extend beyond what "
+"the trait provides."
+msgstr ""
+
+#: src/3245-refined-impls.md:15
+msgid "Motivation"
+msgstr "動機"
+
+#: src/3245-refined-impls.md:18
+msgid ""
+"[RFC 2316](https://rust-lang.github.io/rfcs/2316-safe-unsafe-trait-methods."
+"html) introduced the notion of _safe implementations_ of unsafe trait "
+"methods. This allows code that knows it is calling a safe implementation of "
+"an unsafe trait method to do so without using an unsafe block. In other "
+"words, this works under RFC 2316, which is not yet implemented:"
+msgstr ""
+
+#: src/3245-refined-impls.md:28
+msgid "\"No unsafe in this impl!\""
+msgstr ""
+
+#: src/3245-refined-impls.md:33
+msgid "// Call Bar::foo without using an unsafe block.\n"
+msgstr ""
+
+#: src/3245-refined-impls.md:39
+msgid ""
+"Unsafe is not the only area where we allow impl signatures to be \"more "
+"specific\" than the trait they're implementing. Unfortunately, we do not "
+"handle these cases consistently today:"
+msgstr ""
+
+#: src/3245-refined-impls.md:41
+msgid "Associated types"
+msgstr ""
+
+#: src/3245-refined-impls.md:43
+msgid ""
+"Associated types are a case where an impl is _required_ to be \"more "
+"specific\" by specifying a concrete type."
+msgstr ""
+
+#: src/3245-refined-impls.md:56
+msgid ""
+"This concrete type is fully transparent to any code that can use the impl. "
+"Calling code is allowed to rely on the fact that `<OnlyZero as Iterator>::"
+"Item = usize`."
+msgstr ""
+
+#: src/3245-refined-impls.md:63
+msgid "Types in method signatures"
+msgstr ""
+
+#: src/3245-refined-impls.md:66
+msgid ""
+"We also allow method signatures to differ from the trait they implement."
+msgstr ""
+
+#: src/3245-refined-impls.md:76
+msgid "// Don't need the exact size here; any iterator will do.\n"
+msgstr ""
+
+#: src/3245-refined-impls.md:81
+msgid ""
+"**Unlike with `unsafe` and associated types, however, calling code _cannot_ "
+"rely on the relaxed requirements on the `log_all` method implementation.**"
+msgstr ""
+
+#: src/3245-refined-impls.md:87
+msgid ""
+"// ERROR:              ^^^^ the trait `ExactSizeIterator` is not "
+"implemented\n"
+msgstr ""
+
+#: src/3245-refined-impls.md:91
+msgid ""
+"This is a papercut: In order to make this API available to users the "
+"`OrderedLogger` type would have to bypass the `Log` trait entirely and "
+"provide an inherent method instead. Simply changing `impl Log for "
+"OrderedLogger` to `impl OrderedLogger` in the example above is enough to "
+"make this code compile, but it would no longer implement the trait."
+msgstr ""
+
+#: src/3245-refined-impls.md:93
+msgid ""
+"The purpose of this RFC is to fix the inconsistency in the language and add "
+"flexibility by removing this papercut. Finally, it establishes a policy to "
+"prevent such inconsistencies in the future."
+msgstr ""
+
+#: src/3245-refined-impls.md:95
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3245-refined-impls.md:98
+msgid ""
+"When implementing a trait, you can use function signatures that _refine_ "
+"those in the trait by being more specific. For example,"
+msgstr ""
+
+#: src/3245-refined-impls.md:108
+msgid "\"My Error Message\""
+msgstr ""
+
+#: src/3245-refined-impls.md:113
+msgid ""
+"Here, the error description for `MyError` does not depend on the value of "
+"`MyError`. The `impl` includes this information by adding a `'static` "
+"lifetime to the return type."
+msgstr ""
+
+#: src/3245-refined-impls.md:115
+msgid ""
+"Code that knows it is dealing with a `MyError` can then make use of this "
+"information. For example,"
+msgstr ""
+
+#: src/3245-refined-impls.md:120
+msgid "\"Success!\""
+msgstr ""
+
+#: src/3245-refined-impls.md:126
+msgid ""
+"This can be useful when using impl Trait in argument or return position."
+"[^rpitit]"
+msgstr ""
+
+#: src/3245-refined-impls.md:139
+msgid ""
+"Note that when using impl Trait in argument position, the function signature "
+"is refined as bounds are _removed_, meaning this specific impl can accept a "
+"wider range of inputs than the general case. Where clauses work the same "
+"way: since where clauses always must be proven by the caller, it is okay to "
+"remove them in an impl and permit a wider range of use cases for your API."
+msgstr ""
+
+#: src/3245-refined-impls.md:152
+msgid ""
+"Finally, methods marked `unsafe` in traits can be refined as safe APIs, "
+"allowing code to call them without using `unsafe` blocks."
+msgstr ""
+
+#: src/3245-refined-impls.md:154
+msgid ""
+"At the time of writing, return position impl Trait is not allowed in traits. "
+"The guide text written here is only for the purpose of illustrating how we "
+"would document this feature if it were allowed."
+msgstr ""
+
+#: src/3245-refined-impls.md:156
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3245-refined-impls.md:159
+msgid "Trait implementations"
+msgstr ""
+
+#: src/3245-refined-impls.md:161
+msgid ""
+"The following text should be added after [this paragraph](https://doc.rust-"
+"lang.org/nightly/reference/items/implementations.html#trait-implementations) "
+"from the Rust reference:"
+msgstr ""
+
+#: src/3245-refined-impls.md:163
+msgid ""
+"A trait implementation must define all non-default associated items declared "
+"by the implemented trait, may redefine default associated items defined by "
+"the implemented trait, and cannot define any other items."
+msgstr ""
+
+#: src/3245-refined-impls.md:165
+msgid ""
+"Each associated item defined in the implementation meet the following "
+"conditions."
+msgstr ""
+
+#: src/3245-refined-impls.md:167
+msgid "**Associated consts**"
+msgstr ""
+
+#: src/3245-refined-impls.md:169
+msgid "Must be a subtype of the type in the corresponding trait item."
+msgstr ""
+
+#: src/3245-refined-impls.md:171
+msgid "**Associated types**"
+msgstr ""
+
+#: src/3245-refined-impls.md:173
+msgid "Associated type values must satisfy all bounds on the trait item."
+msgstr ""
+
+#: src/3245-refined-impls.md:174
+msgid ""
+"Each where clause must be implied by the where clauses on the trait itself "
+"and/or the associated type in the trait definition, where \"implied\" is "
+"limited to supertrait and outlives relations. _This would be expanded to all "
+"[implied bounds](https://rust-lang.github.io/rfcs/2089-implied-bounds.html) "
+"when that feature is enabled._"
+msgstr ""
+
+#: src/3245-refined-impls.md:176
+msgid "**Associated functions**"
+msgstr ""
+
+#: src/3245-refined-impls.md:178
+msgid "Must return any subtype of the return type in the trait definition."
+msgstr ""
+
+#: src/3245-refined-impls.md:179
+msgid ""
+"Each argument must accept any supertype of the corresponding argument type "
+"in the trait definition."
+msgstr ""
+
+#: src/3245-refined-impls.md:180
+msgid ""
+"Each where clause must be implied by the where clauses on the trait itself "
+"and/or the associated function in the trait definition, where \"implied\" is "
+"limited to supertrait and outlives relations. _This would be expanded to all "
+"[implied bounds](https://rust-lang.github.io/rfcs/2089-implied-bounds.html) "
+"when that feature is enabled._"
+msgstr ""
+
+#: src/3245-refined-impls.md:181
+msgid ""
+"Must not be marked `unsafe` unless the trait definition is also marked "
+"`unsafe`."
+msgstr ""
+
+#: src/3245-refined-impls.md:183
+msgid ""
+"When an item in an impl meets these conditions, we say it is a _valid "
+"refinement_ of the trait item."
+msgstr ""
+
+#: src/3245-refined-impls.md:187
+msgid "Using refined implementations"
+msgstr ""
+
+#: src/3245-refined-impls.md:189
+msgid ""
+"Refined APIs are available anywhere knowledge of the impl being used is "
+"available. If the compiler can deduce a particular impl is being used, its "
+"API as written is available for use by the caller. This includes UFCS calls "
+"like `<MyType as Trait>::foo()`."
+msgstr ""
+
+#: src/3245-refined-impls.md:191
+msgid "Transitioning away from the current behavior"
+msgstr ""
+
+#: src/3245-refined-impls.md:193
+msgid ""
+"Because we allow writing impls that look refined, but are [not usable]"
+"(#types-in-method-signatures) as such, landing this feature could mean auto-"
+"stabilizing new ecosystem API surface. We should probably be conservative "
+"and require library authors to opt in to refined APIs with a `#[refine]` "
+"attribute. This can be done in two parts."
+msgstr ""
+
+#: src/3245-refined-impls.md:195
+msgid "Lint against unmarked refined impls"
+msgstr ""
+
+#: src/3245-refined-impls.md:197
+msgid ""
+"After this RFC is merged, we should warn when a user writes an impl that "
+"looks refined and suggest that they copy the exact API of the trait they are "
+"implementing. Once this feature stabilizes, we can suggest using `#[refine]` "
+"attribute to mark that an impl is intentionally refined."
+msgstr ""
+
+#: src/3245-refined-impls.md:199
+msgid "Automatic migration for the next edition"
+msgstr ""
+
+#: src/3245-refined-impls.md:201
+msgid ""
+"We may want to upgrade the above lint to an error in 2024 or make refinement "
+"the default without any attribute at all. In either case, we should have an "
+"automatic edition migration that rewrites users' code to preserve its "
+"semantics. That means we will replace trait implementations that look "
+"refined with the original API of the trait items being implemented."
+msgstr ""
+
+#: src/3245-refined-impls.md:203
+msgid "Documentation"
+msgstr ""
+
+#: src/3245-refined-impls.md:205
+msgid ""
+"The following can be added to the reference to document the difference in "
+"editions."
+msgstr ""
+
+#: src/3245-refined-impls.md:207
+msgid "`#[refine]` attribute"
+msgstr ""
+
+#: src/3245-refined-impls.md:209
+msgid ""
+"Refinements of trait items that do not match the API of the trait exactly "
+"must be accompanied by a `#[refine]` attribute on the item in Rust 2021 and "
+"older editions.[^refine-edition]"
+msgstr ""
+
+#: src/3245-refined-impls.md:211
+msgid ""
+"For historical reasons, we allow valid refinements on the following features "
+"in Rust 2021 and earlier without a `#[refine]` attribute. However, no "
+"refinements are available to callers without this attribute; it will be as "
+"if the trait API was copied directly."
+msgstr ""
+
+#: src/3245-refined-impls.md:213 src/3245-refined-impls.md:216
+msgid "Lifetimes"
+msgstr ""
+
+#: src/3245-refined-impls.md:214 src/3245-refined-impls.md:217
+msgid "Where clauses"
+msgstr ""
+
+#: src/3245-refined-impls.md:215
+msgid "impl Trait in argument position"
+msgstr ""
+
+#: src/3245-refined-impls.md:219
+msgid ""
+"Depending on the outcome of the Unresolved Questions in this RFC, this may "
+"also be the case for future editions."
+msgstr ""
+
+#: src/3245-refined-impls.md:221
+msgid "Preventing future ambiguity"
+msgstr ""
+
+#: src/3245-refined-impls.md:223
+msgid ""
+"This RFC establishes a policy that anytime the signature of an associated "
+"item in a trait implementation is _allowed to differ_ from the signature in "
+"the trait, the information in that signature should be usable by code that "
+"uses the implementation."
+msgstr ""
+
+#: src/3245-refined-impls.md:225
+msgid ""
+"This RFC specifically does not specify that new language features involving "
+"traits _should_ allow refined impls wherever possible. The language could "
+"choose not to accept refined implementation signatures for that feature. "
+"This should be decided on a case-by-case basis for each feature."
+msgstr ""
+
+#: src/3245-refined-impls.md:227
+msgid "RFC 2316"
+msgstr ""
+
+#: src/3245-refined-impls.md:229
+msgid ""
+"[RFC 2316](https://rust-lang.github.io/rfcs/2316-safe-unsafe-trait-methods."
+"html) is amended by this RFC to require `#[refine]` on safe implementations "
+"of unsafe trait methods."
+msgstr ""
+
+#: src/3245-refined-impls.md:231
+msgid "Interaction with other features"
+msgstr ""
+
+#: src/3245-refined-impls.md:233
+msgid "Implied bounds"
+msgstr ""
+
+#: src/3245-refined-impls.md:235
+msgid ""
+"When [implied bounds](https://rust-lang.github.io/rfcs/2089-implied-bounds."
+"html) is stabilized, the rules for valid refinements will be modified "
+"according to the italicized text above."
+msgstr ""
+
+#: src/3245-refined-impls.md:237
+msgid "Specialization"
+msgstr ""
+
+#: src/3245-refined-impls.md:239
+msgid ""
+"[Specialization](https://rust-lang.github.io/rfcs/1210-impl-specialization."
+"html) allows trait impls to overlap. Whenever two trait impls overlap, one "
+"must take precedence according to the rules laid out in the specialization "
+"RFC. Each item in the impl taking precedence must be a valid refinement of "
+"the corresponding item in the overlapping impl."
+msgstr ""
+
+#: src/3245-refined-impls.md:243
+msgid "Generic associated types"
+msgstr ""
+
+#: src/3245-refined-impls.md:245
+msgid ""
+"These features mostly don't interact. However, it's worth noting that "
+"currently generic associated types [require extra bounds](https://github.com/"
+"rust-lang/rust/issues/87479) on the trait definition if it is likely they "
+"will be needed by implementations. This feature would allow implementations "
+"that don't need those bounds to elide them and remove that requirement on "
+"their types' interface."
+msgstr ""
+
+#: src/3245-refined-impls.md:249
+msgid "`const` polymorphism"
+msgstr ""
+
+#: src/3245-refined-impls.md:251
+msgid ""
+"We may want to allow implementations to add `const` to their methods. This "
+"raises the question of whether we want _provided_ methods of the trait to "
+"also become `const`. For example:"
+msgstr ""
+
+#: src/3245-refined-impls.md:259
+msgid "Should the `nth` method also be considered `const fn`?"
+msgstr ""
+
+#: src/3245-refined-impls.md:261
+msgid "Method dispatch"
+msgstr ""
+
+#: src/3245-refined-impls.md:263
+msgid ""
+"The [method dispatch rules](https://doc.rust-lang.org/stable/reference/"
+"expressions/method-call-expr.html) can be confusing when there are multiple "
+"candidates with the same name but that differ in their `self` type. "
+"Refinement on `impl Trait` return types can interact with this by adding new "
+"candidates for method dispatch. See [this comment](https://github.com/rust-"
+"lang/rfcs/pull/3245#issuecomment-1105959958) for an example."
+msgstr ""
+
+#: src/3245-refined-impls.md:265
+msgid ""
+"Method dispatch rules can be improved in a future edition, for example by "
+"making callers disambiguate the method they want to call in these situations."
+msgstr ""
+
+#: src/3245-refined-impls.md:270
+msgid "Unsatisfiable trait members"
+msgstr ""
+
+#: src/3245-refined-impls.md:272
+msgid ""
+"Today we [require trait members with unsatisfiable `where` clauses to be "
+"implemented](https://github.com/rust-lang/rfcs/issues/2829). This leads to "
+"dropping the unsatisfiable bounds in the impl (a form of refinement) and, in "
+"some cases, relying on the property that the item can never be used. See "
+"[this comment](https://github.com/rust-lang/rfcs/"
+"pull/3245#issuecomment-1120097693) for an example. This RFC would relax that "
+"property."
+msgstr ""
+
+#: src/3245-refined-impls.md:274
+msgid ""
+"It should be considered a bug for any code to rely on this unusability "
+"property for correctness purposes, though a panic may be necessary in some "
+"cases."
+msgstr ""
+
+#: src/3245-refined-impls.md:276
+msgid ""
+"We should solve this problem separately and allow implementers to omit items "
+"like this, but that is out of the scope of this RFC."
+msgstr ""
+
+#: src/3245-refined-impls.md:281
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3245-refined-impls.md:284
+msgid "Accidental stabilization"
+msgstr ""
+
+#: src/3245-refined-impls.md:286
+msgid ""
+"For library authors, it is possible for this feature to create situations "
+"where a more refined API is _accidentally_ stabilized. Before stabilizing, "
+"we will need to gain some experience with the feature to determine if it is "
+"a good idea to allow refined impls without annotations."
+msgstr ""
+
+#: src/3245-refined-impls.md:288
+msgid "Complexity"
+msgstr ""
+
+#: src/3245-refined-impls.md:290
+msgid ""
+"Overall, we argue that this RFC reduces complexity by improving the "
+"consistency and flexibility of the language. However, this RFC proposes "
+"several things that can be considered added complexity to the language:"
+msgstr ""
+
+#: src/3245-refined-impls.md:292
+msgid "Adding text to the Rust reference"
+msgstr ""
+
+#: src/3245-refined-impls.md:294
+msgid ""
+"Part of the reason that text is being added to the reference is that the "
+"reference doesn't specify what makes an item in a trait implementation "
+"valid. The current behavior of allowing certain kinds of divergence and "
+"\"ignoring\" some of them is not specified anywhere, and would probably be "
+"just as verbose to describe."
+msgstr ""
+
+#: src/3245-refined-impls.md:296
+msgid "Types are allowed to have different APIs for the same trait"
+msgstr ""
+
+#: src/3245-refined-impls.md:298
+msgid ""
+"It is possible for a user to form an impression of a trait API by seeing its "
+"use in one type, then be surprised to find that that usage does not "
+"generalize to all implementations of the trait."
+msgstr ""
+
+#: src/3245-refined-impls.md:300
+msgid ""
+"It's rarely obvious, however, that a _trait_ API is being used at a call "
+"site as opposed to an inherent API (which can be completely different from "
+"one type to the next). The one place it is obvious is in generic functions, "
+"which will typically only have access to the original trait API."
+msgstr ""
+
+#: src/3245-refined-impls.md:302
+msgid "Refactoring"
+msgstr ""
+
+#: src/3245-refined-impls.md:305
+msgid ""
+"When a trait API is refined by a type, users of that type may rely on "
+"refined details of that API without realizing it. This could come as a "
+"surprise when they then try to refactor their code to be generic over that "
+"type."
+msgstr ""
+
+#: src/3245-refined-impls.md:307
+msgid ""
+"The general form of this problem isn't specific to refined impls. Making "
+"code generic always loses type information (which is the point) and often "
+"requires you to tweak some details about your implementation to compensate. "
+"This feature would add another place where that can happen. Using a const or "
+"method that was defined in a trait, even when that trait is in your generic "
+"bounds, may not be enough – your non-generic code may have relied on a "
+"refined aspect of that item."
+msgstr ""
+
+#: src/3245-refined-impls.md:309
+msgid ""
+"In some situations the user may realize they are relying on too many details "
+"of the concrete type and either don't want to make their code generic, or "
+"need to refactor it to be more general. In other situations, however, they "
+"may want to add extra bounds so their code can be generic without "
+"significant modifications."
+msgstr ""
+
+#: src/3245-refined-impls.md:311
+msgid ""
+"This problem can be solved or mitigated with new ways of adding bounds to "
+"the refined items, but those are out of scope for this RFC and not fully "
+"designed. They are described below in [Bounding refined items](#bounding-"
+"refined-items)."
+msgstr ""
+
+#: src/3245-refined-impls.md:313
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3245-refined-impls.md:316
+msgid ""
+"This RFC attempts to be minimal in terms of its scope while accomplishing "
+"its stated goal to improve the consistency of Rust. It aims to do so in a "
+"way that makes Rust easier to learn and easier to use."
+msgstr ""
+
+#: src/3245-refined-impls.md:318
+msgid "Do nothing"
+msgstr ""
+
+#: src/3245-refined-impls.md:320
+msgid ""
+"Doing nothing preserves the status quo, which as shown in the [Motivation]"
+"(#motivation) section, is confusing and inconsistent. Allowing users to "
+"write function signatures that aren't actually visible to calling code "
+"violates the principle of least surprise. It would be better to begin a "
+"transition out of this state sooner than later to make future edition "
+"migrations less disruptive."
+msgstr ""
+
+#: src/3245-refined-impls.md:322
+msgid "Require implementations to use exactly the same API as the trait"
+msgstr ""
+
+#: src/3245-refined-impls.md:324
+msgid ""
+"We could reduce the potential for confusion by disallowing \"dormant "
+"refinements\" with a warning in the current edition, as this RFC proposes, "
+"and an error in future editions. This approach is more conservative than the "
+"one in this RFC. However, it leaves Rust in a state of allowing some kinds "
+"of refinement (like safe impls of `unsafe` methods) but not others, without "
+"a clear reason for doing so."
+msgstr ""
+
+#: src/3245-refined-impls.md:326
+msgid ""
+"While we could postpone the question of whether to allow this indefinitely, "
+"we argue that allowing such refinements will make Rust easier to learn and "
+"easier to use."
+msgstr ""
+
+#: src/3245-refined-impls.md:328
+msgid "Allow `#[refine]` at levels other than impl items"
+msgstr ""
+
+#: src/3245-refined-impls.md:330
+msgid ""
+"We could allow `#[refine]` on individual aspects of a function signature "
+"like the return type, where clauses, or argument types. This would allow "
+"users to scope refinement more narrowly and make sure that they aren't "
+"refining other aspects of that function signature. However, it seems "
+"unlikely that API refinement would be such a footgun that such narrowly "
+"scoping is needed."
+msgstr ""
+
+#: src/3245-refined-impls.md:332
+msgid ""
+"Going in the other direction, we could allow `#[refine]` on the impl itself. "
+"This would remove repetition in cases where an impl refines many items at "
+"once. It is unclear if this would be desired frequently enough to justify it."
+msgstr ""
+
+#: src/3245-refined-impls.md:334
+msgid "Prior art"
+msgstr ""
+
+#: src/3245-refined-impls.md:337
+msgid "Java covariant return types"
+msgstr ""
+
+#: src/3245-refined-impls.md:339
+msgid ""
+"If you override a method in Java, the return type can be any subtype of the "
+"original type. When invoking the method on that type, you see the subtype."
+msgstr ""
+
+#: src/3245-refined-impls.md:341
+msgid "Auto traits"
+msgstr ""
+
+#: src/3245-refined-impls.md:343
+msgid ""
+"One piece of related prior art here is the [leakage of auto traits](https://"
+"rust-lang.github.io/rfcs/1522-conservative-impl-trait.html#oibit-"
+"transparency) for return position `impl Trait`. Today it is possible for "
+"library authors to stabilize the auto traits of their return types without "
+"realizing it. Unlike in this proposal, there is no syntax corresponding to "
+"the stabilized API surface."
+msgstr ""
+
+#: src/3245-refined-impls.md:347
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/3245-refined-impls.md:350
+msgid "Should `#[refine]` be required in future editions?"
+msgstr ""
+
+#: src/3245-refined-impls.md:352
+msgid ""
+"As discussed in [Drawbacks](#drawbacks), this feature could lead to library "
+"authors accidentally publishing refined APIs that they did not mean to "
+"stabilize. We could prevent that by requiring the `#[refine]` attribute on "
+"any refined item inside an implementation."
+msgstr ""
+
+#: src/3245-refined-impls.md:354
+msgid "There are three main options:"
+msgstr ""
+
+#: src/3245-refined-impls.md:356
+msgid ""
+"`#[refine]` is _always required_ for an impl to commit to a refined "
+"interface. In the next edition we could make it a hard error to write a "
+"refined interface without the `#[refine]` attribute, to reduce confusion."
+msgstr ""
+
+#: src/3245-refined-impls.md:357
+msgid ""
+"`#[refine]` is _recommended_ in the next edition. Refined interfaces always "
+"work in future editions, but we warn or emit a deny-by-default lint if "
+"`#[refine]` is not used."
+msgstr ""
+
+#: src/3245-refined-impls.md:358
+msgid ""
+"`#[refine]` is _not recommended_ in the next edition. Refined interfaces "
+"always work in future editions without any annotation at all."
+msgstr ""
+
+#: src/3245-refined-impls.md:360
+msgid ""
+"It would help to do an analysis of how frequently \"dormant refinements\" "
+"occur on crates.io today, and of a sample of those, how many look accidental "
+"and how many look like an extended API that a crate author might have meant "
+"to expose."
+msgstr ""
+
+#: src/3245-refined-impls.md:362
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3245-refined-impls.md:365
+msgid "Return position `impl Trait` in traits"
+msgstr ""
+
+#: src/3245-refined-impls.md:367
+msgid ""
+"One motivating use case for refined impls is return position impl trait in "
+"traits, which is not yet an accepted Rust feature. You can find more details "
+"about this feature in an [earlier RFC](https://github.com/rust-lang/rfcs/"
+"pull/3193). Its use is demonstrated in an [example](#guide-level-"
+"explanation) at the beginning of this RFC."
+msgstr ""
+
+#: src/3245-refined-impls.md:369
+msgid ""
+"This RFC is intended to stand alone, but it also works well with that "
+"proposal."
+msgstr ""
+
+#: src/3245-refined-impls.md:371
+msgid "Equivalence to associated types"
+msgstr ""
+
+#: src/3245-refined-impls.md:373
+msgid ""
+"One of the appealing aspects of this feature is that it can be desugared to "
+"a function returning an associated type."
+msgstr ""
+
+#: src/3245-refined-impls.md:379
+msgid "// Desugars to something like this:\n"
+msgstr ""
+
+#: src/3245-refined-impls.md:387
+msgid ""
+"If a trait used associated types, implementers would be able to specify "
+"concrete values for those types and let their users depend on it."
+msgstr ""
+
+#: src/3245-refined-impls.md:392
+msgid "\"empty state\""
+msgstr ""
+
+#: src/3245-refined-impls.md:398
+msgid ""
+"With refinement impls, we can say that this desugaring is equivalent because "
+"return position impl trait would give the same flexibility to implementers "
+"as associated types."
+msgstr ""
+
+#: src/3245-refined-impls.md:400
+msgid "Bounding refined items"
+msgstr ""
+
+#: src/3245-refined-impls.md:403
+msgid ""
+"As described in the [Refactoring](#refactoring) drawbacks section, when "
+"making existing code generic a user may run into dependence on refined "
+"aspects of a concrete type not specified in the trait itself. In this case "
+"the user may want to add additional bounds so they can make their code "
+"generic without significant modifications."
+msgstr ""
+
+#: src/3245-refined-impls.md:405
+msgid ""
+"This problem already exists for associated types, but bounds can be added "
+"for those. This implies a couple of ways to solve this problem."
+msgstr ""
+
+#: src/3245-refined-impls.md:407
+msgid "New kinds of bounds"
+msgstr ""
+
+#: src/3245-refined-impls.md:409
+msgid ""
+"We can make it possible to add bounds on all refine-able aspects of a trait "
+"API."
+msgstr ""
+
+#: src/3245-refined-impls.md:411
+msgid ""
+"It is already likely we will want to allow bounding the return type of "
+"methods:"
+msgstr ""
+
+#: src/3245-refined-impls.md:421
+msgid ""
+"The need for this arises both in `async` (e.g. needing to bound a future "
+"return type by `Send`) and in cases like `-> impl Iterator` where additional "
+"properties are required. A mechanism for supplying these bounds could "
+"possibly be extended to bounding what _argument_ types a method accepts."
+msgstr ""
+
+#: src/3245-refined-impls.md:423
+msgid ""
+"There is no way to bound the type of a const today. It is possible one could "
+"be added, but since consts will only allow subtype refinement (i.e. a type "
+"with a longer lifetime than required by the trait) it is unlikely that this "
+"situation will come up often in practice."
+msgstr ""
+
+#: src/3245-refined-impls.md:425
+msgid "Falling back to associated types"
+msgstr ""
+
+#: src/3245-refined-impls.md:427
+msgid ""
+"As mentioned above, associated types can have bounds, either on their exact "
+"value or with other traits:"
+msgstr ""
+
+#: src/3245-refined-impls.md:434
+msgid ""
+"Because associated types are the most flexible option **we may want to make "
+"it possible to add associated types to a trait backward-compatibly**. For "
+"example, given the following trait:"
+msgstr ""
+
+#: src/3245-refined-impls.md:442
+msgid "we want to be able to refactor to something like this:"
+msgstr ""
+
+#: src/3245-refined-impls.md:451
+msgid "There are least a couple of things needed for this:"
+msgstr ""
+
+#: src/3245-refined-impls.md:453
+msgid ""
+"Don't require implementations to specify associated type values when they "
+"can be inferred. For example:"
+msgstr ""
+
+#: src/3245-refined-impls.md:462
+msgid "// `type Foo = usize;` is not needed,\n"
+msgstr ""
+
+#: src/3245-refined-impls.md:463
+msgid "// since it can be inferred from the above.\n"
+msgstr ""
+
+#: src/3245-refined-impls.md:466
+msgid ""
+"Allow adding associated types without breaking existing usages of `dyn`. For "
+"example, let's say we had support for return-position `impl Trait` with "
+"dynamic dispatch. With [associated type defaults](https://github.com/rust-"
+"lang/rust/issues/29661) and type alias `impl Trait`, you could write:"
+msgstr ""
+
+#: src/3245-refined-impls.md:473
+msgid "and allow `dyn Trait` to mean `dyn Trait<Foo = impl Clone>`."
+msgstr ""
+
+#: src/3245-refined-impls.md:477
+msgid "Adding generic parameters"
+msgstr ""
+
+#: src/3245-refined-impls.md:479
+msgid ""
+"This RFC allows implementers to replace return-position `impl Trait` with a "
+"concrete type. Conversely, sometimes it is desirable to _generalize_ an "
+"argument from a concrete type to `impl Trait` or a new generic parameter."
+msgstr ""
+
+#: src/3245-refined-impls.md:486
+msgid ""
+"More generally, one way to refine an interface is to generalize it by "
+"introducing new generics. For instance, here are some more pairs of "
+"\"unrefined\" APIs `a` and refined versions of them `b`."
+msgstr ""
+
+#: src/3245-refined-impls.md:496
+msgid ""
+"It might also be desirable to turn an elided lifetime into a lifetime "
+"parameter so it can be named:"
+msgstr ""
+
+#: src/3245-refined-impls.md:503
+msgid ""
+"Adding generic parameters to a trait function is not allowed by this "
+"proposal, whether the parameters are named or created implicitly via "
+"argument-position `impl Trait`. In principle it could work for both cases, "
+"as long as named parameters are defaulted. Implementing this may introduce "
+"complexity to the compiler, however. We leave the question of whether this "
+"should be allowed out of scope for this RFC."
+msgstr ""

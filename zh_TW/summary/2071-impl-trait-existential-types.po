@@ -1,0 +1,669 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2071-impl-trait-existential-types.md:1
+msgid "Feature Name: impl-trait-existential-types"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:2
+msgid "Start Date: 2017-07-20"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2071](https://github.com/rust-lang/rfcs/pull/2071)"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#63063](https://github.com/rust-lang/rust/"
+"issues/63063) (existential types)"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:5
+msgid ""
+"Rust Issue: [rust-lang/rust#63065](https://github.com/rust-lang/rust/"
+"issues/63065) (impl Trait in const/static/let)"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:7
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2071-impl-trait-existential-types.md:10
+msgid ""
+"Add the ability to create named existential types and support `impl Trait` "
+"in `let`, `const`, and `static` declarations."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:14
+msgid "// existential types\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:19
+msgid "// existential type in associated type position:\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:25
+#: src/2071-impl-trait-existential-types.md:308
+msgid "\"Another item!\""
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:28
+msgid "// `impl Trait` in `let`, `const`, and `static`:\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:32
+msgid ""
+"\", x));\n"
+"fn my_func() {\n"
+"    let iter: impl Iterator<Item = i32> = (0..5).map(|x| x * 5);\n"
+"    ...\n"
+"}\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:39
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2071-impl-trait-existential-types.md:42
+msgid ""
+"This RFC proposes two expansions to Rust's `impl Trait` feature. `impl "
+"Trait`, first introduced in [RFC 1522](https://github.com/rust-lang/rfcs/"
+"blob/master/text/1522-conservative-impl-trait.md), allows functions to "
+"return types which implement a given trait, but whose concrete type remains "
+"anonymous. `impl Trait` was expanded upon in [RFC 1951](https://github.com/"
+"rust-lang/rfcs/blob/master/text/1951-expand-impl-trait.md), which added "
+"`impl Trait` to argument position and resolved questions around syntax and "
+"parameter scoping. In its current form, the feature makes it possible for "
+"functions to return unnameable or complex types such as closures and "
+"iterator combinators. `impl Trait` also allows library authors to hide the "
+"concrete type returned by a function, making it possible to change the "
+"return type later on."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:52
+msgid ""
+"However, the current feature has some severe limitations. Right now, it "
+"isn't possible to return an `impl Trait` type from a trait implementation. "
+"This is a huge restriction which this RFC fixes by making it possible to "
+"create a named existential type:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:58
+msgid "// `impl Trait` in traits:\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:62
+msgid ""
+"// Here we can declare an associated type whose concrete type is hidden\n"
+"    // to other modules.\n"
+"    //\n"
+"    // External users only know that `Item` implements the `Debug` trait.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:69
+msgid "\"hello\""
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:74
+msgid ""
+"This syntax allows us to declare multiple items which refer to the same "
+"existential type:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:78
+msgid ""
+"// Type `Foo` refers to a type that implements the `Debug` trait.\n"
+"// The concrete type to which `Foo` refers is inferred from this module,\n"
+"// and this concrete type is hidden from outer modules (but not "
+"submodules).\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:84
+msgid ""
+"// This function can be used by outer modules to manufacture an instance of\n"
+"// `Foo`. Other modules don't know the concrete type of `Foo`,\n"
+"// so they can't make their own `Foo`s.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:91
+msgid ""
+"// We know that the argument and return value of `get_larger_foo` must be "
+"the\n"
+"// same type as is returned from `get_foo`.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:98
+msgid ""
+"// Since we know that all `Foo`s have the same (hidden) concrete type, we "
+"can\n"
+"// write a function which returns `Foo`s acquired from different places.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:108
+msgid ""
+"// It also allows us to make recursive calls to functions with an\n"
+"        // `impl Trait` return type:\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:115
+msgid ""
+"Separately, this RFC adds the ability to store an `impl Trait` type in a "
+"`let`, `const` or `static`. This makes `const` and `static` declarations "
+"more concise, and makes it possible to store types such as closures or "
+"iterator combinators in `const`s and `static`s."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:121
+msgid ""
+"In a future world where `const fn` has been expanded to trait functions, one "
+"could imagine iterator constants such as this:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:128
+msgid ""
+"Since the type of `THREES` contains a closure, it is impossible to write "
+"down. The [`const`/`static` type annotation elison RFC](https://github.com/"
+"rust-lang/rfcs/pull/2010) has suggested one possible solution. That RFC "
+"proposes to let users omit the types of `const`s and `statics`s. However, in "
+"some cases, completely omitting the types of `const` and `static` items "
+"could make it harder to tell what sort of value is being stored in a `const` "
+"or `static`. Allowing `impl Trait` in `const`s and `static`s would resolve "
+"the unnameable type issue while still allowing users to provide some "
+"information about the type."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:143
+msgid "Guide-Level Explanation"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:146
+msgid "Guide: `impl Trait` in `let`, `const` and `static`:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:149
+msgid ""
+"`impl Trait` can be used in `let`, `const`, and `static` declarations, like "
+"this:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:155
+msgid "\", displayable);\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:158
+msgid ""
+"Declaring a variable of type `impl Trait` will hide its concrete type. This "
+"is useful for declaring a value which implements a trait, but whose concrete "
+"type might change later on. In our example above, this means that, while we "
+"can \"display\" the value of `displayable`, the concrete type `&str` is "
+"hidden:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:166
+#: src/2071-impl-trait-existential-types.md:222
+msgid "// Without `impl Trait`:\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:168
+msgid "\"Hello, world!\""
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:170
+#: src/2071-impl-trait-existential-types.md:179
+msgid "\"{}\""
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:173
+#: src/2071-impl-trait-existential-types.md:195
+#: src/2071-impl-trait-existential-types.md:228
+msgid "// With `impl Trait`:\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:178
+msgid "// We know `DISPLAYABLE` implements `Display`.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:181
+msgid ""
+"// ERROR: no method `len` on `impl Display`\n"
+"    // We don't know the concrete type of `DISPLAYABLE`,\n"
+"    // so we don't know that it has a `len` method.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:188
+msgid ""
+"`impl Trait` declarations are also useful when declaring constants or static "
+"with types that are impossible to name, like closures:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:192
+msgid ""
+"// Without `impl Trait`, we can't declare this constant because we can't\n"
+"// write down the type of the closure.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:200
+msgid ""
+"Finally, note that `impl Trait` `let` declarations hide the concrete types "
+"of local variables:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:205
+msgid "// We know `displayable` implements `Display`.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:207
+msgid ""
+"\", displayable);\n"
+"\n"
+"// ERROR: no method `len` on `impl Display`\n"
+"// We don't know the concrete type of `displayable`,\n"
+"// so we don't know that it has a `len` method.\n"
+"assert_eq!(displayable.len(), 5);\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:215
+msgid ""
+"At first glance, this behavior doesn't seem particularly useful. Indeed, "
+"`impl Trait` in `let` bindings exists mostly for consistency with `const`s "
+"and `static`s. However, it can be useful for documenting the specific ways "
+"in which a variable is used. It can also be used to provide better error "
+"messages for complex, nested types:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:224
+msgid ""
+"// ERROR: no method named `bogus_missing_method` found for type\n"
+"// `std::iter::Filter<std::iter::Map<std::ops::Range<{integer}>, "
+"[closure@src/main.rs:2:26: 2:35]>, [closure@src/main.rs:2:44: 2:58]>` in the "
+"current scope\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:231
+msgid ""
+"// ERROR: no method named `bogus_missing_method` found for type\n"
+"// `impl std::iter::Iterator` in the current scope\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:237
+msgid "Guide: Existential types"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:240
+msgid ""
+"Rust allows users to declare `existential type`s. An existential type allows "
+"you to give a name to a type without revealing exactly what type is being "
+"used."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:254
+msgid ""
+"In the example above, `Foo` refers to `i32`, similar to a type alias. "
+"However, unlike a normal type alias, the concrete type of `Foo` is hidden "
+"outside of the module. Outside the module, the only thing that is known "
+"about `Foo` is that it implements the traits that appear in its declaration "
+"(e.g. `Debug` in `existential type Foo: Debug;`). If a user outside the "
+"module tries to use a `Foo` as an `i32`, they will see an error:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:273
+msgid "// Creates a variable `x` of type `i32`, which is equal to type `Foo`\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:280
+msgid ""
+"// Creates a variable `x` of type `Foo`, which is only known to implement "
+"`Debug`\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:283
+msgid ""
+"// Because we're outside `my_mod`, the user cannot determine the type of "
+"`Foo`.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:284
+msgid "// ERROR: expected type `i32`, found existential type `Foo`\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:286
+msgid "// However, the user can use its `Debug` impl:\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:287
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:291
+msgid ""
+"This makes it possible to write modules that hide their concrete types from "
+"the outside world, allowing them to change implementation details without "
+"affecting consumers of their API."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:295
+msgid ""
+"Note that it is sometimes necessary to manually specify the concrete type of "
+"an existential type, like in `let x: i32 = foo();` above. This aids the "
+"function's ability to locally infer the concrete type of `Foo`."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:299
+msgid ""
+"One particularly noteworthy use of existential types is in trait "
+"implementations. With this feature, we can declare associated types as "
+"follows:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:313
+msgid ""
+"In this trait implementation, we've declared that the item returned by our "
+"iterator implements `Debug`, but we've kept its concrete type (`&'static "
+"str`) hidden from the outside world."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:317
+msgid ""
+"We can even use this feature to specify unnameable associated types, such as "
+"closures:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:330
+msgid ""
+"Existential types can also be used to reference unnameable types in a struct "
+"definition:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:343
+msgid "It's also possible to write generic existential types:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:360
+msgid ""
+"Similarly to `impl Trait` under [RFC 1951](https://github.com/rust-lang/rfcs/"
+"blob/master/text/1951-expand-impl-trait.md), `existential type` implicitly "
+"captures all generic type parameters in scope. In practice, this means that "
+"existential associated types may contain generic parameters from their impl:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:377
+msgid "// Returns some type MyBar<T>\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:382
+msgid "However, as in 1951, lifetime parameters must be explicitly annotated."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:384
+msgid "Reference-Level Explanation"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:387
+msgid "Reference: `impl Trait` in `let`, `const` and `static`:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:390
+msgid ""
+"The rules for `impl Trait` values in `let`, `const`, and `static` "
+"declarations work mostly the same as `impl Trait` return values as specified "
+"in [RFC 1951](https://github.com/rust-lang/rfcs/blob/master/text/1951-expand-"
+"impl-trait.md)."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:394
+msgid ""
+"These values hide their concrete type and can only be used as a value which "
+"is known to implement the specified traits. They inherit any type parameters "
+"in scope. One difference from `impl Trait` return types is that they also "
+"inherit any lifetime parameters in scope. This is necessary in order for "
+"`let` bindings to use `impl Trait`. `let` bindings often contain references "
+"which last for anonymous scope-based lifetimes, and annotating these "
+"lifetimes manually would be impossible."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:402
+msgid "Reference: Existential Types"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:405
+msgid ""
+"Existential types are similar to normal type aliases, except that their "
+"concrete type is determined from the scope in which they are defined "
+"(usually a module or a trait impl). For example, the following code has to "
+"examine the body of `foo` in order to determine that the concrete type of "
+"`Foo` is `i32`:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:419
+msgid ""
+"`Foo` can be used as `i32` in multiple places throughout the module. "
+"However, each function that uses `Foo` as `i32` must independently place "
+"constraints upon `Foo` such that it _must_ be `i32`:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:425
+msgid ""
+"// ERROR: binary operation `+` cannot be applied to existential type `Foo`\n"
+"//  ^ `x` here is type `Foo`.\n"
+"//    Type annotations needed to resolve the concrete type of `x`.\n"
+"//    (^ This particular error should only appear within the module in "
+"which\n"
+"//      `Foo` is defined)\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:438
+msgid ""
+"// This is allowed.\n"
+"    // We don't need to know the concrete type of `Foo` for this function "
+"to\n"
+"    // typecheck.\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:445
+msgid ""
+"Each existential type declaration must be constrained by at least one "
+"function body or const/static initializer. A body or initializer must either "
+"fully constrain or place no constraints upon a given existential type."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:450
+msgid ""
+"Outside of the module, existential types behave the same way as `impl Trait` "
+"types: their concrete type is hidden from the module. However, it can be "
+"assumed that two values of the same existential type are actually values of "
+"the same type:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:479
+msgid ""
+"One last difference between existential type aliases and normal type aliases "
+"is that existential type aliases cannot be used in `impl` blocks:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:484
+msgid "// ERROR: `impl` cannot be used on existential type aliases\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:487
+msgid "// ERROR ^\n"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:492
+msgid ""
+"While this feature may be added at some point in the future, it's unclear "
+"exactly what behavior it should have-- should it result in implementations "
+"of functions and traits on the underlying type? It seems like the answer "
+"should be \"no\" since doing so would give away the underlying type being "
+"hidden beneath the impl. Still, some version of this feature could be used "
+"eventually to implement traits or functions for closures, or to express "
+"conditional bounds in existential type signatures (e.g. `existential type "
+"Foo<T>: Debug; impl<T: Clone> Clone for Foo<T> { ... }`). This is a "
+"complicated design space which has not yet been explored fully enough. In "
+"the future, such a feature could be added backwards-compatibly."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:503
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:506
+msgid ""
+"This RFC proposes the addition of a complicated feature that will take time "
+"for Rust developers to learn and understand. There are potentially simpler "
+"ways to achieve some of the goals of this RFC, such as making `impl Trait` "
+"usable in traits. This RFC instead introduces a more complicated solution in "
+"order to allow for increased expressiveness and clarity."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:513
+msgid ""
+"This RFC makes `impl Trait` feel even more like a type by allowing it in "
+"more locations where formerly only concrete types were allowed. However, "
+"there are other places such a type can appear where `impl Trait` cannot, "
+"such as `impl` blocks and `struct` definitions (i.e. `struct Foo { x: impl "
+"Trait }`). This inconsistency may be surprising to users."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:520
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/2071-impl-trait-existential-types.md:523
+msgid ""
+"We could instead expand `impl Trait` in a more focused but limited way, such "
+"as specifically extending `impl Trait` to work in traits without allowing "
+"full existential type aliases. A draft RFC for such a proposal can be seen "
+"[here](https://github.com/cramertj/impl-trait-goals/blob/impl-trait-in-"
+"traits/0000-impl-trait-in-traits.md). Any such feature could, in the future, "
+"be added as essentially syntax sugar on top of this RFC, which is strictly "
+"more expressive. The current RFC will also help us to gain experience with "
+"how people use existential type aliases in practice, allowing us to resolve "
+"some remaining questions in the linked draft, specifically around how `impl "
+"Trait` associated types are used."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:535
+msgid ""
+"Throughout the process we have considered a number of alternative syntaxes "
+"for existential types. The syntax `existential type Foo: Trait;` is intended "
+"to be a placeholder for a more concise and accessible syntax, such as "
+"`abstract type Foo: Trait;`. A variety of variations on this theme have been "
+"considered:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:541
+msgid ""
+"Instead of `abstract type`, it could be some single keyword like `abstype`."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:542
+msgid ""
+"We could use a different keyword from `abstract`, like `opaque` or `exists`."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:543
+msgid ""
+"We could omit a keyword altogether and use `type Foo: Trait;` syntax "
+"(outside of trait definitions)."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:546
+msgid ""
+"A more divergent alternative is not to have an \"existential type\" feature "
+"at all, but instead just have `impl Trait` be allowed in type alias "
+"position. Everything written `existential type $NAME: $BOUND;` in this RFC "
+"would instead be written `type $NAME = impl $BOUND;`."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:551
+msgid ""
+"This RFC opted to avoid the `type Foo = impl Trait;` syntax because of its "
+"potential teaching difficulties. As a result of [RFC 1951](https://github."
+"com/rust-lang/rfcs/blob/master/text/1951-expand-impl-trait.md), `impl Trait` "
+"is sometimes universal quantification and sometimes existential "
+"quantification. By providing a separate syntax for \"explicit\" existential "
+"quantification, `impl Trait` can be taught as a syntactic sugar for generics "
+"and existential types. By \"just using `impl Trait`\" for named existential "
+"type declarations, there would be no desugaring-based explanation for all "
+"forms of `impl Trait`."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:560
+msgid ""
+"This choice has some disadvantages in comparison impl Trait in type aliases:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:562
+msgid ""
+"We introduce another new syntax on top of `impl Trait`, which inherently has "
+"some costs."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:564
+msgid ""
+"Users can't use it in a nested fashion without creating an additional "
+"existential type."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:567
+msgid ""
+"Because of these downsides, we are open to reconsidering this question with "
+"more practical experience, and the final syntax is left as an unresolved "
+"question for the RFC."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:571
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2071-impl-trait-existential-types.md:574
+msgid ""
+"As discussed in the [alternatives](#alternatives) section above, we will "
+"need to reconsider the optimal syntax before stabilizing this feature."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:577
+msgid ""
+"Additionally, the following extensions should be considered in the future:"
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:579
+msgid ""
+"Conditional bounds. Even with this proposal, there's no way to specify the "
+"`impl Trait` bounds necessary to implement traits like `Iterator`, which "
+"have functions whose return types implement traits conditional on the input, "
+"e.g. `fn foo<T>(x: T) -> impl Clone if T: Clone`."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:583
+msgid ""
+"Associated-type-less `impl Trait` in trait declarations and implementations, "
+"such as the proposal mentioned in the alternatives section. As mentioned "
+"above, this feature would be strictly less expressive than this RFC. The "
+"more general feature proposed in this RFC would help us to define a better "
+"version of this alternative which could be added in the future."
+msgstr ""
+
+#: src/2071-impl-trait-existential-types.md:588
+msgid ""
+"A more general form of inference for `impl Trait` type aliases. This RFC "
+"forces each function to either fully constrain or place no constraints upon "
+"an `impl Trait` type. It's possible to allow some partial constraints "
+"through a process like the one described in [this comment](https://github."
+"com/rust-lang/rfcs/pull/2071#issuecomment-320458113). However, these partial "
+"bounds present implementation concerns, so they have been removed from this "
+"RFC. If it turns out that partial bounds would be greatly useful in "
+"practice, they can be added backwards-compatibly in a future RFC."
+msgstr ""

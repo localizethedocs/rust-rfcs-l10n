@@ -1,0 +1,404 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2947-crates-io-token-scopes.md:1
+msgid "crates.io token scopes RFC"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:3
+msgid "Feature Name: `crates_io_token_scopes`"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:4
+msgid "Start Date: 2020-06-24"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#2947](https://github.com/rust-lang/rfcs/pull/2947)"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:6
+msgid ""
+"crates.io issue: [rust-lang/crates.io#5443](https://github.com/rust-lang/"
+"crates.io/issues/5443)"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:8
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2947-crates-io-token-scopes.md:11
+msgid ""
+"This RFC proposes implementing scopes for crates.io tokens, allowing users "
+"to choose which endpoints the token is allowed to call and which crates it's "
+"allowed to affect."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:15
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2947-crates-io-token-scopes.md:18
+msgid ""
+"While the current implementation of API tokens for crates.io works fine for "
+"developers using the `cargo` CLI on their workstations, it's not acceptable "
+"for CI scenarios, such as publishing crates automatically once a git tag is "
+"pushed."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:22
+msgid ""
+"The implementation of scoped tokens would allow users to restrict the "
+"actions a token can do, decreasing the risk in case of automation bugs or "
+"token compromise."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:26
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:29
+msgid ""
+"During token creation, the user will be prompted to select the permissions "
+"the token will have. Two sets of independent scopes will be available: the "
+"endpoints the token is authorized to call, and the crates the token is "
+"allowed to act on."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:34 src/2947-crates-io-token-scopes.md:85
+msgid "Endpoint scopes"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:36
+msgid ""
+"The user will be able to choose one or more endpoint scopes. This RFC "
+"proposes adding the following endpoint scopes:"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:39
+msgid "**publish-new**: allows publishing new crates"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:40
+msgid ""
+"**publish-update**: allows publishing a new version for existing crates the "
+"user owns"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:42
+msgid ""
+"**yank**: allows yanking and unyanking existing versions of the user's crates"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:43
+msgid ""
+"**change-owners**: allows inviting new owners or removing existing owners"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:44
+msgid ""
+"**legacy**: allows accessing all the endpoints on crates.io except for "
+"creating new tokens, like tokens created before the implementation of this "
+"RFC."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:48
+msgid ""
+"More endpoint scopes might be added in the future without the need of a "
+"dedicated RFC."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:51
+msgid ""
+"Tokens created before the implementation of this RFC will default to the "
+"legacy scope."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:54 src/2947-crates-io-token-scopes.md:105
+msgid "Crates scope"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:56
+msgid ""
+"The user will be able to opt into limiting which crates the token can act on "
+"by defining a crates scope."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:59
+msgid ""
+"The crates scope can contain a list of crate name patterns the token can "
+"interact with. Crate name patterns can either be regular crate names or they "
+"can end with a `*` character to match zero or more characters."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:63
+msgid ""
+"For example, a crate name pattern of `lazy_static` will only make the token "
+"apply to the corresponding crate, while `serde*` allows the token to act on "
+"any present or future crates starting with `serde` (including `serde` "
+"itself), but only if the user is an owner of those crates."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:68
+msgid ""
+"The crates scope will allow access to all present and future crates matching "
+"it. When an endpoint that doesn't interact with crates is called by a token "
+"with a crates scope, the crates scope will be ignored and the call will be "
+"authorized, unless limited by an endpoint scope (see above)."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:73
+msgid ""
+"Tokens created before the implementation of this RFC will default to an "
+"empty crate scope filter (equivalent to no restrictions)."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:76
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:79
+msgid ""
+"Endpoint scopes and crates scope are two completely separate systems, and "
+"can be used independently of one another."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:82
+msgid ""
+"Token scopes will be implemented entirely on the crates.io side, and there "
+"will be no change necessary to `cargo` or alternate registries."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:87
+msgid ""
+"The scopes proposed by this RFC allow access to the following endpoints:"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:89
+msgid "Endpoint"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:89
+msgid "Required scope"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:91
+msgid "`PUT /crates/new` (new crates)"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:91
+msgid "**publish-new**"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:92
+msgid "`PUT /crates/new` (existing crates)"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:92
+msgid "**publish-update**"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:93
+msgid "`DELETE /crates/:crate_id/:version/yank`"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:93 src/2947-crates-io-token-scopes.md:94
+msgid "**yank**"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:94
+msgid "`PUT /crates/:crate_id/:version/unyank`"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:95
+msgid "`PUT /crates/:crate_id/owners`"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:95 src/2947-crates-io-token-scopes.md:96
+msgid "**change-owners**"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:96
+msgid "`DELETE /crates/:crate_id/owners`"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:97
+msgid "everything except `PUT /me/tokens`"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:97
+msgid "**legacy**"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:99
+msgid ""
+"Removing an endpoint from a scope or adding an existing endpoint to an "
+"existing scope will be considered a breaking change. Adding newly created "
+"endpoints to an existing scope will be allowed only at the moment of their "
+"creation, if the crates.io team believes the new endpoint won't grant more "
+"privileges than the existing set of endpoints in that scope."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:107
+msgid ""
+"The patterns will be evaluated during each API call, and if no match is "
+"found the request will be denied. Because it's evaluated every time, a "
+"crates scope will allow interacting with matching crates published after "
+"token creation."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:111
+msgid ""
+"The check for the crates scope is separate from crate ownership: having a "
+"scope that technically permits to interact with a crate the user doesn't own "
+"will be accepted by the backend, but a warning will be displayed if the "
+"pattern doesn't match any crate owned by the user."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:116
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:119
+msgid "No drawbacks are known at the time of writing the RFC."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:121
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:124
+msgid ""
+"An alternative implementation for endpoint scopes could be to allow users to "
+"directly choose every endpoint they want to allow for their token, without "
+"having to choose whole groups at a time. This would result in more "
+"granularity and possibly better security, but it would make the UX to create "
+"new tokens way more complex (requiring more choices and a knowledge of the "
+"crates.io API)."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:130
+msgid ""
+"An alternative implementation for crate scopes could be to have the user "
+"select the crates they want to allow in the UI instead of having to write a "
+"pattern. That would make creating a token harder for people with lots of "
+"crates (which, in the RFC author's opinion, are more likely to need crate "
+"scopes than a person with just a few crates), and it wouldn't allow new "
+"crates matching the pattern but uploaded after the token's creation from "
+"being accessed."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:137
+msgid ""
+"Finally, an alternative could be to do nothing, and encourage users to "
+"create \"machine accounts\" for each set of crates they own. A drawback of "
+"this is that GitHub's terms of service limit how many accounts a single "
+"person could have."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:141
+msgid "Prior art"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:144
+msgid ""
+"The endpoint scopes system is heavily inspired by GitHub, while the rest of "
+"the proposal is similar to nuget. Here is how popular package registries "
+"implements scoping:"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:148
+msgid ""
+"[nuget](https://www.nuget.org/) (package registry for the .NET ecosystem) "
+"implements three endpoint scopes (publish new packages, publish new "
+"versions, unlist packages), has a mandatory expiration and supports "
+"specifying which packages the token applies to, either by checking boxes or "
+"defining a single glob pattern. [(documentation)](https://docs.microsoft.com/"
+"en-us/nuget/nuget-org/scoped-api-keys)"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:153
+msgid ""
+"[npm](https://www.npmjs.com) (package registry for JavaScript) implements a "
+"binary \"read-only\"/\"read-write\" permission model, also allowing to "
+"restrict the IP ranges allowed to access the token, but does not allow "
+"restricting the packages a token is allowed to change. [(documentation)]"
+"(https://docs.npmjs.com/creating-and-viewing-authentication-tokens)"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:157
+msgid ""
+"[pypi](https://pypi.org) (package registry for Python) only implements the "
+"\"upload packages\" permission, and allows to scope each token to a _single_ "
+"package. [(documentation)](https://pypi.org/help/#apitoken)"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:160
+msgid ""
+"[rubygems](https://rubygems.org/) (package registry for Ruby) and [packagist]"
+"(https://packagist.org/) (package registry for PHP) don't implement any kind "
+"of scoping for the API tokens."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:172
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2947-crates-io-token-scopes.md:175
+msgid "Are there more scopes that would be useful to implement from the start?"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:176
+msgid ""
+"Is the current behavior of crate scopes on endpoints that don't interact "
+"with crates the best, or should a token with crate scopes prevent access to "
+"endpoints that don't act on crates?"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:180
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:183
+msgid ""
+"A future extension to the crates.io authorization model could be adding an "
+"optional expiration to tokens, to limit the damage over time if a token ends "
+"up being leaked."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:187
+msgid ""
+"Another extension could be an API endpoint that programmatically creates "
+"short-lived tokens (similar to what AWS STS does for AWS Access Keys), "
+"allowing to develop services that provide tokens with a short expiration "
+"time to CI builds. Such tokens would need to have the same set or a subset "
+"of the parent token's scopes: this RFC should consider that use case and "
+"avoid the implementation of solutions that would make the check hard."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:194
+msgid ""
+"To increase the security of CI environments even more, we could implement an "
+"option to require a separate confirmation for the actions executed by "
+"tokens. For example, we could send a confirmation email with a link the "
+"owners have to click to actually publish the crate uploaded by CI, "
+"preventing any malicious action with stolen tokens."
+msgstr ""
+
+#: src/2947-crates-io-token-scopes.md:200
+msgid ""
+"To remove the need for machine accounts, a future RFC could propose adding "
+"API tokens owned by teams, granting access to all resources owned by that "
+"team and allowing any team member to revoke them."
+msgstr ""

@@ -1,0 +1,798 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3627-match-ergonomics-2024.md:1
+msgid "Feature Name: `ref_pat_eat_one_layer_2024`"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:2
+msgid "Start Date: 2024-05-06"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3627](https://github.com/rust-lang/rfcs/pull/3627)"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#123076](https://github.com/rust-lang/rust/"
+"issues/123076)"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:9
+msgid "Various changes to the match ergonomics rules:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:11
+msgid ""
+"On edition ≥ 2024, `&` and `&mut` patterns only remove a single layer of "
+"references."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:13
+msgid ""
+"On edition ≥ 2024, `mut` on an identifier pattern does not force its binding "
+"mode to by-value."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:15
+msgid "On all editions, `&` patterns can match against `&mut` references."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:16
+msgid ""
+"On all editions, the binding mode can no longer ever be implicitly set to "
+"`ref mut` behind an `&` pattern."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:22
+msgid ""
+"Match ergonomics have been a great success overall, but there are some "
+"surprising interactions that regularly confuse users."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:25
+msgid "`mut` resets the binding mode"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:27
+msgid ""
+"`mut` resets the binding mode to by-value, which users do not expect; the "
+"mutability of the binding would seem to be separate concern from its type "
+"(<https://github.com/rust-lang/rust/issues/105647>, <https://github.com/rust-"
+"lang/rust/issues/112545>)."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:37
+msgid "Can’t cancel out an inherited reference"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:39
+msgid ""
+"`&` and `&mut` patterns must correspond with a reference in the same "
+"position in the scrutinee, even if there is an inherited reference present. "
+"Therefore, users have no general mechanism to “cancel out” an inherited "
+"reference (<https://users.rust-lang.org/t/reference-of-tuple-and-tuple-of-"
+"reference/91713/6>, <https://users.rust-lang.org/t/cannot-deconstruct-"
+"reference-inside-match-on-reference-why/92147>, <https://github.com/rust-"
+"lang/rust/issues/50008>, <https://github.com/rust-lang/rust/issues/64586>)."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:50
+msgid "// We want to extract `&String`, `&Vec`, and `u8` from the tuple.\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:51
+msgid "// u is &u8, not what we wanted\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:52
+msgid "// we have to abandon match ergonomics entirely\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:56
+msgid "A single `&` can strip two references"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:58
+msgid ""
+"When an `&` or `&mut` pattern is used in a location where there is also an "
+"inherited reference present, both are stripped; adding a single `&` to the "
+"pattern can remove two `&`s from the type of the binding."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:63
+msgid "// a = &&42\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:64
+msgid "// a = 42\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:67
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:70
+msgid "Match ergonomics works a little differently in edition 2024 and above."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:72
+msgid "`mut` no longer strips the inherited reference"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:74
+msgid ""
+"`mut` on a binding does not reset the binding mode on edition ≥ 2024. "
+"Instead, `mut` on a binding with non-default binding mode is an error."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:78
+msgid ""
+"//! Edition ≥ 2024\n"
+"//let (x, mut y) = &(true, false); // ERROR\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:82
+msgid "`&` matches against `&mut`"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:84
+msgid ""
+"On all editions, `&` patterns can match against `&mut` references. On "
+"edition 2024 and above, this includes \"inherited\" references as described "
+"below."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:88 src/3627-match-ergonomics-2024.md:181
+#: src/3627-match-ergonomics-2024.md:189 src/3627-match-ergonomics-2024.md:199
+#: src/3627-match-ergonomics-2024.md:227 src/3627-match-ergonomics-2024.md:275
+#: src/3627-match-ergonomics-2024.md:296 src/3627-match-ergonomics-2024.md:462
+#: src/3627-match-ergonomics-2024.md:470 src/3627-match-ergonomics-2024.md:489
+msgid "//! All editions\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:94 src/3627-match-ergonomics-2024.md:116
+#: src/3627-match-ergonomics-2024.md:255 src/3627-match-ergonomics-2024.md:288
+#: src/3627-match-ergonomics-2024.md:326 src/3627-match-ergonomics-2024.md:502
+msgid "//! Edition ≥ 2024\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:99
+msgid "Matching against inherited references"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:101
+msgid ""
+"In all editions, when you match against an `&` or `&mut` reference with the "
+"type of its referent, you get an \"inherited reference\": the binding mode "
+"of \"downstream\" bindings is set to `ref` or `ref mut`."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:106
+msgid ""
+"//! All editions\n"
+"// `x` \"inherits\" the `&` from the scrutinee type.\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:112
+msgid ""
+"In edition 2024 and above, an `&` or `&mut` pattern can match against this "
+"inherited reference, consuming it. A pattern that does this has no other "
+"effect."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:117
+msgid "// `&` pattern consumes inherited `&` reference.\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:121
+msgid "// Examples from motivation section\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:133
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:136
+msgid ""
+"This explanation assumes familiarity with the current match ergonomics "
+"rules, including the \"default binding mode\" terminology. Refer to [RFC "
+"2005](./2005-match-ergonomics.md#detailed-design)."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:139
+msgid "The rules in brief"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:141
+msgid ""
+"Building on the rules of [RFC 2005](./2005-match-ergonomics.md), this RFC "
+"adopts the following five rules for match ergonomics:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:144
+msgid ""
+"**Rule 1**: When the DBM (default binding mode) is not `move` (whether or "
+"not behind a reference), writing `mut` on a binding is an error."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:146
+msgid ""
+"**Rule 2**: When a reference pattern matches against a reference, do not "
+"update the DBM."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:148
+msgid ""
+"**Rule 3**: If we've previously matched against a shared reference in the "
+"scrutinee (or against a `ref` DBM under _Rule 4_, or against a mutable "
+"reference treated as a shared one or a `ref mut` DBM treated as a `ref` one "
+"under _Rule 5_), set the DBM to `ref` whenever we would otherwise set it to "
+"`ref mut`."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:153
+msgid ""
+"**Rule 4**: If an `&` pattern is being matched against a non-reference type "
+"or an `&mut` pattern is being matched against a shared reference type or a "
+"non-reference type, **and if** the DBM is `ref` or `ref mut`, match the "
+"pattern against the DBM as though it were a type."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:157
+msgid ""
+"**Rule 5**: If an `&` pattern is being matched against a mutable reference "
+"type (or against a `ref mut` DBM under _Rule 4_), act as if the type were a "
+"shared reference instead (or that the `ref mut` DBM is a `ref` DBM instead)."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:161
+msgid ""
+"_Rule 1_ and _Rule 2_ are edition-dependent and will be stabilized with Rust "
+"2024.  The other three rules will be stabilized in all editions."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:164
+msgid ""
+"In the sections below, we describe these rules and their effects in more "
+"detail."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:166
+msgid "Edition 2024: `mut` does not reset binding mode to by-value"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:168
+msgid ""
+"In the new edition, `mut` no longer resets the binding mode to by-value; "
+"instead, `mut` on a binding with a by-reference binding mode is an error."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:172
+msgid ""
+"//! Edition ≥ 2024\n"
+"// let [mut a] = &[42]; //ERROR\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:176
+msgid "All editions: `&` patterns can match against `&mut` references"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:178
+msgid "`&` patterns can match against `&mut` references."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:186
+msgid ""
+"However, the `ref mut` binding mode cannot be used behind such patterns."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:190
+msgid "//  ^~ERROR: replace `&` with `&mut `\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:195
+msgid ""
+"However, if the type of the scrutinee is unknown, an `&` pattern will still "
+"constrain inference to force it to be a shared reference."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:243
+msgid "//~ERROR[E0277]: the trait bound `&_: Ref` is not satisfied\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:247
+msgid "Edition 2024: `&` and `&mut` can match against inherited references"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:249
+msgid ""
+"When the default binding mode is `ref` or `ref mut`, `&` and `&mut` patterns "
+"can reset it. `&` patterns will reset either `ref` or `ref mut` binding "
+"modes to by-value, while `&mut` can only reset `ref mut`. An `&` or `&mut` "
+"pattern that resets the binding mode in this way has no other effect."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:268
+msgid ""
+"//! All editions\n"
+"//let [&mut x] = &[3u8]; // ERROR\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:272
+msgid "`&` patterns are otherwise unchanged from older editions."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:279
+msgid "//let &b = 17; // ERROR\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:283
+msgid ""
+"If the default binding mode is `ref`, then `&mut` patterns will not be able "
+"to match against it, so they will match structurally instead (preserving the "
+"binding mode)."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:293
+msgid "`&mut` patterns are otherwise unchanged."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:306
+msgid "//let &mut x = &&mut 3; // ERROR\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:310
+msgid ""
+"All editions: the default binding mode is never set to `ref mut` behind an "
+"`&` pattern or reference"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:312
+msgid ""
+"The binding mode is set to `ref` instead in such cases. (On older editions, "
+"this allows strictly more code to compile.)"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:316
+msgid "//! All editions (new)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:319
+msgid "// previously `a` would be `&mut u8`, resulting in a move check error\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:330
+msgid "//let &[[&mut a]] = &[&mut [42]]; // ERROR\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:334
+msgid "Migration"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:337
+msgid ""
+"This proposal, if adopted, would allow the same pattern to have different "
+"meanings on different editions:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:341 src/3627-match-ergonomics-2024.md:342
+msgid "// `a` is `u8` on edition ≤ 2021, but `&u8` on edition ≥ 2024\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:345
+msgid ""
+"Instances of such incompatibilities appear to be uncommon, but far from "
+"unknown (20 cases in `rustc`, for example). The migration lint for the "
+"feature entirely desugars the match ergonomics of the affected pattern. This "
+"is necessary to produce code that works on all editions, but it means that "
+"adopting the new rules could require editing the affected patterns twice: "
+"once to desugar the match ergonomics before adopting the new edition, and a "
+"second time to restore match ergonomics after adoption of the new edition."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:353
+msgid "Macro subpatterns"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:355
+msgid ""
+"Unfortunately, when a subpattern derives from a macro expansion, fully "
+"desugaring the match ergonomics may not be possible. For example:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:359
+msgid "//! crate foo (edition 2021)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:369
+msgid "//! crate bar (edition 2021, want to migrate to 2024)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:375
+msgid "//~^ WARN: the semantics of this pattern will change in edition 2024\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:381
+msgid ""
+"In such cases, there is no possible machine-applicable suggestion we could "
+"emit to produce code compatible with all editions (short of expanding the "
+"macro). However, such code should be extremely rare in practice."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:385
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:388
+msgid ""
+"This is a silent change in behavior, which is considered undesirable even "
+"over an edition."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:391
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:394
+msgid "Desirable property"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:397
+msgid "The proposed rules for new editions uphold the following property:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:399
+msgid ""
+"For any two nested patterns `$pat0` and `$pat1`, such that `$pat1` uses "
+"match ergonomics only (no explicit `ref`/`ref mut`), and pattern match `let "
+"$pat0($pat1(binding)) = scrut`, either:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:403
+msgid ""
+"`let $pat0(temp) = scrut; let $pat1(binding) = temp;` compiles, with the "
+"same meaning as the original composed pattern match; or"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:405
+msgid ""
+"`let $pat0(temp) = scrut; let $pat1(binding) = temp;` does not compile, but "
+"`let $pat0(ref temp) = scrut; let &$pat1(binding) = temp;` compiles, with "
+"the same meaning as the original composed pattern match."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:409
+msgid "In other words, the new match ergonomics rules are compositional."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:411
+msgid "`mut` not resetting the binding mode"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:413
+msgid ""
+"Admittedly, there is not much use for mutable by-reference bindings. This is "
+"true even outside of pattern matching; `let mut ident: &T = ...` is not "
+"commonly seen (though not entirely unknown either). The motivation for "
+"making this change anyway is that the current behavior is unintuitive and "
+"surprising for users."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:418
+msgid "Never setting default binding mode to `ref mut` behind `&`"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:420
+msgid "We can’t delay this choice"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:422
+msgid "Patterns that work only with this rule"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:425
+msgid "//! All editions: works only with this rule\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:426 src/3627-match-ergonomics-2024.md:431
+#: src/3627-match-ergonomics-2024.md:436 src/3627-match-ergonomics-2024.md:437
+msgid "\"🦀\""
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:426 src/3627-match-ergonomics-2024.md:431
+#: src/3627-match-ergonomics-2024.md:436 src/3627-match-ergonomics-2024.md:437
+msgid "// i: i32, j: i32, s: &String\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:430
+msgid ""
+"//! Edition ≥ 2024: works with or without this rule (alternative to above)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:435
+msgid ""
+"//! All editions: works with or without this rule (alternatives to above)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:440
+msgid "Patterns that work only without this rule"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:443
+msgid "//! Edition ≥ 2024: works only without this rule\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:444
+msgid ""
+"// x: i32\n"
+"// `&mut` in pattern needs to match against either:\n"
+"// - `&mut` in value at same position (there is none, so not possible)\n"
+"// - inherited `&mut` (which the rule downgrades to `&`)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:451
+msgid ""
+"//! Edition ≥ 2024: works with or without this rule (alternatives to above)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:452 src/3627-match-ergonomics-2024.md:453
+msgid "// x: i32\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:456
+msgid "Makes behavior more consistent"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:458
+msgid ""
+"On all editions, when a structure pattern peels off a shared reference and "
+"the default binding mode is already `ref mut`, the binding mode gets set to "
+"`ref`:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:463 src/3627-match-ergonomics-2024.md:471
+#: src/3627-match-ergonomics-2024.md:583
+msgid "// x: &i32\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:466
+msgid ""
+"But when the binding mode is set to `ref`, and a mutable reference is peeled "
+"off, the binding mode remains `ref`:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:474
+msgid ""
+"In other words, immutability usually takes precedence over mutability. This "
+"change, in addition to being generally useful, makes the match ergonomics "
+"rules more consistent by ensuring that immutability _always_ takes "
+"precedence over mutability."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:479
+msgid "Ensures that a desirable property is preserved"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:481
+msgid ""
+"The current match ergonomics rules uphold the following desirable property:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:483
+msgid ""
+"An `&mut` pattern is accepted if and only if removing the pattern would "
+"allow obtaining an `&mut` value."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:486
+msgid "For example:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:490
+msgid "// `a: i32`\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:491
+msgid "// `a: &mut i32`\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:493
+msgid ""
+"// `a: i32`\n"
+"//let &[a] = &[&mut 42]; // ERROR, but…\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:495
+msgid ""
+"// `a = &&mut i32` (so we did manage to obtain an `&mut i32` in some form)\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:498
+msgid ""
+"Adopting the \"no `ref mut` behind `&`\" rule ensures that this property "
+"continues to hold for edition 2024:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:503
+msgid ""
+"// If we were allow this, with `x: i32` …\n"
+"//let &[[x]] = &[&mut [42]]; // remove the `&mut` → ERROR, if the default "
+"binding mode is to be `ref mut`\n"
+"// nothing we do will get us `&mut i32` in any form\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:508
+msgid "`&` patterns matching against `&mut`"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:510
+msgid "There are several motivations for allowing this:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:512
+msgid ""
+"It makes refactoring less painful. Sometimes, one is not certain whether an "
+"unfinished API will end up returning a shared or a mutable reference. But as "
+"long as the reference returned by said API is not actually used to perform "
+"mutation, it often doesn’t matter either way, as `&mut` implicitly reborrows "
+"as `&` in many situations. Pattern matching is currently one of the most "
+"prominent exceptions to this, and match ergonomics magnifies the pain "
+"because a reference in one part of the pattern can affect the binding mode "
+"in a different, faraway location[^nrmba]. If patterns can be written to "
+"always use `&` unless mutation is required, then the amount of editing "
+"necessary to perform various refactors is lessened."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:522
+msgid ""
+"It’s intuitive. `&mut` is strictly more powerful than `&`. It’s conceptually "
+"a subtype, and even if not implemented that way[^sub], coercions mean it "
+"often feels like one in practice."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:530
+msgid ""
+"This is especially true in light of the [new rule](#all-editions-the-default-"
+"binding-mode-is-never-set-to-ref-mut-behind-an--pattern-or-reference) that "
+"prevents the default binding mode from being set to `ref mut` behind `&`."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:533
+msgid ""
+"Making `&mut` a subtype of `&` in actual implementation would require adding "
+"significant complexity to the variance rules, but I do believe it to be "
+"possible."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:537
+msgid "Versus \"eat-two-layers\""
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:539
+msgid ""
+"An alternative proposal would be to allow `&` and `&mut` patterns to reset "
+"the binding mode when not matching against a reference in the same position "
+"in the scrutinee, but to not otherwise change their behavior. This would "
+"have the advantage of not requiring an edition change. However, it would "
+"remain confusing for users. Notably, the [property from earlier](#desirable-"
+"property) would continue to not be satisfied."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:546
+msgid ""
+"In addition, this approach would lead to tricky questions around when "
+"mutabilities should be considered compatible. And there would be "
+"compatibility concerns with certain proposals for \"deref patterns\"."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:550
+msgid ""
+"(This alternative is currently implemented under a separate feature gate.)"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:552
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:555
+msgid ""
+"How much churn will be necessary to adapt code for the new edition? There "
+"are 0 instances of affected patterns in the standard library, and 20 in the "
+"compiler, but that is all the data we have at the moment."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:559
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:562
+msgid ""
+"An explicit syntax for mutable by-reference bindings should be chosen at "
+"some point, along with removing the prohibition on implicitly by-reference "
+"mutable bindings."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:565
+msgid ""
+"Future changes to reference types (partial borrows, language sugar for "
+"`Pin`, etc) may interact with match ergonomics."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:568
+msgid "Deref patterns"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:570
+msgid ""
+"Because it is compositional, the “eat-one-layer” model proposed by this RFC "
+"is fully compatible with proposals for \"deref patterns\", including "
+"allowing `&`/`&mut` patterns to match against types implementing `Deref`/"
+"`DerefMut`. One question that would need to be resolved is whether and how "
+"deref patterns (explicit or implicit) affect the default binding mode."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:576
+msgid "Matching `&mut` directly behind `&`"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:578
+msgid ""
+"There is one notable situation where match ergonomics cannot be used, and "
+"explicit `ref` is required. This happens where `&mut` is nested behind `&`:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:582
+msgid "// No way to avoid the `ref`, even with this RFC\n"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:586
+msgid "There are two strategies we could take to support this:"
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:588
+msgid ""
+"`&mut` patterns could “strip off” outer `&`. For example, in `let &mut x = "
+"&&mut 42;`, the `&mut` pattern would match the `&mut` reference in the "
+"scrutinee, leaving `&` to be inherited and resulting in `x: &i32`."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:591
+msgid ""
+"This may not extend gracefully to future language features (partial borrows, "
+"for example) as it potentially relies on reference types forming a total "
+"order."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:594
+msgid ""
+"The compiler could insert `&mut ref` in front of identifier patterns of type "
+"`&mut` that are behind an `&` pattern. For example, `let &x = &&mut 42;` "
+"would be transformed into `let &&mut ref x = &&mut 42;`."
+msgstr ""
+
+#: src/3627-match-ergonomics-2024.md:597
+msgid ""
+"The full desugaring would be more complicated, as it would need to handle "
+"`@` patterns."
+msgstr ""

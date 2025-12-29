@@ -1,0 +1,1177 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2045-target-feature.md:1
+msgid ""
+"Feature Name: `target_feature` / `cfg_target_feature` / `cfg_feature_enabled`"
+msgstr ""
+
+#: src/2045-target-feature.md:2
+msgid "Start Date: 2017-06-26"
+msgstr ""
+
+#: src/2045-target-feature.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2045](https://github.com/rust-lang/rfcs/pull/2045)"
+msgstr ""
+
+#: src/2045-target-feature.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44839](https://github.com/rust-lang/rust/"
+"issues/44839)"
+msgstr ""
+"Rust 議題：[rust-lang/rust#44839](https://github.com/rust-lang/rust/"
+"issues/44839)"
+
+#: src/2045-target-feature.md:6
+msgid "Motivation and Summary"
+msgstr "動機與摘要"
+
+#: src/2045-target-feature.md:9
+msgid ""
+"While architectures like `x86_64` or `ARMv8` define the lowest-common "
+"denominator of instructions that all CPUs must support, many CPUs extend "
+"these with vector ([AVX](https://en.wikipedia.org/wiki/"
+"Advanced_Vector_Extensions)), bitwise manipulation ([BMI](https://en."
+"wikipedia.org/wiki/Bit_Manipulation_Instruction_Sets)) and/or cryptographic "
+"([AES](https://en.wikipedia.org/wiki/AES_instruction_set)) instruction sets. "
+"By default, the Rust compiler produces portable binaries that are able to "
+"run on all CPUs of a particular architecture. Users that know in which CPUs "
+"their binaries are going to run on are able to allow the compiler to use "
+"these extra instructions by using the compiler flags `--target-feature` and "
+"`--target-cpu`. Running these binaries on mismatching CPUs is undefined "
+"behavior. Currently, these users have no way in stable Rust to:"
+msgstr ""
+
+#: src/2045-target-feature.md:11
+msgid "determine which features are available at compile-time, and"
+msgstr ""
+
+#: src/2045-target-feature.md:12
+msgid "determine which features are available at run-time, and"
+msgstr ""
+
+#: src/2045-target-feature.md:13
+msgid "embed code for different sets of features into the same binary,"
+msgstr ""
+
+#: src/2045-target-feature.md:15
+msgid ""
+"such that the programs can use different algorithms depending on the "
+"features available, and allowing portable ust binaries to efficiently run on "
+"many CPU families of a particular architecture."
+msgstr ""
+
+#: src/2045-target-feature.md:17
+msgid ""
+"The objective of this RFC is to extend the Rust language to solve these "
+"three problems, and it does so by adding the following three language "
+"features:"
+msgstr ""
+
+#: src/2045-target-feature.md:19
+msgid ""
+"**compile-time feature detection**: using configuration macros `cfg!"
+"(target_feature = \"avx2\")` to detect whether a feature is enabled or "
+"disabled in a context (`#![cfg(target_feature = \"avx2\")]`, ...),"
+msgstr ""
+
+#: src/2045-target-feature.md:20
+msgid ""
+"**run-time feature detection**: using the `cfg_feature_enabled!(\"avx2\")` "
+"API to detect whether the current host supports the feature, and"
+msgstr ""
+
+#: src/2045-target-feature.md:21
+msgid ""
+"**unconditional code generation**: using the function attribute "
+"`#[target_feature(enable = \"avx2\")]` to allow the compiler to generate "
+"code under the assumption that this code will only be reached in hosts that "
+"support the feature."
+msgstr ""
+
+#: src/2045-target-feature.md:23
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/2045-target-feature.md:26
+msgid "Target features"
+msgstr ""
+
+#: src/2045-target-feature.md:28
+msgid ""
+"Each rustc target has a default set of target features that can be "
+"controlled via the backend compilation options. The target features for each "
+"target should be documented by the compiler and the backends (e.g. LLVM)."
+msgstr ""
+
+#: src/2045-target-feature.md:32
+msgid ""
+"This RFC does not add any target features to the language but it specifies "
+"the process for adding target features. Each target feature must:"
+msgstr ""
+
+#: src/2045-target-feature.md:35
+msgid ""
+"Be proposed in its own mini-RFC, RFC, or rustc-issue and follow a FCP period,"
+msgstr ""
+
+#: src/2045-target-feature.md:36
+msgid ""
+"Be behind its own feature gate macro of the form "
+"`target_feature_feature_name` (where `feature_name` should be replaced by "
+"the name of the feature )."
+msgstr ""
+
+#: src/2045-target-feature.md:38
+msgid ""
+"When possible, be detectable at run-time via the `cfg_feature_enabled!"
+"(\"name\")` API."
+msgstr ""
+
+#: src/2045-target-feature.md:39
+msgid ""
+"Include whether some backend-specific compilation options should enable the "
+"feature."
+msgstr ""
+
+#: src/2045-target-feature.md:42
+msgid ""
+"To use unstable target features on nightly, crates must opt into them as "
+"usual by writing, for example, `#![allow(target_feature_avx2)]`. Since this "
+"is currently not required, a grace period of one full release cycle will be "
+"given in which this will raise a soft error before turning this requirement "
+"into a hard error."
+msgstr ""
+
+#: src/2045-target-feature.md:47
+msgid "Backend compilation options"
+msgstr ""
+
+#: src/2045-target-feature.md:49
+msgid ""
+"There are currently two ways of passing target feature information to "
+"rustc's code generation backend on stable Rust."
+msgstr ""
+
+#: src/2045-target-feature.md:52
+msgid ""
+"`-C --target-feature=+/-backend_target_feature_name`: where `+/-` add/remove "
+"features from the default feature set of the platform for the whole crate."
+msgstr ""
+
+#: src/2045-target-feature.md:55
+msgid ""
+"`-C --target-cpu=backend_cpu_name`, which changes the default feature set of "
+"the crate to be that of all features enabled for `backend_cpu_name`."
+msgstr ""
+
+#: src/2045-target-feature.md:58
+msgid ""
+"These two options are available on stable Rust and have been defacto "
+"stabilized. Their semantics are LLVM specific and depend on what LLVM "
+"actually does with the features."
+msgstr ""
+
+#: src/2045-target-feature.md:62
+msgid ""
+"This RFC proposes to keep these options \"as is\", and add one new compiler "
+"option, `--enable-features=\"feature0,feature1,...\"`, (the analogous `--"
+"disable-features` is discussed in the \"Future Extensions\" section) that "
+"supports only stabilized target features."
+msgstr ""
+
+#: src/2045-target-feature.md:67
+msgid ""
+"This allows us to preserve backwards compatibility while choosing different "
+"feature names and semantics than the ones provided by the LLVM backend."
+msgstr ""
+
+#: src/2045-target-feature.md:70
+msgid ""
+"The effect of `--enable-features=feature-list` is to enable all features "
+"implicitly for all functions of a crate. That is, anywhere within the crate "
+"the values of the macro `cfg!(target_feature = \"feature\")` and "
+"`cfg_feature_enabled!(\"feature\")` are `true`."
+msgstr ""
+
+#: src/2045-target-feature.md:74
+msgid ""
+"Whether the backend compilation options `-C --target-feature/--target-cpu` "
+"also enable some stabilized features or not should be resolved by the RFCs "
+"suggesting the stabilization of particular target features."
+msgstr ""
+
+#: src/2045-target-feature.md:78
+msgid "Unconditional code generation: `#[target_feature]`"
+msgstr ""
+
+#: src/2045-target-feature.md:80
+msgid ""
+"(note: the function attribute `#[target_feature]` is similar to clang's and "
+"gcc's [`__attribute__ ((__target__ (\"feature\")))`](https://clang.llvm.org/"
+"docs/AttributeReference.html#target-gnu-target).)"
+msgstr ""
+
+#: src/2045-target-feature.md:84
+msgid ""
+"This RFC introduces a function attribute that only applies to unsafe "
+"functions: [`#[target_feature(enable = \"feature_list\")]`](https://github."
+"com/rust-lang/rust/pull/38079) (the analogous `#[target_feature(disable = "
+"\"feature_list\")]` is discussed in the \"Future Extensions\" section):"
+msgstr ""
+
+#: src/2045-target-feature.md:87
+msgid ""
+"This attribute _extends_ the feature set of a function beyond its default "
+"feature set, which _allows_ the compiler to generate code under the "
+"assumption that the function's code will only be reached on hardware that "
+"supports its feature set."
+msgstr ""
+
+#: src/2045-target-feature.md:88
+msgid ""
+"Calling a function on a target that does not support its features is "
+"_undefined behavior_ (see the \"On the unsafety of `#[target_feature]`\" "
+"section)."
+msgstr ""
+
+#: src/2045-target-feature.md:89
+msgid ""
+"The compiler will not inline functions in contexts that do not support all "
+"the functions features."
+msgstr ""
+
+#: src/2045-target-feature.md:90
+msgid ""
+"In `#[target_feature(enable = \"feature\")]` functions the value of `cfg!"
+"(target_feature = \"feature\")` and `cfg_feature_enabled!(\"feature\")` is "
+"always `true` (otherwise undefined behavior did already happen)."
+msgstr ""
+
+#: src/2045-target-feature.md:92
+msgid ""
+"Note 0: the current RFC does not introduce any ABI issues in stable Rust. "
+"ABI issues with some unstable language features are explored in the "
+"\"Unresolved Questions\" section."
+msgstr ""
+
+#: src/2045-target-feature.md:94
+msgid ""
+"Note 1: a function has the features of the crate where the function is "
+"defined +/- `#[target_feature]` annotations. Iff the function is inlined "
+"into a context that extends its feature set, then the compiler is allowed to "
+"generate code for the function using this extended feature set (sub-note: "
+"inlining is forbidden in the opposite case)."
+msgstr ""
+
+#: src/2045-target-feature.md:97
+msgid "**Example 0 (basics):**"
+msgstr ""
+
+#: src/2045-target-feature.md:99
+msgid ""
+"This example covers how to use `#[target_feature]` with run-time feature "
+"detection to dispatch to different function implementations depending on the "
+"features supported by the CPU at run-time:"
+msgstr ""
+
+#: src/2045-target-feature.md:103
+msgid "// This function will be optimized for different targets\n"
+msgstr ""
+
+#: src/2045-target-feature.md:105
+msgid "// This generates a stub for CPUs that support SSE4:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:107 src/2045-target-feature.md:121
+#: src/2045-target-feature.md:262 src/2045-target-feature.md:267
+#: src/2045-target-feature.md:280 src/2045-target-feature.md:291
+#: src/2045-target-feature.md:301 src/2045-target-feature.md:303
+msgid "\"sse4\""
+msgstr ""
+
+#: src/2045-target-feature.md:108
+msgid ""
+"// Inlining `foo_impl` here is fine because `foo_sse4`\n"
+"    // extends `foo_impl` feature set\n"
+msgstr ""
+
+#: src/2045-target-feature.md:112
+msgid "// This generates a stub for CPUs that support AVX:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:114 src/2045-target-feature.md:119
+#: src/2045-target-feature.md:148 src/2045-target-feature.md:149
+#: src/2045-target-feature.md:150 src/2045-target-feature.md:155
+#: src/2045-target-feature.md:218 src/2045-target-feature.md:220
+#: src/2045-target-feature.md:262 src/2045-target-feature.md:281
+#: src/2045-target-feature.md:290 src/2045-target-feature.md:299
+#: src/2045-target-feature.md:301 src/2045-target-feature.md:339
+#: src/2045-target-feature.md:527 src/2045-target-feature.md:551
+#: src/2045-target-feature.md:557 src/2045-target-feature.md:565
+msgid "\"avx\""
+msgstr ""
+
+#: src/2045-target-feature.md:115
+msgid ""
+"// This function returns the best implementation of `foo` depending\n"
+"// on which target features the host CPU does support at run-time:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:124
+msgid "// use the default version\n"
+msgstr ""
+
+#: src/2045-target-feature.md:127
+msgid ""
+"// During binary initialization we can set a global function pointer\n"
+"// to the best implementation of foo depending on the features that\n"
+"// the CPU where the binary is running does support:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:135
+msgid ""
+"// ^^ note: the ABI of this function pointer is independent of the target "
+"features\n"
+msgstr ""
+
+#: src/2045-target-feature.md:140
+msgid ""
+"// Finally, we can use the function pointer to dispatch to the best "
+"implementation:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:145
+msgid "**Example 1 (inlining):**"
+msgstr ""
+
+#: src/2045-target-feature.md:149 src/2045-target-feature.md:150
+#: src/2045-target-feature.md:490 src/2045-target-feature.md:492
+msgid "// OK\n"
+msgstr ""
+
+#: src/2045-target-feature.md:152 src/2045-target-feature.md:508
+#: src/2045-target-feature.md:523
+msgid "\"sse3\""
+msgstr ""
+
+#: src/2045-target-feature.md:154
+msgid "// This function supports SSE3 but not AVX\n"
+msgstr ""
+
+#: src/2045-target-feature.md:156
+msgid "// OK: foo is not inlined into moo\n"
+msgstr ""
+
+#: src/2045-target-feature.md:157
+msgid "// OK: baz is not inlined into moo\n"
+msgstr ""
+
+#: src/2045-target-feature.md:159
+msgid ""
+"// ^ ERROR: bar cannot be inlined across mismatching features\n"
+"      // did you meant to make bar #[inline] instead of #[inline(always)]?\n"
+"      // Note: the logic to detect this is the same as for the call\n"
+"      // to baz, but in this case rustc must emit an error because an\n"
+"      // #[inline(always)] function cannot be inlined in this call site.\n"
+msgstr ""
+
+#: src/2045-target-feature.md:168
+msgid "Conditional compilation: `cfg!(target_feature)`"
+msgstr ""
+
+#: src/2045-target-feature.md:170
+msgid ""
+"The [`cfg!(target_feature = \"feature_name\")`](https://github.com/rust-lang/"
+"rust/issues/29717) macro allows querying at compile-time whether a target "
+"feature is enabled in the current context. It returns `true` if the feature "
+"is enabled, and `false` otherwise."
+msgstr ""
+
+#: src/2045-target-feature.md:176
+msgid ""
+"In a function annotated with `#[target_feature(enable = \"feature_name\")]` "
+"the macro `cfg!(target_feature = \"feature_name\")` expands to `true` if the "
+"generated code for the function uses the feature ([current bug](https://"
+"github.com/rust-lang/rust/issues/42515)."
+msgstr ""
+
+#: src/2045-target-feature.md:180
+msgid ""
+"Note: how accurate `cfg!(target_feature)` can be made is an \"Unresolved "
+"Question\" (see the section below). Ideally, when `cfg!(target_feature)` is "
+"used in a function that does not support the feature, it should still return "
+"true in the cases where the function gets inlined into a context that does "
+"support the feature. This can happen often if the function is generic, or an "
+"`#[inline]` function defined in a different crate. This can results in "
+"errors at monomorphization time only if `#![cfg(target_feature)]` is used, "
+"but not if `if cfg!(target_feature)` is used since in this case all branches "
+"need to type-check properly."
+msgstr ""
+
+#: src/2045-target-feature.md:182
+msgid "**Example 3 (conditional compilation):**"
+msgstr ""
+
+#: src/2045-target-feature.md:186
+msgid ""
+"// Conditional compilation: both branches must be syntactically valid,\n"
+"    // but it suffices that the true branch type-checks:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:188 src/2045-target-feature.md:192
+#: src/2045-target-feature.md:201
+msgid "\"bmi2\""
+msgstr ""
+
+#: src/2045-target-feature.md:189
+msgid ""
+"// if this code is being compiled with BMI2 support, use a BMI2 "
+"instruction:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:193
+msgid "// otherwise, call a portable emulation of the BMI2 instruction\n"
+msgstr ""
+
+#: src/2045-target-feature.md:199
+msgid ""
+"// Here both branches must type-check and whether the false branch is "
+"removed\n"
+"    // or not is left up to the optimizer.\n"
+msgstr ""
+
+#: src/2045-target-feature.md:201
+msgid ""
+"// `cfg!` expands to `true` or `false` at compile-time\n"
+"        // if target has the BMI2 instruction set, use a BMI2 instruction:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:204
+msgid ""
+"// ^^^ NOTE: this function cannot be inlined unless `bzhi_u64` supports\n"
+"        // the required features\n"
+msgstr ""
+
+#: src/2045-target-feature.md:207
+msgid "// otherwise call an algorithm that emulates the instruction:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:213
+msgid "**Example 4 (value of `cfg!` within `#[target_feature]`):**"
+msgstr ""
+
+#: src/2045-target-feature.md:216
+msgid "\"+avx\""
+msgstr ""
+
+#: src/2045-target-feature.md:218
+msgid "/* this branch is always taken */"
+msgstr ""
+
+#: src/2045-target-feature.md:219
+msgid "/* this branch is never taken */"
+msgstr ""
+
+#: src/2045-target-feature.md:221
+msgid "// this is dead code\n"
+msgstr ""
+
+#: src/2045-target-feature.md:226
+msgid "Run-time feature detection"
+msgstr ""
+
+#: src/2045-target-feature.md:228
+msgid ""
+"Writing safe wrappers around `unsafe` functions annotated with "
+"`#[target_feature]` requires run-time feature detection. This RFC adds the "
+"following macro to the standard library:"
+msgstr ""
+
+#: src/2045-target-feature.md:232
+msgid "`cfg_feature_enabled!(\"feature\") -> bool-expr`"
+msgstr ""
+
+#: src/2045-target-feature.md:234
+msgid ""
+"with the following semantics: \"if the host hardware on which the current "
+"code is running supports the `\"feature\"`, the `bool-expr` that "
+"`cfg_feature_enabled!` expands to has value `true`, and `false` otherwise."
+msgstr ""
+
+#: src/2045-target-feature.md:238
+msgid ""
+"If the result is known at compile-time, the macro approach allows expanding "
+"the result without performing any run-time detection at all. This RFC does "
+"not guarantee that this is the case, but [the current implementation]"
+"(https://github.com/rust-lang-nursery/stdsimd) does this."
+msgstr ""
+
+#: src/2045-target-feature.md:243
+msgid ""
+"Examples of using run-time feature detection have been shown throughout this "
+"RFC, there isn't really more to it."
+msgstr ""
+
+#: src/2045-target-feature.md:246
+msgid ""
+"If the API of run-time feature detection turns out to be controversial "
+"before stabilization, a follow-up RFC that focus on run-time feature "
+"detection will need to be merged, blocking the stabilization of this RFC."
+msgstr ""
+
+#: src/2045-target-feature.md:250
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2045-target-feature.md:253
+msgid ""
+"There are two parts to this story, the low-level part, and the high-level "
+"part."
+msgstr ""
+
+#: src/2045-target-feature.md:255
+msgid "**Example 5 (high-level usage of target features):**"
+msgstr ""
+
+#: src/2045-target-feature.md:257
+msgid ""
+"**note**: `ifunc` is not part of this RFC, but just an example of what can "
+"be built on top of it."
+msgstr ""
+
+#: src/2045-target-feature.md:259
+msgid ""
+"In the high-level part we have the `ifunc` function attribute, implemented "
+"as a procedural macro (some of these macros [already](https://github.com/"
+"alexcrichton/cfg-specialize/blob/master/cfg-specialize-macros) [exist]"
+"(https://github.com/parched/runtime-target-feature-rs)):"
+msgstr ""
+
+#: src/2045-target-feature.md:262 src/2045-target-feature.md:339
+msgid "\"default\""
+msgstr ""
+
+#: src/2045-target-feature.md:262 src/2045-target-feature.md:282
+#: src/2045-target-feature.md:289 src/2045-target-feature.md:297
+#: src/2045-target-feature.md:299 src/2045-target-feature.md:481
+msgid "\"avx2\""
+msgstr ""
+
+#: src/2045-target-feature.md:262
+msgid "//< MAGIC\n"
+msgstr ""
+
+#: src/2045-target-feature.md:266
+msgid "// dispatches to the best implementation at run-time\n"
+msgstr ""
+
+#: src/2045-target-feature.md:268
+msgid "// dispatches to the sse4 implementation at compile-time\n"
+msgstr ""
+
+#: src/2045-target-feature.md:273
+msgid "The following example covers what `ifunc` might expand to."
+msgstr ""
+
+#: src/2045-target-feature.md:275
+msgid "**Example 6 (ifunc expansion):**"
+msgstr ""
+
+#: src/2045-target-feature.md:278
+msgid ""
+"// Copy-pastes \"foo\" and generates code for multiple target features:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:283
+msgid "// Initializes `foo` on binary initialization\n"
+msgstr ""
+
+#: src/2045-target-feature.md:288
+msgid "// run-time feature detection:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:294
+msgid "// Wrap foo to do compile-time dispatch\n"
+msgstr ""
+
+#: src/2045-target-feature.md:308
+msgid ""
+"Note that there are many solutions to this problem and they have different "
+"trade-offs, but these can be explored in procedural macros. When wrapping "
+"unsafe intrinsics, conditional compilation can be used to create zero-cost "
+"wrappers:"
+msgstr ""
+
+#: src/2045-target-feature.md:312
+msgid "**Example 7 (three-layered approach to target features):**"
+msgstr ""
+
+#: src/2045-target-feature.md:315
+msgid ""
+"// Raw unsafe intrinsic: in LLVM, std::intrinsic, etc.\n"
+"// Calling this on an unsupported target is undefined behavior.\n"
+msgstr ""
+
+#: src/2045-target-feature.md:317
+msgid "\"C\""
+msgstr ""
+
+#: src/2045-target-feature.md:318
+msgid ""
+"// Software emulation of the intrinsic,\n"
+"// works on all architectures.\n"
+msgstr ""
+
+#: src/2045-target-feature.md:322
+msgid ""
+"// Safe zero-cost wrapper over the intrinsic\n"
+"// (i.e. can be inlined)\n"
+msgstr ""
+
+#: src/2045-target-feature.md:326 src/2045-target-feature.md:331
+msgid "\"some_feature\""
+msgstr ""
+
+#: src/2045-target-feature.md:327
+msgid ""
+"// If \"some_feature\" is enabled, it is safe to call the\n"
+"    // raw intrinsic function\n"
+msgstr ""
+
+#: src/2045-target-feature.md:332
+msgid ""
+"// if \"some_feature\" is disabled calling\n"
+"     // the raw intrinsic function is undefined behavior (per LLVM),\n"
+"     // we call the safe software emulation of the intrinsic:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:342
+msgid ""
+"Due to the low-level and high-level nature of these feature we will need two "
+"kinds of documentation. For the low level part:"
+msgstr ""
+
+#: src/2045-target-feature.md:345
+msgid ""
+"document how to do compile-time and run-time feature detection using `cfg!"
+"(target_feature)` and `cfg_feature_enabled!`,"
+msgstr ""
+
+#: src/2045-target-feature.md:346
+msgid "document how to use `#[target_feature]`,"
+msgstr ""
+
+#: src/2045-target-feature.md:347
+msgid ""
+"document how to use all of these together to solve problems like in the "
+"examples of this RFC."
+msgstr ""
+
+#: src/2045-target-feature.md:349
+msgid ""
+"For the high-level part we should aim to bring third-party crates "
+"implementing `ifunc!` or similar close to 1.0 releases before stabilization."
+msgstr ""
+
+#: src/2045-target-feature.md:352
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2045-target-feature.md:355
+msgid "Obvious increase in language complexity."
+msgstr ""
+
+#: src/2045-target-feature.md:357
+msgid ""
+"The main drawback of not solving this issue is that many libraries that "
+"require conditional feature-dependent compilation or run-time selection of "
+"code for different features (SIMD, BMI, AES, ...) cannot be written "
+"efficiently in stable Rust."
+msgstr ""
+
+#: src/2045-target-feature.md:363
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/2045-target-feature.md:366
+msgid "Backend options"
+msgstr ""
+
+#: src/2045-target-feature.md:368
+msgid ""
+"An alternative would be to mix stable, unstable, unknown, and backend-"
+"specific features into `--target-feature`."
+msgstr ""
+
+#: src/2045-target-feature.md:371
+msgid "Make `#[target_feature]` safe"
+msgstr ""
+
+#: src/2045-target-feature.md:373
+msgid ""
+"Calling a function annotated with `#[target_feature]` on a host that does "
+"not support the feature invokes undefined behavior in LLVM, the assembler, "
+"and possibly the hardware [See this comment](https://github.com/rust-lang/"
+"rfcs/pull/2045#issuecomment-311325202)."
+msgstr ""
+
+#: src/2045-target-feature.md:377
+msgid ""
+"That is, calling a function on a target that does not support its feature "
+"set is _undefined behavior_ and this RFC cannot specify otherwise. The main "
+"reason is that `target_feature` is a promise from the user to the toolchain "
+"and the hardware, that the code will not be reached in a CPU that does not "
+"support the feature. LLVM, the assembler, and the hardware all assume that "
+"the user will not violate this contract, and there is little that the Rust "
+"compiler can do to make this safer:"
+msgstr ""
+
+#: src/2045-target-feature.md:379
+msgid ""
+"The Rust compiler cannot emit a compile-time diagnostic because it cannot "
+"know whether the user is going to run the binary in a CPU that supports the "
+"features or not."
+msgstr ""
+
+#: src/2045-target-feature.md:380
+msgid ""
+"A run-time diagnostic _always_ incurs a run-time cost, and is only possible "
+"iff the absence of a feature can be detected at run-time (the \"Future "
+"Extensions\" section of this RFC discusses how to implement \"Run-time "
+"diagnostics\" to detect this, when possible)."
+msgstr ""
+
+#: src/2045-target-feature.md:382
+msgid ""
+"However, the `--target-feature/--target-cpu` compiler options allows one to "
+"implicitly generate binaries that reliably run into undefined behavior "
+"without needing any `unsafe` annotations at all, so the answer to the "
+"question \"Should `#[target_feature]` be safe/unsafe?\" is indeed a hard one."
+msgstr ""
+
+#: src/2045-target-feature.md:384
+msgid ""
+"The main differences between `#[target_feature]` and `--target-feature`/`--"
+"enable-feature` are the following:"
+msgstr ""
+
+#: src/2045-target-feature.md:385
+msgid ""
+"`--target-feature/--enable-feature` are \"backend options\" while "
+"`#[target_feature]` is part of the language"
+msgstr ""
+
+#: src/2045-target-feature.md:386
+msgid ""
+"`--target-feature/--enable-feature` is specified by whoever compiles the "
+"code, while `#[target_feature]` is specified by whoever writes the code"
+msgstr ""
+
+#: src/2045-target-feature.md:387
+msgid ""
+"compiling safe Rust code for a particular target, and then running the "
+"binary on that target, can only produce undefined behavior iff "
+"`#[target_feature]` is safe."
+msgstr ""
+
+#: src/2045-target-feature.md:389
+msgid ""
+"This RFC chooses that the `#[target_feature]` attribute only applies to "
+"`unsafe fn`s, so that if one compiles safe Rust source code for a particular "
+"target, and then runs the binary on that particular target, no unsafety can "
+"result."
+msgstr ""
+
+#: src/2045-target-feature.md:391
+msgid ""
+"Note that we can always make `#[target_feature]` safe in the future without "
+"breaking backwards compatibility, but the opposite is not true. That is, if "
+"somebody figures out a way of making `#[target_feature]` safe such that the "
+"above holds, we can always make that change."
+msgstr ""
+
+#: src/2045-target-feature.md:393
+msgid "Guarantee no segfaults from `unsafe` code"
+msgstr ""
+
+#: src/2045-target-feature.md:395
+msgid ""
+"Calling a `#[target_feature]`\\-annotated function on a platform that does "
+"not support it invokes undefined behavior. We could guarantee that this does "
+"not happen by always doing run-time feature detection, introducing a run-"
+"time cost in the process, and by only accepting features for which run-time "
+"feature detection can be done."
+msgstr ""
+
+#: src/2045-target-feature.md:401
+msgid ""
+"This RFC considers that any run-time cost is unacceptable as a default for a "
+"combination of language features whose main domain of use is a performance "
+"sensitive one."
+msgstr ""
+
+#: src/2045-target-feature.md:405
+msgid ""
+"The \"Future Extension\"s section discusses how to implement this in an opt-"
+"in way, e.g., as a sort of binary instrumentation."
+msgstr ""
+
+#: src/2045-target-feature.md:408
+msgid "Make `#[target_feature] + #[inline(always)]` incompatible"
+msgstr ""
+
+#: src/2045-target-feature.md:410
+msgid ""
+"This RFC requires the compiler to error when a function marked with both "
+"`#[target_feature]` and the `#[inline(always)]` attribute cannot be inlined "
+"in a particular call site due to incompatible features. So we might consider "
+"to simplify this RFC by just making these attributes incompatible."
+msgstr ""
+
+#: src/2045-target-feature.md:412
+msgid ""
+"While this is technically correct, the compiler must detect when any "
+"function (`#[inline(always)]`, `#[inline]`, generics, ...) is inlined into "
+"an incompatible context, and prevent this from happening. Erroring if the "
+"function is `#[inline(always)]` does not significantly simplify the RFC nor "
+"the compiler implementation."
+msgstr ""
+
+#: src/2045-target-feature.md:414
+msgid "Removing run-time feature detection from this RFC"
+msgstr ""
+
+#: src/2045-target-feature.md:416
+msgid ""
+"This RFC adds an API for run-time feature detection to the standard library."
+msgstr ""
+
+#: src/2045-target-feature.md:419
+msgid ""
+"The alternative would be to implement similar functionality as a third-party "
+"crate that might eventually be moved into the nursery. [Such crates already "
+"exist](https://docs.rs/cupid/)"
+msgstr ""
+
+#: src/2045-target-feature.md:422
+msgid ""
+"In particular, the API proposed in this RFC is \"stringly-typed\" (to make "
+"it uniform with the other features being proposed), but arguably a third "
+"party crate might want to use an `enum` to allow pattern-matching on "
+"features. These APIs have not been sufficiently explored in the ecosystem "
+"yet."
+msgstr ""
+
+#: src/2045-target-feature.md:424
+msgid ""
+"The main arguments in favor of including run-time feature detection in this "
+"RFC are:"
+msgstr ""
+
+#: src/2045-target-feature.md:426
+msgid ""
+"it is impossible to write safe wrappers around `#[target_feature]` without it"
+msgstr ""
+
+#: src/2045-target-feature.md:427
+msgid ""
+"implementing it requires the `asm!` macro or linking to a C library (or "
+"linking to a C wrapper around assembly),"
+msgstr ""
+
+#: src/2045-target-feature.md:429
+msgid ""
+"run-time detection should be kept in sync with the addition of new target "
+"features,"
+msgstr ""
+
+#: src/2045-target-feature.md:430
+msgid ""
+"the compiler might want to use LLVM's run-time feature detection which is "
+"part of compiler-rt."
+msgstr ""
+
+#: src/2045-target-feature.md:433
+msgid ""
+"The consensus in the internal forums and previous discussions seem to be "
+"that this is worth it."
+msgstr ""
+
+#: src/2045-target-feature.md:436
+msgid ""
+"It might turn out that the people from the future are able to come up with a "
+"better API. But in that case we can always deprecate the current API and "
+"include the new one in the standard library."
+msgstr ""
+
+#: src/2045-target-feature.md:440
+msgid "Adding full cpuid support to the standard library"
+msgstr ""
+
+#: src/2045-target-feature.md:442
+msgid ""
+"The `cfg_feature_enable!` macro is designed to work specifically with the "
+"features that can be used via `cfg_target_feature` and `#[target_feature]`. "
+"However, in the grand scheme of things, run-time detection of these features "
+"is only a small part of the information provided by `cpuid`\\-like CPU "
+"instructions."
+msgstr ""
+
+#: src/2045-target-feature.md:447
+msgid ""
+"Currently at least two great implementations of cpuid-like functionality "
+"exists in Rust for x86: [cupid](https://github.com/shepmaster/cupid) and "
+"[rust-cpuid](https://github.com/gz/rust-cpuid). Adding the macro to the "
+"standard library does not prevent us from adding more comprehensive "
+"functionality in the future, and it does not prevent us from reusing any of "
+"these libraries in the internal implementation of the macro."
+msgstr ""
+
+#: src/2045-target-feature.md:454
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2045-target-feature.md:457
+msgid "How accurate should cfg!(feature) be?"
+msgstr ""
+
+#: src/2045-target-feature.md:459
+msgid ""
+"What happens if the macro `cfg!(target_feature = \"feature_name\")` is used "
+"inside a function for which `feature_name` is not enabled, but that function "
+"gets inlined into a context in which the feature is enabled? We want the "
+"macro to accurately return `true` in this case, that is, to be as accurate "
+"as possible so that users always get the most efficient algorithms, but "
+"whether this is even possible is an unresolved question."
+msgstr ""
+
+#: src/2045-target-feature.md:461
+msgid ""
+"This might result in monomorphization errors if `#![cfg(target_feature)]` is "
+"used, but not if `if cfg!(target_feature)` is used since in this case all "
+"branches need to type-check properly."
+msgstr ""
+
+#: src/2045-target-feature.md:463
+msgid ""
+"We might want to amend this RFC with more concrete semantics about this as "
+"we improve the compiler."
+msgstr ""
+
+#: src/2045-target-feature.md:465
+msgid "How do we handle ABI issues with portable vector types?"
+msgstr ""
+
+#: src/2045-target-feature.md:467
+msgid ""
+"The ABI of `#[target_feature]` functions does not change for all types "
+"currently available in stable Rust. However, there are types that we might "
+"want to add to the language at some point, like portable vector types, for "
+"which this is not the case."
+msgstr ""
+
+#: src/2045-target-feature.md:469
+msgid ""
+"The behavior of `#[target_feature]` for those types should be specified in "
+"the RFC that proposes to stabilize those types, and this RFC should be "
+"amended as necessary."
+msgstr ""
+
+#: src/2045-target-feature.md:471
+msgid ""
+"The following examples showcase some potential problems when calling "
+"functions with mismatching ABIs, or when using function pointers."
+msgstr ""
+
+#: src/2045-target-feature.md:473
+msgid ""
+"Whether we can warn, or hard error at compile-time in these cases remains to "
+"be explored."
+msgstr ""
+
+#: src/2045-target-feature.md:475
+msgid "**Example 8 (ABI):**"
+msgstr ""
+
+#: src/2045-target-feature.md:478 src/2045-target-feature.md:487
+msgid "\"sse2\""
+msgstr ""
+
+#: src/2045-target-feature.md:479
+msgid "// ABI: 2x 128bit registers\n"
+msgstr ""
+
+#: src/2045-target-feature.md:482
+msgid "// ABI: 1x 256bit register\n"
+msgstr ""
+
+#: src/2045-target-feature.md:483
+msgid ""
+"// ABI mismatch:\n"
+"  //^ should this perform an implicit conversion, produce a hard error, or "
+"just undefined behavior?\n"
+msgstr ""
+
+#: src/2045-target-feature.md:491 src/2045-target-feature.md:493
+msgid "// ERROR: mismatching ABI\n"
+msgstr ""
+
+#: src/2045-target-feature.md:497
+msgid "Future Extensions"
+msgstr ""
+
+#: src/2045-target-feature.md:499
+msgid "Mutually exclusive features"
+msgstr ""
+
+#: src/2045-target-feature.md:501
+msgid ""
+"In some cases, e.g., when enabling AVX but disabling SSE4 the compiler "
+"should probably produce an error, but for other features like `thumb_mode` "
+"the behavior is less clear. These issues should be addressed by the RFC "
+"proposing the stabilizaiton of the target features that need them, as future "
+"extensions to this RFC."
+msgstr ""
+
+#: src/2045-target-feature.md:503
+msgid "Safely inlining `#[target_feature]` functions on more contexts"
+msgstr ""
+
+#: src/2045-target-feature.md:505
+msgid "The problem is the following:"
+msgstr ""
+
+#: src/2045-target-feature.md:516
+msgid ""
+"If `foo_avx2` gets inlined into `baz`, optimizations that reorder its "
+"instructions across the if condition might introduce undefined behavior."
+msgstr ""
+
+#: src/2045-target-feature.md:519
+msgid ""
+"Maybe, one could make `cfg_feature_enabled!` a bit magical, so that when it "
+"is used in the typical ways the compiler can infer whether inlining is safe, "
+"e.g.,"
+msgstr ""
+
+#: src/2045-target-feature.md:525
+msgid ""
+"// -- sse3 boundary start (applies to fn arguments as well)\n"
+"  // -- sse3 boundary ends\n"
+msgstr ""
+
+#: src/2045-target-feature.md:528
+msgid "// -- avx boundary starts\n"
+msgstr ""
+
+#: src/2045-target-feature.md:530
+msgid ""
+"//    can be inlined here, but its code cannot be\n"
+"    //    reordered out of the avx boundary\n"
+"    // -- avx boundary ends\n"
+msgstr ""
+
+#: src/2045-target-feature.md:534
+msgid ""
+"// -- sse3 boundary starts\n"
+"  // -- sse3 boundary ends (applies to drop as well)\n"
+msgstr ""
+
+#: src/2045-target-feature.md:539
+msgid ""
+"Whether this is worth it or can be done at all is an unresolved question. "
+"This RFC does not propose any of this, but leaves the door open for such an "
+"extension to be explored and proposed independently in a follow-up RFC."
+msgstr ""
+
+#: src/2045-target-feature.md:541
+msgid "Run-time diagnostics"
+msgstr ""
+
+#: src/2045-target-feature.md:543
+msgid ""
+"Calling a `#[target_feature]`\\-annotated function on a platform that does "
+"not support it invokes undefined behavior. A friendly compiler could use run-"
+"time feature detection to check whether calling the function is safe and "
+"emit a nice `panic!` message."
+msgstr ""
+
+#: src/2045-target-feature.md:548
+msgid "This can be done, for example, by desugaring this:"
+msgstr ""
+
+#: src/2045-target-feature.md:554
+msgid "into this:"
+msgstr ""
+
+#: src/2045-target-feature.md:558
+msgid "// this function will be called if avx is not available:\n"
+msgstr ""
+
+#: src/2045-target-feature.md:561
+msgid "\"calling foo() requires a target with avx support\""
+msgstr ""
+
+#: src/2045-target-feature.md:563
+msgid "// run-time feature detection on initialization\n"
+msgstr ""
+
+#: src/2045-target-feature.md:570
+msgid "// dispatches foo via function pointer to produce nice diagnostic\n"
+msgstr ""
+
+#: src/2045-target-feature.md:575
+msgid ""
+"This is not required for safety and can be implemented into the compiler as "
+"an opt-in instrumentation pass without going through the RFC process. "
+"However, a proposal to enable this by default should go through the RFC "
+"process."
+msgstr ""
+
+#: src/2045-target-feature.md:578
+msgid "Disabling features"
+msgstr ""
+
+#: src/2045-target-feature.md:580
+msgid ""
+"This RFC does not allow disabling target features, but suggest an analogous "
+"syntax to do so (`#[target_feature(disable = \"feature-list\")]`, `--disable-"
+"feature=feature-list`). Disabling features can result in some [non-sensical "
+"situations](https://internals.rust-lang.org/t/pre-rfc-stabilization-of-"
+"target-feature/5176/26) and should be pursued as a future extension of this "
+"RFC once we want to stabilize a target feature for which it makes sense."
+msgstr ""
+
+#: src/2045-target-feature.md:582
+msgid "Acknowledgements"
+msgstr ""
+
+#: src/2045-target-feature.md:585
+msgid ""
+"@parched @burntsushi @alexcrichton @est31 @pedrocr @chandlerc @RalfJung "
+"@matthieu-m"
+msgstr ""
+
+#: src/2045-target-feature.md:587
+msgid ""
+"`#[target_feature]` Pull-Request: https://github.com/rust-lang/rust/"
+"pull/38079"
+msgstr ""
+
+#: src/2045-target-feature.md:588
+msgid ""
+"`cfg_target_feature` tracking issue: https://github.com/rust-lang/rust/"
+"issues/29717"
+msgstr ""

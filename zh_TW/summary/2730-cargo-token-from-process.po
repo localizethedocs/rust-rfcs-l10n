@@ -1,0 +1,361 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2730-cargo-token-from-process.md:1
+msgid "Feature Name: `cargo_token_from_process`"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:2
+msgid "Start Date: 2019-07-22"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2730](https://github.com/rust-lang/rfcs/pull/2730)"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:4
+msgid ""
+"Cargo Issue: [rust-lang/cargo#8933](https://github.com/rust-lang/cargo/"
+"issues/8933)"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2730-cargo-token-from-process.md:9
+msgid ""
+"Add a cargo setting to fetch registry authentication tokens by calling an "
+"external process."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:12
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2730-cargo-token-from-process.md:15
+msgid ""
+"Some interactions with a registry require an authentication token, and Cargo "
+"currently stores such token in plaintext in the [`.cargo/credentials`]"
+"(https://doc.rust-lang.org/stable/cargo/reference/config.html#credentials) "
+"file. While Cargo properly sets permissions on that file to only allow the "
+"current user to read it, that's not enough to prevent other processes ran by "
+"the same user from reading the token."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:21
+msgid ""
+"This RFC aims to provide a way to configure Cargo to instead fetch the token "
+"from any secrets storage system, for example a password manager or the "
+"system keyring."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:27
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:30
+msgid ""
+"Suppose a user has their authentication token stored in a password manager, "
+"and the password manager provides a command, `/usr/bin/cargo-creds`, to "
+"decrypt and print that token in a secure way. Instead of storing the token "
+"in plaintext, the user can add this snippet to their own Cargo config to "
+"authenticate with crates.io:"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:36
+msgid ""
+"```toml\n"
+"[registry]\n"
+"credential-process = \"/usr/bin/cargo-creds\"\n"
+"```"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:41
+msgid ""
+"When authentication is required, Cargo will execute the command to acquire "
+"the token, which will never be stored by Cargo on disk."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:44
+msgid ""
+"It will be possible to use `credential-process` on both crates.io and "
+"alternative registries."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:47
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:50
+msgid ""
+"A new key, `credential-process`, will be added to the `[registry]` and "
+"`[registries.NAME]` sections of the configuration file. When a `token` key "
+"is also present, the latter will take precedence over `credential-process` "
+"to maintain backward compatibility, and a warning will be issued to let the "
+"user know about that."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:56
+msgid ""
+"The `registry.credential-process` value will be used for all registries. If "
+"a specific registry specifies the value in the `registries` table, then that "
+"will take precedence."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:60
+msgid ""
+"The `credential-process` key accepts either a string containing the "
+"executable and arguments or an array containing the executable name and the "
+"arguments. This follows Cargo's convention for executables defined in config."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:64
+msgid ""
+"There are special strings in the `credential-process` that Cargo will "
+"replace with a given value:"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:67
+msgid "`{name}` — Name of the registry."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:68
+msgid "`{api_url}` — The API URL."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:69
+msgid "`{action}` — The authentication action (described below)."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:79
+msgid ""
+"There are two different kinds of token processes that Cargo supports. The "
+"simple \"basic\" kind will only be called by Cargo when it needs a token. "
+"This is intended for simple and easy integration with password managers, "
+"that can often use pre-existing tooling. The more advanced \"Cargo\" kind "
+"supports different actions passed as a command-line argument. This is "
+"intended for more pleasant integration experience, at the expense of "
+"requiring a Cargo-specific process to glue to the password manager. Cargo "
+"will determine which kind is supported by the `credential-process` "
+"definition. If it contains the `{action}` argument, then it uses the "
+"advanced style, otherwise it assumes it only supports the \"basic\" kind."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:90
+msgid "Basic authenticator"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:92
+msgid ""
+"A basic authenticator is a process that returns a token on stdout. Newlines "
+"will be trimmed. The process inherits the user's stdin and stderr. It should "
+"exit 0 on success, and nonzero on error."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:96
+msgid ""
+"With this form, `cargo login` and `cargo logout` are not supported and "
+"return an error if used."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:99
+msgid "Cargo authenticator"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:101
+msgid ""
+"The protocol between the Cargo and the process is very basic, intended to "
+"ensure the credential process is kept as simple as possible. Cargo will "
+"execute the process with the `{action}` argument indicating which action to "
+"perform:"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:106
+msgid "`store` — Store the given token in secure storage."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:107
+msgid "`get` — Get a token from storage."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:108
+msgid "`erase` — Remove a token from storage."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:110
+msgid ""
+"The `cargo login` command will use `store` to save a token. Commands that "
+"require authentication, like `cargo publish`, will use `get` to retrieve a "
+"token. A new command, `cargo logout` will be added which will use the "
+"`erase` command to remove a token."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:115
+msgid ""
+"The process inherits the user's stderr, so the process can display messages. "
+"Some values are passed in via environment variables (see below). The "
+"expected interactions are:"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:119
+msgid ""
+"`store` — The token is sent to the process's stdin, terminated by a newline. "
+"The process should store the token keyed off the registry name. If the "
+"process fails, it should exit with a nonzero exit status."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:123
+msgid ""
+"`get` — The process should send the token to its stdout (trailing newline "
+"will be trimmed). The process inherits the user's stdin, should it need to "
+"receive input."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:127
+msgid ""
+"If the process is unable to fulfill the request, it should exit with a "
+"nonzero exit code."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:130
+msgid ""
+"`erase` — The process should remove the token associated with the registry "
+"name. If the token is not found, the process should exit with a 0 exit "
+"status."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:134
+msgid "Environment"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:136
+msgid ""
+"The following environment variables will be provided to the executed command:"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:138
+msgid "`CARGO` — Path to the `cargo` binary executing the command."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:139
+msgid ""
+"`CARGO_REGISTRY_NAME` — Name of the registry the authentication token is for."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:140
+msgid "`CARGO_REGISTRY_API_URL` — The URL of the registry API."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:142
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:145
+msgid "_No known drawbacks yet._"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:147
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:150
+msgid ""
+"The solution proposed by this RFC isn't tied to any secret storage services "
+"and can be adapted to work with virtually any secret storage the user might "
+"rely on, while being relatively easy to understand and use."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:154
+msgid "Prior art"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:157
+msgid ""
+"Multiple command line tools implement this system or a similar one to "
+"retrieve authentication tokens or other secrets:"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:160
+msgid ""
+"[awscli](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-"
+"sourcing-external.html) includes the `credentials_process` setting which "
+"calls a process with arguments provided by the user. The process is expected "
+"to emit JSON that contains the access key."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:163
+msgid ""
+"[Docker CLI](https://docs.docker.com/engine/reference/commandline/login/"
+"#credentials-store) offers \"credential stores\", programs the Docker CLI "
+"calls with specific arguments expecting JSON output. Implementations are "
+"provided for common storage systems, and the protocol is documented for "
+"users who want to integrate with their custom system."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:167
+msgid ""
+"[Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault."
+"html#providing-vault-passwords) allows to specify an executable file as the "
+"decryption password, executing it when needed."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:169
+msgid ""
+"[Git](https://git-scm.com/docs/gitcredentials#_custom_helpers) has a "
+"credential mechanism using store/get/erase arguments, and `key=value` "
+"parameters send and received with the process."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:177
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2730-cargo-token-from-process.md:180
+msgid "_No known unresolved questions yet._"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:182
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:185
+msgid ""
+"To allow for a better user experience for users of popular secret storages, "
+"Cargo can provide built-in support for common systems. It is proposed that a "
+"`credential-process` with a `cargo:` prefix will use some internal support. "
+"For example, `credential-process = 'cargo:system-keychain'`."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:190
+msgid ""
+"Additionally, the community could create Cargo plugins that implement "
+"different storage systems. For example, a hypothetical Cargo plugin could be "
+"specified as `credential-process = 'cargo credential-1password {action}'`."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:194
+msgid ""
+"Encrypting the stored tokens or alternate authentication methods are out of "
+"the scope of this RFC, but could be proposed in the future to provide "
+"additional security for our users."
+msgstr ""
+
+#: src/2730-cargo-token-from-process.md:198
+msgid ""
+"Future RFCs introducing new kinds of secrets used by Cargo (i.e. 2FA codes) "
+"could also add support for fetching those secrets from a process, in a "
+"similar way to this RFC. Defining how that should work is outside the scope "
+"of this RFC though."
+msgstr ""

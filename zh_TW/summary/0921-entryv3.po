@@ -1,0 +1,170 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0921-entry_v3.md:1
+msgid "Feature Name: entry_v3"
+msgstr ""
+
+#: src/0921-entry_v3.md:2
+msgid "Start Date: 2015-03-01"
+msgstr ""
+
+#: src/0921-entry_v3.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#921](https://github.com/rust-lang/rfcs/pull/921)"
+msgstr ""
+
+#: src/0921-entry_v3.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#23508](https://github.com/rust-lang/rust/"
+"issues/23508)"
+msgstr ""
+
+#: src/0921-entry_v3.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0921-entry_v3.md:8
+msgid ""
+"Replace `Entry::get` with `Entry::or_insert` and `Entry::or_insert_with` for "
+"better ergonomics and clearer code."
+msgstr ""
+
+#: src/0921-entry_v3.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0921-entry_v3.md:13
+msgid ""
+"Entry::get was introduced to reduce a lot of the boiler-plate involved in "
+"simple Entry usage. Two incredibly common patterns in particular stand out:"
+msgstr ""
+
+#: src/0921-entry_v3.md:30
+msgid ""
+"This code is noisy, and is visibly fighting the Entry API a bit, such as "
+"having to suppress the return value of insert. It requires the `Entry` enum "
+"to be imported into scope. It requires the user to learn a whole new API. It "
+"also introduces a \"many ways to do it\" stylistic ambiguity:"
+msgstr ""
+
+#: src/0921-entry_v3.md:41
+msgid ""
+"Entry::get tries to address some of this by doing something similar to "
+"`Result::ok`. It maps the Entry into a more familiar Result, while "
+"automatically converting the Occupied case into an `&mut V`. Usage looks "
+"like:"
+msgstr ""
+
+#: src/0921-entry_v3.md:54
+msgid ""
+"This is certainly _nicer_. No imports are needed, the Occupied case is "
+"handled, and we're closer to a \"only one way\". However this is still "
+"fairly tedious and arcane. `get` provides little meaning for what is done; "
+"`unwrap_or_else` is long and scary-sounding; and VacantEntry literally "
+"_only_ supports `insert`, so having to call it seems redundant."
+msgstr ""
+
+#: src/0921-entry_v3.md:59
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0921-entry_v3.md:61
+msgid "Replace `Entry::get` with the following two methods:"
+msgstr ""
+
+#: src/0921-entry_v3.md:63
+msgid ""
+"```\n"
+"    /// Ensures a value is in the entry by inserting the default if empty, "
+"and returns\n"
+"    /// a mutable reference to the value in the entry.\n"
+"    pub fn or_insert(self, default: V) -> &'a mut V {\n"
+"        match self {\n"
+"            Occupied(entry) => entry.into_mut(),\n"
+"            Vacant(entry) => entry.insert(default),\n"
+"        }\n"
+"    }\n"
+"\n"
+"    /// Ensures a value is in the entry by inserting the result of the "
+"default function if empty,\n"
+"    /// and returns a mutable reference to the value in the entry.\n"
+"    pub fn or_insert_with<F: FnOnce() -> V>(self, default: F) -> &'a mut V "
+"{\n"
+"        match self {\n"
+"            Occupied(entry) => entry.into_mut(),\n"
+"            Vacant(entry) => entry.insert(default()),\n"
+"        }\n"
+"    }\n"
+"```"
+msgstr ""
+
+#: src/0921-entry_v3.md:83
+msgid "which allows the following:"
+msgstr ""
+
+#: src/0921-entry_v3.md:90
+msgid ""
+"```\n"
+"// vec![] doesn't even allocate, and is only 3 ptrs big.\n"
+"map.entry(key).or_insert(vec![]).push(val);\n"
+"```"
+msgstr ""
+
+#: src/0921-entry_v3.md:99
+msgid ""
+"Look at all that ergonomics. _Look at it_. This pushes us more into the "
+"\"one right way\" territory, since this is unambiguously clearer and easier "
+"than a full `match` or abusing Result. Novices don't really need to learn "
+"the entry API at all with this. They can just learn the `.entry(key)."
+"or_insert(value)` incantation to start, and work their way up to more "
+"complex usage later."
+msgstr ""
+
+#: src/0921-entry_v3.md:105
+msgid ""
+"Oh hey look this entire RFC is already implemented with all of `rust-lang/"
+"rust`'s `entry` usage audited and updated: https://github.com/rust-lang/rust/"
+"pull/22930"
+msgstr ""
+
+#: src/0921-entry_v3.md:108
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0921-entry_v3.md:110
+msgid ""
+"Replaces the composability of just mapping to a Result with more ad hoc "
+"specialty methods. This is hardly a drawback for the reasons stated in the "
+"RFC. Maybe someone was really leveraging the Result-ness in an exotic way, "
+"but it was likely an abuse of the API. Regardless, the `get` method is "
+"trivial to write as a consumer of the API."
+msgstr ""
+
+#: src/0921-entry_v3.md:115
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0921-entry_v3.md:117
+msgid ""
+"Settle for `Result` chumpsville or abandon this sugar altogether. Truly, "
+"fates worse than death."
+msgstr ""
+
+#: src/0921-entry_v3.md:119
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0921-entry_v3.md:121
+msgid "None."
+msgstr ""

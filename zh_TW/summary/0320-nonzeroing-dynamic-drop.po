@@ -1,0 +1,937 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0320-nonzeroing-dynamic-drop.md:1
+msgid "Feature Name: (none for the bulk of RFC); unsafe_no_drop_flag"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:2
+msgid "Start Date: 2014-09-24"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#320](https://github.com/rust-lang/rfcs/pull/320)"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#5016](https://github.com/rust-lang/rust/"
+"issues/5016)"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0320-nonzeroing-dynamic-drop.md:8
+msgid ""
+"Remove drop flags from values implementing `Drop`, and remove automatic "
+"memory zeroing associated with dropping values."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:11
+msgid ""
+"Keep dynamic drop semantics, by having each function maintain a (potentially "
+"empty) set of auto-injected boolean flags for the drop obligations for the "
+"function that need to be tracked dynamically (which we will call \"dynamic "
+"drop obligations\")."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:16
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0320-nonzeroing-dynamic-drop.md:18
+msgid ""
+"Currently, implementing `Drop` on a struct (or enum) injects a hidden bit, "
+"known as the \"drop-flag\", into the struct (and likewise, each of the enum "
+"variants).  The drop-flag, in tandem with Rust's implicit zeroing of dropped "
+"values, tracks whether a value has already been moved to another owner or "
+"been dropped.  (See the [\"How dynamic drop semantics works\"](#how-dynamic-"
+"drop-semantics-works) appendix for more details if you are unfamiliar with "
+"this part of Rust's current implementation.)"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:27
+msgid "However, the above implementation is sub-optimal; problems include:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:29
+msgid ""
+"Most important: implicit memory zeroing is a hidden cost that today all Rust "
+"programs pay, in both execution time and code size. With the removal of the "
+"drop flag, we can remove implicit memory zeroing (or at least revisit its "
+"utility -- there may be other motivations for implicit memory zeroing, e.g. "
+"to try to keep secret data from being exposed to unsafe code)."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:36
+msgid ""
+"Hidden bits are bad: Users coming from a C/C++ background expect `struct Foo "
+"{ x: u32, y: u32 }` to occupy 8 bytes, but if `Foo` implements `Drop`, the "
+"hidden drop flag will cause it to double in size (16 bytes). See the "
+"\\[Program illustrating semantic impact of hidden drop flag\\] appendix for "
+"a concrete illustration.  Note that when `Foo` implements `Drop`, each "
+"instance of `Foo` carries a drop-flag, even in contexts like a `Vec<Foo>` "
+"where a program cannot actually move individual values out of the "
+"collection. Thus, the amount of extra memory being used by drop-flags is not "
+"bounded by program stack growth; the memory wastage is strewn throughout the "
+"heap."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:49
+msgid ""
+"An earlier RFC (the withdrawn [RFC PR #210](https://github.com/rust-lang/"
+"rfcs/pull/210)) suggested resolving this problem by switching from a dynamic "
+"drop semantics to a \"static drop semantics\", which was defined in that RFC "
+"as one that performs drop of certain values earlier to ensure that the set "
+"of drop-obligations does not differ at any control-flow merge point, i.e. to "
+"ensure that the set of values to drop is statically known at compile-time."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:58
+msgid ""
+"However, discussion on the [RFC PR #210](https://github.com/rust-lang/rfcs/"
+"pull/210) comment thread pointed out its policy for inserting early drops "
+"into the code is non-intuitive (in other words, that the drop policy should "
+"either be more aggressive, a la [RFC PR #239](https://github.com/rust-lang/"
+"rfcs/pull/239), or should stay with the dynamic drop status quo). Also, the "
+"mitigating mechanisms proposed by that RFC (`NoisyDrop`/`QuietDrop`) were "
+"deemed unacceptable."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:67
+msgid ""
+"So, static drop semantics are a non-starter.  Luckily, the above strategy is "
+"not the only way to implement dynamic drop semantics. Rather than requiring "
+"that the set of drop-obligations be the same at every control-flow merge "
+"point, we can do a intra-procedural static analysis to identify the set of "
+"drop-obligations that differ at any merge point, and then inject a set of "
+"stack-local boolean-valued drop-flags that dynamically track them.  That "
+"strategy is what this RFC is describing."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:76
+msgid "The expected outcomes are as follows:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:78
+msgid ""
+"We remove the drop-flags from all structs/enums that implement `Drop`. "
+"(There are still the injected stack-local drop flags, but those should be "
+"cheaper to inject and maintain.)"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:82
+msgid ""
+"Since invoking drop code is now handled by the stack-local drop flags and we "
+"have no more drop-flags on the values themselves, we can (and will) remove "
+"memory zeroing."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:86
+msgid ""
+"Libraries currently relying on drop doing memory zeroing (i.e. libraries "
+"that check whether content is zero to decide whether its `fn drop` has been "
+"invoked will need to be revised, since we will not have implicit memory "
+"zeroing anymore."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:91
+msgid ""
+"In the common case, most libraries using `Drop` will not need to change at "
+"all from today, apart from the caveat in the previous bullet."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:95
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0320-nonzeroing-dynamic-drop.md:98
+msgid "Drop obligations"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:100
+msgid ""
+"No struct or enum has an implicit drop-flag.  When a local variable is "
+"initialized, that establishes a set of \"drop obligations\": a set of "
+"structural paths (e.g. a local `a`, or a path to a field `b.f.y`) that need "
+"to be dropped (or moved away to a new owner)."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:105
+msgid ""
+"The drop obligations for a local variable `x` of struct-type `T` are "
+"computed from analyzing the structure of `T`.  If `T` itself implements "
+"`Drop`, then `x` is a drop obligation.  If `T` does not implement `Drop`, "
+"then the set of drop obligations is the union of the drop obligations of the "
+"fields of `T`."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:111
+msgid ""
+"When a path is moved to a new location, or consumed by a function call, or "
+"when control flow reaches the end of its owner's lexical scope, the path is "
+"removed from the set of drop obligations."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:115
+msgid ""
+"At control-flow merge points, e.g. nodes that have predecessor nodes P_1, "
+"P_2, ..., P_k with drop obligation sets S_1, S_2, ... S_k, we"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:118
+msgid ""
+"First identify the set of drop obligations that differ between the "
+"predecessor nodes, i.e. the set:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:121
+#: src/0320-nonzeroing-dynamic-drop.md:137
+msgid "`(S_1 | S_2 | ... | S_k) \\ (S_1 & S_2 & ... & S_k)`"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:123
+msgid ""
+"where `|` denotes set-union, `&` denotes set-intersection, `\\` denotes set-"
+"difference.  These are the dynamic drop obligations induced by this merge "
+"point.  Note that if `S_1 = S_2 = ... = S_k`, the above set is empty."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:128
+msgid ""
+"The set of drop obligations for the merge point itself is the union of the "
+"drop-obligations from all predecessor points in the control flow, i.e. `(S_1 "
+"| S_2 | ... | S_k)` in the above notation."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:133
+msgid ""
+"(One could also just use the intersection here; it actually makes no "
+"difference to the static analysis, since all of the elements of the "
+"difference"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:139
+msgid ""
+"have already been added to the set of dynamic drop obligations. But the "
+"overall code transformation is clearer if one keeps the dynamic drop "
+"obligations in the set of drop obligations.)"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:143
+msgid "Stack-local drop flags"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:145
+msgid ""
+"For every dynamic drop obligation induced by a merge point, the compiler is "
+"responsible for ensure that its drop code is run at some point. If "
+"necessary, it will inject and maintain boolean flag analogous to"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:152
+msgid ""
+"Some compiler analysis may be able to identify dynamic drop obligations that "
+"do not actually need to be tracked.  Therefore, we do not specify the "
+"precise set of boolean flags that are injected."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:156
+msgid "Example of code with dynamic drop obligations"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:159
+msgid ""
+"The function `f2` below was copied from the static drop [RFC PR #210]"
+"(https://github.com/rust-lang/rfcs/pull/210); it has differing sets of drop "
+"obligations at a merge point, necessitating a potential injection of a "
+"`NeedsDropFlag`."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:166
+#: src/0320-nonzeroing-dynamic-drop.md:256
+#: src/0320-nonzeroing-dynamic-drop.md:382
+msgid ""
+"// At the outset, the set of drop obligations is\n"
+"    // just the set of moved input parameters (empty\n"
+"    // in this case).\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:170
+#: src/0320-nonzeroing-dynamic-drop.md:260
+#: src/0320-nonzeroing-dynamic-drop.md:386
+msgid ""
+"//                                      DROP OBLIGATIONS\n"
+"    //                                  ------------------------\n"
+"    //                                  {  }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:175
+msgid "//                                  {pDD.x}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:177
+#: src/0320-nonzeroing-dynamic-drop.md:275
+msgid "//                                  {pDD.x, pDD.y}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:179
+#: src/0320-nonzeroing-dynamic-drop.md:181
+#: src/0320-nonzeroing-dynamic-drop.md:183
+#: src/0320-nonzeroing-dynamic-drop.md:277
+#: src/0320-nonzeroing-dynamic-drop.md:279
+#: src/0320-nonzeroing-dynamic-drop.md:281
+msgid "//                                  {pDD.x, pDD.y, pDS.x}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:186
+#: src/0320-nonzeroing-dynamic-drop.md:285
+msgid "//                              {pDD.x,        pDS.x, temp}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:188
+#: src/0320-nonzeroing-dynamic-drop.md:287
+msgid "//                              {pDD.x,        pDS.x, temp, some_d}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:189
+#: src/0320-nonzeroing-dynamic-drop.md:288
+msgid ""
+"// END OF SCOPE for `temp`\n"
+"        //                                  {pDD.x,        pDS.x, some_d}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:192
+#: src/0320-nonzeroing-dynamic-drop.md:291
+msgid "// MERGE POINT PREDECESSOR 1\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:196
+#: src/0320-nonzeroing-dynamic-drop.md:295
+msgid "//                              {pDD.x, pDD.y, pDS.x}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:198
+#: src/0320-nonzeroing-dynamic-drop.md:297
+msgid "//                              {pDD.x, pDD.y, pDS.x, z}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:200
+#: src/0320-nonzeroing-dynamic-drop.md:299
+msgid ""
+"// This drops `pDD.y` before\n"
+"            // moving `pDD.x` there.\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:204
+#: src/0320-nonzeroing-dynamic-drop.md:304
+msgid "//                              {       pDD.y, pDS.x, z}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:206
+#: src/0320-nonzeroing-dynamic-drop.md:306
+msgid "//                              {       pDD.y, pDS.x, z, some_d}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:207
+#: src/0320-nonzeroing-dynamic-drop.md:307
+msgid ""
+"// END OF SCOPE for `z`\n"
+"        //                                  {       pDD.y, pDS.x, some_d}\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:210
+#: src/0320-nonzeroing-dynamic-drop.md:310
+msgid "// MERGE POINT PREDECESSOR 2\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:214
+#: src/0320-nonzeroing-dynamic-drop.md:314
+msgid ""
+"// MERGE POINT: set of drop obligations do not\n"
+"    // match on all incoming control-flow paths.\n"
+"    //\n"
+"    // Predecessor 1 has drop obligations\n"
+"    // {pDD.x,        pDS.x, some_d}\n"
+"    // and Predecessor 2 has drop obligations\n"
+"    // {       pDD.y, pDS.x, some_d}.\n"
+"    //\n"
+"    // Therefore, this merge point implies that\n"
+"    // {pDD.x, pDD.y} are dynamic drop obligations,\n"
+"    // while {pDS.x, some_d} are potentially still\n"
+"    // resolvable statically (and thus may not need\n"
+"    // associated boolean flags).\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:228
+#: src/0320-nonzeroing-dynamic-drop.md:328
+msgid "// The resulting drop obligations are the following:\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:230
+#: src/0320-nonzeroing-dynamic-drop.md:234
+#: src/0320-nonzeroing-dynamic-drop.md:330
+#: src/0320-nonzeroing-dynamic-drop.md:334
+msgid "//                                  {pDD.x, pDD.y, pDS.x, some_d}.\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:232
+#: src/0320-nonzeroing-dynamic-drop.md:332
+msgid "// (... some code that does not change drop obligations ...)\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:236
+#: src/0320-nonzeroing-dynamic-drop.md:336
+msgid "// END OF SCOPE for `pDD`, `pDS`, `some_d`\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:240
+msgid ""
+"After the static analysis has identified all of the dynamic drop "
+"obligations, code is injected to maintain the stack-local drop flags and to "
+"do any necessary drops at the appropriate points. Below is the updated `fn "
+"f2` with an approximation of the injected code."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:245
+msgid ""
+"Note: we say \"approximation\", because one does need to ensure that the "
+"drop flags are updated in a manner that is compatible with potential task "
+"`fail!`/`panic!`, because stack unwinding must be informed which state needs "
+"to be dropped; i.e. you need to initialize `_pDD_dot_x` before you start to "
+"evaluate a fallible expression to initialize `pDD.y`."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:338
+msgid ""
+"// rustc-inserted code (not legal Rust, since `pDD.x` and `pDD.y`\n"
+"    // are inaccessible).\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:346
+msgid "Note that in a snippet like"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:351
+msgid ""
+"this is okay, in part because the evaluating the identifier `xform` is "
+"infallible.  If instead it were something like:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:357
+msgid ""
+"then that would not be correct, because we need to set `_drop_pDD_dot_y` to "
+"`DoNotDrop` after the `lookup_closure()` invocation."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:361
+msgid ""
+"It may probably be more intellectually honest to write the transformation "
+"like:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:367
+msgid "Control-flow sensitivity"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:369
+msgid ""
+"Note that the dynamic drop obligations are based on a control-flow analysis, "
+"_not_ just the lexical nesting structure of the code."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:372
+msgid ""
+"In particular: If control flow splits at a point like an if-expression, but "
+"the two arms never meet, then they can have completely sets of drop "
+"obligations."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:376
+msgid ""
+"This is important, since in coding patterns like loops, one often sees "
+"different sets of drop obligations prior to a `break` compared to a point "
+"where the loop repeats, such as a `continue` or the end of a `loop` block."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:392
+msgid "//                                  {         pDD.x, pDD.y }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:394
+msgid "// MERGE POINT\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:396
+#: src/0320-nonzeroing-dynamic-drop.md:405
+msgid "//                                  {     pDD.x, pDD.y }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:398
+msgid "//                                  { pDD.x, pDD.y }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:400
+msgid "//                                  {        pDD.y }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:403
+msgid "// *not* merge point (only one path, the else branch, flows here)\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:407
+msgid "// never falls through; must merge with 'a loop.\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:410
+msgid "// RESUME POINT: break 'a above flows here\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:412
+msgid "//                                  {                pDD.y }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:414
+msgid "// This is the point immediately preceding `'b: loop`; (1.) below.\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:417
+msgid ""
+"// MERGE POINT\n"
+"        //\n"
+"        // There are *three* incoming paths: (1.) the statement\n"
+"        // preceding `'b: loop`, (2.) the `continue 'b;` below, and\n"
+"        // (3.) the end of the loop's block below.  The drop\n"
+"        // obligation for `maybe_set` originates from (3.).\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:424
+msgid "//                                  {            pDD.y, maybe_set }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:428
+#: src/0320-nonzeroing-dynamic-drop.md:439
+#: src/0320-nonzeroing-dynamic-drop.md:450
+msgid "//                                  {                 , maybe_set }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:431
+#: src/0320-nonzeroing-dynamic-drop.md:442
+msgid "//                                  {             , maybe_set }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:433
+msgid "//                                  { pDD.x       , maybe_set }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:437
+#: src/0320-nonzeroing-dynamic-drop.md:448
+msgid "// *not* merge point (only one path flows here)\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:445
+msgid "// This is (2.) referenced above.   {        pDD.y, maybe_set }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:453
+#: src/0320-nonzeroing-dynamic-drop.md:458
+msgid "// This is (3.) referenced above.   {            pDD.y, maybe_set }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:461
+msgid "// RESUME POINT: break 'b above flows here\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:463
+msgid ""
+"//                                  {         pDD.x       , maybe_set }\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:465
+msgid ""
+"// when we hit the end of the scope of `maybe_set`;\n"
+"    // check its stack-local flag.\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:469
+msgid ""
+"Likewise, a `return` statement represents another control flow jump, to the "
+"end of the function."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:472
+msgid "Remove implicit memory zeroing"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:474
+msgid ""
+"With the above in place, the remainder is relatively trivial. The compiler "
+"can be revised to no longer inject a drop flag into structs and enums that "
+"implement `Drop`, and likewise memory zeroing can be removed."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:479
+msgid ""
+"Beyond that, the libraries will obviously need to be audited for dependence "
+"on implicit memory zeroing."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:482
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:484
+msgid "The only reasons not do this are:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:486
+msgid ""
+"Some hypothetical reason to _continue_ doing implicit memory zeroing, or"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:488
+msgid "We want to abandon dynamic drop semantics."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:490
+msgid ""
+"At this point Felix thinks the Rust community has made a strong argument in "
+"favor of keeping dynamic drop semantics."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:493
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0320-nonzeroing-dynamic-drop.md:495
+msgid ""
+"Static drop semantics [RFC PR #210](https://github.com/rust-lang/rfcs/"
+"pull/210) has been referenced frequently in this document."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:498
+msgid ""
+"Eager drops [RFC PR #239](https://github.com/rust-lang/rfcs/pull/239) is the "
+"more aggressive semantics that would drop values immediately after their "
+"final use.  This would probably invalidate a number of RAII style coding "
+"patterns."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:502
+msgid "Optional Extensions"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:504
+msgid "A lint identifying dynamic drop obligations"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:506
+msgid ""
+"Add a lint (set by default to `allow`) that reports potential dynamic drop "
+"obligations, so that end-user code can opt-in to having them reported.  The "
+"expected benefits of this are:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:510
+msgid ""
+"developers may have intended for a value to be moved elsewhere on all paths "
+"within a function, and,"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:513
+msgid ""
+"developers may want to know about how many boolean dynamic drop flags are "
+"potentially being injected into their code."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:516
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0320-nonzeroing-dynamic-drop.md:518
+msgid "How to handle moves out of `array[index_expr]`"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:520
+msgid ""
+"Niko pointed out to me today that my prototype was not addressing moves out "
+"of `array[index_expr]` properly.  I was assuming that we would just make "
+"such an expression illegal (or that they should already be illegal)."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:525
+msgid ""
+"But they are not already illegal, and above assumption that we would make it "
+"illegal should have been explicit.  That, or we should address the problem "
+"in some other way."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:529
+msgid "To make this concrete, here is some code that runs today:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:536
+msgid "\"dropping {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:544
+msgid "\"fst\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:545
+msgid "\"snd\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:546
+msgid "\"thd\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:548
+msgid "\"foo returned {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:552
+msgid "This prints:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:560
+msgid ""
+"because it first moves the entire array into `foo`, and then `foo` returns "
+"the second element, but still needs to drop the rest of the array."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:564
+msgid ""
+"Embedded drop flags and zeroing support this seamlessly, of course. But the "
+"whole point of this RFC is to get rid of the embedded per-value drop-flags."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:568
+msgid ""
+"If we want to continue supporting moving out of `a[i]` (and we probably do, "
+"I have been converted on this point), then the drop flag needs to handle "
+"this case.  Our current thinking is that we can support it by using a single "
+"_`uint`_ flag (as opposed to the booleans used elsewhere) for such array "
+"that has been moved out of.  The `uint` flag represents \"drop all elements "
+"from the array _except_ for the one listed in the flag.\"  (If it is only "
+"moved out of on one branch and not another, then we would either use an "
+"`Option<uint>`, or still use `uint` and just represent unmoved case via some "
+"value that is not valid index, such as the length of the array)."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:579
+msgid "Should we keep `#[unsafe_no_drop_flag]` ?"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:581
+msgid ""
+"Currently there is an `unsafe_no_drop_flag` attribute that is used to "
+"indicate that no drop flag should be associated with a struct/enum, and "
+"instead the user-written drop code will be run multiple times (and thus must "
+"internally guard itself from its own side-effects; e.g. do not attempt to "
+"free the backing buffer for a `Vec` more than once, by tracking within the "
+"`Vec` itself if the buffer was previously freed)."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:588
+msgid ""
+"The \"obvious\" thing to do is to remove `unsafe_no_drop_flag`, since the "
+"per-value drop flag is going away.  However, we _could_ keep the attribute, "
+"and just repurpose its meaning to instead mean the following: _Never_ inject "
+"a dynamic stack-local drop-flag for this value.  Just run the drop code "
+"multiple times, just like today."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:594
+msgid ""
+"In any case, since the semantics of this attribute are unstable, we will "
+"feature-gate it (with feature name `unsafe_no_drop_flag`)."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:597
+msgid "Appendices"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:599
+msgid "How dynamic drop semantics works"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:601
+msgid ""
+"(This section is just presenting background information on the semantics of "
+"`drop` and the drop-flag as it works in Rust today; it does not contain any "
+"discussion of the changes being proposed by this RFC.)"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:606
+msgid ""
+"A struct or enum implementing `Drop` will have its drop-flag automatically "
+"set to a non-zero value when it is constructed.  When attempting to drop the "
+"struct or enum (i.e. when control reaches the end of the lexical scope of "
+"its owner), the injected glue code will only execute its associated `fn "
+"drop` if its drop-flag is non-zero."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:612
+msgid ""
+"In addition, the compiler injects code to ensure that when a value is moved "
+"to a new location in memory or dropped, then the original memory is entirely "
+"zeroed."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:616
+msgid ""
+"A struct/enum definition implementing `Drop` can be tagged with the "
+"attribute `#[unsafe_no_drop_flag]`.  When so tagged, the struct/enum will "
+"not have a hidden drop flag embedded within it. In this case, the injected "
+"glue code will execute the associated glue code unconditionally, even though "
+"the struct/enum value may have been moved to a new location in memory or "
+"dropped (in either case, the memory representing the value will have been "
+"zeroed)."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:624
+msgid "The above has a number of implications:"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:626
+msgid ""
+"A program can manually cause the drop code associated with a value to be "
+"skipped by first zeroing out its memory."
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:629
+msgid ""
+"A `Drop` implementation for a struct tagged with `unsafe_no_drop_flag` must "
+"assume that it will be called more than once.  (However, every call to "
+"`drop` after the first will be given zeroed memory.)"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:633
+msgid "Program illustrating semantic impact of hidden drop flag"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:653
+msgid "' '"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:658
+msgid "\"{}dropping Df {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:672
+msgid "\"{}dropping already-zeroed {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:675
+msgid "\"{}dropping {} {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:688
+msgid "\"{}t-n-p took and will pass: {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:695
+msgid "\"{}t-n-d took and will drop: {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:699
+msgid "\"transformed\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:704
+msgid "\"f1\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:705
+msgid "\"n2\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:706
+msgid "\"f3\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:707
+msgid "\"f4\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:708
+msgid "\"f5\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:709
+msgid "\"f6\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:710
+msgid "\"n7\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:711
+msgid "// `f6` consumed by `xform`\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:712
+msgid "\"n9\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:713
+msgid "// `f4` and `f5` moved into `p`\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:714
+msgid "\"f10\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:716
+msgid "\"foo scope start: {}\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:719
+msgid "// `p.x` consumed by `take_and_pass`, which drops it\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:722
+msgid "// `n7` consumed by `take_and_pass`, which drops it\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:725
+msgid "// totally unsafe: manually zero the struct, including its drop flag.\n"
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:737
+msgid "\"foo scope end\""
+msgstr ""
+
+#: src/0320-nonzeroing-dynamic-drop.md:740
+msgid ""
+"// here, we drop each local variable, in reverse order of declaration.\n"
+"    // So we should see the following drop sequence:\n"
+"    // drop(f10), printing \"Df f10\"\n"
+"    // drop(p)\n"
+"    //   ==> drop(p.y), printing \"Df f5\"\n"
+"    //   ==> attempt to drop(and skip) already-dropped p.x, no-op\n"
+"    // drop(_n9), printing \"DnB n9\"\n"
+"    // drop(_fx), printing \"Df transformed\"\n"
+"    // attempt to drop already-dropped n7, printing \"already-zeroed DnA\"\n"
+"    // no drop of `f6` since it was consumed by `xform`\n"
+"    // no drop of `f5` since it was moved into `p`\n"
+"    // no drop of `f4` since it was moved into `p`\n"
+"    // drop(f3), printing \"f3\"\n"
+"    // attempt to drop manually-zeroed `n2`, printing \"already-zeroed "
+"DnC\"\n"
+"    // attempt to drop manually-zeroed `f1`, no-op.\n"
+msgstr ""

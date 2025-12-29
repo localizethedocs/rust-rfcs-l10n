@@ -1,0 +1,585 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2867-isa-attribute.md:1
+msgid "Feature Name: isa_attribute"
+msgstr ""
+
+#: src/2867-isa-attribute.md:2
+msgid "Start Date: 2020-02-16"
+msgstr ""
+
+#: src/2867-isa-attribute.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2867](https://github.com/rust-lang/rfcs/pull/2867)"
+msgstr ""
+
+#: src/2867-isa-attribute.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#74727](https://github.com/rust-lang/rust/"
+"issues/74727)"
+msgstr ""
+
+#: src/2867-isa-attribute.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2867-isa-attribute.md:9
+msgid ""
+"This RFC proposes a new function attribute, `#[instruction_set(set)]` which "
+"allows you to declare the instruction set to be used when compiling the "
+"function. It also proposes two initial allowed values for the ARM arch "
+"(`arm::a32` and `arm::t32`). Other allowed values could be added to the "
+"language later."
+msgstr ""
+
+#: src/2867-isa-attribute.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2867-isa-attribute.md:14
+msgid ""
+"Starting with `ARMv4T`, many ARM CPUs support two separate instruction sets. "
+"At the time they were called \"ARM code\" and \"Thumb code\", but with the "
+"development of `AArch64`, they're now called `a32` and `t32`. Unlike with "
+"the `x86_64` architecture, where the CPU can run both `x86` and `x86_64` "
+"code, but a single program still uses just one of the two instruction sets, "
+"on ARM you can have a single program that intersperses both `a32` and `t32` "
+"code. A particular form of branch instruction allows for the CPU to change "
+"between the two modes any time it branches, and so code can be designated as "
+"being either `a32` or `t32` on a per-function basis."
+msgstr ""
+
+#: src/2867-isa-attribute.md:16
+msgid ""
+"In LLVM, selecting that code should be `a32` or `t32` is done by either "
+"disabling (for `a32`) or enabling (for `t32`) the `thumb-mode` target "
+"feature. Previously, Rust was able to do this using the `target_feature` "
+"attribute because it was able to either add _or subtract_ an LLVM target "
+"feature during a function. However, when [RFC 2045](https://github.com/rust-"
+"lang/rfcs/blob/master/text/2045-target-feature.md) was accepted, its final "
+"form did not allow for the subtraction of target features. Its final form is "
+"primarily designed around always opting _in_ to additional features, and "
+"it's no longer the correct tool for an \"either A or B, but not both\" "
+"situation like `a32`/`t32` is."
+msgstr ""
+
+#: src/2867-isa-attribute.md:18
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2867-isa-attribute.md:21
+msgid ""
+"Some platforms support having more than one instruction set used within a "
+"single program. Generally, each one will be better for specific parts of a "
+"program. Every target has a default instruction set, based on the target "
+"triple. If you would like to set a specific function to use an alternate "
+"instruction set you use the `#[instruction_set(set)]` attribute."
+msgstr ""
+
+#: src/2867-isa-attribute.md:23
+msgid ""
+"Currently this is only of use on ARM family CPUs, which support both the "
+"`arm::a32` and `arm::t32` instruction sets. Targets starting with `arm` (eg: "
+"`arm-linux-androideabi`) default to `arm::a32` and targets starting with "
+"`thumb` (eg: `thumbv7neon-linux-androideabi`) default to `arm::t32`."
+msgstr ""
+
+#: src/2867-isa-attribute.md:26
+msgid "// this uses the default instruction set for your target\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:30
+msgid "// This will compile as `a32` code on both `arm` and `thumb` targets\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:38
+msgid ""
+"It is a compile time error to specify an instruction set that is not "
+"available on the target you're compiling for. Users wishing for their code "
+"to be as portable as possible should use `cfg_attr` to only enable the "
+"attribute when using the appropriate targets."
+msgstr ""
+
+#: src/2867-isa-attribute.md:41
+msgid "// This will fail to build if `arm::a32` isn't available\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:46
+msgid ""
+"// This will build on all platforms, and apply the `instruction_set` "
+"attribute\n"
+"// only on ARM targets.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:49
+msgid "\"arm\""
+msgstr ""
+
+#: src/2867-isa-attribute.md:55
+msgid ""
+"As you can see it can get a little verbose, so projects which plan to use "
+"the `instruction_set` attribute might want to consider writing a proc-macro "
+"with a shorter name."
+msgstr ""
+
+#: src/2867-isa-attribute.md:57
+msgid ""
+"The specifics of _when_ you should specify a non-default instruction set on "
+"a function are platform specific. Unless a piece of platform documentation "
+"has indicated a specific requirement, you do not need to think about adding "
+"this attribute at all."
+msgstr ""
+
+#: src/2867-isa-attribute.md:59
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2867-isa-attribute.md:62
+msgid ""
+"Every target is now considered to have one default instruction set (for "
+"functions that lack the `instruction_set` attribute), as well as possibly "
+"supporting specific additional instruction sets:"
+msgstr ""
+
+#: src/2867-isa-attribute.md:64
+msgid ""
+"The targets with names that start with `arm` default to `arm::a32`, but can "
+"also use `arm::t32`."
+msgstr ""
+
+#: src/2867-isa-attribute.md:65
+msgid ""
+"The targets with names that start with `thumb` default to `arm::t32`, but "
+"can also use `arm::a32`."
+msgstr ""
+
+#: src/2867-isa-attribute.md:66
+msgid ""
+"The `instruction_set` attribute is not currently defined for use with any "
+"other arch."
+msgstr ""
+
+#: src/2867-isa-attribute.md:67
+msgid ""
+"To avoid possible name clashes, the convention for this attribute is that "
+"the name of the instruction set itself (eg: `a32`) is prefixed with the name "
+"of the arch it goes with (eg: `arm`)."
+msgstr ""
+
+#: src/2867-isa-attribute.md:69
+msgid "Where can this attribute be used:"
+msgstr ""
+
+#: src/2867-isa-attribute.md:70
+msgid ""
+"This attribute can be used on any `fn` item that has a body: Free functions, "
+"inherent methods, trait default methods, and trait impl methods."
+msgstr ""
+
+#: src/2867-isa-attribute.md:71
+msgid ""
+"This attribute cannot be used on closures or within `extern` block "
+"declarations."
+msgstr ""
+
+#: src/2867-isa-attribute.md:72
+msgid "(Allowing this on trait prototypes is a Future Possibility.)"
+msgstr ""
+
+#: src/2867-isa-attribute.md:74
+msgid "What is a Compile Error:"
+msgstr ""
+
+#: src/2867-isa-attribute.md:75
+msgid ""
+"If an alternate instruction set is designated that doesn't exist (eg: "
+"\"unicorn\") then that is a compiler error. Later versions of the compiler/"
+"language are free to add additional allowed instruction set values."
+msgstr ""
+
+#: src/2867-isa-attribute.md:76
+msgid ""
+"Specifying an alternate instruction set attribute more than once with each "
+"usage being for a _different arch_ it is allowed."
+msgstr ""
+
+#: src/2867-isa-attribute.md:78
+msgid "Guarantees:"
+msgstr ""
+
+#: src/2867-isa-attribute.md:79
+msgid ""
+"If an alternate instruction set is designated on a function then the "
+"compiler _must_ respect that. It is not a hint, it is a guarantee."
+msgstr ""
+
+#: src/2867-isa-attribute.md:80
+msgid "The exact details of an `instruction_set` guarantee vary by target."
+msgstr ""
+
+#: src/2867-isa-attribute.md:81
+msgid ""
+"Notably, the `instruction_set` attribute is most likely to interact (in a "
+"target specific way) with function inlining and use of inline assembly."
+msgstr ""
+
+#: src/2867-isa-attribute.md:83
+msgid "ARM"
+msgstr ""
+
+#: src/2867-isa-attribute.md:85
+msgid "(this portion is a little extra technical, and very platform specific)"
+msgstr ""
+
+#: src/2867-isa-attribute.md:87
+msgid ""
+"On ARM, there are two different instruction encodings. In textual/assembly "
+"form, Thumb assembly is written as a subset of ARM assembly, but the actual "
+"bit patterns produced when the text is assembled are entirely different. The "
+"CPU has a bit within the Program Status Register that indicates if the CPU "
+"should read 4 bytes at the Program Counter address and interpret them as an "
+"`a32` opcode, or if it should read 2 bytes at the Program Counter address "
+"and interpret them as a `t32` opcode. Because the amount of data read and "
+"the interpretation of the data is totally dissimilar, attempting to read one "
+"form of code while the CPU's flag is set for the other form of code is "
+"Undefined Behavior."
+msgstr ""
+
+#: src/2867-isa-attribute.md:89
+msgid ""
+"The outside world can tell what type of code a given function is based on "
+"the address of the function: `a32` code has an even address, and `t32` code "
+"has an odd address. The Program Counter ignores the actual value of the low "
+"bit, so `t32` code is still considered to be \"aligned to 2\". When a branch-"
+"exchange (`bx`) or branch-link-exchange (`blx`) instruction is used then the "
+"target address's lowest bit is used to determine the CPU's new code state. "
+"When a branch (`b`) or branch-link (`bl`) instruction are used, the CPU's "
+"code state is _not_ changed."
+msgstr ""
+
+#: src/2867-isa-attribute.md:91
+msgid ""
+"Thus, what we have to ensure with `a32` and `t32` is that the code generated "
+"for the marked function has the right encoding and also that the address is "
+"correctly even or odd:"
+msgstr ""
+
+#: src/2867-isa-attribute.md:93
+msgid ""
+"It is _Guaranteed_ that the address of the function will be correctly even "
+"or odd, and also that the start of the function's body will be in the "
+"correct encoding."
+msgstr ""
+
+#: src/2867-isa-attribute.md:94
+msgid ""
+"It is _Hinted_ for the entire function body to generate with a single "
+"encoding."
+msgstr ""
+
+#: src/2867-isa-attribute.md:95
+msgid ""
+"If necessary, it is considered conforming for a compiler to insert only a "
+"stub of the correct encoding and address, which then jumps to a function "
+"body using another encoding. This should be considered a fallback strategy, "
+"but it would technically satisfy the requirements."
+msgstr ""
+
+#: src/2867-isa-attribute.md:97
+msgid "Backend support:"
+msgstr ""
+
+#: src/2867-isa-attribute.md:98
+msgid ""
+"In LLVM this corresponds to enabling or disabling the `thumb-mode` target "
+"feature on a particular function."
+msgstr ""
+
+#: src/2867-isa-attribute.md:99
+msgid ""
+"Other future backends (eg: Cranelift) would presumably support this in some "
+"similar way. A \"quick and dirty\" version of `a32`/`t32` interworking can "
+"be achieved simply by simply placing all `a32` code in one translation unit, "
+"all `t32` code in another, and then telling the linker to sort it out. "
+"Currently, Cranelift does not support ARM chips _at all_, but they can "
+"easily work towards this over time."
+msgstr ""
+
+#: src/2867-isa-attribute.md:100
+msgid ""
+"Because Miri operates on Rust's MIR stage, this attribute doesn't affect the "
+"operation of Miri. If Miri were to some day support inline assembly this "
+"attribute would need to be taken into account for that to work right, but "
+"Miri could also simply choose to not support this attribute in combination "
+"with inline assembly."
+msgstr ""
+
+#: src/2867-isa-attribute.md:101
+msgid ""
+"Assemblers and Linkers for ARM platforms have flags to enable the "
+"\"interwork\" of `a32` and `t32` code. If a user is writing their own "
+"assembly and then linking that with Rust code manually they might have to "
+"adjust their flags appropriately. This is mostly an implementation detail, "
+"though we can do our best to document that in the reference, and to provide "
+"any \"good defaults\" on our end."
+msgstr ""
+
+#: src/2867-isa-attribute.md:103
+msgid "Inlining:"
+msgstr ""
+
+#: src/2867-isa-attribute.md:104
+msgid ""
+"If a function call is inlined, there's no longer an actual branch to another "
+"address, so if an entirely rust function with the `instruction_set` "
+"attribute is inlined into the caller, there's no further effect for the "
+"attribute to have."
+msgstr ""
+
+#: src/2867-isa-attribute.md:105
+msgid ""
+"If a function with an `instruction_set` attribute _also_ contains an inline "
+"assembly block things are complicated. Even if the assembly text _were_ "
+"valid within the instruction set it was inlined into, checking if that's the "
+"case or not would involve inspecting the assembly string and then making "
+"decisions based on that, which is explicitly against the design intent of "
+"the inline assembly feature (that the compiler should generally not inspect "
+"the assembly string)."
+msgstr ""
+
+#: src/2867-isa-attribute.md:106
+msgid ""
+"Unfortunately, it's also not always clear to the programmer when inlining "
+"happens because sometimes a function might be inlined up through several "
+"layers of the call stack."
+msgstr ""
+
+#: src/2867-isa-attribute.md:107
+msgid "How to resolve this is an Unresolved Question (see below)."
+msgstr ""
+
+#: src/2867-isa-attribute.md:109
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2867-isa-attribute.md:112
+msgid "Adding another attribute complicates Rust's design."
+msgstr ""
+
+#: src/2867-isa-attribute.md:114
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2867-isa-attribute.md:117
+msgid "Rationale"
+msgstr ""
+
+#: src/2867-isa-attribute.md:119
+msgid ""
+"Here's a simple but complete-enough program of how this would be used in "
+"practice. In this example, the program is for the Game Boy Advance (GBA). I "
+"have attempted to limit it to the essentials, so all the MMIO definitions, "
+"as well as the assembly runtime you'd need to boot and call `main`, are "
+"still omitted from the example."
+msgstr ""
+
+#: src/2867-isa-attribute.md:122
+msgid ""
+"// The GBA's BIOS provides some functionality available via software\n"
+"// interrupt. We expose them to Rust in our assumed assembly \"runtime\".\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:124
+msgid "\"C\""
+msgstr ""
+
+#: src/2867-isa-attribute.md:125
+msgid ""
+"/// Puts the CPU into a low-power state until a vblank interrupt,\n"
+"    /// and then returns after the interrupt handler completes.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:129
+msgid ""
+"// We assume that the MMIO stuff is imported from somewhere.\n"
+"// The exact addresses and constant values aren't important.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:136
+msgid ""
+"// All of the `write_volatile` calls here refer to\n"
+"    // the method of the `*mut T` type. Proper safe abstractions\n"
+"    // for all of this would complicate the example, so we\n"
+"    // simply use raw pointers and one large `unsafe` block.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:141
+msgid "// set the interrupt function to be our handler\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:144
+msgid "// enable vblank interrupts\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:149
+msgid "// set the device for a basic display mode.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:153
+msgid "// wait in a low-power state for the vertical blank to start.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:155
+msgid "// draw one new red pixel per frame along the top.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:158
+msgid ""
+"// loop our position as necessary so that we don't\n"
+"            // go out of bounds.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:164
+msgid ""
+"/// Responds to any interrupt by clearing all interrupt flags\n"
+"/// and then immediately returning with no other effect.\n"
+msgstr ""
+
+#: src/2867-isa-attribute.md:174
+msgid "We setup the device with our interrupt handler."
+msgstr ""
+
+#: src/2867-isa-attribute.md:175
+msgid ""
+"We set the device to have an interrupt every time the vertical blank starts."
+msgstr ""
+
+#: src/2867-isa-attribute.md:176
+msgid "We set the display to use a basic bitmap mode and begin our loop."
+msgstr ""
+
+#: src/2867-isa-attribute.md:177
+msgid ""
+"Each pass of the loop we wait for vertical blank, then draw a single pixel "
+"to video memory."
+msgstr ""
+
+#: src/2867-isa-attribute.md:179
+msgid ""
+"In the case of this particular device, the hardware interrupts go to the "
+"device's BIOS, which then calls your interrupt handler function. However, "
+"because the BIOS is `a32` code and uses a `b` branch instead of a `bx` "
+"branch-exchange, it jumps to the handler with the CPU in an `a32` state. If "
+"the handler were written as `t32` code it would immediately trigger UB."
+msgstr ""
+
+#: src/2867-isa-attribute.md:181
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/2867-isa-attribute.md:183
+msgid ""
+"Extending `target_feature` to allow `#[target_feature(disable = \"...\")]` "
+"and adding `thumb-mode` to the whitelist would support this functionality "
+"without adding another distinct attribute; however, this does not fit with "
+"the `target_feature` attribute's current focus on features such as AVX and "
+"SSE whose absence is not necessarily compensated for by the presence of "
+"something else."
+msgstr ""
+
+#: src/2867-isa-attribute.md:185
+msgid ""
+"Doing nothing is an option; it is currently possible to incorporate code "
+"using other instruction sets through means such as external assembly and "
+"build scripts. However, this has greatly reduced ergonomics."
+msgstr ""
+
+#: src/2867-isa-attribute.md:187
+msgid ""
+"Of note is the fact that this is a feature that mostly improves Rust's "
+"support for the more legacy end of ARM devices. Newer devices, with much "
+"larger amounts of memory (relatively), don't usually benefit as much. They "
+"could simply compile the entire program as `a32`, without needing to gain "
+"the space savings of `t32` code."
+msgstr ""
+
+#: src/2867-isa-attribute.md:189
+msgid "Prior art"
+msgstr ""
+
+#: src/2867-isa-attribute.md:192
+msgid ""
+"In C you can use `__attribute__((target(\"arm\")))` and "
+"`__attribute__((target(\"thumb\")))` to access similar functionality. It's a "
+"compiler-specific extension, but it's supported by both GCC and Clang ([this "
+"PR](https://reviews.llvm.org/D33721) appears to be the one that added this "
+"feature to LLVM/clang)."
+msgstr ""
+
+#: src/2867-isa-attribute.md:194
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2867-isa-attribute.md:197
+msgid ""
+"How do we ensure that `instruction_set` and inline assembly always interact "
+"correctly? This isn't an implementation blocker but needs to be resolved "
+"before Stabilization of the attribute."
+msgstr ""
+
+#: src/2867-isa-attribute.md:198
+msgid ""
+"Currently, LLVM will not inline `a32` functions into `t32` functions and "
+"vice versa, because they count as different code targets. However, this is "
+"not necessarily a guarantee from LLVM, it could just be the current "
+"implementation, so more investigation is needed."
+msgstr ""
+
+#: src/2867-isa-attribute.md:200
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2867-isa-attribute.md:203
+msgid ""
+"If Rust gains support for the 65C816, the `#[instruction_set(?)]` attribute "
+"might be extended to allow shifting into its 65C02 compatibility mode and "
+"back again."
+msgstr ""
+
+#: src/2867-isa-attribute.md:205
+msgid ""
+"MIPS has a 16-bit encoding which uses a similar scheme as ARM, where the low "
+"bit of a function's address is set when the 16-bit encoding is in use for "
+"that function."
+msgstr ""
+
+#: src/2867-isa-attribute.md:207
+msgid ""
+"It might become possible to apply this attribute to trait prototypes in a "
+"future versions, in which case all impls of the method would take on the "
+"attribute. The main problems are properly specifying it and also that it "
+"would add additional compiler complexity for very minimal gain."
+msgstr ""
+
+#: src/2867-isa-attribute.md:208
+msgid ""
+"Even without this change, a particular impl of the trait can use the "
+"attribute on its methods."
+msgstr ""
+
+#: src/2867-isa-attribute.md:210
+msgid ""
+"LLVM might eventually gain support for inter-instruction-set calls that "
+"allow calls between two arches (eg: a hybrid PowerPC/RISC-V)."
+msgstr ""

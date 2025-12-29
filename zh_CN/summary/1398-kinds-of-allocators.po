@@ -1,0 +1,2689 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1398-kinds-of-allocators.md:1
+msgid "Feature Name: allocator_api"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2
+msgid "Start Date: 2015-12-01"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1398](https://github.com/rust-lang/rfcs/pull/1398)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#32838](https://github.com/rust-lang/rust/"
+"issues/32838)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:9
+msgid ""
+"Add a standard allocator interface and support for user-defined allocators, "
+"with the following goals:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:12
+msgid ""
+"Allow libraries (in libstd and elsewhere) to be generic with respect to the "
+"particular allocator, to support distinct, stateful, per-container "
+"allocators."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:16
+msgid ""
+"Require clients to supply metadata (such as block size and alignment) at the "
+"allocation and deallocation sites, to ensure hot-paths are as efficient as "
+"possible."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:20
+msgid "Provide high-level abstraction over the layout of an object in memory."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:23
+msgid ""
+"Regarding GC: We plan to allow future allocators to integrate themselves "
+"with a standardized reflective GC interface, but leave specification of such "
+"integration for a later RFC. (The design describes a way to add such a "
+"feature in the future while ensuring that clients do not accidentally opt-in "
+"and risk unsound behavior.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:29
+msgid "Motivation"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:32
+msgid ""
+"As noted in [RFC PR 39](https://github.com/rust-lang/rfcs/pull/39/files) "
+"(and reiterated in [RFC PR 244](https://github.com/rust-lang/rfcs/"
+"pull/244)), modern general purpose allocators are good, but due to the "
+"design tradeoffs they must make, cannot be optimal in all contexts.  (It is "
+"worthwhile to also read discussion of this claim in papers such as "
+"[Reconsidering Custom Malloc](#reconsidering-custom-memory-allocation).)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:38
+msgid ""
+"Therefore, the standard library should allow clients to plug in their own "
+"allocator for managing memory."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:41
+msgid "Allocators are used in C++ system programming"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:43
+msgid ""
+"The typical reasons given for use of custom allocators in C++ are among the "
+"following:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:46
+msgid ""
+"Speed: A custom allocator can be tailored to the particular memory usage "
+"profiles of one client.  This can yield advantages such as:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:50
+msgid ""
+"A bump-pointer based allocator, when available, is faster than calling "
+"`malloc`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:53
+msgid ""
+"Adding memory padding can reduce/eliminate false sharing of cache lines."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:56
+msgid ""
+"Stability: By segregating different sub-allocators and imposing hard memory "
+"limits upon them, one has a better chance of handling out-of-memory "
+"conditions."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:60
+msgid ""
+"If everything comes from a single global heap, it becomes much harder to "
+"handle out-of-memory conditions because by the time the handler runs, it is "
+"almost certainly going to be unable to allocate any memory for its own work."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:65
+msgid ""
+"Instrumentation and debugging: One can swap in a custom allocator that "
+"collects data such as number of allocations, or time for requests to be "
+"serviced."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:69
+msgid "Allocators should feel \"rustic\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:71
+msgid ""
+"In addition, for Rust we want an allocator API design that leverages the "
+"core type machinery and language idioms (e.g. using `Result` to propagate "
+"dynamic error conditions), and provides premade functions for common "
+"patterns for allocator clients (such as allocating either single instances "
+"of a type, or arrays of some types of dynamically-determined length)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:78
+msgid "Garbage Collection integration"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:80
+msgid ""
+"Finally, we want our allocator design to allow for a garbage collection (GC) "
+"interface to be added in the future."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:83
+msgid ""
+"At the very least, we do not want to accidentally _disallow_ GC by choosing "
+"an allocator API that is fundamentally incompatible with it."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:86
+msgid ""
+"(However, this RFC does not actually propose a concrete solution for how to "
+"integrate allocators with GC.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:89
+msgid "Detailed design"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:92
+msgid "The `Allocator` trait at a glance"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:94
+msgid ""
+"The source code for the `Allocator` trait prototype is provided in an "
+"[appendix](#transcribed-source-for-allocator-trait-api). But since that "
+"section is long, here we summarize the high-level points of the `Allocator` "
+"API."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:98
+msgid ""
+"(See also the [walk thru](#a-walk-through-the-allocator-trait) section, "
+"which actually links to individual sections of code.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:101
+msgid ""
+"Basic implementation of the trait requires just two methods (`alloc` and "
+"`dealloc`). You can get an initial implementation off the ground with "
+"relatively little effort."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:105
+msgid ""
+"All methods that can fail to satisfy a request return a `Result` (rather "
+"than building in an assumption that they panic or abort)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:108
+msgid ""
+"Furthermore, allocator implementations are discouraged from directly "
+"panicking or aborting on out-of-memory (OOM) during calls to allocation "
+"methods; instead, clients that do wish to report that OOM occurred via a "
+"particular allocator can do so via the `Allocator::oom()` method."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:114
+msgid ""
+"OOM is not the only type of error that may occur in general; allocators can "
+"inject more specific error types to indicate why an allocation failed."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:118
+msgid ""
+"The metadata for any allocation is captured in a `Layout` abstraction. This "
+"type carries (at minimum) the size and alignment requirements for a memory "
+"request."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:122
+msgid ""
+"The `Layout` type provides a large family of functional construction methods "
+"for building up the description of how memory is laid out."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:125
+msgid ""
+"Any sized type `T` can be mapped to its `Layout`, via `Layout::new::<T>()`,"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:127
+msgid "Heterogenous structure; e.g. `layout1.extend(layout2)`,"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:129
+msgid "Homogeneous array types: `layout.repeat(n)` (for `n: usize`),"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:131
+msgid "There are packed and unpacked variants for the latter two methods."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:133
+msgid ""
+"Helper `Allocator` methods like `fn alloc_one` and `fn alloc_array` allow "
+"client code to interact with an allocator without ever directly constructing "
+"a `Layout`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:137
+msgid ""
+"Once an `Allocator` implementor has the `fn alloc` and `fn dealloc` methods "
+"working, it can provide overrides of the other methods, providing hooks that "
+"take advantage of specific details of how your allocator is working "
+"underneath the hood."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:142
+msgid ""
+"In particular, the interface provides a few ways to let clients potentially "
+"reuse excess memory associated with a block"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:145
+msgid ""
+"`fn realloc` is a common pattern (where the client hopes that the method "
+"will reuse the original memory when satisfying the `realloc` request)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:149
+msgid ""
+"`fn alloc_excess` and `fn usable_size` provide an alternative pattern, where "
+"your allocator tells the client about the excess memory provided to satisfy "
+"a request, and the client can directly expand into that excess memory, "
+"without doing round-trip requests through the allocator itself."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:155
+msgid "Semantics of allocators and their memory blocks"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:158
+msgid ""
+"In general, an allocator provide access to a memory pool that owns some "
+"amount of backing storage. The pool carves off chunks of that storage and "
+"hands it out, via the allocator, as individual blocks of memory to service "
+"client requests. (A \"client\" here is usually some container library, like "
+"`Vec` or `HashMap`, that has been suitably parameterized so that it has an "
+"`A:Allocator` type parameter.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:165
+msgid ""
+"So, an interaction between a program, a collection library, and an allocator "
+"might look like this:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:170
+msgid ""
+"If you cannot see the SVG linked here, try the [ASCII art version](#ascii-"
+"art-version-of-allocator-message-sequence-chart) appendix. Also, if you have "
+"suggestions for changes to the SVG, feel free to write them as a comment in "
+"that appendix; (but be sure to be clear that you are pointing out a "
+"suggestion for the SVG)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:174
+msgid ""
+"In general, an allocator might be the backing memory pool itself; or an "
+"allocator might merely be a _handle_ that references the memory pool. In the "
+"former case, when the allocator goes out of scope or is otherwise dropped, "
+"the memory pool is dropped as well; in the latter case, dropping the "
+"allocator has no effect on the memory pool."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:180
+msgid ""
+"One allocator that acts as a handle is the global heap allocator, whose "
+"associated pool is the low-level `#[allocator]` crate."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:183
+msgid ""
+"Another allocator that acts as a handle is a `&'a Pool`, where `Pool` is "
+"some structure implementing a sharable backing store. The big [example]"
+"(#example-usage) section shows an instance of this."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:187
+msgid ""
+"An allocator that is its own memory pool would be a type analogous to `Pool` "
+"that implements the `Allocator` interface directly, rather than via `&'a "
+"Pool`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:191
+msgid ""
+"A case in the middle of the two extremes might be something like an "
+"allocator of the form `Rc<RefCell<Pool>>`. This reflects _shared_ ownership "
+"between a collection of allocators handles: dropping one handle will not "
+"drop the pool as long as at least one other handle remains, but dropping the "
+"last handle will drop the pool itself."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:197
+msgid ""
+"FIXME: `RefCell<Pool>` is not going to work with the allocator API envisaged "
+"here; see [comment from gankro](https://github.com/rust-lang/rfcs/"
+"pull/1398#issuecomment-162681096). We will need to address this (perhaps "
+"just by pointing out that it is illegal and suggesting a standard pattern to "
+"work around it) before this RFC can be accepted."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:205
+msgid ""
+"A client that is generic over all possible `A:Allocator` instances cannot "
+"know which of the above cases it falls in. This has consequences in terms of "
+"the restrictions that must be met by client code interfacing with an "
+"allocator, which we discuss in a later [section on lifetimes](#allocators-"
+"and-lifetimes)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:212
+msgid "Example Usage"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:215
+msgid ""
+"Lets jump into a demo. Here is a (super-dumb) bump-allocator that uses the "
+"`Allocator` trait."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:218
+msgid "Implementing the `Allocator` trait"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:220
+msgid ""
+"First, the bump-allocator definition itself: each such allocator will have "
+"its own name (for error reports from OOM), start and limit pointers (`ptr` "
+"and `end`, respectively) to the backing storage it is allocating into, as "
+"well as the byte alignment (`align`) of that storage, and an `avail: "
+"AtomicPtr<u8>` for the cursor tracking how much we have allocated from the "
+"backing storage. (The `avail` field is an atomic because eventually we want "
+"to try sharing this demo allocator across scoped threads.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:240
+msgid ""
+"The initial implementation is pretty straight forward: just immediately "
+"allocate the whole pool's backing storage."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:243
+msgid ""
+"(If we wanted to be really clever we might layer this type on top of "
+"_another_ allocator. For this demo I want to try to minimize cleverness, so "
+"we will use `heap::allocate` to grab the backing storage instead of taking "
+"an `Allocator` of our own.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:257
+msgid "\"allocation failed.\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:269
+msgid ""
+"Since clients are not allowed to have blocks that outlive their associated "
+"allocator (see the [lifetimes](#allocators-and-lifetimes) section), it is "
+"sound for us to always drop the backing storage for an allocator when the "
+"allocator itself is dropped (regardless of what sequence of `alloc`/"
+"`dealloc` interactions occurred with the allocator's clients)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:287
+msgid "Here are some other design choices of note:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:289
+msgid ""
+"Our Bump Allocator is going to use a most simple-minded deallocation policy: "
+"calls to `fn dealloc` are no-ops. Instead, every request takes up fresh "
+"space in the backing storage, until the pool is exhausted. (This was one "
+"reason I use the word \"Dumb\" in its name.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:294
+msgid ""
+"Since we want to be able to share the bump-allocator amongst multiple "
+"(lifetime-scoped) threads, we will implement the `Allocator` interface as a "
+"_handle_ pointing to the pool; in this case, a simple reference."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:298
+msgid ""
+"Since the whole point of this particular bump-allocator is to shared across "
+"threads (otherwise there would be no need to use `AtomicPtr` for the `avail` "
+"field), we will want to implement the (unsafe) `Sync` trait on it (doing "
+"this signals that it is safe to send `&DumbBumpPool` to other threads)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:304
+msgid "Here is that `impl Sync`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:307
+msgid ""
+"/// Note of course that this impl implies we must review all other\n"
+"/// code for DumbBumpPool even more carefully.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:312
+msgid "Here is the demo implementation of `Allocator` for the type."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:334
+msgid "// If the allocation attempt hits interference ...\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:337
+msgid "// .. then try again\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:339
+msgid "\"alloc finis ok: 0x{:x} size: {}\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:346
+msgid "// this bump-allocator just no-op's on dealloc\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:351
+msgid "\"exhausted memory in {} on request {:?} with avail: {}; self: {:?}\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:358
+msgid ""
+"(Niko Matsakis has pointed out that this particular allocator might avoid "
+"interference errors by using fetch-and-add rather than compare-and-swap. The "
+"devil's in the details as to how one might accomplish that while still "
+"properly adjusting for alignment; in any case, the overall point still holds "
+"in cases outside of this specific demo.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:365
+msgid "And that is it; we are done with our allocator implementation."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:367
+msgid "Using an `A:Allocator` from the client side"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:369
+msgid ""
+"We assume that `Vec` has been extended with a `new_in` method that takes an "
+"allocator argument that it uses to satisfy its allocation requests."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:377 src/1398-kinds-of-allocators.md:383
+msgid "\"demo_alloc, v1; {:?} v2: {:?}\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:390 src/1398-kinds-of-allocators.md:397
+msgid "\"demo_alloc, v1.len: {} v2.len: {}\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:405 src/1398-kinds-of-allocators.md:430
+msgid "\"demo-bump\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:406
+msgid "\"alloc: {:?}\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:410
+msgid "\"DumbBumpPool panicked: {}\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:413
+msgid "\"DumbBumpPool panicked\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:418
+msgid ""
+"// // The below will be (rightly) rejected by compiler when\n"
+"    // // all pieces are properly in place: It is not valid to\n"
+"    // // have the vector outlive the borrowed allocator it is\n"
+"    // // referencing.\n"
+"    //\n"
+"    // let v = {\n"
+"    //     let alloc = DumbBumpPool::new(\"demo2\", 4096, 1);\n"
+"    //     let mut v = Vec::new_in(&alloc);\n"
+"    //     for i in 1..4 { v.push(i); }\n"
+"    //     v\n"
+"    // };\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:440
+msgid "\"got here\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:444
+msgid "And that's all to the demo, folks."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:446
+msgid "What about standard library containers?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:448
+msgid ""
+"The intention of this RFC is that the Rust standard library will be extended "
+"with parameteric allocator support: `Vec`, `HashMap`, etc should all "
+"eventually be extended with the ability to use an alternative allocator for "
+"their backing storage."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:453
+msgid "However, this RFC does not prescribe when or how this should happen."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:455
+msgid ""
+"Under the design of this RFC, Allocators parameters are specified via a "
+"_generic type parameter_ on the container type. This strongly implies that "
+"`Vec<T>` and `HashMap<K, V>` will need to be extended with an allocator type "
+"parameter, i.e.: `Vec<T, A:Allocator>` and `HashMap<K, V, A:Allocator>`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:461
+msgid ""
+"There are two reasons why such extension is left to later work, after this "
+"RFC."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:464
+msgid "Default type parameter fallback"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:466
+msgid ""
+"On its own, such a change would be backwards incompatible (i.e. a huge "
+"breaking change), and also would simply be just plain inconvenient for "
+"typical use cases. Therefore, the newly added type parameters will almost "
+"certainly require a _default type_: `Vec<T: A:Allocator=HeapAllocator>` and "
+"`HashMap<K,V,A:Allocator=HeapAllocator>`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:473
+msgid ""
+"Default type parameters themselves, in the context of type definitions, are "
+"a stable part of the Rust language."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:476
+msgid ""
+"However, the exact semantics of how default type parameters interact with "
+"inference is still being worked out (in part _because_ allocators are a "
+"motivating use case), as one can see by reading the following:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:480
+msgid ""
+"RFC 213, \"Finalize defaulted type parameters\": https://github.com/rust-"
+"lang/rfcs/blob/master/text/0213-defaulted-type-params.md"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:482
+msgid ""
+"Tracking Issue for RFC 213: Default Type Parameter Fallback: https://github."
+"com/rust-lang/rust/issues/27336"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:484
+msgid ""
+"Feature gate defaulted type parameters appearing outside of types: https://"
+"github.com/rust-lang/rust/pull/30724"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:486
+msgid "Fully general container integration needs Dropck Eyepatch"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:488
+msgid ""
+"The previous problem was largely one of programmer ergonomics. However, "
+"there is also a subtle soundness issue that arises due to an current "
+"implementation artifact."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:492
+msgid ""
+"Standard library types like `Vec<T>` and `HashMap<K,V>` allow instantiating "
+"the generic parameters `T`, `K`, `V` with types holding lifetimes that do "
+"not strictly outlive that of the container itself. (I will refer to such "
+"instantiations of `Vec` and `HashMap` \"same-lifetime instances\" as a "
+"shorthand in this discussion.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:498
+msgid ""
+"Same-lifetime instance support is currently implemented for `Vec` and "
+"`HashMap` via an unstable attribute that is too coarse-grained. Therefore, "
+"we cannot soundly add the allocator parameter to `Vec` and `HashMap` while "
+"also continuing to allow same-lifetime instances without first addressing "
+"this overly coarse attribute. I have an open RFC to address this, the "
+"\"Dropck Eyepatch\" RFC; that RFC explains in more detail why this problem "
+"arises, using allocators as a specific motivating use case."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:507
+msgid ""
+"Concrete code illustrating this exact example (part of Dropck Eyepatch RFC): "
+"https://github.com/pnkfelix/rfcs/blob/dropck-eyepatch/text/0000-dropck-param-"
+"eyepatch.md#example-vect-aallocatordefaultallocator"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:510
+msgid ""
+"Nonparametric dropck RFC https://github.com/rust-lang/rfcs/blob/master/"
+"text/1238-nonparametric-dropck.md"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:512
+msgid "Standard library containers conclusion"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:514
+msgid ""
+"Rather than wait for the above issues to be resolved, this RFC proposes that "
+"we at least stabilize the `Allocator` trait interface; then we will at least "
+"have a starting point upon which to prototype standard library integration."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:519
+msgid "Allocators and lifetimes"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:522
+msgid ""
+"As mentioned above, allocators provide access to a memory pool. An allocator "
+"can _be_ the pool (in the sense that the allocator owns the backing storage "
+"that represents the memory blocks it hands out), or an allocator can just be "
+"a handle that points at the pool."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:527
+msgid ""
+"Some pools have indefinite extent. An example of this is the global heap "
+"allocator, requesting memory directly from the low-level `#[allocator]` "
+"crate. Clients of an allocator with such a pool need not think about how "
+"long the allocator lives; instead, they can just freely allocate blocks, use "
+"them at will, and deallocate them at arbitrary points in the future. Memory "
+"blocks that come from such a pool will leak if it is not explicitly "
+"deallocated."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:535
+msgid ""
+"Other pools have limited extent: they are created, they build up "
+"infrastructure to manage their blocks of memory, and at some point, such "
+"pools are torn down. Memory blocks from such a pool may or may not be "
+"returned to the operating system during that tearing down."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:540
+msgid ""
+"There is an immediate question for clients of an allocator with the latter "
+"kind of pool (i.e. one of limited extent): whether it should attempt to "
+"spend time deallocating such blocks, and if so, at what time to do so?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:545
+msgid "Again, note:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:547
+msgid ""
+"generic clients (i.e. that accept any `A:Allocator`) _cannot know_ what kind "
+"of pool they have, or how it relates to the allocator it is given,"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:551
+msgid ""
+"dropping the client's allocator may or may not imply the dropping of the "
+"pool itself!"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:554
+msgid ""
+"That is, code written to a specific `Allocator` implementation may be able "
+"to make assumptions about the relationship between the memory blocks and the "
+"allocator(s), but the generic code we expect the standard library to provide "
+"cannot make such assumptions."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:559
+msgid ""
+"To satisfy the above scenarios in a sane, consistent, general fashion, the "
+"`Allocator` trait assumes/requires all of the following conditions. (Note: "
+"this list of conditions uses the phrases \"should\", \"must\", and \"must "
+"not\" in a formal manner, in the style of [IETF RFC 2119](https://www.ietf."
+"org/rfc/rfc2119.txta).)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:566
+msgid ""
+"(for allocator impls and clients): in the absence of other information (e.g. "
+"specific allocator implementations), all blocks from a given pool have "
+"lifetime equivalent to the lifetime of the pool."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:571
+msgid ""
+"This implies if a client is going to read from, write to, or otherwise "
+"manipulate a memory block, the client _must_ do so before its associated "
+"pool is torn down."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:575
+msgid ""
+"(It also implies the converse: if a client can prove that the pool for an "
+"allocator is still alive, then it can continue to work with a memory block "
+"from that allocator even after the allocator is dropped.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:580
+msgid ""
+"(for allocator impls): an allocator _must not_ outlive its associated pool."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:583 src/1398-kinds-of-allocators.md:608
+msgid "All clients can assume this in their code."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:585
+msgid ""
+"(This constraint provides generic clients the preconditions they need to "
+"satisfy the first condition. In particular, even though clients do not "
+"generally know what kind of pool is associated with its allocator, it can "
+"conservatively assume that all blocks will live at least as long as the "
+"allocator itself.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:591
+msgid ""
+"(for allocator impls and clients): all clients of an allocator _should_ "
+"eventually call the `dealloc` method on every block they want freed "
+"(otherwise, memory may leak)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:595
+msgid ""
+"However, allocator implementations _must_ remain sound even if this "
+"condition is not met: If `dealloc` is not invoked for all blocks and this "
+"condition is somehow detected, then an allocator can panic (or otherwise "
+"signal failure), but that sole violation must not cause undefined behavior."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:601
+msgid ""
+"(This constraint is to encourage generic client authors to write code that "
+"will not leak memory when instantiated with allocators of indefinite extent, "
+"such as the global heap allocator.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:605
+msgid ""
+"(for allocator impls): moving an allocator value _must not_ invalidate its "
+"outstanding memory blocks."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:610
+msgid ""
+"So if a client allocates a block from an allocator (call it `a1`) and then "
+"`a1` moves to a new place (e.g. via`let a2 = a1;`), then it remains sound "
+"for the client to deallocate that block via `a2`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:615
+msgid ""
+"Note that this implies that it is not sound to implement an allocator that "
+"embeds its own pool structurally inline."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:618
+msgid "E.g. this is _not_ a legal allocator:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:621
+msgid "// INVALID IMPL\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:623
+msgid ""
+"The latter impl is simply unreasonable (at least if one is intending to "
+"satisfy requests by returning pointers into `self.bytes`)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:627
+msgid ""
+"Note that an allocator that owns its pool _indirectly_ (i.e. does not have "
+"the pool's state embedded in the allocator) is fine:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:631
+msgid "// OKAY\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:634
+msgid ""
+"(I originally claimed that `impl Allocator for &mut MegaEmbedded` would also "
+"be a legal example of an allocator that is an indirect handle to an "
+"unembedded pool, but others pointed out that handing out the addresses "
+"pointing into that embedded pool could end up violating our aliasing rules "
+"for `&mut`. I obviously did not expect that outcome; I would be curious to "
+"see what the actual design space is here.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:641
+msgid ""
+"(for allocator impls and clients) if an allocator is cloneable, the client "
+"_can assume_ that all clones are interchangeably compatible in terms of "
+"their memory blocks: if allocator `a2` is a clone of `a1`, then one can "
+"allocate a block from `a1` and return it to `a2`, or vice versa, or use `a2."
+"realloc` on the block, et cetera."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:648
+msgid ""
+"This essentially means that any cloneable allocator _must_ be a handle "
+"indirectly referencing a pool of some sort. (Though do remember that such "
+"handles can collectively share ownership of their pool, such as illustrated "
+"in the `Rc<RefCell<Pool>>` example given earlier.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:654
+msgid ""
+"(Note: one might be tempted to further conclude that this also implies that "
+"allocators implementing `Copy` must have pools of indefinite extent. While "
+"this seems reasonable for Rust as it stands today, I am slightly worried "
+"whether it would continue to hold e.g.  in a future version of Rust with "
+"something like `Gc<GcPool>: Copy`, where the `GcPool` and its blocks is "
+"reclaimed (via finalization) sometime after being determined to be globally "
+"unreachable. Then again, perhaps it would be better to simply say \"we will "
+"not support that use case for the allocator API\", so that clients would be "
+"able to employ the reasoning outlined in the outset of this paragraph.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:667
+msgid "A walk through the Allocator trait"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:670
+msgid "Role-Based Type Aliases"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:672
+msgid ""
+"Allocation code often needs to deal with values that boil down to a `usize` "
+"in the end. But there are distinct roles (e.g. \"size\", \"alignment\") that "
+"such values play, and I decided those roles would be worth hard-coding into "
+"the method signatures."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:677
+msgid ""
+"Therefore, I made [type aliases](#type-aliases) for `Size`, `Capacity`, "
+"`Alignment`, and `Address`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:679
+msgid "Basic implementation"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:681
+msgid ""
+"An instance of an allocator has many methods, but an implementor of the "
+"trait need only provide two method bodies: [alloc and dealloc](#allocator-"
+"core-alloc-and-dealloc)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:684
+msgid ""
+"(This is only _somewhat_ analogous to the `Iterator` trait in Rust. It is "
+"currently very uncommon to override any methods of `Iterator` except for `fn "
+"next`. However, I expect it will be much more common for `Allocator` to "
+"override at least some of the other methods, like `fn realloc`.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:690
+msgid ""
+"The `alloc` method returns an `Address` when it succeeds, and `dealloc` "
+"takes such an address as its input. But the client must also provide "
+"metadata for the allocated block like its size and alignment. This is "
+"encapsulated in the `Layout` argument to `alloc` and `dealloc`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:695
+msgid "Memory layouts"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:697
+msgid ""
+"A `Layout` just carries the metadata necessary for satisfying an allocation "
+"request. Its (current, private) representation is just a size and alignment."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:701
+msgid ""
+"The more interesting thing about `Layout` is the family of public methods "
+"associated with it for building new layouts via composition; these are shown "
+"in the [layout api](#layout-api)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:705
+msgid "Reallocation Methods"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:707
+msgid ""
+"Of course, real-world allocation often needs more than just `alloc`/"
+"`dealloc`: in particular, one often wants to avoid extra copying if the "
+"existing block of memory can be conceptually expanded in place to meet new "
+"allocation needs. In other words, we want `realloc`, plus alternatives to it "
+"(`alloc_excess`) that allow clients to avoid round-tripping through the "
+"allocator API."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:714
+msgid ""
+"For this, the [memory reuse](#allocator-methods-for-memory-reuse) family of "
+"methods is appropriate."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:716
+msgid "Type-based Helper Methods"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:718
+msgid ""
+"Some readers might skim over the `Layout` API and immediately say \"yuck, "
+"all I wanted to do was allocate some nodes for a tree-structure and let my "
+"clients choose how the backing memory is chosen! Why do I have to wrestle "
+"with this `Layout` business?\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:723
+msgid ""
+"I agree with the sentiment; that's why the `Allocator` trait provides a "
+"family of methods capturing [common usage patterns](#allocator-convenience-"
+"methods-for-common-usage-patterns), for example, `a.alloc_one::<T>()` will "
+"return a `Unique<T>` (or error)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:727
+msgid "Unchecked variants"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:729
+msgid ""
+"Almost all of the methods above return `Result`, and guarantee some amount "
+"of input validation. (This is largely because I observed code duplication "
+"doing such validation on the client side; or worse, such validation "
+"accidentally missing.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:734
+msgid ""
+"However, some clients will want to bypass such checks (and do it without "
+"risking undefined behavior, namely by ensuring the method preconditions hold "
+"via local invariants in their container type)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:738
+msgid ""
+"For these clients, the `Allocator` trait provides [\"unchecked\" variants]"
+"(#allocator-unchecked-method-variants) of nearly all of its methods; so `a."
+"alloc_unchecked(layout)` will return an `Option<Address>` (where `None` "
+"corresponds to allocation failure)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:743
+msgid ""
+"The idea here is that `Allocator` implementors are encouraged to streamline "
+"the implementations of such methods by assuming that all of the "
+"preconditions hold."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:747
+msgid ""
+"However, to ease initial `impl Allocator` development for a given type, all "
+"of the unchecked methods have default implementations that call out to their "
+"checked counterparts."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:751
+msgid ""
+"(In other words, \"unchecked\" is in some sense a privilege being offered to "
+"impl's; but there is no guarantee that an arbitrary impl takes advantage of "
+"the privilege.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:755
+msgid "Object-oriented Allocators"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:757
+msgid "Finally, we get to object-oriented programming."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:759
+msgid ""
+"In general, we expect allocator-parametric code to opt _not_ to use trait "
+"objects to generalize over allocators, but instead to use generic types and "
+"instantiate those types with specific concrete allocators."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:764
+msgid ""
+"Nonetheless, it _is_ an option to write `Box<Allocator>` or `&Allocator`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:766
+msgid ""
+"(The allocator methods that are not object-safe, like `fn alloc_one<T>(&mut "
+"self)`, have a clause `where Self: Sized` to ensure that their presence does "
+"not cause the `Allocator` trait as a whole to become non-object-safe.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:772
+msgid "Why this API"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:775
+msgid "Here are some quick points about how this API was selected"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:777
+msgid "Why not just `free(ptr)` for deallocation?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:779
+msgid ""
+"As noted in [RFC PR 39](https://github.com/rust-lang/rfcs/pull/39/files) "
+"(and reiterated in [RFC PR 244](https://github.com/rust-lang/rfcs/"
+"pull/244)), the basic `malloc` interface {`malloc(size) -> ptr`, "
+"`free(ptr)`, `realloc(ptr, size) -> ptr`} is lacking in a number of ways: "
+"`malloc` lacks the ability to request a particular alignment, and `realloc` "
+"lacks the ability to express a copy-free \"reuse the input, or do nothing at "
+"all\" request.  Another problem with the `malloc` interface is that it "
+"burdens the allocator with tracking the sizes of allocated data and re-"
+"extracting the allocated size from the `ptr` in `free` and `realloc` calls "
+"(the latter can be very cheap, but there is still no reason to pay that cost "
+"in a language like Rust where the relevant size is often already immediately "
+"available as a compile-time constant)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:791
+msgid ""
+"Therefore, in the name of (potential best-case) speed, we want to require "
+"client code to provide the metadata like size and alignment to both the "
+"allocation and deallocation call sites."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:795
+msgid "Why not just `alloc`/`dealloc` (or `alloc`/`dealloc`/`realloc`)?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:797
+msgid ""
+"The `alloc_one`/`dealloc_one` and `alloc_array`/`dealloc_array` capture a "
+"very common pattern for allocation of memory blocks where a simple value or "
+"array type is being allocated."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:801
+msgid ""
+"The `alloc_array_unchecked` and `dealloc_array_unchecked` likewise capture a "
+"common pattern, but are \"less safe\" in that they put more of an onus on "
+"the caller to validate the input parameters before calling the methods."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:806
+msgid ""
+"The `alloc_excess` and `realloc_excess` methods provide a way for callers "
+"who can make use of excess memory to avoid unnecessary calls to `realloc`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:810
+msgid "Why the `Layout` abstraction?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:812
+msgid ""
+"While we do want to require clients to hand the allocator the size and "
+"alignment, we have found that the code to compute such things follows "
+"regular patterns. It makes more sense to factor those patterns out into a "
+"common abstraction; this is what `Layout` provides: a high-level API for "
+"describing the memory layout of a composite structure by composing the "
+"layout of its subparts."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:819
+msgid "Why return `Result` rather than a raw pointer?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:821
+msgid ""
+"My hypothesis is that the standard allocator API should embrace `Result` as "
+"the standard way for describing local error conditions in Rust."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:825
+msgid ""
+"A previous version of this RFC attempted to ensure that the use of the "
+"`Result` type could avoid any additional overhead over a raw pointer return "
+"value, by using a `NonZero` address type and a zero-sized error type "
+"attached to the trait via an associated `Error` type. But during the RFC "
+"process we decided that this was not necessary."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:832
+msgid "Why return `Result` rather than directly `oom` on failure"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:834
+msgid ""
+"Again, my hypothesis is that the standard allocator API should embrace "
+"`Result` as the standard way for describing local error conditions in Rust."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:838
+msgid ""
+"I want to leave it up to the clients to decide if they can respond to out-of-"
+"memory (OOM) conditions on allocation failure."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:841
+msgid ""
+"However, since I also suspect that some programs would benefit from "
+"contextual information about _which_ allocator is reporting memory "
+"exhaustion, I have made `oom` a method of the `Allocator` trait, so that "
+"allocator clients have the option of calling that on error."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:846
+msgid ""
+"Why is `usable_size` ever needed? Why not call `layout.size()` directly, as "
+"is done in the default implementation?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:848
+msgid ""
+"`layout.size()` returns the minimum required size that the client needs. In "
+"a block-based allocator, this may be less than the _actual_ size that the "
+"allocator would ever provide to satisfy that kind of request. Therefore, "
+"`usable_size` provides a way for clients to observe what the minimum actual "
+"size of an allocated block for that`layout` would be, for a given allocator."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:855
+msgid ""
+"(Note that the documentation does say that in general it is better for "
+"clients to use `alloc_excess` and `realloc_excess` instead, if they can, as "
+"a way to directly observe the _actual_ amount of slop provided by the "
+"particular allocator.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:860
+msgid "Why is `Allocator` an `unsafe trait`?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:862
+msgid ""
+"It just seems like a good idea given how much of the standard library is "
+"going to assume that allocators are implemented according to their "
+"specification."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:866
+msgid ""
+"(I had thought that `unsafe fn` for the methods would suffice, but that is "
+"putting the burden of proof (of soundness) in the _wrong_ direction...)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:870
+msgid "The GC integration strategy"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:873
+msgid ""
+"One of the main reasons that [RFC PR 39](https://github.com/rust-lang/rfcs/"
+"pull/39/files) was not merged as written was because it did not account for "
+"garbage collection (GC)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:876
+msgid ""
+"In particular, assuming that we eventually add support for GC in some form, "
+"then any value that holds a reference to an object on the GC'ed heap will "
+"need some linkage to the GC. In particular, if the _only_ such reference (i."
+"e. the one with sole ownership) is held in a block managed by a user-defined "
+"allocator, then we need to ensure that all such references are found when "
+"the GC does its work."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:883
+msgid ""
+"The Rust project has control over the `libstd` provided allocators, so the "
+"team can adapt them as necessary to fit the needs of whatever GC designs "
+"come around. But the same is not true for user-defined allocators: we want "
+"to ensure that adding support for them does not inadvertently kill any "
+"chance for adding GC later."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:889
+msgid "The inspiration for Layout"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:891
+msgid ""
+"Some aspects of the design of this RFC were selected in the hopes that it "
+"would make such integration easier. In particular, the introduction of the "
+"relatively high-level `Kind` abstraction was developed, in part, as a way "
+"that a GC-aware allocator would build up a tracing method associated with a "
+"layout."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:897
+msgid ""
+"Then I realized that the `Kind` abstraction may be valuable on its own, "
+"without GC: It encapsulates important patterns when working with "
+"representing data as memory records."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:901
+msgid ""
+"(Later we decided to rename `Kind` to `Layout`, in part to avoid confusion "
+"with the use of the word \"kind\" in the context of higher-kinded types "
+"(HKT).)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:905
+msgid ""
+"So, this RFC offers the `Layout` abstraction without promising that it "
+"solves the GC problem. (It might, or it might not; we don't know yet.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:908
+msgid "Forwards-compatibility"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:910
+msgid "So what _is_ the solution for forwards-compatibility?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:912
+msgid ""
+"It is this: Rather than trying to build GC support into the `Allocator` "
+"trait itself, we instead assume that when GC support comes, it may come with "
+"a new trait (call it `GcAwareAllocator`)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:916
+msgid ""
+"(Perhaps we will instead use an attribute; the point is, whatever option we "
+"choose can be incorporated into the meta-data for a crate.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:920
+msgid ""
+"Allocators that are GC-compatible have to explicitly declare themselves as "
+"such, by implementing `GcAwareAllocator`, which will then impose new "
+"conditions on the methods of `Allocator`, for example ensuring e.g. that "
+"allocated blocks of memory can be scanned (i.e. \"parsed\") by the GC (if "
+"that in fact ends up being necessary)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:926
+msgid ""
+"This way, we can deploy an `Allocator` trait API today that does not provide "
+"the necessary reflective hooks that a GC would need to access."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:929
+msgid ""
+"Crates that define their own `Allocator` implementations without also "
+"claiming them to be GC-compatible will be forbidden from linking with crates "
+"that require GC support. (In other words, when GC support comes, we assume "
+"that the linking component of the Rust compiler will be extended to check "
+"such compatibility requirements.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:935
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:938
+msgid "The API may be over-engineered."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:940
+msgid ""
+"The core set of methods (the ones without `unchecked`) return `Result` and "
+"potentially impose unwanted input validation overhead."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:943
+msgid ""
+"The `_unchecked` variants are intended as the response to that, for clients "
+"who take care to validate the many preconditions themselves in order to "
+"minimize the allocation code paths."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:947
+msgid "Alternatives"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:950
+msgid ""
+"Just adopt [RFC PR 39](https://github.com/rust-lang/rfcs/pull/39/files) with "
+"this RFC's GC strategy"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:952
+msgid ""
+"The GC-compatibility strategy described here (in [gc integration](#the-gc-"
+"integration-strategy)) might work with a large number of alternative "
+"designs, such as that from [RFC PR 39](https://github.com/rust-lang/rfcs/"
+"pull/39/files)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:956
+msgid ""
+"While that is true, it seems like it would be a little short-sighted. In "
+"particular, I have neither proven _nor_ disproven the value of `Layout` "
+"system described here with respect to GC integration."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:960
+msgid ""
+"As far as I know, it is the closest thing we have to a workable system for "
+"allowing client code of allocators to accurately describe the layout of "
+"values they are planning to allocate, which is the main ingredient I believe "
+"to be necessary for the kind of dynamic reflection that a GC will require of "
+"a user-defined allocator."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:966
+msgid "Make `Layout` an associated type of `Allocator` trait"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:968
+msgid "I explored making an `AllocLayout` bound and then having"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:972
+msgid ""
+"/// Describes the sort of records that this allocator can\n"
+"    /// construct.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:980
+msgid ""
+"Such a design might indeed be workable. (I found it awkward, which is why I "
+"abandoned it.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:983
+msgid "But the question is: What benefit does it bring?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:985
+msgid ""
+"The main one I could imagine is that it might allow us to introduce a "
+"division, at the type-system level, between two kinds of allocators: those "
+"that are integrated with the GC (i.e., have an associated `Allocator::"
+"Layout` that ensures that all allocated blocks are scannable by a GC) and "
+"allocators that are _not_ integrated with the GC (i.e., have an associated "
+"`Allocator::Layout` that makes no guarantees about one will know how to scan "
+"the allocated blocks."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:993
+msgid ""
+"However, no such design has proven itself to be \"obviously feasible to "
+"implement,\" and therefore it would be unreasonable to make the `Layout` an "
+"associated type of the `Allocator` trait without having at least a few "
+"motivating examples that _are_ clearly feasible and useful."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:998
+msgid "Variations on the `Layout` API"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1000
+msgid ""
+"Should `Layout` offer a `fn resize(&self, new_size: usize) -> Layout` "
+"constructor method? (Such a method would rule out deriving GC tracers from "
+"layouts; but we could maybe provide it as an `unsafe` method.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1004
+msgid ""
+"Should `Layout` ensure an invariant that its associated size is always a "
+"multiple of its alignment?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1007
+msgid ""
+"Doing this would allow simplifying a small part of the API, namely the "
+"distinct `Layout::repeat` (returns both a layout and an offset) versus "
+"`Layout::array` (where the offset is derivable from the input `T`)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1012
+msgid ""
+"Such a constraint would have precedent; in particular, the `aligned_alloc` "
+"function of C11 requires the given size be a multiple of the alignment."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1016
+msgid ""
+"On the other hand, both the system and jemalloc allocators seem to support "
+"more flexible allocation patterns. Imposing the above invariant implies a "
+"certain loss of expressiveness over what we already provide today."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1021
+msgid ""
+"Should `Layout` ensure an invariant that its associated size is always "
+"positive?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1023
+msgid ""
+"Pro: Removes something that allocators would need to check about input "
+"layouts (the backing memory allocators will tend to require that the input "
+"sizes are positive)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1027
+msgid ""
+"Con: Requiring positive size means that zero-sized types do not have an "
+"associated `Layout`. That's not the end of the world, but it does make the "
+"`Layout` API slightly less convenient (e.g. one cannot use `extend` with a "
+"zero-sized layout to forcibly inject padding, because zero-sized layouts do "
+"not exist)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1032
+msgid ""
+"Should `Layout::align_to` add padding to the associated size? (Probably not; "
+"this would make it impossible to express certain kinds of patteerns.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1035
+msgid ""
+"Should the `Layout` methods that might \"fail\" return `Result` instead of "
+"`Option`?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1037
+msgid "Variations on the `Allocator` API"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1039
+msgid ""
+"Should the allocator methods take `&self` or `self` rather than `&mut self`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1041
+msgid ""
+"As noted during in the RFC comments, nearly every trait goes through a bit "
+"of an identity crisis in terms of deciding what kind of `self` parameter is "
+"appropriate."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1045
+msgid "The justification for `&mut self` is this:"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1047
+msgid ""
+"It does not restrict allocator implementors from making sharable allocators: "
+"to do so, just do `impl<'a> Allocator for &'a MySharedAlloc`, as illustrated "
+"in the `DumbBumpPool` example."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1051
+msgid ""
+"`&mut self` is better than `&self` for simple allocators that are _not_ "
+"sharable. `&mut self` ensures that the allocation methods have exclusive "
+"access to the underlying allocator state, without resorting to a lock. "
+"(Another way of looking at it: It moves the onus of using a lock outward, to "
+"the allocator clients.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1057
+msgid ""
+"One might think that the points made above apply equally well to `self` (i."
+"e., if you want to implement an allocator that wants to take itself via a "
+"`&mut`\\-reference when the methods take `self`, then do `impl<'a> Allocator "
+"for &'a mut MyUniqueAlloc`)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1062
+msgid ""
+"However, the problem with `self` is that if you want to use an allocator for "
+"_more than one_ allocation, you will need to call `clone()` (or make the "
+"allocator parameter implement `Copy`). This means in practice all allocators "
+"will need to support `Clone` (and thus support sharing in general, as "
+"discussed in the [Allocators and lifetimes](#allocators-and-lifetimes) "
+"section)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1069
+msgid ""
+"(Remember, I'm thinking about allocator-parametric code like `Vec<T, A:"
+"Allocator>`, which does not know if the `A` is a `&mut`\\-reference. In that "
+"context, therefore one cannot assume that reborrowing machinery is available "
+"to the client code.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1074
+msgid ""
+"Put more simply, requiring that allocators implement `Clone` means that it "
+"will _not_ be practical to do `impl<'a> Allocator for &'a mut MyUniqueAlloc`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1078
+msgid ""
+"By using `&mut self` for the allocation methods, we can encode the expected "
+"use case of an _unshared_ allocator that is used repeatedly in a linear "
+"fashion (e.g. vector that needs to reallocate its backing storage)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1083
+msgid ""
+"Should the types representing allocated storage have lifetimes attached? (E."
+"g. `fn alloc<'a>(&mut self, layout: &alloc::Layout) -> Address<'a>`.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1086
+msgid ""
+"I think Gankro [put it best](https://github.com/rust-lang/rfcs/"
+"pull/1398#issuecomment-164003160):"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1088
+msgid ""
+"This is a low-level unsafe interface, and the expected usecases make it both "
+"quite easy to avoid misuse, and impossible to use lifetimes (you want a "
+"struct to store the allocator and the allocated elements). Any time we've "
+"tried to shove more lifetimes into these kinds of interfaces have just been "
+"an annoying nuisance necessitating copy-lifetime/transmute nonsense."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1095
+msgid "Should `Allocator::alloc` be safe instead of `unsafe fn`?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1097
+msgid ""
+"Clearly `fn dealloc` and `fn realloc` need to be `unsafe`, since feeding in "
+"improper inputs could cause unsound behavior. But is there any analogous "
+"input to `fn alloc` that could cause unsoundness (assuming that the `Layout` "
+"struct enforces invariants like \"the associated size is non-zero\")?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1103
+msgid ""
+"(I left it as `unsafe fn alloc` just to keep the API uniform with `dealloc` "
+"and `realloc`.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1106
+msgid ""
+"Should `Allocator::realloc` not require that `new_layout.align()` evenly "
+"divide `layout.align()`? In particular, it is not too expensive to check if "
+"the two layouts are not compatible, and fall back on `alloc`/`dealloc` in "
+"that case."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1111
+msgid ""
+"Should `Allocator` not provide unchecked variants on `fn alloc`, `fn "
+"realloc`, et cetera? (To me it seems having them does no harm, apart from "
+"potentially misleading clients who do not read the documentation about what "
+"scenarios yield undefined behavior."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1116
+msgid ""
+"Another option here would be to provide a `trait UncheckedAllocator: "
+"Allocator` that carries the unchecked methods, so that clients who require "
+"such micro-optimized paths can ensure that their clients actually pass them "
+"an implementation that has the checks omitted."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1122
+msgid ""
+"On the flip-side of the previous bullet, should `Allocator` provide `fn "
+"alloc_one_unchecked` and `fn dealloc_one_unchecked` ? I think the only check "
+"that such variants would elide would be that `T` is not zero-sized; I'm not "
+"sure that's worth it. (But the resulting uniformity of the whole API might "
+"shift the balance to \"worth it\".)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1129
+msgid ""
+"Should the precondition of allocation methods be loosened to accept zero-"
+"sized types?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1132
+msgid ""
+"Right now, there is a requirement that the allocation requests denote non-"
+"zero sized types (this requirement is encoded in two ways: for `Layout`\\-"
+"consuming methods like `alloc`, it is enforced via the invariant that the "
+"`Size` is a `NonZero`, and this is enforced by checks in the `Layout` "
+"construction code; for the convenience methods like `alloc_one`, they will "
+"return `Err` if the allocation request is zero-sized)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1140
+msgid ""
+"The main motivation for this restriction is some underlying system "
+"allocators, like `jemalloc`, explicitly disallow zero-sized inputs. "
+"Therefore, to remove all unnecessary control-flow branches between the "
+"client and the underlying allocator, the `Allocator` trait is bubbling that "
+"restriction up and imposing it onto the clients, who will presumably enforce "
+"this invariant via container-specific means."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1148
+msgid ""
+"But: pre-existing container types (like `Vec<T>`) already _allow_ zero-sized "
+"`T`. Therefore, there is an unfortunate mismatch between the ideal API those "
+"container would prefer for their allocators and the actual service that this "
+"`Allocator` trait is providing."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1154
+msgid ""
+"So: Should we lift this precondition of the allocation methods, and allow "
+"zero-sized requests (which might be handled by a global sentinel value, or "
+"by an allocator-specific sentinel value, or via some other means -- this "
+"would have to be specified as part of the Allocator API)?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1159
+msgid ""
+"(As a middle ground, we could lift the precondition solely for the "
+"convenience methods like `fn alloc_one` and `fn alloc_array`; that way, the "
+"most low-level methods like `fn alloc` would continue to minimize the "
+"overhead they add over the underlying system allocator, while the "
+"convenience methods would truly be convenient.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1165
+msgid ""
+"Should `oom` be a free-function rather than a method on `Allocator`? (The "
+"reason I want it on `Allocator` is so that it can provide feedback about the "
+"allocator's state at the time of the OOM. Zoxc has argued on the RFC thread "
+"that some forms of static analysis, to prove `oom` is never invoked, would "
+"prefer it to be a free function.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1171
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1174
+msgid ""
+"Since we cannot do `RefCell<Pool>` (see FIXME above), what is our standard "
+"recommendation for what to do instead?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1177
+msgid ""
+"Should `Layout` be an associated type of `Allocator` (see [alternatives]"
+"(#alternatives) section for discussion). (In fact, most of the \"Variations "
+"correspond to potentially unresolved questions.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1182
+msgid ""
+"Are the type definitions for `Size`, `Capacity`, `Alignment`, and `Address` "
+"an abuse of the `NonZero` type? (Or do we just need some constructor for "
+"`NonZero` that asserts that the input is non-zero)?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1186
+msgid "Do we need `Allocator::max_size` and `Allocator::max_align` ?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1188
+msgid ""
+"Should default impl of `Allocator::max_align` return `None`, or is there "
+"more suitable default? (perhaps e.g. `PLATFORM_PAGE_SIZE`?)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1191
+msgid ""
+"The previous allocator documentation provided by Daniel Micay suggest that "
+"we should specify that behavior unspecified if allocation is too large, but "
+"if that is the case, then we should definitely provide some way to _observe_ "
+"that threshold.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1196
+msgid ""
+"From what I can tell, we cannot currently assume that all low-level "
+"allocators will behave well for large alignments. See https://github.com/"
+"rust-lang/rust/issues/30170"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1200
+msgid ""
+"Should `Allocator::oom` also take a `std::fmt::Arguments<'a>` parameter so "
+"that clients can feed in context-specific information that is not part of "
+"the original input `Layout` argument? (I have not done this mainly because I "
+"do not want to introduce a dependency on `libstd`.)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1205
+msgid "Change History"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1207
+msgid "Changed `fn usable_size` to return `(l, m)` rather than just `m`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1209
+msgid ""
+"Removed `fn is_transient` from `trait AllocError`, and removed discussion of "
+"transient errors from the API."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1212
+msgid ""
+"Made `fn dealloc` method infallible (i.e. removed its `Result` return type)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1214
+msgid ""
+"Alpha-renamed `alloc::Kind` type to `alloc::Layout`, and made it non-`Copy`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1216
+msgid ""
+"Revised `fn oom` method to take the `Self::Error` as an input (so that the "
+"allocator can, indirectly, feed itself information about what went wrong)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1219
+msgid ""
+"Removed associated `Error` type from `Allocator` trait; all methods now use "
+"`AllocErr` for error type. Removed `AllocError` trait and `MemoryExhausted` "
+"error."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1222
+msgid ""
+"Removed `fn max_size` and `fn max_align` methods; we can put them back later "
+"if someone demonstrates a need for them."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1225
+msgid "Added `fn realloc_in_place`."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1227
+msgid ""
+"Removed uses of `NonZero`. Made `Layout` able to represent zero-sized "
+"layouts. A given `Allocator` may or may not support zero-sized layouts."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1230
+msgid ""
+"Various other API revisions were made during development of [PR 42313]"
+"(https://github.com/rust-lang/rust/pull/42313), \"allocator integration\". "
+"See the [nightly API docs](https://doc.rust-lang.org/nightly/alloc/allocator/"
+"trait.Alloc.html) rather than using RFC document as a sole reference."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1237
+msgid "Appendices"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1239
+msgid "Bibliography"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1242
+msgid "RFC Pull Request #39: Allocator trait"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1245
+msgid ""
+"Daniel Micay, 2014. RFC: Allocator trait. https://github.com/thestinger/rfcs/"
+"blob/ad4cdc2662cc3d29c3ee40ae5abbef599c336c66/active/0000-allocator-trait.md"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1247
+msgid "RFC Pull Request #244: Allocator RFC, take II"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1250
+msgid ""
+"Felix Klock, 2014, Allocator RFC, take II, https://github.com/pnkfelix/rfcs/"
+"blob/d3c6068e823f495ee241caa05d4782b16e5ef5d8/active/0000-allocator.md"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1252
+msgid "Dynamic Storage Allocation: A Survey and Critical Review"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1253
+msgid ""
+"Paul R. Wilson, Mark S. Johnstone, Michael Neely, and David Boles, 1995. "
+"[Dynamic Storage Allocation: A Survey and Critical Review](https://parasol."
+"tamu.edu/~rwerger/Courses/689/spring2002/day-3-ParMemAlloc/papers/"
+"wilson95dynamic.pdf) ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps .  "
+"Slightly modified version appears in Proceedings of 1995 International "
+"Workshop on Memory Management (IWMM '95), Kinross, Scotland, UK, September "
+"27--29, 1995 Springer Verlag LNCS"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1255
+msgid "Reconsidering custom memory allocation"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1258
+msgid ""
+"Emery D. Berger, Benjamin G. Zorn, and Kathryn S. McKinley. 2002. "
+"[Reconsidering custom memory allocation](http://dl.acm.org/citation.cfm?"
+"id=582421). In Proceedings of the 17th ACM SIGPLAN conference on Object-"
+"oriented programming, systems, languages, and applications (OOPSLA '02)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1260
+msgid "The memory fragmentation problem: solved?"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1263
+msgid ""
+"Mark S. Johnstone and Paul R. Wilson. 1998. [The memory fragmentation "
+"problem: solved?](http://dl.acm.org/citation.cfm?id=286864). In Proceedings "
+"of the 1st international symposium on Memory management (ISMM '98)."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1265
+msgid "EASTL: Electronic Arts Standard Template Library"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1268
+msgid ""
+"Paul Pedriana. 2007. [EASTL](http://www.open-std.org/jtc1/sc22/wg21/docs/"
+"papers/2007/n2271.html) -- Electronic Arts Standard Template Library. "
+"Document number: N2271=07-0131"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1270
+msgid "Towards a Better Allocator Model"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1273
+msgid ""
+"Pablo Halpern. 2005. [Towards a Better Allocator Model](http://www.open-std."
+"org/jtc1/sc22/wg21/docs/papers/2005/n1850.pdf). Document number: "
+"N1850=05-0110"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1275
+msgid "Various allocators"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1277
+msgid ""
+"[jemalloc](http://www.canonware.com/jemalloc/), [tcmalloc](http://goog-"
+"perftools.sourceforge.net/doc/tcmalloc.html), [Hoard](http://www.hoard.org/)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1289
+msgid "ASCII art version of Allocator message sequence chart"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1292
+msgid ""
+"This is an ASCII art version of the SVG message sequence chart from the "
+"[semantics of allocators](#semantics-of-allocators-and-their-memory-blocks) "
+"section."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1380
+msgid "Transcribed Source for Allocator trait API"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1383
+msgid ""
+"Here is the whole source file for my prototype allocator API, sub-divided "
+"roughly accordingly to functionality."
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1386
+msgid "(We start with the usual boilerplate...)"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1389
+msgid ""
+"// Copyright 2015 The Rust Project Developers. See the COPYRIGHT\n"
+"// file at the top-level directory of this distribution and at\n"
+"// http://rust-lang.org/COPYRIGHT.\n"
+"//\n"
+"// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or\n"
+"// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license\n"
+"// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your\n"
+"// option. This file may not be copied, modified, or distributed\n"
+"// except according to those terms.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1399
+msgid "\"allocator_api\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1400
+msgid ""
+"\"the precise API and guarantees it provides may be tweaked \\\n"
+"                      slightly, especially to possibly take into account the "
+"\\\n"
+"                      types being stored to make room for a future \\\n"
+"                      tracing garbage collector\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1404
+msgid "\"27700\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1413
+msgid "Type Aliases"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1422
+msgid ""
+"/// Represents the combination of a starting address and\n"
+"/// a total capacity of the returned block.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1433
+msgid "Layout API"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1437
+msgid ""
+"/// Category for a memory record.\n"
+"///\n"
+"/// An instance of `Layout` describes a particular layout of memory.\n"
+"/// You build a `Layout` up as an input to give to an allocator.\n"
+"///\n"
+"/// All layouts have an associated non-negative size and positive "
+"alignment.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1445
+msgid "// size of the requested block of memory, measured in bytes.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1447
+msgid ""
+"// alignment of the requested block of memory, measured in bytes.\n"
+"    // we ensure that this is always a power-of-two, because API's\n"
+"    ///like `posix_memalign` require it and it is a reasonable\n"
+"    // constraint to impose on Layout constructors.\n"
+"    //\n"
+"    // (However, we do not analogously require `align >= sizeof(void*)`,\n"
+"    //  even though that is *also* a requirement of `posix_memalign`.)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1457
+msgid ""
+"// FIXME: audit default implementations for overflow errors,\n"
+"// (potentially switching to overflowing_add and\n"
+"//  overflowing_mul as necessary).\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1463
+msgid "// (private constructor)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1470
+msgid "/// The minimum size in bytes for a memory block of this layout.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1473
+msgid "/// The minimum byte alignment for a memory block of this layout.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1476
+msgid "/// Constructs a `Layout` suitable for holding a value of type `T`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1482
+msgid ""
+"/// Produces layout describing a record that could be used to\n"
+"    /// allocate backing structure for `T` (which could be a trait\n"
+"    /// or other unsized type like a slice).\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1490
+msgid ""
+"/// Creates a layout describing the record that can hold a value\n"
+"    /// of the same layout as `self`, but that also is aligned to\n"
+"    /// alignment `align` (measured in bytes).\n"
+"    ///\n"
+"    /// If `self` already meets the prescribed alignment, then returns\n"
+"    /// `self`.\n"
+"    ///\n"
+"    /// Note that this method does not add any padding to the overall\n"
+"    /// size, regardless of whether the returned layout has a different\n"
+"    /// alignment. In other words, if `K` has size 16, `K.align_to(32)`\n"
+"    /// will *still* have size 16.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1504
+msgid "// (this follows from self.align > 0...)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1512
+msgid ""
+"/// Returns the amount of padding we must insert after `self`\n"
+"    /// to ensure that the following address will satisfy `align`\n"
+"    /// (measured in bytes).\n"
+"    ///\n"
+"    /// Behavior undefined if `align` is not a power-of-two.\n"
+"    ///\n"
+"    /// Note that in practice, this is only useable if `align <=\n"
+"    /// self.align` otherwise, the amount of inserted padding would\n"
+"    /// need to depend on the particular starting address for the\n"
+"    /// whole record, because `self.align` would not provide\n"
+"    /// sufficient constraint.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1530
+msgid ""
+"/// Creates a layout describing the record for `n` instances of\n"
+"    /// `self`, with a suitable amount of padding between each to\n"
+"    /// ensure that each instance is given its requested size and\n"
+"    /// alignment. On success, returns `(k, offs)` where `k` is the\n"
+"    /// layout of the array and `offs` is the distance between the start\n"
+"    /// of each element in the array.\n"
+"    ///\n"
+"    /// On arithmetic overflow, returns `None`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1550
+msgid ""
+"/// Creates a layout describing the record for `self` followed by\n"
+"    /// `next`, including any necessary padding to ensure that `next`\n"
+"    /// will be properly aligned. Note that the result layout will\n"
+"    /// satisfy the alignment properties of both `self` and `next`.\n"
+"    ///\n"
+"    /// Returns `Some((k, offset))`, where `k` is layout of the "
+"concatenated\n"
+"    /// record and `offset` is the relative location, in bytes, of the\n"
+"    /// start of the `next` embedded witnin the concatenated record\n"
+"    /// (assuming that the record itself starts at offset 0).\n"
+"    ///\n"
+"    /// On arithmetic overflow, returns `None`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1570
+msgid ""
+"/// Creates a layout describing the record for `n` instances of\n"
+"    /// `self`, with no padding between each instance.\n"
+"    ///\n"
+"    /// On arithmetic overflow, returns `None`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1583
+msgid ""
+"/// Creates a layout describing the record for `self` followed by\n"
+"    /// `next` with no additional padding between the two. Since no\n"
+"    /// padding is inserted, the alignment of `next` is irrelevant,\n"
+"    /// and is not incorporated *at all* into the resulting layout.\n"
+"    ///\n"
+"    /// Returns `(k, offset)`, where `k` is layout of the concatenated\n"
+"    /// record and `offset` is the relative location, in bytes, of the\n"
+"    /// start of the `next` embedded witnin the concatenated record\n"
+"    /// (assuming that the record itself starts at offset 0).\n"
+"    ///\n"
+"    /// (The `offset` is always the same as `self.size()`; we use this\n"
+"    ///  signature out of convenience in matching the signature of\n"
+"    ///  `fn extend`.)\n"
+"    ///\n"
+"    /// On arithmetic overflow, returns `None`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1606
+msgid ""
+"// Below family of methods *assume* inputs are pre- or\n"
+"    // post-validated in some manner. (The implementations here\n"
+"    ///do indirectly validate, but that is not part of their\n"
+"    /// specification.)\n"
+"    //\n"
+"    // Since invalid inputs could yield ill-formed layouts, these\n"
+"    // methods are `unsafe`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1614
+msgid ""
+"/// Creates layout describing the record for a single instance of `T`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1621
+msgid ""
+"/// Creates a layout describing the record for `self` followed by\n"
+"    /// `next`, including any necessary padding to ensure that `next`\n"
+"    /// will be properly aligned. Note that the result layout will\n"
+"    /// satisfy the alignment properties of both `self` and `next`.\n"
+"    ///\n"
+"    /// Returns `(k, offset)`, where `k` is layout of the concatenated\n"
+"    /// record and `offset` is the relative location, in bytes, of the\n"
+"    /// start of the `next` embedded witnin the concatenated record\n"
+"    /// (assuming that the record itself starts at offset 0).\n"
+"    ///\n"
+"    /// Requires no arithmetic overflow from inputs.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1636
+msgid ""
+"/// Creates a layout describing the record for `n` instances of\n"
+"    /// `self`, with a suitable amount of padding between each.\n"
+"    ///\n"
+"    /// Requires non-zero `n` and no arithmetic overflow from inputs.\n"
+"    /// (See also the `fn array` checked variant.)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1645
+msgid ""
+"/// Creates a layout describing the record for `n` instances of\n"
+"    /// `self`, with no padding between each instance.\n"
+"    ///\n"
+"    /// Requires non-zero `n` and no arithmetic overflow from inputs.\n"
+"    /// (See also the `fn array_packed` checked variant.)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1654
+msgid ""
+"/// Creates a layout describing the record for `self` followed by\n"
+"    /// `next` with no additional padding between the two. Since no\n"
+"    /// padding is inserted, the alignment of `next` is irrelevant,\n"
+"    /// and is not incorporated *at all* into the resulting layout.\n"
+"    ///\n"
+"    /// Returns `(k, offset)`, where `k` is layout of the concatenated\n"
+"    /// record and `offset` is the relative location, in bytes, of the\n"
+"    /// start of the `next` embedded witnin the concatenated record\n"
+"    /// (assuming that the record itself starts at offset 0).\n"
+"    ///\n"
+"    /// (The `offset` is always the same as `self.size()`; we use this\n"
+"    ///  signature out of convenience in matching the signature of\n"
+"    ///  `fn extend`.)\n"
+"    ///\n"
+"    /// Requires no arithmetic overflow from inputs.\n"
+"    /// (See also the `fn extend_packed` checked variant.)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1674
+msgid ""
+"/// Creates a layout describing the record for a `[T; n]`.\n"
+"    ///\n"
+"    /// On zero `n`, zero-sized `T`, or arithmetic overflow, returns "
+"`None`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1686
+msgid ""
+"/// Creates a layout describing the record for a `[T; n]`.\n"
+"    ///\n"
+"    /// Requires nonzero `n`, nonzero-sized `T`, and no arithmetic\n"
+"    /// overflow; otherwise behavior undefined.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1698
+msgid "AllocErr API"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1702
+msgid ""
+"/// The `AllocErr` error specifies whether an allocation failure is\n"
+"/// specifically due to resource exhaustion or if it is due to\n"
+"/// something wrong when combining the given input arguments with this\n"
+"/// allocator.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1708
+msgid ""
+"/// Error due to hitting some resource limit or otherwise running\n"
+"    /// out of memory. This condition strongly implies that *some*\n"
+"    /// series of deallocations would allow a subsequent reissuing of\n"
+"    /// the original allocation request to succeed.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1714
+msgid ""
+"/// Error due to allocator being fundamentally incapable of\n"
+"    /// satisfying the original request. This condition implies that\n"
+"    /// such an allocation request will never succeed on the given\n"
+"    /// allocator, regardless of environment, memory pressure, or\n"
+"    /// other contextual conditions.\n"
+"    ///\n"
+"    /// For example, an allocator that does not support zero-sized\n"
+"    /// blocks can return this error variant.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1736
+msgid ""
+"/// The `CannotReallocInPlace` error is used when `fn realloc_in_place`\n"
+"/// was unable to reuse the given memory block for a requested layout.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1744
+msgid "Allocator trait header"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1748
+msgid ""
+"/// An implementation of `Allocator` can allocate, reallocate, and\n"
+"/// deallocate arbitrary blocks of data described via `Layout`.\n"
+"///\n"
+"/// Some of the methods require that a layout *fit* a memory block.\n"
+"/// What it means for a layout to \"fit\" a memory block means is that\n"
+"/// the following two conditions must hold:\n"
+"///\n"
+"/// 1. The block's starting address must be aligned to `layout.align()`.\n"
+"///\n"
+"/// 2. The block's size must fall in the range `[use_min, use_max]`, where:\n"
+"///\n"
+"///    * `use_min` is `self.usable_size(layout).0`, and\n"
+"///\n"
+"///    * `use_max` is the capacity that was (or would have been)\n"
+"///      returned when (if) the block was allocated via a call to\n"
+"///      `alloc_excess` or `realloc_excess`.\n"
+"///\n"
+"/// Note that:\n"
+"///\n"
+"///  * the size of the layout most recently used to allocate the block\n"
+"///    is guaranteed to be in the range `[use_min, use_max]`, and\n"
+"///\n"
+"///  * a lower-bound on `use_max` can be safely approximated by a call to\n"
+"///    `usable_size`.\n"
+"///\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1777
+msgid "Allocator core alloc and dealloc"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1781
+msgid ""
+"/// Returns a pointer suitable for holding data described by\n"
+"    /// `layout`, meeting its size and alignment guarantees.\n"
+"    ///\n"
+"    /// The returned block of storage may or may not have its contents\n"
+"    /// initialized. (Extension subtraits might restrict this\n"
+"    /// behavior, e.g. to ensure initialization.)\n"
+"    ///\n"
+"    /// Returning `Err` indicates that either memory is exhausted or "
+"`layout` does\n"
+"    /// not meet allocator's size or alignment constraints.\n"
+"    ///\n"
+"    /// Implementations are encouraged to return `Err` on memory\n"
+"    /// exhaustion rather than panicking or aborting, but this is\n"
+"    /// not a strict requirement. (Specifically: it is *legal* to use\n"
+"    /// this trait to wrap an underlying native allocation library\n"
+"    /// that aborts on memory exhaustion.)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1798
+msgid ""
+"/// Deallocate the memory referenced by `ptr`.\n"
+"    ///\n"
+"    /// `ptr` must have previously been provided via this allocator,\n"
+"    /// and `layout` must *fit* the provided block (see above);\n"
+"    /// otherwise yields undefined behavior.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1805
+msgid ""
+"/// Allocator-specific method for signalling an out-of-memory\n"
+"    /// condition.\n"
+"    ///\n"
+"    /// Implementations of the `oom` method are discouraged from\n"
+"    /// infinitely regressing in nested calls to `oom`. In\n"
+"    /// practice this means implementors should eschew allocating,\n"
+"    /// especially from `self` (directly or indirectly).\n"
+"    ///\n"
+"    /// Implementations of this trait's allocation methods are discouraged\n"
+"    /// from panicking (or aborting) in the event of memory exhaustion;\n"
+"    /// instead they should return an appropriate error from the\n"
+"    /// invoked method, and let the client decide whether to invoke\n"
+"    /// this `oom` method.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1823
+msgid "Allocator-specific quantities and limits"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1827
+msgid ""
+"// == ALLOCATOR-SPECIFIC QUANTITIES AND LIMITS ==\n"
+"    // usable_size\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1830
+msgid ""
+"/// Returns bounds on the guaranteed usable size of a successful\n"
+"    /// allocation created with the specified `layout`.\n"
+"    ///\n"
+"    /// In particular, for a given layout `k`, if `usable_size(k)` returns\n"
+"    /// `(l, m)`, then one can use a block of layout `k` as if it has any\n"
+"    /// size in the range `[l, m]` (inclusive).\n"
+"    ///\n"
+"    /// (All implementors of `fn usable_size` must ensure that\n"
+"    /// `l <= k.size() <= m`)\n"
+"    ///\n"
+"    /// Both the lower- and upper-bounds (`l` and `m` respectively) are\n"
+"    /// provided: An allocator based on size classes could misbehave\n"
+"    /// if one attempts to deallocate a block without providing a\n"
+"    /// correct value for its size (i.e., one within the range `[l, m]`).\n"
+"    ///\n"
+"    /// Clients who wish to make use of excess capacity are encouraged\n"
+"    /// to use the `alloc_excess` and `realloc_excess` instead, as\n"
+"    /// this method is constrained to conservatively report a value\n"
+"    /// less than or equal to the minimum capacity for *all possible*\n"
+"    /// calls to those methods.\n"
+"    ///\n"
+"    /// However, for clients that do not wish to track the capacity\n"
+"    /// returned by `alloc_excess` locally, this method is likely to\n"
+"    /// produce useful results.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1860
+msgid "Allocator methods for memory reuse"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1864
+msgid ""
+"// == METHODS FOR MEMORY REUSE ==\n"
+"    // realloc. alloc_excess, realloc_excess\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1867
+msgid ""
+"/// Returns a pointer suitable for holding data described by\n"
+"    /// `new_layout`, meeting its size and alignment guarantees. To\n"
+"    /// accomplish this, this may extend or shrink the allocation\n"
+"    /// referenced by `ptr` to fit `new_layout`.\n"
+"    ///\n"
+"    /// * `ptr` must have previously been provided via this allocator.\n"
+"    ///\n"
+"    /// * `layout` must *fit* the `ptr` (see above). (The `new_layout`\n"
+"    ///   argument need not fit it.)\n"
+"    ///\n"
+"    /// Behavior undefined if either of latter two constraints are unmet.\n"
+"    ///\n"
+"    /// In addition, `new_layout` should not impose a different alignment\n"
+"    /// constraint than `layout`. (In other words, `new_layout.align()`\n"
+"    /// should equal `layout.align()`.)\n"
+"    /// However, behavior is well-defined (though underspecified) when\n"
+"    /// this constraint is violated; further discussion below.\n"
+"    ///\n"
+"    /// If this returns `Ok`, then ownership of the memory block\n"
+"    /// referenced by `ptr` has been transferred to this\n"
+"    /// allocator. The memory may or may not have been freed, and\n"
+"    /// should be considered unusable (unless of course it was\n"
+"    /// transferred back to the caller again via the return value of\n"
+"    /// this method).\n"
+"    ///\n"
+"    /// Returns `Err` only if `new_layout` does not meet the allocator's\n"
+"    /// size and alignment constraints of the allocator or the\n"
+"    /// alignment of `layout`, or if reallocation otherwise fails. (Note\n"
+"    /// that did not say \"if and only if\" -- in particular, an\n"
+"    /// implementation of this method *can* return `Ok` if\n"
+"    /// `new_layout.align() != old_layout.align()`; or it can return `Err`\n"
+"    /// in that scenario, depending on whether this allocator\n"
+"    /// can dynamically adjust the alignment constraint for the block.)\n"
+"    ///\n"
+"    /// If this method returns `Err`, then ownership of the memory\n"
+"    /// block has not been transferred to this allocator, and the\n"
+"    /// contents of the memory block are unaltered.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1910
+msgid ""
+"// All Layout alignments are powers of two, so a comparison\n"
+"        // suffices here (rather than resorting to a `%` operation).\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1926
+msgid ""
+"/// Behaves like `fn alloc`, but also returns the whole size of\n"
+"    /// the returned block. For some `layout` inputs, like arrays, this\n"
+"    /// may include extra storage usable for additional data.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1934
+msgid ""
+"/// Behaves like `fn realloc`, but also returns the whole size of\n"
+"    /// the returned block. For some `layout` inputs, like arrays, this\n"
+"    /// may include extra storage usable for additional data.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1946
+msgid ""
+"/// Attempts to extend the allocation referenced by `ptr` to fit "
+"`new_layout`.\n"
+"    ///\n"
+"    /// * `ptr` must have previously been provided via this allocator.\n"
+"    ///\n"
+"    /// * `layout` must *fit* the `ptr` (see above). (The `new_layout`\n"
+"    ///   argument need not fit it.)\n"
+"    ///\n"
+"    /// Behavior undefined if either of latter two constraints are unmet.\n"
+"    ///\n"
+"    /// If this returns `Ok`, then the allocator has asserted that the\n"
+"    /// memory block referenced by `ptr` now fits `new_layout`, and thus "
+"can\n"
+"    /// be used to carry data of that layout. (The allocator is allowed to\n"
+"    /// expend effort to accomplish this, such as extending the memory block "
+"to\n"
+"    /// include successor blocks, or virtual memory tricks.)\n"
+"    ///\n"
+"    /// If this returns `Err`, then the allocator has made no assertion\n"
+"    /// about whether the memory block referenced by `ptr` can or cannot\n"
+"    /// fit `new_layout`.\n"
+"    ///\n"
+"    /// In either case, ownership of the memory block referenced by `ptr`\n"
+"    /// has not been transferred, and the contents of the memory block\n"
+"    /// are unaltered.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1977
+msgid "Allocator convenience methods for common usage patterns"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1981
+msgid ""
+"// == COMMON USAGE PATTERNS ==\n"
+"    // alloc_one, dealloc_one, alloc_array, realloc_array. dealloc_array\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1984
+msgid ""
+"/// Allocates a block suitable for holding an instance of `T`.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+"    ///\n"
+"    /// The returned block is suitable for passing to the\n"
+"    /// `alloc`/`realloc` methods of this allocator.\n"
+"    ///\n"
+"    /// May return `Err` for zero-sized `T`.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:1998
+msgid "\"zero-sized type invalid for alloc_one\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2002
+msgid ""
+"/// Deallocates a block suitable for holding an instance of `T`.\n"
+"    ///\n"
+"    /// The given block must have been produced by this allocator,\n"
+"    /// and must be suitable for storing a `T` (in terms of alignment\n"
+"    /// as well as minimum and maximum size); otherwise yields\n"
+"    /// undefined behavior.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2016
+msgid ""
+"/// Allocates a block suitable for holding `n` instances of `T`.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+"    ///\n"
+"    /// The returned block is suitable for passing to the\n"
+"    /// `alloc`/`realloc` methods of this allocator.\n"
+"    ///\n"
+"    /// May return `Err` for zero-sized `T` or `n == 0`.\n"
+"    ///\n"
+"    /// Always returns `Err` on arithmetic overflow.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2032
+msgid "\"alloc_array layout: {:?} yielded p: {:?}\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2036
+msgid "\"invalid layout for alloc_array\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2040
+msgid ""
+"/// Reallocates a block previously suitable for holding `n_old`\n"
+"    /// instances of `T`, returning a block suitable for holding\n"
+"    /// `n_new` instances of `T`.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+"    ///\n"
+"    /// The returned block is suitable for passing to the\n"
+"    /// `alloc`/`realloc` methods of this allocator.\n"
+"    ///\n"
+"    /// May return `Err` for zero-sized `T` or `n == 0`.\n"
+"    ///\n"
+"    /// Always returns `Err` on arithmetic overflow.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2063
+msgid "\"invalid layout for realloc_array\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2068
+msgid ""
+"/// Deallocates a block suitable for holding `n` instances of `T`.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2079
+msgid "\"invalid layout for dealloc_array\""
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2086
+msgid "Allocator unchecked method variants"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2090
+msgid "// UNCHECKED METHOD VARIANTS\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2092
+msgid ""
+"/// Returns a pointer suitable for holding data described by\n"
+"    /// `layout`, meeting its size and alignment guarantees.\n"
+"    ///\n"
+"    /// The returned block of storage may or may not have its contents\n"
+"    /// initialized. (Extension subtraits might restrict this\n"
+"    /// behavior, e.g. to ensure initialization.)\n"
+"    ///\n"
+"    /// Returns `None` if request unsatisfied.\n"
+"    ///\n"
+"    /// Behavior undefined if input does not meet size or alignment\n"
+"    /// constraints of this allocator.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2104 src/1398-kinds-of-allocators.md:2139
+msgid ""
+"// (default implementation carries checks, but impl's are free to omit "
+"them.)\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2108
+msgid ""
+"/// Returns a pointer suitable for holding data described by\n"
+"    /// `new_layout`, meeting its size and alignment guarantees. To\n"
+"    /// accomplish this, may extend or shrink the allocation\n"
+"    /// referenced by `ptr` to fit `new_layout`.\n"
+"    ////\n"
+"    /// (In other words, ownership of the memory block associated with\n"
+"    /// `ptr` is first transferred back to this allocator, but the\n"
+"    /// same block may or may not be transferred back as the result of\n"
+"    /// this call.)\n"
+"    ///\n"
+"    /// * `ptr` must have previously been provided via this allocator.\n"
+"    ///\n"
+"    /// * `layout` must *fit* the `ptr` (see above). (The `new_layout`\n"
+"    ///   argument need not fit it.)\n"
+"    ///\n"
+"    /// * `new_layout` must meet the allocator's size and alignment\n"
+"    ///    constraints. In addition, `new_layout.align()` must equal\n"
+"    ///    `layout.align()`. (Note that this is a stronger constraint\n"
+"    ///    that that imposed by `fn realloc`.)\n"
+"    ///\n"
+"    /// Behavior undefined if any of latter three constraints are unmet.\n"
+"    ///\n"
+"    /// If this returns `Some`, then the memory block referenced by\n"
+"    /// `ptr` may have been freed and should be considered unusable.\n"
+"    ///\n"
+"    /// Returns `None` if reallocation fails; in this scenario, the\n"
+"    /// original memory block referenced by `ptr` is unaltered.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2143
+msgid ""
+"/// Behaves like `fn alloc_unchecked`, but also returns the whole\n"
+"    /// size of the returned block. \n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2149
+msgid ""
+"/// Behaves like `fn realloc_unchecked`, but also returns the\n"
+"    /// whole size of the returned block.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2159
+msgid ""
+"/// Allocates a block suitable for holding `n` instances of `T`.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+"    ///\n"
+"    /// Requires inputs are non-zero and do not cause arithmetic\n"
+"    /// overflow, and `T` is not zero sized; otherwise yields\n"
+"    /// undefined behavior.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2172
+msgid ""
+"/// Reallocates a block suitable for holding `n_old` instances of `T`,\n"
+"    /// returning a block suitable for holding `n_new` instances of `T`.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+"    ///\n"
+"    /// Requires inputs are non-zero and do not cause arithmetic\n"
+"    /// overflow, and `T` is not zero sized; otherwise yields\n"
+"    /// undefined behavior.\n"
+msgstr ""
+
+#: src/1398-kinds-of-allocators.md:2192
+msgid ""
+"/// Deallocates a block suitable for holding `n` instances of `T`.\n"
+"    ///\n"
+"    /// Captures a common usage pattern for allocators.\n"
+"    ///\n"
+"    /// Requires inputs are non-zero and do not cause arithmetic\n"
+"    /// overflow, and `T` is not zero sized; otherwise yields\n"
+"    /// undefined behavior.\n"
+msgstr ""

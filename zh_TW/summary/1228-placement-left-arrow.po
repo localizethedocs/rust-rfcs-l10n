@@ -1,0 +1,390 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1228-placement-left-arrow.md:1
+msgid "Feature Name: place_left_arrow_syntax"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:2
+msgid "Start Date: 2015-07-28"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1228](https://github.com/rust-lang/rfcs/pull/1228)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#27779](https://github.com/rust-lang/rust/"
+"issues/27779)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:6
+msgid "This RFC was previously approved, but later **withdrawn**"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:8
+msgid ""
+"For details see the [summary comment](https://github.com/rust-lang/rust/"
+"issues/27779#issuecomment-378416911)."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:12
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1228-placement-left-arrow.md:14
+msgid ""
+"Rather than trying to find a clever syntax for placement-new that leverages "
+"the `in` keyword, instead use the syntax `PLACE_EXPR <- VALUE_EXPR`."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:17
+msgid ""
+"This takes advantage of the fact that `<-` was reserved as a token via "
+"historical accident (that for once worked out in our favor)."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:20
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1228-placement-left-arrow.md:22
+msgid ""
+"One sentence: the syntax `a <- b` is short, can be parsed without ambiguity, "
+"and is strongly connotated already with assignment."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:25
+msgid "Further text (essentially historical background):"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:27
+msgid ""
+"There is much debate about what syntax to use for placement-new. We started "
+"with `box (PLACE_EXPR) VALUE_EXPR`, then migrated towards leveraging the "
+"`in` keyword instead of `box`, yielding `in (PLACE_EXPR) VALUE_EXPR`."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:31
+msgid ""
+"A lot of people disliked the `in (PLACE_EXPR) VALUE_EXPR` syntax (see "
+"discussion from [RFC 809](https://github.com/rust-lang/rfcs/pull/809))."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:36
+msgid ""
+"In response to that discussion (and also due to personal preference) I "
+"suggested the alternative syntax `in PLACE_EXPR { BLOCK_EXPR }`, which is "
+"what landed when [RFC 809](https://github.com/rust-lang/rfcs/pull/809) was "
+"merged."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:40
+msgid ""
+"However, it is worth noting that this alternative syntax actually failed to "
+"address a number of objections (some of which also applied to the original "
+"`in (PLACE_EXPR) VALUE_EXPR` syntax):"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:44
+msgid ""
+"[kennytm](https://github.com/rust-lang/rfcs/pull/809#issuecomment-73071324)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:46
+msgid ""
+"While in (place) value is syntactically unambiguous, it looks completely "
+"unnatural as a statement alone, mainly because there are no verbs in the "
+"correct place, and also using in alone is usually associated with iteration "
+"(for x in y) and member testing (elem in set)."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:52
+msgid ""
+"[petrochenkov](https://github.com/rust-lang/rfcs/"
+"pull/809#issuecomment-73142168)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:54
+msgid ""
+"As C++11 experience has shown, when it's available, it will become the "
+"default method of inserting elements in containers, since it's never "
+"performing worse than \"normal insertion\" and is often better. So it should "
+"really have as short and convenient syntax as possible."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:60
+msgid ""
+"[p1start](https://github.com/rust-lang/rfcs/pull/809#issuecomment-73837430)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:62
+msgid ""
+"I’m not a fan of `in <place> { <stmts> }`, simply because the requirement of "
+"a block suggests that it’s some kind of control flow structure, or that all "
+"the statements inside will be somehow run ‘in’ the given `<place>` (or "
+"perhaps, as @m13253 seems to have interpreted it, for all box expressions to "
+"go into the given place). It would be our first syntactical construct which "
+"is basically just an operator that has to have a block operand."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:71
+msgid ""
+"I believe the `PLACE_EXPR <- VALUE_EXPR` syntax addresses all of the above "
+"concerns."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:74
+msgid ""
+"Thus cases like allocating into an arena (which needs to take as input the "
+"arena itself and a value-expression, and returns a reference or handle for "
+"the allocated entry in the arena -- i.e. _cannot_ return unit) would look "
+"like:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:83
+msgid ""
+"compare the above against the way this would look under [RFC 809](https://"
+"github.com/rust-lang/rfcs/pull/809):"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:90
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1228-placement-left-arrow.md:92
+msgid ""
+"Extend the parser to parse `EXPR <- EXPR`. The left arrow operator is right-"
+"associative and has precedence higher than assignment and binop-assignment, "
+"but lower than other binary operators."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:96
+msgid ""
+"`EXPR <- EXPR` is parsed into an AST form that is desugared in much the same "
+"way that `in EXPR { BLOCK }` or `box (EXPR) EXPR` are desugared (see [PR "
+"27215](https://github.com/rust-lang/rust/pull/27215))."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:100
+msgid ""
+"Thus the static and dynamic semantics of `PLACE_EXPR <- VALUE_EXPR` are "
+"_equivalent_ to `box (PLACE_EXPR) VALUE_EXPR`. Namely, it is still an "
+"expression form that operates by:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:103
+msgid "Evaluate the `PLACE_EXPR` to a place"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:104
+msgid "Evaluate `VALUE_EXPR` directly into the constructed place"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:105
+msgid "Return the finalized place value."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:107
+msgid ""
+"(See protocol as documented in [RFC 809](https://github.com/rust-lang/rfcs/"
+"pull/809) for more details here.)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:111
+msgid ""
+"This parsing form can be separately feature-gated (this RFC was written "
+"assuming that would be the procedure). However, since placement-`in` landed "
+"very recently ([PR 27215](https://github.com/rust-lang/rust/pull/27215)) and "
+"is still feature-gated, we can also just fold this change in with the pre-"
+"existing `placement_in_syntax` feature gate (though that may be non-"
+"intuitive since the keyword `in` is no longer part of the syntactic form)."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:119
+msgid ""
+"This feature has already been prototyped, see [place-left-syntax branch]"
+"(https://github.com/rust-lang/rust/compare/rust-lang:master...pnkfelix:place-"
+"left-syntax)."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:123
+msgid ""
+"Then, (after sufficient snapshot and/or time passes) remove the following "
+"syntaxes:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:125
+msgid "`box (PLACE_EXPR) VALUE_EXPR`"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:126
+msgid "`in PLACE_EXPR { VALUE_BLOCK }`"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:128
+msgid ""
+"That is, `PLACE_EXPR <- VALUE_EXPR` will be the \"one true way\" to express "
+"placement-new."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:131
+msgid ""
+"(Note that support for `box VALUE_EXPR` will remain, and in fact, the "
+"expression `(box ())` expression will become unambiguous and thus we could "
+"make it legal. Because, you know, those boxes of unit have a syntax that is "
+"really important to optimize.)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:136
+msgid ""
+"Finally, it would may be good, as part of this process, to actually amend "
+"the text [RFC 809](https://github.com/rust-lang/rfcs/pull/809) itself to use "
+"the `a <- b` syntax. At least, it seems like many people use the RFC's as a "
+"reference source even when they are later outdated. (An easier option though "
+"may be to just add a forward reference to this RFC from [RFC 809](https://"
+"github.com/rust-lang/rfcs/pull/809), if this RFC is accepted.)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:143
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:145
+msgid ""
+"The only drawback I am aware of is this [comment from nikomataskis](https://"
+"github.com/rust-lang/rfcs/pull/809#issuecomment-73903777)"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:147
+msgid "the intent is less clear than with a devoted keyword."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:149
+msgid ""
+"Note however that this was stated with regards to a hypothetical overloading "
+"of the `=` operator (at least that is my understanding)."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:152
+msgid ""
+"I think the use of the `<-` operator can be considered sufficiently "
+"\"devoted\" (i.e. separate) syntax to placate the above concern."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:155
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1228-placement-left-arrow.md:157
+msgid ""
+"See [different surface syntax](https://github.com/pnkfelix/rfcs/blob/fsk-"
+"placement-box-rfc/text/0000-placement-box.md#same-semantics-but-different-"
+"surface-syntax) from the alternatives from [RFC 809](https://github.com/rust-"
+"lang/rfcs/pull/809)."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:161
+msgid ""
+"Also, if we want to try to make it clear that this is not _just_ an "
+"assignment, we could combine `in` and `<-`, yielding e.g.:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:169
+msgid "Precedence"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:171
+msgid ""
+"Finally, precedence of this operator may be defined to be anything from "
+"being less than assignment/binop-assignment (set of right associative "
+"operators with lowest precedence) to highest in the language. The most "
+"prominent choices are:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:175
+msgid "Less than assignment:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:177
+msgid ""
+"Assuming `()` never becomes a `Placer`, this resolves a pretty common "
+"complaint that a statement such as `x = y <- z` is not clear or readable by "
+"forcing the programmer to write `x = (y <- z)` for code to typecheck. This, "
+"however introduces an inconsistency in parsing between `let x =` and `x =`: "
+"`let x = (y <- z)` but `(x = z) <- y`."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:183
+msgid "Same as assignment and binop-assignment:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:185
+msgid ""
+"`x = y <- z = a <- b = c = d <- e <- f` parses as `x = (y <- (z = (a <- (b = "
+"(c = (d <- (e <- f)))))))`. This is so far the easiest option to implement "
+"in the compiler."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:189
+msgid ""
+"More than assignment and binop-assignment, but less than any other operator:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:191
+msgid ""
+"This is what this RFC currently proposes.  This allows for various "
+"expressions involving equality symbols and `<-` to be parsed reasonably and "
+"consistently. For example `x = y <- z += a <- b <- c` would get parsed as "
+"`x  = ((y <- z) += (a <- (b <- c)))`."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:196
+msgid "More than any operator:"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:198
+msgid ""
+"This is not a terribly interesting one, but still an option. Works well if "
+"we want to force people enclose both sides of the operator into parentheses "
+"most of the time. This option would get `x <- y <- z * a` parsed as `(x <-  "
+"(y <- z)) * a`."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:203
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1228-placement-left-arrow.md:205
+msgid ""
+"**What should the precedence of the `<-` operator be?** In particular, it "
+"may make sense for it to have the same precedence of `=`, as argued in "
+"[these](https://github.com/rust-lang/rfcs/pull/1319#issuecomment-206627750) "
+"[comments](https://github.com/rust-lang/rfcs/"
+"pull/1319#issuecomment-207090495). The ultimate answer here will probably "
+"depend on whether the result of `a <- b` is commonly composed and how, so it "
+"was decided to hold off on a final decision until there was more usage in "
+"the wild."
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:215
+msgid "Change log"
+msgstr ""
+
+#: src/1228-placement-left-arrow.md:217
+msgid ""
+"**2016.04.22.** Amended by [rust-lang/rfcs#1319](https://github.com/rust-"
+"lang/rfcs/pull/1319) to adjust the precedence."
+msgstr ""

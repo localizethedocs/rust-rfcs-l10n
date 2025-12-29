@@ -1,0 +1,185 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1123-str-split-at.md:1
+msgid "Feature Name: `str_split_at`"
+msgstr ""
+
+#: src/1123-str-split-at.md:2
+msgid "Start Date: 2015-05-17"
+msgstr ""
+
+#: src/1123-str-split-at.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1123](https://github.com/rust-lang/rfcs/pull/1123)"
+msgstr ""
+
+#: src/1123-str-split-at.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#25839](https://github.com/rust-lang/rust/"
+"pull/25839)"
+msgstr ""
+
+#: src/1123-str-split-at.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1123-str-split-at.md:8
+msgid ""
+"Introduce the method `split_at(&self, mid: usize) -> (&str, &str)` on `str`, "
+"to divide a slice into two, just like we can with `[T]`."
+msgstr ""
+
+#: src/1123-str-split-at.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1123-str-split-at.md:13
+msgid ""
+"Adding `split_at` is a measure to provide a method from `[T]` in a version "
+"that makes sense for `str`."
+msgstr ""
+
+#: src/1123-str-split-at.md:16
+msgid ""
+"Once used to `[T]`, users might even expect that `split_at` is present on "
+"str."
+msgstr ""
+
+#: src/1123-str-split-at.md:18
+msgid ""
+"It is a simple method with an obvious implementation, but it provides "
+"convenience while working with string segmentation manually, which we "
+"already have ample tools for (for example the method `find` that returns the "
+"first matching byte offset)."
+msgstr ""
+
+#: src/1123-str-split-at.md:23
+msgid ""
+"Using `split_at` can lead to less repeated bounds checks, since it is easy "
+"to use cumulatively, splitting off a piece at a time."
+msgstr ""
+
+#: src/1123-str-split-at.md:26
+msgid ""
+"This feature is requested in [rust-lang/rust#18063](https://github.com/rust-"
+"lang/rust/issues/18063)"
+msgstr ""
+
+#: src/1123-str-split-at.md:30
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1123-str-split-at.md:32
+msgid ""
+"Introduce the method `split_at(&self, mid: usize) -> (&str, &str)` on `str`, "
+"to divide a slice into two."
+msgstr ""
+
+#: src/1123-str-split-at.md:35
+msgid ""
+"`mid` will be a byte offset from the start of the string, and it must be on "
+"a character boundary. Both `0` and `self.len()` are valid splitting points."
+msgstr ""
+
+#: src/1123-str-split-at.md:38
+msgid ""
+"`split_at` will be an inherent method on `str` where possible, and will be "
+"available from libcore and the layers above it."
+msgstr ""
+
+#: src/1123-str-split-at.md:41
+msgid ""
+"The following is a working implementation, implemented as a trait just for "
+"illustration and to be testable as a custom extension:"
+msgstr ""
+
+#: src/1123-str-split-at.md:50
+msgid ""
+"/// Divide one string slice into two at an index.\n"
+"    ///\n"
+"    /// The index `mid` is a byte offset from the start of the string\n"
+"    /// that must be on a character boundary.\n"
+"    ///\n"
+"    /// Return slices `&self[..mid]` and `&self[mid..]`.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if `mid` is beyond the last character of the string,\n"
+"    /// or if it is not on a character boundary.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    /// ```\n"
+"    /// let s = \"Löwe 老虎 Léopard\";\n"
+"    /// let first_space = s.find(' ').unwrap_or(s.len());\n"
+"    /// let (a, b) = s.split_at(first_space);\n"
+"    ///\n"
+"    /// assert_eq!(a, \"Löwe\");\n"
+"    /// assert_eq!(b, \" 老虎 Léopard\");\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/1123-str-split-at.md:77
+msgid ""
+"`split_at` will use a byte offset (a.k.a byte index) to be consistent with "
+"slicing and the offset used by interrogator methods such as `find` or "
+"iterators such as `char_indices`. Byte offsets are our standard lightweight "
+"position indicators that we use to support efficient operations on string "
+"slices."
+msgstr ""
+
+#: src/1123-str-split-at.md:82
+msgid "Implementing `split_at_mut` is not relevant for `str` at this time."
+msgstr ""
+
+#: src/1123-str-split-at.md:84
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1123-str-split-at.md:86
+msgid ""
+"`split_at` panics on 1) index out of bounds 2) index not on character "
+"boundary."
+msgstr ""
+
+#: src/1123-str-split-at.md:88
+msgid "Possible name confusion with other `str` methods like `.split()`"
+msgstr ""
+
+#: src/1123-str-split-at.md:89
+msgid ""
+"According to our developing API evolution and semver guidelines this is a "
+"breaking change but a (very) minor change. Adding methods is something we "
+"expect to be able to. (See [RFC PR #1105](https://github.com/rust-lang/rfcs/"
+"pull/1105))."
+msgstr ""
+
+#: src/1123-str-split-at.md:95
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1123-str-split-at.md:97
+msgid "Recommend other splitting methods, like the split iterators."
+msgstr ""
+
+#: src/1123-str-split-at.md:98
+msgid "Stick to writing `(&foo[..mid], &foo[mid..])`"
+msgstr ""
+
+#: src/1123-str-split-at.md:100
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1123-str-split-at.md:102
+msgid "_None_"
+msgstr ""
