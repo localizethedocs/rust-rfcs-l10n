@@ -1,0 +1,433 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2904-compiler-major-change-process - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="major-change-proposal-rfc"><a class="header" href="#major-change-proposal-rfc">Major Change Proposal RFC</a></h1>
+<ul>
+<li>Feature Name: N/A</li>
+<li>Start Date: 2020-05-07</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/2904">rust-lang/rfcs#2904</a></li>
+<li>Rust Issue: N/A</li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Introduce the <strong>major change process</strong> for the compiler team. This process has the following goals:</p>
+<ul>
+<li>to advertise major changes and give the team a chance to weigh in;</li>
+<li>to help scale the amount of work being done to reviewing bandwidth by choosing a reviewer in advance;</li>
+<li>to avoid a lot of process overhead.</li>
+</ul>
+<p>The intent here is that if you have a plan to make some “major change” to the compiler, you will start with this process. It may either simply be approved, but if the change proves more controversial or complex, we may escalate towards design meetings, longer write-ups, or full RFCs before reaching a final decision.</p>
+<p>This process does not apply to adding new language features, but it can be used for minor features such as adding new <code>-C</code> flags to the compiler.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>As the compiler grows in complexity, it becomes harder and harder to track what’s going on. We don’t currently have a clear channel for people to signal their intention to make “major changes” that may impact other developers in a lightweight way (and potentially receive feedback).</p>
+<p>Our goal is to create a channel for signaling intentions that lies somewhere between opening a PR (and perhaps cc’ing others on that PR) and creating a compiler team design meeting proposal or RFC.</p>
+<h3 id="goals"><a class="header" href="#goals">Goals</a></h3>
+<p>Our goals with the MCP are as follows:</p>
+<ul>
+<li>Encourage people making a major change to write at least a few paragraphs about what they plan to do.</li>
+<li>Ensure that folks in the compiler team are aware the change is happening and given a chance to respond.</li>
+<li>Ensure that every proposal has a “second”, meaning some expert from the team who thinks it’s a good idea.</li>
+<li>Ensure that major changes have an assigned and willing reviewer.</li>
+<li>Avoid the phenomenon of large, sweeping PRs landing “out of nowhere” onto someone’s review queue.</li>
+<li>Avoid the phenomenon of PRs living in limbo because it’s not clear what level of approval is required for them to land.</li>
+</ul>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<h3 id="major-change-proposals"><a class="header" href="#major-change-proposals">Major Change Proposals</a></h3>
+<p>If you would like to make a <a href="#What-constitutes-a-major-change">major change</a> to the compiler, the process is as follows:</p>
+<ul>
+<li>Open a tracking issue on the <a href="https://github.com/rust-lang/compiler-team">rust-lang/compiler-team</a> repo using the <a href="#Template-for-major-change-proposals">major change template</a>.
+<ul>
+<li>A Zulip topic in the stream <code>#t-compiler/major changes</code> will automatically be created for you by a bot.</li>
+<li>If concerns are raised, you may want to modify the proposal to address those concerns.</li>
+<li>Alternatively, you can submit a <a href="https://forge.rust-lang.org/compiler/steering-meeting.html">design meeting proposal</a> to have a longer, focused discussion.</li>
+</ul>
+</li>
+<li>To be accepted, a major change proposal needs three things:
+<ul>
+<li>One or more <strong>reviewers</strong>, who commit to reviewing the work. This can be the person making the proposal, if they intend to mentor others.</li>
+<li>A <strong>second</strong>, a member of the compiler team or a contributor who approves of the idea, but is not the one originating the proposal.</li>
+<li>A <strong>final comment period</strong> (a 10 day wait to give people time to comment).
+<ul>
+<li>The FCP can be skipped if the change is easily reversed and/or further objections are considered unlikely. This often happens if there has been a lot of prior discussion, for example.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Once the FCP completes, if there are no outstanding concerns, PRs can start to land.
+<ul>
+<li>If those PRs make outward-facing changes that affect stable code, then either the MCP or the PR(s) must be approved with a <code>rfcbot fcp merge</code> comment.</li>
+</ul>
+</li>
+</ul>
+<h3 id="conditional-acceptance"><a class="header" href="#conditional-acceptance">Conditional acceptance</a></h3>
+<p>Some major change proposals will be conditionally accepted. This indicates that we’d like to see the work land, but we’d like to re-evaluate the decision of whether to commit to the design after we’ve had time to gain experience. We should try to be clear about the things we’d like to evaluate, and ideally a timeline.</p>
+<h3 id="deferred-or-not-accepted"><a class="header" href="#deferred-or-not-accepted">Deferred or not accepted</a></h3>
+<p>Some proposals will not be accepted. Some of the possible reasons:</p>
+<ul>
+<li>You may be asked to do some prototyping or experimentation before a final decision is reached</li>
+<li>The idea might be reasonable, but there may not be bandwidth to do the reviewing, or there may just be too many other things going on.</li>
+<li>The idea may be good, but it may be judged that the resulting code would be too complex to maintain, and not worth the benefits.</li>
+<li>There may be flaws in the idea or it may not sufficient benefit.</li>
+</ul>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<h3 id="what-happens-if-someone-opens-a-pr-that-seems-like-a-major-change-without-doing-this-process"><a class="header" href="#what-happens-if-someone-opens-a-pr-that-seems-like-a-major-change-without-doing-this-process">What happens if someone opens a PR that seems like a major change <em>without</em> doing this process?</a></h3>
+<p>The PR should be closed or marked as blocked, with a request to create a major change proposal first.</p>
+<p>If the PR description already contains suitable text that could serve as an MCP, then simply copy and paste that into an MCP issue. Using an issue consistently helps to ensure that the tooling and process works smoothly.</p>
+<h3 id="can-i-work-on-code-experimentally-before-a-mcp-is-accepted"><a class="header" href="#can-i-work-on-code-experimentally-before-a-mcp-is-accepted">Can I work on code experimentally before a MCP is accepted?</a></h3>
+<p>Of course!  You are free to work on PRs or write code. But those PRs should be marked as experimental and they should not land, nor should anyone be expected to review them (unless folks want to).</p>
+<h3 id="what-constitutes-a-major-change"><a class="header" href="#what-constitutes-a-major-change">What constitutes a major change?</a></h3>
+<p>The rough intuition is “something that would require updates to the <a href="https://rustc-dev-guide.rust-lang.org">rustc-dev-guide</a> or the <a href="https://doc.rust-lang.org/rustc/index.html">rustc book</a>”. In other words:</p>
+<ul>
+<li>Something that alters the architecture of some part(s) of the compiler, since this is what the rustc-dev-guide aims to document.</li>
+<li>A simple change that affects a lot of people, such as altering the names of very common types or changing coding conventions.</li>
+<li>Adding a compiler flag or other public facing changes, which should be documented (ultimately) in the rustc book. This is only appropriate for “minor” tweaks, however, and not major things that may impact a lot of users. (Also, public facing changes will require a full FCP before landing on stable, but an MCP can be a good way to propose the idea.)</li>
+</ul>
+<p>Note that, in some cases, the change may be deemed <strong>too big</strong> and a full FCP or RFC may be required to move forward. This could occur with significant public facing change or with sufficiently large changes to the architecture. The compiler team leads can make this call.</p>
+<p>Note that whether something is a major change proposal is not necessarily related to the number of lines of code that are affected. Renaming a method can affect a large number of lines, and even require edits to the rustc-dev-guide, but it may not be a major change. At the same time, changing names that are very broadly used could constitute a major change (for example, renaming from the <code>tcx</code> context in the compiler to something else would be a major change).</p>
+<h3 id="public-facing-changes-require-rfcbot-fcp"><a class="header" href="#public-facing-changes-require-rfcbot-fcp">Public-facing changes require rfcbot fcp</a></h3>
+<p>The MCP “seconding” process is only meant to be used to get agreement on the technical architecture we plan to use. It is not sufficient to stabilize new features or make public-facing changes like adding a -C flag. For that, an <code>rfcbot fcp</code> is required (or perhaps an RFC, if the change is large enough).</p>
+<p>For landing compiler flags in particular, a good approach is to start with an MCP introducing a <code>-Z</code> flag and then “stabilize” the flag by moving it to <code>-C</code> in a PR later (which would require <code>rfcbot fcp</code>).</p>
+<p>Major change proposals are not sufficient for language changes or changes that affect cargo.</p>
+<h3 id="steps-to-open-a-mcp"><a class="header" href="#steps-to-open-a-mcp">Steps to open a MCP</a></h3>
+<ul>
+<li>Open a tracking issue on the <a href="https://github.com/rust-lang/compiler-team">rust-lang/compiler-team</a> repo using the <a href="#Template-for-major-change-proposals">major change template</a>.</li>
+<li>Create a Zulip topic in the stream <code>#t-compiler/major changes</code>:
+<ul>
+<li>The topic should be named something like “modify the whiz-bang component compiler-team#123”, which describes the change and links to the tracking issue.</li>
+<li>The stream will be used for people to ask questions or propose changes.</li>
+</ul>
+</li>
+</ul>
+<h3 id="what-kinds-of-comments-should-go-on-the-tracking-issue-in-compiler-team-repo"><a class="header" href="#what-kinds-of-comments-should-go-on-the-tracking-issue-in-compiler-team-repo">What kinds of comments should go on the tracking issue in compiler-team repo?</a></h3>
+<p>Please direct technical conversation to the Zulip stream.</p>
+<p>The compiler-team repo issues are intended to be low traffic and used for procedural purposes. Note that to “second” a design or offer to review,  you should be someone who is familiar with the code, typically but not necessarily a compiler team member or contributor.</p>
+<ul>
+<li>Announcing that you “second” or approve of the design.</li>
+<li>Announcing that you would be able to review or mentor the work.</li>
+<li>Noting a concern that you don’t want to be overlooked.</li>
+<li>Announcing that the proposal will be entering FCP or is accepted.</li>
+</ul>
+<h3 id="how-does-one-register-as-reviewer-register-approval-or-raise-an-objection"><a class="header" href="#how-does-one-register-as-reviewer-register-approval-or-raise-an-objection">How does one register as reviewer, register approval, or raise an objection?</a></h3>
+<p>These types of procedural comments can be left on the issue (it’s also good to leave a message in Zulip). See the previous section.</p>
+<h3 id="who-decides-whether-a-concern-is-unresolved"><a class="header" href="#who-decides-whether-a-concern-is-unresolved">Who decides whether a concern is unresolved?</a></h3>
+<p>Usually the experts in the given area will reach a consensus here. But if there is some need for a “tie breaker” vote or judgment call, the compiler-team leads make the final call.</p>
+<h3 id="what-are-some-examples-of-major-changes-from-the-past"><a class="header" href="#what-are-some-examples-of-major-changes-from-the-past">What are some examples of major changes from the past?</a></h3>
+<p>Here are some examples of changes that were made in the past that would warrant the major change process:</p>
+<ul>
+<li>overhauling the way we encode crate metadata</li>
+<li>merging the gcx, tcx arenas</li>
+<li>renaming a widely used, core abstraction, such as the <code>Ty</code> type</li>
+<li>introducing cargo pipelining</li>
+<li>adding a new <code>-C</code> flag that exposes some minor variant</li>
+</ul>
+<h3 id="what-are-some-examples-of-things-that-are-too-big-for-the-major-change-process"><a class="header" href="#what-are-some-examples-of-things-that-are-too-big-for-the-major-change-process">What are some examples of things that are too big for the major change process?</a></h3>
+<p>Here are some examples of changes that are too big for the major change process, or which at least would require auxiliary design meetings or a more fleshed out design before they can proceed:</p>
+<ul>
+<li>introducing incremental or the query system</li>
+<li>introducing MIR or some new IR</li>
+<li>introducing parallel execution</li>
+<li>adding ThinLTO support</li>
+</ul>
+<h3 id="what-are-some-examples-of-things-that-are-too-small-for-the-major-change-process"><a class="header" href="#what-are-some-examples-of-things-that-are-too-small-for-the-major-change-process">What are some examples of things that are too small for the major change process?</a></h3>
+<p>Here are some examples of things that don’t merit any MCP:</p>
+<ul>
+<li>adding new information into metadata</li>
+<li>fixing an ICE or tweaking diagnostics</li>
+<li>renaming “less widely used” methods</li>
+</ul>
+<h3 id="when-should-major-change-proposals-be-closed"><a class="header" href="#when-should-major-change-proposals-be-closed">When should Major Change Proposals be closed?</a></h3>
+<p>Major Change Proposals can be closed:</p>
+<ul>
+<li>by the author, if they have lost interest in pursuing it.</li>
+<li>by a team lead or expert, if there are strong objections from key members of the team that don’t look likely to be overcome.</li>
+<li>by folks doing triage, if there have been three months of inactivity. In this case, people should feel free to re-open the issue if they would like to “rejuvenate” it.</li>
+</ul>
+<h2 id="template-for-major-change-proposals"><a class="header" href="#template-for-major-change-proposals">Template for major change proposals</a></h2>
+<p>The template for major change proposals is as follows:</p>
+<pre><code># What is this issue?
+
+This is a **major change proposal**, which means a proposal to make a notable change to the compiler -- one that either alters the architecture of some component, affects a lot of people, or makes a small but noticeable public change (e.g., adding a compiler flag). You can read more about the MCP process on https://forge.rust-lang.org/.
+
+**This issue is not meant to be used for technical discussion. There is a Zulip stream for that. Use this issue to leave procedural comments, such as volunteering to review, indicating that you second the proposal (or third, etc), or raising a concern that you would like to be addressed.**
+
+# MCP Checklist
+
+* [x] MCP **filed**. Automatically, as a result of filing this issue:
+  * The @rust-lang/wg-prioritization group will add this to the triage meeting agenda so folks see it.
+  * A Zulip topic in the stream `#t-compiler/major changes` will be created for this issue.
+* [ ] MCP **seconded**. The MCP is "seconded" when a compiler team member or contributor issues the `@rustbot second` command. This should only be done by someone knowledgable with the area -- before seconding, it may be a good idea to cc other stakeholders as well and get their opinion.
+* [ ] **Final comment period** (FCP). Once the MCP is approved, the FCP begins and lasts for 10 days. This is a time for other members to review and raise concerns -- **concerns that should block acceptance should be noted as comments on the thread**, ideally with a link to Zulip for further discussion.
+* [ ] MCP **Accepted**. At the end of the FCP, a compiler team lead will review the comments and discussion and decide whether to accept the MCP.
+  * At this point, the `major-change-accepted` label is added and the issue is closed. You can link to it for future reference.
+  
+**A note on stability.** If your change is proposing a new stable feature, such as a `-C flag`, then a full team checkoff will be required before the feature can be landed. Often it is better to start with an unstable flag, like a `-Z` flag, and then move to stabilize as a secondary step.
+
+# TL;DR
+
+*Summarize what you'd like to do in a sentence or two, or a few bullet points.*
+
+# Links and Details
+
+*Add a few paragraphs explaining your design. The level of detail should be
+sufficient for someone familiar with the compiler to understand what you're
+proposing. Where possible, linking to relevant issues, old PRs, or external
+documents like LLVM pages etc is very useful.*
+
+# Mentors or Reviewers
+
+*Who will review this work? If you are being mentored by someone, then list
+their name here. If you are a compiler team member/contributor, and you
+intend to mentor someone else, then you can put your own name here. You can
+also leave it blank if you are looking for a reviewer. (Multiple names are ok
+too.)*
+</code></pre>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>It adds procedural overhead.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h2>
+<h3 id="why-not-use-the-fcp-process-to-do-approvals"><a class="header" href="#why-not-use-the-fcp-process-to-do-approvals">Why not use the FCP process to do approvals?</a></h3>
+<p>We opted not to require an ordinary rfcbot fcp because that feels too cumbersome. We want this to be lightweight. Requesting at least one person to approve seems like the minimal process.</p>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<p>The state of the art for these sorts of things in practice is that either people just write PRs, or perhaps someone opens a Zulip topic and pings a suitable set of people. This often works well in practice but can also lead to surprises, where stakeholders are overlooked. Moreover, it offers no means to manage review load or to have a chance to express concerns before a lot of code is written.</p>
+<p>This idea was loosely based on the “intent to ship” convention that many browsers have adopted. See e.g. Mozilla’s <a href="https://wiki.mozilla.org/ExposureGuidelines">Exposure Guidelines</a> or Chrome’s process for <a href="https://www.chromium.org/blink/launching-features">launching features</a>. Unlike those processes, however, it’s meant for internal refactors as well as (minor) public facing features.</p>
+<p>RFCs themselves are a form of “major change proposal”, but they are much more heavyweight and suitable for longer conversations or more controversial decisions. They wind up requesting feedback from a broader audience and they require all team members to actively agree before being accepted. The MCP process is meant to be something we can use to float and advertise ideas and quickly either reach consensus or else – if controversy is discovered – move the proposal to a more involved process.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p>None.</p>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<p>The details of this procedure are sure to evolve, and we don’t expect to use the RFC process for each such evolution. The main focus of this RFC is to approve of a <strong>mandatory major change process</strong> for major changes to the compiler.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="2873-inline-asm.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="2906-cargo-workspace-deduplicate.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="2873-inline-asm.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="2906-cargo-workspace-deduplicate.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

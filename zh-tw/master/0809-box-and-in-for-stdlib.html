@@ -1,0 +1,836 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>0809-box-and-in-for-stdlib - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: box_syntax, placement_in_syntax</li>
+<li>Start Date: 2015-02-04</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/809">rust-lang/rfcs#809</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/22181">rust-lang/rust#22181</a></li>
+</ul>
+<h2 id="this-rfc-was-previously-approved-but-later-withdrawn"><a class="header" href="#this-rfc-was-previously-approved-but-later-withdrawn">This RFC was previously approved, but later <strong>withdrawn</strong></a></h2>
+<p>For details see the <a href="https://github.com/rust-lang/rust/issues/27779#issuecomment-378416911">summary comment</a>.</p>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<ul>
+<li>
+<p>Change placement-new syntax from: <code>box (&lt;place-expr&gt;) &lt;expr&gt;</code> instead to: <code>in &lt;place-expr&gt; { &lt;block&gt; }</code>.</p>
+</li>
+<li>
+<p>Change <code>box &lt;expr&gt;</code> to an overloaded operator that chooses its implementation based on the expected type.</p>
+</li>
+<li>
+<p>Use unstable traits in <code>core::ops</code> for both operators, so that libstd can provide support for the overloaded operators; the traits are unstable so that the language designers are free to revise the underlying protocol in the future post 1.0.</p>
+</li>
+<li>
+<p>Feature-gate the placement-<code>in</code> syntax via the feature name <code>placement_in_syntax</code>.</p>
+</li>
+<li>
+<p>The overloaded <code>box &lt;expr&gt;</code> will reuse the <code>box_syntax</code> feature name.</p>
+</li>
+</ul>
+<p>(Note that <code>&lt;block&gt;</code> here denotes the interior of a block expression; i.e.:</p>
+<pre><code>&lt;block&gt; ::= [ &lt;stmt&gt; ';' | &lt;item&gt; ] * [ &lt;expr&gt; ]
+</code></pre>
+<p>This is the same sense in which the <code>block</code> nonterminal is used in the reference manual.)</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>Goal 1: We want to support an operation analogous to C++’s placement new, as discussed previously in <a href="https://github.com/rust-lang/rfcs/pull/470">Placement Box RFC PR 470</a>.</p>
+<p>Goal 2: We also would like to overload our <code>box</code> syntax so that more types, such as <code>Rc&lt;T&gt;</code> and <code>Arc&lt;T&gt;</code> can gain the benefit of avoiding intermediate copies (i.e. allowing expressions to install their result value directly into the backing storage of the <code>Rc&lt;T&gt;</code> or <code>Arc&lt;T&gt;</code> when it is created).</p>
+<p>However, during discussion of <a href="https://github.com/rust-lang/rfcs/pull/470">Placement Box RFC PR 470</a>, some things became clear:</p>
+<ul>
+<li>
+<p>Many syntaxes using the <code>in</code> keyword are superior to <code>box (&lt;place-expr&gt;) &lt;expr&gt;</code> for the operation analogous to placement-new.</p>
+<p>The proposed <code>in</code>-based syntax avoids ambiguities such as having to write <code>box () (&lt;expr&gt;)</code> (or <code>box (alloc::HEAP) (&lt;expr&gt;)</code>) when one wants to surround <code>&lt;expr&gt;</code> with parentheses. It allows the parser to provide clearer error messages when encountering <code>in &lt;place-expr&gt; &lt;expr&gt;</code> (clearer compared to the previous situation with <code>box &lt;place-expr&gt; &lt;expr&gt;</code>).</p>
+</li>
+<li>
+<p>It would be premature for Rust to commit to any particular protocol for supporting placement-<code>in</code>. A number of participants in the discussion of <a href="https://github.com/rust-lang/rfcs/pull/470">Placement Box RFC PR 470</a> were unhappy with the baroque protocol, especially since it did not support DST and potential future language changes would allow the protocol proposed there to be significantly simplified.</p>
+</li>
+</ul>
+<p>Therefore, this RFC proposes a middle ground for 1.0: Support the desired syntax, but do not provide stable support for end-user implementations of the operators. The only stable ways to use the overloaded <code>box &lt;expr&gt;</code> or <code>in &lt;place-expr&gt; { &lt;block&gt; }</code> operators will be in tandem with types provided by the stdlib, such as <code>Box&lt;T&gt;</code>.</p>
+<h2 id="詳細設計"><a class="header" href="#詳細設計">詳細設計</a></h2>
+<ul>
+<li>
+<p>Add traits to <code>core::ops</code> for supporting the new operators. This RFC does not commit to any particular set of traits, since they are not currently meant to be implemented outside of the stdlib. (However, a demonstration of one working set of traits is given in <a href="#appendix-a-sample-operator-traits">Appendix A</a>.)</p>
+<p>Any protocol that we adopt for the operators needs to properly handle panics; i.e., <code>box &lt;expr&gt;</code> must properly cleanup any intermediate state if <code>&lt;expr&gt;</code> panics during its evaluation, and likewise for <code>in &lt;place-expr&gt; { &lt;block&gt; }</code></p>
+<p>(See <a href="https://github.com/rust-lang/rfcs/pull/470">Placement Box RFC PR 470</a> or <a href="#appendix-a-sample-operator-traits">Appendix A</a> for discussion on ways to accomplish this.)</p>
+</li>
+<li>
+<p>Change <code>box &lt;expr&gt;</code> from built-in syntax (tightly integrated with <code>Box&lt;T&gt;</code>) into an overloaded-<code>box</code> operator that uses the expected return type to decide what kind of value to create.  For example, if <code>Rc&lt;T&gt;</code> is extended with an implementation of the appropriate operator trait, then</p>
+<pre><code class="language-rust">let x: Rc&lt;_&gt; = box format!("Hello");</code></pre>
+<p>could be a legal way to create an <code>Rc&lt;String&gt;</code> without having to invoke the <code>Rc::new</code> function. This will be more efficient for building instances of <code>Rc&lt;T&gt;</code> when <code>T</code> is a large type.  (It is also arguably much cleaner syntax to read, regardless of the type <code>T</code>.)</p>
+<p>Note that this change will require end-user code to no longer assume that <code>box &lt;expr&gt;</code> always produces a <code>Box&lt;T&gt;</code>; such code will need to either add a type annotation e.g. saying <code>Box&lt;_&gt;</code>, or will need to call <code>Box::new(&lt;expr&gt;)</code> instead of using <code>box &lt;expr&gt;</code>.</p>
+</li>
+<li>
+<p>Add support for parsing <code>in &lt;place-expr&gt; { &lt;block&gt; }</code> as the basis for the placement operator.</p>
+<p>Remove support for <code>box (&lt;place-expr&gt;) &lt;expr&gt;</code> from the parser.</p>
+<p>Make <code>in &lt;place-expr&gt; { &lt;block&gt; }</code> an overloaded operator that uses the <code>&lt;place-expr&gt;</code> to determine what placement code to run.</p>
+<p>Note: when <code>&lt;place-expr&gt;</code> is just an identifier, <code>&lt;place-expr&gt; { &lt;block&gt; }</code> is not parsed as a struct literal. We accomplish this via the same means that is used e.g. for <code>if</code> expressions: we restrict <code>&lt;place-expr&gt;</code> to not include struct literals (see <a href="https://github.com/rust-lang/rfcs/blob/master/text/0092-struct-grammar.md">RFC 92</a>).</p>
+</li>
+<li>
+<p>The only stabilized implementation for the <code>box &lt;expr&gt;</code> operator proposed by this RFC is <code>Box&lt;T&gt;</code>. The question of which other types should support integration with <code>box &lt;expr&gt;</code> is a library design issue and needs to go through the conventions and library stabilization process.</p>
+<p>Similarly, this RFC does not propose <em>any</em> stabilized implementation for the <code>in &lt;place-expr&gt; { &lt;block&gt; }</code> operator. (An obvious candidate for <code>in &lt;place-expr&gt; { &lt;block&gt; }</code> integration would be a <code>Vec::emplace_back</code> method; but again, the choice of which such methods to add is a library design issue, beyond the scope of this RFC.)</p>
+<p>(A sample implementation illustrating how to support the operators on other types is given in <a href="#appendix-a-sample-operator-traits">Appendix A</a>.)</p>
+</li>
+<li>
+<p>Feature-gate the two syntaxes under separate feature identifiers, so that we have the option of removing the gate for one syntax without the other. (I.e. we already have much experience with non-overloaded <code>box &lt;expr&gt;</code>, but we have nearly no experience with placement-<code>in</code> as described here).</p>
+</li>
+</ul>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<ul>
+<li>
+<p>End-users might be annoyed that they cannot add implementations of the overloaded-<code>box</code> and placement-<code>in</code> operators themselves. But such users who want to do such a thing will probably be using the nightly release channel, which will not have the same stability restrictions.</p>
+</li>
+<li>
+<p>The currently-implemented desugaring does not infer that in an expression like <code>box &lt;expr&gt; as Box&lt;Trait&gt;</code>, the use of <code>box &lt;expr&gt;</code> should evaluate to some <code>Box&lt;_&gt;</code>. pnkfelix has found that this is due to a weakness in compiler itself (<a href="https://github.com/rust-lang/rust/pull/22012">Rust PR 22012</a>).</p>
+<p>Likewise, the currently-implemented desugaring does not interact well with the combination of type-inference and implicit coercions to trait objects. That is, when <code>box &lt;expr&gt;</code> is used in a context like this:</p>
+<pre><code>fn foo(Box&lt;SomeTrait&gt;) { ... }
+foo(box some_expr());
+</code></pre>
+<p>the type inference system attempts to unify the type <code>Box&lt;SomeTrait&gt;</code> with the return-type of <code>::protocol::Boxed::finalize(place)</code>. This may also be due to weakness in the compiler, but that is not immediately obvious.</p>
+<p><a href="#appendix-b-examples-of-interaction-between-desugaring-type-inference-and-coercion">Appendix B</a> has a complete code snippet (using a desugaring much like the one found in the other appendix) that illustrates two cases of interest where this weakness arises.</p>
+</li>
+</ul>
+<h2 id="替代方案"><a class="header" href="#替代方案">替代方案</a></h2>
+<ul>
+<li>
+<p>We could keep the <code>box (&lt;place-expr&gt;) &lt;expr&gt;</code> syntax. It is hard to see what the advantage of that is, unless (1.) we can identify many cases of types that benefit from supporting both overloaded-<code>box</code> and placement-<code>in</code>, or unless (2.) we anticipate some integration with <code>box</code> pattern syntax that would motivate using the <code>box</code> keyword for placement.</p>
+</li>
+<li>
+<p>We could use the <code>in (&lt;place-expr&gt;) &lt;expr&gt;</code> syntax. An earlier version of this RFC used this alternative. It is easier to implement on the current code base, but I do not know of any other benefits. (Well, maybe parentheses are less “heavyweight” than curly-braces?)</p>
+</li>
+<li>
+<p>A number of other syntaxes for placement have been proposed in the past; see for example discussion on <a href="https://github.com/rust-lang/rfcs/issues/405">RFC PR 405</a> as well as <a href="https://github.com/pnkfelix/rfcs/blob/fsk-placement-box-rfc/text/0000-placement-box.md#same-semantics-but-different-surface-syntax">the previous placement RFC</a>.</p>
+<p>The main constraints I want to meet are:</p>
+<ol>
+<li>Do not introduce ambiguity into the grammar for Rust</li>
+<li>Maintain left-to-right evaluation order (so the place should appear to the left of the value expression in the text).
+But otherwise I am not particularly attached to any single syntax.</li>
+</ol>
+<p>One particular alternative that might placate those who object to placement-<code>in</code>’s <code>box</code>-free form would be: <code>box (in &lt;place-expr&gt;) &lt;expr&gt;</code>.</p>
+</li>
+<li>
+<p>Do nothing. I.e. do not even accept an unstable libstd-only protocol for placement-<code>in</code> and overloaded-<code>box</code>. This would be okay, but unfortunate, since in the past some users have identified intermediate copies to be a source of inefficiency, and proper use of <code>box &lt;expr&gt;</code> and placement-<code>in</code> can help remove intermediate copies.</p>
+</li>
+</ul>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<p>This RFC represents the current plan for <code>box</code>/<code>in</code>. However, in the <a href="https://github.com/rust-lang/rfcs/pull/809">RFC discussion</a> a number of questions arose, including possible design alternatives that might render the <code>in</code> keyword unnecessary. Before the work in this RFC can be unfeature-gated, these questions should be satisfactorily resolved:</p>
+<ul>
+<li>
+<p>Can the type-inference and coercion system of the compiler be enriched to the point where overloaded <code>box</code> and <code>in</code> are seamlessly usable? Or are type-ascriptions unavoidable when supporting overloading?</p>
+<p>In particular, I am assuming here that some amount of current weakness cannot be blamed on any particular details of the sample desugaring.</p>
+<p>(See <a href="#appendix-b-examples-of-interaction-between-desugaring-type-inference-and-coercion">Appendix B</a> for example code showing weaknesses in <code>rustc</code> of today.)</p>
+</li>
+<li>
+<p>Do we want to change the syntax for <code>in(place) expr</code> / <code>in place { expr }</code>?</p>
+</li>
+<li>
+<p>Do we need <code>in</code> at all, or can we replace it with some future possible feature such as <code>DerefSet</code> or <code>&amp;out</code> etc?</p>
+</li>
+<li>
+<p>Do we want to improve the protocol in some way?</p>
+<ul>
+<li>Note that the protocol was specifically excluded from this RFC.</li>
+<li>Support for DST expressions such as <code>box [22, ..count]</code> (where <code>count</code> is a dynamic value)?</li>
+<li>Protocol making use of more advanced language features?</li>
+</ul>
+</li>
+</ul>
+<h2 id="appendices"><a class="header" href="#appendices">Appendices</a></h2>
+<h3 id="appendix-a-sample-operator-traits"><a class="header" href="#appendix-a-sample-operator-traits">Appendix A: sample operator traits</a></h3>
+<p>The goal is to show that code like the following can be made to work in Rust today via appropriate desugarings and trait definitions.</p>
+<pre><code class="language-rust">fn main() {
+    use std::rc::Rc;
+
+    let mut v = vec![1,2];
+    in v.emplace_back() { 3 }; // has return type `()`
+    println!("v: {:?}", v); // prints [1,2,3]
+
+    let b4: Box&lt;i32&gt; = box 4;
+    println!("b4: {}", b4);
+
+    let b5: Rc&lt;i32&gt; = box 5;
+    println!("b5: {}", b5);
+
+    let b6 = in HEAP { 6 }; // return type Box&lt;i32&gt;
+    println!("b6: {}", b6);
+}</code></pre>
+<p>To demonstrate the above, this appendix provides code that runs today; it demonstrates sample protocols for the proposed operators. (The entire code-block below should work when e.g. cut-and-paste into http::play.rust-lang.org )</p>
+<pre><code class="language-rust">#![feature(unsafe_destructor)] // (hopefully unnecessary soon with RFC PR 769)
+#![feature(alloc)]
+
+// The easiest way to illustrate the desugaring is by implementing
+// it with macros.  So, we will use the macro `in_` for placement-`in`
+// and the macro `box_` for overloaded-`box`; you should read
+// `in_!( (&lt;place-expr&gt;) &lt;expr&gt; )` as if it were `in &lt;place-expr&gt; { &lt;expr&gt; }`
+// and
+// `box_!( &lt;expr&gt; )` as if it were `box &lt;expr&gt;`.
+
+// The two macros have been designed to both 1. work with current Rust
+// syntax (which in some cases meant avoiding certain associated-item
+// syntax that currently causes the compiler to ICE) and 2. infer the
+// appropriate code to run based only on either `&lt;place-expr&gt;` (for
+// placement-`in`) or on the expected result type (for
+// overloaded-`box`).
+
+macro_rules! in_ {
+    (($placer:expr) $value:expr) =&gt; { {
+        let p = $placer;
+        let mut place = ::protocol::Placer::make_place(p);
+        let raw_place = ::protocol::Place::pointer(&amp;mut place);
+        let value = $value;
+        unsafe {
+            ::std::ptr::write(raw_place, value);
+            ::protocol::InPlace::finalize(place)
+        }
+    } }
+}
+
+macro_rules! box_ {
+    ($value:expr) =&gt; { {
+        let mut place = ::protocol::BoxPlace::make_place();
+        let raw_place = ::protocol::Place::pointer(&amp;mut place);
+        let value = $value;
+        unsafe {
+            ::std::ptr::write(raw_place, value);
+            ::protocol::Boxed::finalize(place)
+        }
+    } }
+}
+
+// Note that while both desugarings are very similar, there are some
+// slight differences.  In particular, the placement-`in` desugaring
+// uses `InPlace::finalize(place)`, which is a `finalize` method that
+// is overloaded based on the `place` argument (the type of which is
+// derived from the `&lt;place-expr&gt;` input); on the other hand, the
+// overloaded-`box` desugaring uses `Boxed::finalize(place)`, which is
+// a `finalize` method that is overloaded based on the expected return
+// type. Thus, the determination of which `finalize` method to call is
+// derived from different sources in the two desugarings.
+
+// The above desugarings refer to traits in a `protocol` module; these
+// are the traits that would be put into `std::ops`, and are given
+// below.
+
+mod protocol {
+
+/// Both `in PLACE { BLOCK }` and `box EXPR` desugar into expressions
+/// that allocate an intermediate "place" that holds uninitialized
+/// state.  The desugaring evaluates EXPR, and writes the result at
+/// the address returned by the `pointer` method of this trait.
+///
+/// A `Place` can be thought of as a special representation for a
+/// hypothetical `&amp;uninit` reference (which Rust cannot currently
+/// express directly). That is, it represents a pointer to
+/// uninitialized storage.
+///
+/// The client is responsible for two steps: First, initializing the
+/// payload (it can access its address via `pointer`). Second,
+/// converting the agent to an instance of the owning pointer, via the
+/// appropriate `finalize` method (see the `InPlace`.
+///
+/// If evaluating EXPR fails, then the destructor for the
+/// implementation of Place to clean up any intermediate state
+/// (e.g. deallocate box storage, pop a stack, etc).
+pub trait Place&lt;Data: ?Sized&gt; {
+    /// Returns the address where the input value will be written.
+    /// Note that the data at this address is generally uninitialized,
+    /// and thus one should use `ptr::write` for initializing it.
+    fn pointer(&amp;mut self) -&gt; *mut Data;
+}
+
+/// Interface to implementations of  `in PLACE { BLOCK }`.
+///
+/// `in PLACE { BLOCK }` effectively desugars into:
+///
+/// ```
+/// let p = PLACE;
+/// let mut place = Placer::make_place(p);
+/// let raw_place = Place::pointer(&amp;mut place);
+/// let value = { BLOCK };
+/// unsafe {
+///     std::ptr::write(raw_place, value);
+///     InPlace::finalize(place)
+/// }
+/// ```
+///
+/// The type of `in PLACE { BLOCK }` is derived from the type of `PLACE`;
+/// if the type of `PLACE` is `P`, then the final type of the whole
+/// expression is `P::Place::Owner` (see the `InPlace` and `Boxed`
+/// traits).
+///
+/// Values for types implementing this trait usually are transient
+/// intermediate values (e.g. the return value of `Vec::emplace_back`)
+/// or `Copy`, since the `make_place` method takes `self` by value.
+pub trait Placer&lt;Data: ?Sized&gt; {
+    /// `Place` is the intermediate agent guarding the
+    /// uninitialized state for `Data`.
+    type Place: InPlace&lt;Data&gt;;
+
+    /// Creates a fresh place from `self`.
+    fn make_place(self) -&gt; Self::Place;
+}
+
+/// Specialization of `Place` trait supporting `in PLACE { BLOCK }`.
+pub trait InPlace&lt;Data: ?Sized&gt;: Place&lt;Data&gt; {
+    /// `Owner` is the type of the end value of `in PLACE { BLOCK }`
+    ///
+    /// Note that when `in PLACE { BLOCK }` is solely used for
+    /// side-effecting an existing data-structure,
+    /// e.g. `Vec::emplace_back`, then `Owner` need not carry any
+    /// information at all (e.g. it can be the unit type `()` in that
+    /// case).
+    type Owner;
+
+    /// Converts self into the final value, shifting
+    /// deallocation/cleanup responsibilities (if any remain), over to
+    /// the returned instance of `Owner` and forgetting self.
+    unsafe fn finalize(self) -&gt; Self::Owner;
+}
+
+/// Core trait for the `box EXPR` form.
+///
+/// `box EXPR` effectively desugars into:
+///
+/// ```
+/// let mut place = BoxPlace::make_place();
+/// let raw_place = Place::pointer(&amp;mut place);
+/// let value = $value;
+/// unsafe {
+///     ::std::ptr::write(raw_place, value);
+///     Boxed::finalize(place)
+/// }
+/// ```
+///
+/// The type of `box EXPR` is supplied from its surrounding
+/// context; in the above expansion, the result type `T` is used
+/// to determine which implementation of `Boxed` to use, and that
+/// `&lt;T as Boxed&gt;` in turn dictates determines which
+/// implementation of `BoxPlace` to use, namely:
+/// `&lt;&lt;T as Boxed&gt;::Place as BoxPlace&gt;`.
+pub trait Boxed {
+    /// The kind of data that is stored in this kind of box.
+    type Data;  /* (`Data` unused b/c cannot yet express below bound.) */
+    type Place; /* should be bounded by BoxPlace&lt;Self::Data&gt; */
+
+    /// Converts filled place into final owning value, shifting
+    /// deallocation/cleanup responsibilities (if any remain), over to
+    /// returned instance of `Self` and forgetting `filled`.
+    unsafe fn finalize(filled: Self::Place) -&gt; Self;
+}
+
+/// Specialization of `Place` trait supporting `box EXPR`.
+pub trait BoxPlace&lt;Data: ?Sized&gt; : Place&lt;Data&gt; {
+    /// Creates a globally fresh place.
+    fn make_place() -&gt; Self;
+}
+
+} // end of `mod protocol`
+
+// Next, we need to see sample implementations of these traits.
+// First, `Box&lt;T&gt;` needs to support overloaded-`box`: (Note that this
+// is not the desired end implementation; e.g.  the `BoxPlace`
+// representation here is less efficient than it could be. This is
+// just meant to illustrate that an implementation *can* be made;
+// i.e. that the overloading *works*.)
+//
+// Also, just for kicks, I am throwing in `in HEAP { &lt;block&gt; }` support,
+// though I do not think that needs to be part of the stable libstd.
+
+struct HEAP;
+
+mod impl_box_for_box {
+    use protocol as proto;
+    use std::mem;
+    use super::HEAP;
+
+    struct BoxPlace&lt;T&gt; { fake_box: Option&lt;Box&lt;T&gt;&gt; }
+
+    fn make_place&lt;T&gt;() -&gt; BoxPlace&lt;T&gt; {
+        let t: T = unsafe { mem::zeroed() };
+        BoxPlace { fake_box: Some(Box::new(t)) }
+    }
+
+    unsafe fn finalize&lt;T&gt;(mut filled: BoxPlace&lt;T&gt;) -&gt; Box&lt;T&gt; {
+        let mut ret = None;
+        mem::swap(&amp;mut filled.fake_box, &amp;mut ret);
+        ret.unwrap()
+    }
+
+    impl&lt;'a, T&gt; proto::Placer&lt;T&gt; for HEAP {
+        type Place = BoxPlace&lt;T&gt;;
+        fn make_place(self) -&gt; BoxPlace&lt;T&gt; { make_place() }
+    }
+
+    impl&lt;T&gt; proto::Place&lt;T&gt; for BoxPlace&lt;T&gt; {
+        fn pointer(&amp;mut self) -&gt; *mut T {
+            match self.fake_box {
+                Some(ref mut b) =&gt; &amp;mut **b as *mut T,
+                None =&gt; panic!("impossible"),
+            }
+        }
+    }
+
+    impl&lt;T&gt; proto::BoxPlace&lt;T&gt; for BoxPlace&lt;T&gt; {
+        fn make_place() -&gt; BoxPlace&lt;T&gt; { make_place() }
+    }
+
+    impl&lt;T&gt; proto::InPlace&lt;T&gt; for BoxPlace&lt;T&gt; {
+        type Owner = Box&lt;T&gt;;
+        unsafe fn finalize(self) -&gt; Box&lt;T&gt; { finalize(self) }
+    }
+
+    impl&lt;T&gt; proto::Boxed for Box&lt;T&gt; {
+        type Data = T;
+        type Place = BoxPlace&lt;T&gt;;
+        unsafe fn finalize(filled: BoxPlace&lt;T&gt;) -&gt; Self { finalize(filled) }
+    }
+}
+
+// Second, it might be nice if `Rc&lt;T&gt;` supported overloaded-`box`.
+//
+// (Note again that this may not be the most efficient implementation;
+// it is just meant to illustrate that an implementation *can* be
+// made; i.e. that the overloading *works*.)
+ 
+mod impl_box_for_rc {
+    use protocol as proto;
+    use std::mem;
+    use std::rc::{self, Rc};
+
+    struct RcPlace&lt;T&gt; { fake_box: Option&lt;Rc&lt;T&gt;&gt; }
+
+    impl&lt;T&gt; proto::Place&lt;T&gt; for RcPlace&lt;T&gt; {
+        fn pointer(&amp;mut self) -&gt; *mut T {
+            if let Some(ref mut b) = self.fake_box {
+                if let Some(r) = rc::get_mut(b) {
+                    return r as *mut T
+                }
+            }
+            panic!("impossible");
+        }
+    }
+
+    impl&lt;T&gt; proto::BoxPlace&lt;T&gt; for RcPlace&lt;T&gt; {
+        fn make_place() -&gt; RcPlace&lt;T&gt; {
+            unsafe {
+                let t: T = mem::zeroed();
+                RcPlace { fake_box: Some(Rc::new(t)) }
+            }
+        }
+    }
+
+    impl&lt;T&gt; proto::Boxed for Rc&lt;T&gt; {
+        type Data = T;
+        type Place = RcPlace&lt;T&gt;;
+        unsafe fn finalize(mut filled: RcPlace&lt;T&gt;) -&gt; Self {
+            let mut ret = None;
+            mem::swap(&amp;mut filled.fake_box, &amp;mut ret);
+            ret.unwrap()
+        }
+    }
+}
+
+// Third, we want something to demonstrate placement-`in`. Let us use
+// `Vec::emplace_back` for that:
+
+mod impl_in_for_vec_emplace_back {
+    use protocol as proto;
+
+    use std::mem;
+
+    struct VecPlacer&lt;'a, T:'a&gt; { v: &amp;'a mut Vec&lt;T&gt; }
+    struct VecPlace&lt;'a, T:'a&gt; { v: &amp;'a mut Vec&lt;T&gt; }
+
+    pub trait EmplaceBack&lt;T&gt; { fn emplace_back(&amp;mut self) -&gt; VecPlacer&lt;T&gt;; }
+
+    impl&lt;T&gt; EmplaceBack&lt;T&gt; for Vec&lt;T&gt; {
+        fn emplace_back(&amp;mut self) -&gt; VecPlacer&lt;T&gt; { VecPlacer { v: self } }
+    }
+
+    impl&lt;'a, T&gt; proto::Placer&lt;T&gt; for VecPlacer&lt;'a, T&gt; {
+        type Place = VecPlace&lt;'a, T&gt;;
+        fn make_place(self) -&gt; VecPlace&lt;'a, T&gt; { VecPlace { v: self.v } }
+    }
+
+    impl&lt;'a, T&gt; proto::Place&lt;T&gt; for VecPlace&lt;'a, T&gt; {
+        fn pointer(&amp;mut self) -&gt; *mut T {
+            unsafe {
+                let idx = self.v.len();
+                self.v.push(mem::zeroed());
+                &amp;mut self.v[idx]
+            }
+        }
+    }
+    impl&lt;'a, T&gt; proto::InPlace&lt;T&gt; for VecPlace&lt;'a, T&gt; {
+        type Owner = ();
+        unsafe fn finalize(self) -&gt; () {
+            mem::forget(self);
+        }
+    }
+
+    #[unsafe_destructor]
+    impl&lt;'a, T&gt; Drop for VecPlace&lt;'a, T&gt; {
+        fn drop(&amp;mut self) {
+            unsafe {
+                mem::forget(self.v.pop())
+            }
+        }
+    }
+}
+
+// Okay, that's enough for us to actually demonstrate the syntax!
+// Here's our `fn main`:
+
+fn main() {
+    use std::rc::Rc;
+    // get hacked-in `emplace_back` into scope
+    use impl_in_for_vec_emplace_back::EmplaceBack;
+
+    let mut v = vec![1,2];
+    in_!( (v.emplace_back()) 3 );
+    println!("v: {:?}", v);
+
+    let b4: Box&lt;i32&gt; = box_!( 4 );
+    println!("b4: {}", b4);
+
+    let b5: Rc&lt;i32&gt; = box_!( 5 );
+    println!("b5: {}", b5);
+
+    let b6 = in_!( (HEAP) 6 ); // return type Box&lt;i32&gt;
+    println!("b6: {}", b6);
+}</code></pre>
+<h3 id="appendix-b-examples-of-interaction-between-desugaring-type-inference-and-coercion"><a class="header" href="#appendix-b-examples-of-interaction-between-desugaring-type-inference-and-coercion">Appendix B: examples of interaction between desugaring, type-inference, and coercion</a></h3>
+<p>The following code works with the current version of <code>box</code> syntax in Rust, but needs some sort of type annotation in Rust as it stands today for the desugaring of <code>box</code> to work out.</p>
+<p>(The following code uses <code>cfg</code> attributes to make it easy to switch between slight variations on the portions that expose the weakness.)</p>
+<pre><code class="language-rust">#![feature(box_syntax)]
+
+// NOTE: Scroll down to "START HERE"
+
+fn main() { }
+
+macro_rules! box_ {
+    ($value:expr) =&gt; { {
+        let mut place = ::BoxPlace::make();
+        let raw_place = ::Place::pointer(&amp;mut place);
+        let value = $value;
+        unsafe { ::std::ptr::write(raw_place, value); ::Boxed::fin(place) }
+    } }
+}
+
+// (Support traits and impls for examples below.)
+
+pub trait BoxPlace&lt;Data: ?Sized&gt; : Place&lt;Data&gt; { fn make() -&gt; Self; }
+pub trait Place&lt;Data: ?Sized&gt; { fn pointer(&amp;mut self) -&gt; *mut Data; }
+pub trait Boxed { type Place; fn fin(filled: Self::Place) -&gt; Self; }
+
+struct BP&lt;T: ?Sized&gt; { _fake_box: Option&lt;Box&lt;T&gt;&gt; }
+
+impl&lt;T&gt; BoxPlace&lt;T&gt; for BP&lt;T&gt; { fn make() -&gt; BP&lt;T&gt; { make_pl() } }
+impl&lt;T: ?Sized&gt; Place&lt;T&gt; for BP&lt;T&gt; { fn pointer(&amp;mut self) -&gt; *mut T { pointer(self) } }
+impl&lt;T: ?Sized&gt; Boxed for Box&lt;T&gt; { type Place = BP&lt;T&gt;; fn fin(x: BP&lt;T&gt;) -&gt; Self { finaliz(x) } }
+
+fn make_pl&lt;T&gt;() -&gt; BP&lt;T&gt; { loop { } }
+fn finaliz&lt;T: ?Sized&gt;(mut _filled: BP&lt;T&gt;) -&gt; Box&lt;T&gt; { loop { } }
+fn pointer&lt;T: ?Sized&gt;(_p: &amp;mut BP&lt;T&gt;) -&gt; *mut T { loop { } }
+
+// START HERE
+
+pub type BoxFn&lt;'a&gt; = Box&lt;Fn() + 'a&gt;;
+
+#[cfg(all(not(coerce_works1),not(coerce_works2),not(coerce_works3)))]
+pub fn coerce&lt;'a, F&gt;(f: F) -&gt; BoxFn&lt;'a&gt; where F: Fn(), F: 'a { box_!( f ) }
+
+#[cfg(coerce_works1)]
+pub fn coerce&lt;'a, F&gt;(f: F) -&gt; BoxFn&lt;'a&gt; where F: Fn(), F: 'a {   box  f   }
+
+#[cfg(coerce_works2)]
+pub fn coerce&lt;'a, F&gt;(f: F) -&gt; BoxFn&lt;'a&gt; where F: Fn(), F: 'a { let b: Box&lt;_&gt; = box_!( f ); b }
+
+#[cfg(coerce_works3)] // (This one assumes PR 22012 has landed)
+pub fn coerce&lt;'a, F&gt;(f: F) -&gt; BoxFn&lt;'a&gt; where F: Fn(), F: 'a { box_!( f ) as BoxFn }
+
+
+trait Duh { fn duh() -&gt; Self; }
+
+#[cfg(all(not(duh_works1),not(duh_works2)))]
+impl&lt;T&gt; Duh for Box&lt;[T]&gt; { fn duh() -&gt; Box&lt;[T]&gt; { box_!( [] ) } }
+
+#[cfg(duh_works1)]
+impl&lt;T&gt; Duh for Box&lt;[T]&gt; { fn duh() -&gt; Box&lt;[T]&gt; {   box  [] } }
+
+#[cfg(duh_works2)]
+impl&lt;T&gt; Duh for Box&lt;[T]&gt; { fn duh() -&gt; Box&lt;[T]&gt; { let b: Box&lt;[_; 0]&gt; =  box_!( [] ); b } }</code></pre>
+<p>You can pass <code>--cfg duh_worksN</code> and <code>--cfg coerce_worksM</code> for suitable <code>N</code> and <code>M</code> to see them compile.  Here is a transcript with those attempts, including the cases where type-inference fails in the desugaring.</p>
+<pre><code>% rustc /tmp/foo6.rs --cfg duh_works1 --cfg coerce_works1
+% rustc /tmp/foo6.rs --cfg duh_works1 --cfg coerce_works2
+% rustc /tmp/foo6.rs --cfg duh_works2 --cfg coerce_works1
+% rustc /tmp/foo6.rs --cfg duh_works1
+/tmp/foo6.rs:10:25: 10:41 error: the trait `Place&lt;F&gt;` is not implemented for the type `BP&lt;core::ops::Fn()&gt;` [E0277]
+/tmp/foo6.rs:10         let raw_place = ::Place::pointer(&amp;mut place);
+                                        ^~~~~~~~~~~~~~~~
+/tmp/foo6.rs:7:1: 14:2 note: in expansion of box_!
+/tmp/foo6.rs:37:64: 37:76 note: expansion site
+/tmp/foo6.rs:9:25: 9:41 error: the trait `core::marker::Sized` is not implemented for the type `core::ops::Fn()` [E0277]
+/tmp/foo6.rs:9         let mut place = ::BoxPlace::make();
+                                       ^~~~~~~~~~~~~~~~
+/tmp/foo6.rs:7:1: 14:2 note: in expansion of box_!
+/tmp/foo6.rs:37:64: 37:76 note: expansion site
+error: aborting due to 2 previous errors
+% rustc /tmp/foo6.rs                  --cfg coerce_works1
+/tmp/foo6.rs:10:25: 10:41 error: the trait `Place&lt;[_; 0]&gt;` is not implemented for the type `BP&lt;[T]&gt;` [E0277]
+/tmp/foo6.rs:10         let raw_place = ::Place::pointer(&amp;mut place);
+                                        ^~~~~~~~~~~~~~~~
+/tmp/foo6.rs:7:1: 14:2 note: in expansion of box_!
+/tmp/foo6.rs:52:51: 52:64 note: expansion site
+/tmp/foo6.rs:9:25: 9:41 error: the trait `core::marker::Sized` is not implemented for the type `[T]` [E0277]
+/tmp/foo6.rs:9         let mut place = ::BoxPlace::make();
+                                       ^~~~~~~~~~~~~~~~
+/tmp/foo6.rs:7:1: 14:2 note: in expansion of box_!
+/tmp/foo6.rs:52:51: 52:64 note: expansion site
+error: aborting due to 2 previous errors
+% 
+</code></pre>
+<p>The point I want to get across is this: It looks like both of these cases can be worked around via explicit type ascription.  Whether or not this is an acceptable cost is a reasonable question.</p>
+<ul>
+<li>Note that type ascription is especially annoying for the <code>fn duh</code> case, where one needs to keep the array-length encoded in the type consistent with the length of the array generated by the expression. This might motivate extending the use of wildcard <code>_</code> within type expressions to include wildcard constants, for use in the array length, i.e.: <code>[T; _]</code>.</li>
+</ul>
+<p>The <code>fn coerce</code> example comes from uses of the <code>fn combine_structure</code> function in the <code>libsyntax</code> crate.</p>
+<p>The <code>fn duh</code> example comes from the implementation of the <code>Default</code> trait for <code>Box&lt;[T]&gt;</code>.</p>
+<p>Both examples are instances of coercion; the <code>fn coerce</code> example is trying to express a coercion of a <code>Box&lt;Type&gt;</code> to a <code>Box&lt;Trait&gt;</code> (i.e. making a trait-object), and the <code>fn duh</code> example is trying to express a coercion of a <code>Box&lt;[T; k]&gt;</code> (specifically <code>[T; 0]</code>) to a <code>Box&lt;[T]&gt;</code>.  Both are going from a pointer-to-sized to a pointer-to-unsized.</p>
+<p>(Maybe there is a way to handle both of these cases in a generic fashion; pnkfelix is not sufficiently familiar with how coercions currently interact with type-inference in the first place.)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="0803-type-ascription.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="0823-hash-simplification.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="0803-type-ascription.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="0823-hash-simplification.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

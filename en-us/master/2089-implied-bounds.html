@@ -1,0 +1,829 @@
+<!DOCTYPE HTML>
+<html lang="en_US" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2089-implied-bounds - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-0060737d.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>implied_bounds</code></li>
+<li>Start Date: 2017-07-28</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/2089">rust-lang/rfcs#2089</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/44491">rust-lang/rust#44491</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Eliminate the need for “redundant” bounds on functions and impls where those bounds can be inferred from the input types and other trait bounds. For example, in this simple program, the impl would no longer require a bound, because it can be inferred from the <code>Foo&lt;T&gt;</code> type:</p>
+<pre><code class="language-rust">struct Foo&lt;T: Debug&gt; { .. }
+impl&lt;T: Debug&gt; Foo&lt;T&gt; {
+  //    ^^^^^ this bound is redundant
+  ...
+}</code></pre>
+<p>Hence, simply writing <code>impl&lt;T&gt; Foo&lt;T&gt; { ... }</code> would suffice. We currently support implied bounds for lifetime bounds, super traits and projections. We propose to extend this to all where clauses on traits and types, as was already discussed <a href="https://internals.rust-lang.org/t/lang-team-minutes-implied-bounds/4905">here</a>.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<h3 id="types"><a class="header" href="#types">Types</a></h3>
+<p>Let’s take an example from the standard library where trait bounds are actually expressed on a type¹.</p>
+<pre><code class="language-rust">pub enum Cow&lt;'a, B: ?Sized + 'a&gt;
+    where B: ToOwned
+{
+    Borrowed(&amp;'a B),
+    Owned(&lt;B as ToOwned&gt;::Owned),
+}</code></pre>
+<p>The <code>ToOwned</code> bound has then to be carried everywhere:</p>
+<pre><code class="language-rust">impl&lt;'a, B: ?Sized&gt; Cow&lt;'a, B&gt;
+    where B: ToOwned
+{
+    ...
+}
+
+impl&lt;'a, B: ?Sized&gt; Clone for Cow&lt;'a, B&gt;
+    where B: ToOwned
+{
+    ...
+}
+
+impl&lt;'a, B: ?Sized&gt; Eq for Cow&lt;'a, B: Eq&gt;
+    where B: ToOwned
+{
+    ...
+}</code></pre>
+<p>even if one does not actually care about the semantics implied by <code>ToOwned</code>:</p>
+<pre><code class="language-rust">    fn panic_if_not_borrowed&lt;'a, B&gt;(cow: Cow&lt;'a, B&gt;) -&gt; &amp;'a B
+//      where B: ToOwned
+    {
+        match cow {
+            Cow::Borrowed(b) =&gt; b,
+            Cow::Owned(_) =&gt; panic!(),
+        }
+    }
+//  ^ the trait `std::borrow::ToOwned` is not implemented for `B`</code></pre>
+<p>However what we know is that if <code>Cow&lt;'a, B&gt;</code> is well-formed, then <code>B</code> <em>has</em> to implement <code>ToOwned</code>. We would say that such a bound is <em>implied</em> by the well-formedness of <code>Cow&lt;'a, B&gt;</code>.</p>
+<p>Currently, impls and functions have to prove that their arguments are well-formed. Under this proposal, they would <em>assume</em> that their arguments are well-formed, leaving the responsibility for proving well-formedness to the caller. Hence we would be able to drop the <code>B: ToOwned</code> bounds in the previous examples.</p>
+<p>Beside reducing repeated constraints, it would also provide a clearer separation between what bounds a type needs so that it is well-formed, and what additional bounds an <code>fn</code> or an <code>impl</code> actually needs:</p>
+<pre><code class="language-rust">struct Set&lt;K&gt; where K: Hash + Eq { ... }
+
+fn only_clonable_set&lt;K: Hash + Eq + Clone&gt;(set: Set&lt;K&gt;) { ... }
+
+// VS
+
+fn only_clonable_set&lt;K: Clone&gt;(set: Set&lt;K&gt;) { ... }</code></pre>
+<p>Moreover, we already support implied lifetime bounds on types:</p>
+<pre><code class="language-rust">pub struct DebugStruct&lt;'a, 'b&gt; where 'b: 'a {
+    fmt: &amp;'a mut fmt::Formatter&lt;'b&gt;,
+    ...
+}
+
+pub fn debug_struct_new&lt;'a, 'b&gt;(fmt: &amp;'a mut fmt::Formatter&lt;'b&gt;, name: &amp;str) -&gt; DebugStruct&lt;'a, 'b&gt;
+//  where 'b: 'a
+//  ^^^^^^^^^^^^  this is not needed
+{
+    /* inside here: assume that `'b: 'a` */
+}</code></pre>
+<p>This RFC proposes to extend this sort of logic beyond these special cases and use it uniformly for both trait bounds and lifetime bounds.</p>
+<p>¹Actually only a few types in the standard library have bounds, for example <code>HashSet&lt;T&gt;</code> does not have a <code>T: Hash + Eq</code> on the type declaration, but on the impl declaration rather. Whether we should prefer bounds on types or on impls is related, but beyond the scope of this RFC.</p>
+<h3 id="traits"><a class="header" href="#traits">Traits</a></h3>
+<p>Traits also currently support some form of implied bounds, namely super traits bounds:</p>
+<pre><code class="language-rust">// Equivalent to `trait Foo where Self: From&lt;Bar&gt;`.
+trait Foo: From&lt;Bar&gt; { }
+
+pub fn from_bar&lt;T: Foo&gt;(bar: Bar) -&gt; T {
+    // `T: From&lt;Bar&gt;` is implied by `T: Foo`.
+    T::from(bar)
+}</code></pre>
+<p>and bounds on projections:</p>
+<pre><code class="language-rust">// Equivalent to `trait Foo where Self::Item: Eq`.
+trait Foo {
+    type Item: Eq;
+}
+
+fn only_eq&lt;T: Eq&gt;() { }
+
+fn foo&lt;T: Foo&gt;() {
+    // `T::Item: Eq` is implied by `T: Foo`.
+    only_eq::&lt;T::Item&gt;()
+}</code></pre>
+<p>However, this example does not compile:</p>
+<pre><code class="language-rust">    trait Foo&lt;U&gt; where U: Eq { }
+
+    fn only_eq&lt;U: Eq&gt;() { }
+
+    fn foo&lt;U, T: Foo&lt;U&gt;&gt;() {
+        only_eq::&lt;U&gt;()
+    }
+//  ^ the trait `std::cmp::Eq` is not implemented for `U`</code></pre>
+<p>Again we propose to uniformly support implied bounds for all where clauses on trait definitions.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-Level Explanation</a></h2>
+<p>When you declare bounds on a type, you don’t have to repeat them when writing impls and functions as soon as the type appear in the signature or the impl header:</p>
+<pre><code class="language-rust">struct Set&lt;T&gt; where T: Hash + Eq {
+    ...
+}
+
+impl&lt;T&gt; Set&lt;T&gt; {
+    // You can rely on the fact that `T: Hash + Eq` inside here.
+    ...
+}
+
+impl&lt;T&gt; Clone for Set&lt;T&gt; where T: Clone {
+    // Same here, and you can also rely on the `T: Clone` bound of course.
+    ...
+}
+
+fn only_eq&lt;U: Eq&gt;() { }
+
+fn use_my_set&lt;T&gt;(arg: Set&lt;T&gt;) {
+    // We know that `T: Eq` because we have a `Set&lt;T&gt;` as an argument, and there already is a
+    // `T: Eq` bound on the declaration of `Set`.
+    only_eq::&lt;T&gt;();
+}
+
+// This also works for the return type: no need to repeat bounds.
+fn return_a_set&lt;T&gt;() -&gt; Set&lt;T&gt; {
+    Set::new()
+}</code></pre>
+<p>Lifetime bounds are supported as well (this is already the case today):</p>
+<pre><code class="language-rust">struct MyStruct&lt;'a, 'b&gt; where 'b: 'a {
+    reference: &amp;'a &amp;'b i32,
+}
+
+fn use_my_struct&lt;'a, 'b&gt;(arg: MyStruct&lt;'a, 'b&gt;) {
+    // No need to repeat `where 'b: 'a`, it is assumed.
+}</code></pre>
+<p>However, you still have to write the bounds explicitly if the type does not appear in the function signature or the impl header:</p>
+<pre><code class="language-rust">// `Set&lt;T&gt;` does not appear in the fn signature: we need to explicitly write the bounds.
+fn declare_a_set&lt;T: Hash + Eq&gt;() {
+    let set = Set::&lt;T&gt;::new();
+}</code></pre>
+<p>Similarly, you don’t have to repeat bounds that you write on a trait declaration as soon as you know that the trait reference holds:</p>
+<pre><code class="language-rust">trait Foo where Bar: Into&lt;Self&gt; {
+    ...
+}
+
+fn into_foo&lt;T: Foo&gt;(bar: Bar) -&gt; T {
+    // We know that `T: Foo` holds so given the trait declaration, we know that `Bar: Into&lt;T&gt;`.
+    bar.into()
+}</code></pre>
+<p>Note that this is transitive:</p>
+<pre><code class="language-rust">trait Foo { }
+trait Bar where Self: Foo { }
+trait Baz where Self: Bar { }
+
+fn only_foo&lt;T: Foo&gt;() { }
+
+fn use_baz&lt;T: Baz&gt;() {
+    // We know that `T: Baz`, hence we know that `T: Bar`, hence we know that `T: Foo`.
+    only_foo::&lt;T&gt;()
+}</code></pre>
+<p>This also works for bounds on associated types:</p>
+<pre><code class="language-rust">trait Foo {
+    type Item: Debug;
+}
+
+fn debug_foo&lt;U, T: Foo&lt;Item = U&gt;&gt;(arg: U) {
+    // We know that `&lt;T as Foo&gt;::Item` implements `Debug` because of the trait declaration.
+    // Moreover, we know that `&lt;T as Foo&gt;::Item` is `U`.
+    // Hence, we know that `U` implements `Debug`.
+    println!("{:?}", arg);
+
+    /* do something else with `T` and `U`... */
+}</code></pre>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-Level Explanation</a></h2>
+<p>This is the fully-detailed design and you probably don’t need to read everything. This design has already been experimented on <a href="https://github.com/nikomatsakis/chalk">Chalk</a>, to some extent. The current design has been driven by issue <a href="https://github.com/nikomatsakis/chalk/issues/12">#12</a>, it is a good read to understand why we <em>need</em> to expand where clauses as described below.</p>
+<p>We’ll use the grammar from <a href="https://github.com/rust-lang/rfcs/blob/master/text/1214-projections-lifetimes-and-wf.md">RFC 1214</a> to detail the rules:</p>
+<pre><code>T = scalar (i32, u32, ...)              // Boring stuff
+  | X                                   // Type variable
+  | Id&lt;P0, ..., Pn&gt;                     // Nominal type (struct, enum)
+  | &amp;r T                                // Reference (mut doesn't matter here)
+  | O0 + ... + On + r                   // Object type
+  | [T]                                 // Slice type
+  | for&lt;r...&gt; fn(T1, ..., Tn) -&gt; T0     // Function pointer
+  | &lt;P0 as Trait&lt;P1, ..., Pn&gt;&gt;::Id      // Projection
+P = r                                   // Region name
+  | T                                   // Type
+O = for&lt;r...&gt; TraitId&lt;P1, ..., Pn&gt;      // Object type fragment
+r = 'x                                  // Region name
+</code></pre>
+<p>We’ll use the same notations as <a href="https://github.com/rust-lang/rfcs/blob/master/text/1214-projections-lifetimes-and-wf.md">RFC 1214</a> for the set <code>R = &lt;r0, ..., rn&gt;</code> denoting the set of lifetimes currently bound.</p>
+<h3 id="well-formedness-rules"><a class="header" href="#well-formedness-rules">Well-formedness rules</a></h3>
+<p>Basically, we say that something (type or trait reference) is well-formed if the bounds declared on it are met, <em>regardless of the well-formedness of its parameters</em>: this is the main difference with <a href="https://github.com/rust-lang/rfcs/blob/master/text/1214-projections-lifetimes-and-wf.md">RFC 1214</a>.</p>
+<p>We will write:</p>
+<ul>
+<li><code>WF(T: Trait)</code> for a trait reference <code>T: Trait</code> being well-formed</li>
+<li><code>WF(T)</code> for a reference to the type <code>T</code> being well-formed</li>
+</ul>
+<h4 id="trait-refs"><a class="header" href="#trait-refs"><strong>Trait refs</strong></a></h4>
+<p>We’ll start with well-formedness for trait references. The important thing is that we distinguish between <code>T: Trait</code> and <code>WF(T: Trait)</code>. The former means that an impl for <code>T</code> has been found while the latter means that <code>T</code> meets the bounds on trait <code>Trait</code>.</p>
+<p>We’ll also consider a function <code>Expanded</code> applying on where clauses like this:</p>
+<pre><code>Expanded((T: Trait)) = { (T: Trait), WF(T: Trait) }
+Expanded((T: Trait&lt;Item = U&gt;)) = { (T: Trait&lt;Item = U&gt;), WF(T: Trait) }
+Expanded(OtherWhereClause) = { OtherWhereClause }
+</code></pre>
+<p>We naturally extend <code>Expanded</code> so that it applies on a finite set of where clauses:</p>
+<pre><code>Expanded({ WhereClause1, ..., WhereClauseN }) = Union(Expanded(WhereClause1), ..., Expanded(WhereClauseN))
+</code></pre>
+<p><em><strong>Every where clause</strong></em> a user writes will be expanded through the <code>Expanded</code> function. This means that the following impl:</p>
+<pre><code class="language-rust">impl&lt;T, U&gt; Into&lt;T&gt; for U where T: From&lt;U&gt; { ... }</code></pre>
+<p>will give the following rule:</p>
+<pre><code> T: From&lt;U&gt;, WF(T: From&lt;U&gt;)
+--------------------------------------------------
+ U: Into&lt;T&gt;
+</code></pre>
+<p>Now let’s see the actual rule for a trait reference being well-formed:</p>
+<pre><code>WfTraitReference:
+  C = Expanded(WhereClauses(TraitId))   // the conditions declared on TraitId must hold...
+  R, r... ⊢ [P0, ..., Pn] C             // ...after substituting parameters, of course
+  --------------------------------------------------
+  R ⊢ WF(for&lt;r...&gt; P0: TraitId&lt;P1, ..., Pn&gt;)
+</code></pre>
+<p>And here is an example:</p>
+<pre><code class="language-rust">// `WF(Self: SuperTrait)` holds.
+trait SuperTrait { }
+
+// `WF(Self: Trait)` holds if `Self: SuperTrait`, `WF(Self: Supertrait)`.
+trait Trait: SuperTrait { }
+
+// `i32: Trait` holds but not `WF(i32: Trait)`.
+// This would be flagged as an error.
+impl Trait for i32 { }
+
+// Both `f32: Trait` and `WF(f32: Trait)` hold.
+impl SuperTrait for f32 { }
+impl Trait for f32 { }</code></pre>
+<h4 id="types-1"><a class="header" href="#types-1"><strong>Types</strong></a></h4>
+<p>The well-formedness rules for types are given by:</p>
+<pre><code>WfScalar:
+  --------------------------------------------------
+  R ⊢ WF(scalar)
+
+WfFn:                              // an fn pointer is always WF since it only carries parameters
+  --------------------------------------------------
+  R ⊢ WF(for&lt;r...&gt; fn(T1, ..., Tn) -&gt; T0)
+
+WfObject:
+  rᵢ = union of implied region bounds from Oi
+  ∀i. rᵢ: r
+  --------------------------------------------------
+  R ⊢ WF(O0 + ... + On + r)
+
+WfObjectFragment:
+  TraitId is object safe
+  --------------------------------------------------
+  R ⊢ WF(for&lt;r...&gt; TraitId&lt;P1, ..., Pn&gt;)
+
+WfTuple:
+  ∀i&lt;n. R ⊢ Ti: Sized              // the *last* field may be unsized
+  --------------------------------------------------
+  R ⊢ WF((T1, ... ,Tn))
+
+WfNominalType:
+  C = Expanded(WhereClauses(Id))   // the conditions declared on Id must hold...
+  R ⊢ [P1, ..., Pn] C              // ...after substituting parameters, of course
+  --------------------------------------------------
+  R ⊢ WF(Id&lt;P1, ..., Pn&gt;)
+
+WfReference:
+  R ⊢ T: 'x                        // T must outlive 'x
+  --------------------------------------------------
+  R ⊢ WF(&amp;'x T)
+
+WfSlice:
+  R ⊢ T: Sized
+  --------------------------------------------------
+  R ⊢ WF([T])
+
+WfProjection:
+  R ⊢ P0: Trait&lt;P1, ..., Pn&gt;       // the trait reference holds
+  R ⊢ WF(P0: Trait&lt;P1, ..., Pn&gt;)   // the trait reference is well-formed
+  --------------------------------------------------
+  R ⊢ WF(&lt;P0 as Trait&lt;P1, ..., Pn&gt;&gt;::Id)
+</code></pre>
+<p>Taking again our <code>SuperTrait</code> and <code>Trait</code> from above, here is an example:</p>
+<pre><code class="language-rust">// `WF(Struct&lt;T&gt;)` holds if `T: Trait`, `WF(T: Trait)`.
+struct Struct&lt;T&gt; where T: Trait {
+    field: T,
+}
+
+// `WF(Struct&lt;i32&gt;)` would not hold since `WF(i32: Trait)` doesn't.
+// But `WF(Struct&lt;f32&gt;)` does hold.</code></pre>
+<h3 id="reverse-rules"><a class="header" href="#reverse-rules">Reverse rules</a></h3>
+<p>This is a core element of this RFC. Morally, the well-formedness rules are “if and only if” rules. We thus add reverse rules for each relevant WF rule:</p>
+<pre><code>ReverseWfTraitReferenceᵢ
+  // Substitute parameters
+  { WhereClause1, ..., WhereClauseN } = [P0, ..., Pn] Expanded(WhereClauses(TraitId))
+  R ⊢ WF(for&lt;r...&gt; P0: TraitId&lt;P1, ..., Pn&gt;)
+  --------------------------------------------------
+  R, r... ⊢ WhereClauseᵢ
+
+ReverseWfTupleᵢ, i &lt; n:
+  R ⊢ WF((T1, ..., Tn))
+  --------------------------------------------------
+  R ⊢ Ti: Sized   // not very useful since this bound is often implicit
+
+ReverseWfNominalTypeᵢ:
+  // Substitute parameters
+  { WhereClause1, ..., WhereClauseN } = [P1, ..., Pn] Expanded(WhereClauses(id))
+  R ⊢ WF(Id&lt;P1, ..., Pn&gt;)
+  --------------------------------------------------
+  R ⊢ WhereClauseᵢ
+
+ReverseWfReference:
+  R ⊢ WF(&amp;'x T)
+  --------------------------------------------------
+  R ⊢ T: 'x
+
+ReverseWfSlice:
+  R ⊢ WF([T])
+  --------------------------------------------------
+  R ⊢ T: Sized    // same as above
+</code></pre>
+<p>Note that we add reverse rules for all <em><strong>expanded</strong></em> where clauses, this means that given:</p>
+<pre><code class="language-rust">// Expands to `trait Foo where Self: Bar, WF(Self: Bar)`
+trait Bar where Self: Foo { }</code></pre>
+<p>we have two reverse rules given by:</p>
+<pre><code>WF(T: Bar)
+--------------------------------------------------
+T: Foo
+
+WF(T: Bar)
+--------------------------------------------------
+WF(T: Foo)
+</code></pre>
+<p><strong>Remark</strong>: Reverse rules include implicit <code>Sized</code> bounds on type declarations. However, they do not include (explicit) <code>?Sized</code> bounds since those are not <em>real</em> trait bounds, but only a way to disable the implicit <code>Sized</code> bound.</p>
+<h3 id="input-types"><a class="header" href="#input-types">Input types</a></h3>
+<p>We define the notion of input types of a type. Basically, input types refer to all types that are accessible from referencing to a specific type. For example, a function will assume that the input types of its arguments are well-formed, hence in the body of that function we’ll be able to derive implied bounds thanks to the reverse rules described earlier.</p>
+<p>We’ll denote by <code>InputTypes</code> the function which maps a type to its input types, defined by:</p>
+<pre><code>// Scalar
+InputTypes(scalar) = { scalar }
+
+// Type variable
+InputTypes(X) = { X }
+
+// Region name
+InputTypes(r) = { }
+
+// Reference
+InputTypes(&amp;r T) = Union({ &amp;r T }, InputTypes(T))
+
+// Slice type
+InputTypes([T]) = Union({ [T] }, InputTypes(T))
+
+// Nominal type
+InputTypes(Id&lt;P0, ..., Pn&gt;) = Union({ Id&lt;P0, ..., Pn&gt; }, InputTypes(P0), ..., InputTypes(Pn))
+
+// Object type
+InputTypes(O0 + ... + On + r) = Union({ O0 + ... + On + r }, InputTypes(O0), ..., InputTypes(On))
+
+// Object type fragment
+InputTypes(for&lt;r...&gt; TraitId&lt;P1, ..., Pn&gt;) = { for&lt;r...&gt; TraitId&lt;P1, ..., Pn&gt; }
+
+// Function pointer
+InputTypes(for&lt;r...&gt; fn(T1, ..., Tn) -&gt; T0) = { for&lt;r...&gt; fn(T1, ..., Tn) -&gt; T0 }
+
+// Projection
+InputTypes(&lt;P0 as Trait&lt;P1, ..., Pn&gt;&gt;::Id) = Union(
+    { &lt;P0 as Trait&lt;P1, ..., Pn&gt;&gt;::Id },
+    InputTypes(P0),
+    InputTypes(P1),
+    ...,
+    InputTypes(Pn)
+)
+</code></pre>
+<p>Note that higher-ranked types (functions, object type fragments) do not carry input types other than themselves. This is because they are unusable <em>as such</em>, one will have to use them in a lower-ranked way at some point (e.g. calling a function) and will thus rely on <code>InputTypes</code> for normal types.</p>
+<h3 id="assumptions-and-checking-well-formedness"><a class="header" href="#assumptions-and-checking-well-formedness">Assumptions and checking well-formedness</a></h3>
+<p>This is the other core element: how to use reverse rules. Basically, functions and impls will assume that their input types are well-formed, and that (expanded) where clauses hold.</p>
+<h4 id="functions"><a class="header" href="#functions"><strong>Functions</strong></a></h4>
+<p>Given a function declaration:</p>
+<pre><code class="language-rust">fn F&lt;r..., X1, ..., Xn&gt;(arg1: T1, ..., argm: Tm) -&gt; T0 where WhereClause1, ..., WhereClausek {
+    /* body of the function inside here */
+}</code></pre>
+<p>We rely on the following assumptions inside the body of <code>F</code>:</p>
+<ul>
+<li><code>Expanded({ WhereClause1, ..., WhereClausek })</code></li>
+<li><code>WF(T)</code> for all <code>T ∈ Union(InputTypes(T0), InputTypes(T1), ..., InputTypes(Tm))</code></li>
+<li><code>WF(Xi)</code> for all <code>i</code></li>
+</ul>
+<p>Note that we assume that the input types of the return type <code>T0</code> are well-formed.</p>
+<p>With these assumptions, the function must be able to prove that everything that appears in its body is well-formed (e.g. every type appearing in the body, projections, etc).</p>
+<p>Moreover, a caller of <code>F</code> would have to prove that the where clauses on <code>F</code> hold, after having substituted parameters.</p>
+<p><strong>Remark</strong>: Notice that we assume that the type variables <code>Xi</code> are well-formed for all <code>i</code>. This way, type variables don’t need a special treatment regarding well-formedness. See example below.</p>
+<p>Examples:</p>
+<pre><code class="language-rust">trait Bar { }
+trait Foo where Box&lt;Self&gt;: Bar { }
+
+fn only_bar&lt;T: Bar&gt;() { }
+
+fn foo&lt;T: Foo&gt;() {
+    // Inside the body, we have to prove `WF(T)`, `WF(Box&lt;T&gt;)`, and `Box&lt;T&gt;: Bar`.
+    // Because we assume that `WF(T: Foo)`, we indeed have `Box&lt;T&gt;: Bar`.
+    only_bar::&lt;Box&lt;T&gt;&gt;()
+}
+
+fn main() {
+    // We have to prove `WF(i32)`, `i32: Foo`.
+    foo::&lt;i32&gt;();
+}</code></pre>
+<pre><code class="language-rust">/// Illustrate remark 2: no need for a special treatment for type variables.
+
+struct Set&lt;K: Hash&gt; { ... }
+
+fn two_variables&lt;T, U&gt;() { }
+
+fn one_variable&lt;T: Hash&gt;() {
+    // We have to prove `WF(T)`, `WF(Set&lt;T&gt;)`. `WF(T)` trivially holds because of the assumption
+    // made by the function `one_variable`. `WF(Set&lt;T&gt;)` holds because of the `T: Hash` bound.
+    two_variables&lt;T, Set&lt;T&gt;&gt;()
+}
+
+fn main() {
+    // We have to prove `WF(i32)`.
+    one_variable::&lt;i32&gt;();
+}</code></pre>
+<pre><code class="language-rust">/// Illustrate "inner" input types and transitivity
+
+trait Bar where Box&lt;Self&gt;: Eq { }
+trait Baz: Bar { }
+
+struct Struct&lt;T: Baz&gt; { ... }
+
+fn only_eq&lt;T: Eq&gt;() { }
+
+fn dummy&lt;T&gt;(arg: Option&lt;Struct&lt;T&gt;&gt;) {
+    /* do something with arg */
+
+    // Since `Struct&lt;T&gt;` is an input type, we assume that `WF(Struct&lt;T&gt;)` hence `WF(T: Baz)`
+    // hence `WF(T: Bar)` hence `Box&lt;T&gt;: Eq`
+    only_eq::&lt;Box&lt;T&gt;&gt;()
+}</code></pre>
+<h4 id="trait-impls"><a class="header" href="#trait-impls"><strong>Trait impls</strong></a></h4>
+<p>Given a trait impl:</p>
+<pre><code class="language-rust">impl&lt;r..., X1, ..., Xn&gt; Trait&lt;r'..., T1, ..., Tn&gt; for T0 where WhereClause1, ..., WhereClausek {
+    // body of the impl inside here
+
+    type Assoc = AssocTyValue;
+
+    /* ... */
+}</code></pre>
+<p>We rely on the following assumptions inside the body of the impl:</p>
+<ul>
+<li><code>Expanded({ WhereClause1, ..., WhereClausek })</code></li>
+<li><code>WF(T)</code> for all <code>T ∈ Union(InputTypes(T0), InputTypes(T1), ..., InputTypes(Tn))</code></li>
+<li><code>WF(Xi)</code> for all <code>i</code></li>
+</ul>
+<p>Based on these assumptions, the impl declaration has to prove <code>WF(T0: Trait&lt;r'..., T1, ..., Tn&gt;)</code> and <code>WF(T)</code> for all <code>T ∈ InputTypes(AssocTyValue)</code>. Note that associated fns can be seen as (higher-kinded) associated types, but since fn pointers are always well-formed and do not carry input types other than themselves, this is fine.</p>
+<p>Associated fns make their normal assumptions + the set of assumptions made by the impl. Things to prove inside associated fns do not differ from normal fns.</p>
+<p>Note that when projecting out of a type, one must automatically prove that the trait reference holds because of the <code>WfProjection</code> rule.</p>
+<p>Examples:</p>
+<pre><code class="language-rust">struct Set&lt;K: Hash&gt; { ... }
+
+trait Foo where Self: Clone {
+    fn foo();
+}
+
+fn only_hash&lt;T: Hash&gt;() { }
+
+impl&lt;K: Clone&gt; Foo for Set&lt;K&gt; {
+    // Inside here: we assume `WF(Set&lt;K&gt;)`, `K: Clone`, `WF(K: Clone)`, `WF(K)`.
+    // Also, we must prove `WF(Set&lt;K&gt;: Foo)`.
+
+    fn foo() {
+        only_hash::&lt;K&gt;()
+    }
+}</code></pre>
+<pre><code class="language-rust">struct Set&lt;K: Hash&gt; { ... }
+
+trait Foo {
+    type Item;
+}
+
+// We need an explicit `K: Hash` bound in order to prove that the associated type value `Set&lt;K&gt;` is WF.
+impl&lt;K: Hash&gt; Foo for K {
+    type Item = Set&lt;K&gt;;
+}</code></pre>
+<pre><code class="language-rust">trait Foo {
+    type Item;
+}
+
+impl&lt;T&gt; Foo for T where T: Clone {
+    type Item = f32;
+}
+
+fn foo&lt;T: Foo&gt;(arg: T) {
+    // We must prove `WF(&lt;T as Foo&gt;::Item)` hence prove that `T: Foo`: ok this is in our assumptions.
+    let a = &lt;T as Foo&gt;::Item;
+}
+
+fn bar&lt;T: Clone&gt;(arg: T) {
+    // We must prove `WF(&lt;T as Foo&gt;::Item)` hence prove that `T: Foo`: ok, use the impl.
+    let a = &lt;T as Foo&gt;::Item;
+}</code></pre>
+<h4 id="inherent-impls"><a class="header" href="#inherent-impls"><strong>Inherent impls</strong></a></h4>
+<p>Given an inherent impl:</p>
+<pre><code class="language-rust">impl&lt;r..., X1, ..., Xn&gt; SelfTy where WhereClause1, ..., WhereClausek {
+    /* body of the impl inside here */
+}</code></pre>
+<p>We rely on the following assumptions inside the body of the impl:</p>
+<ul>
+<li><code>Expanded({ WhereClause1, ..., WhereClausek })</code></li>
+<li><code>WF(T)</code> for all <code>T ∈ InputTypes(SelfTy)</code></li>
+<li><code>WF(Xi)</code> for all <code>i</code></li>
+</ul>
+<p>Methods make their normal assumptions + the set of assumptions made by the impl. Things to prove inside methods do not differ from normal fns.</p>
+<p>A caller of a method has to prove that the where clauses defined on the impl hold, in addition to the requirements for calling general fns.</p>
+<h3 id="proving-well-formedness-for-input-types"><a class="header" href="#proving-well-formedness-for-input-types">Proving well-formedness for input types</a></h3>
+<p>One would have noticed that we only prove well-formedness for input types in a lazy way (e.g., inside function bodies). This means that if we have a function:</p>
+<pre><code class="language-rust">struct Set&lt;K: Hash&gt; { ... }
+struct NotHash;
+
+fn foo(arg: Set&lt;NotHash&gt;) { ... }</code></pre>
+<p>then no error will be caught until someone actually tries to call <code>foo</code>. Same thing for an impl:</p>
+<pre><code class="language-rust">impl Set&lt;NotHash&gt; { ... }</code></pre>
+<p>the error will not be caught until someone actually uses <code>Set&lt;NotHash&gt;</code>.</p>
+<p>The idea is, when encountering an fn/trait impl/inherent impl, retrieve all input types that appear in the signature / header and for each input type <code>T</code>, do the following: retrieve type variables <code>X1, ..., Xn</code> bound by the declaration and ask for <code>∃X1, ..., ∃Xn; WF(T)</code> in an empty environment (in Chalk terms). If there is no possible substitution for the existentials, output a warning.</p>
+<p>Example:</p>
+<pre><code class="language-rust">struct Set&lt;K: Hash&gt; { ... }
+
+// `NotHash` is local to this crate, so we know that there exists no `T`
+// such that `NotHash&lt;T&gt;: Hash`.
+struct NotHash&lt;T&gt; { ... }
+
+// Warning: `foo` cannot be called whatever the value of `T`
+fn foo&lt;T&gt;(arg: Set&lt;NotHash&lt;T&gt;&gt;) { ... }</code></pre>
+<h3 id="cycle-detection"><a class="header" href="#cycle-detection">Cycle detection</a></h3>
+<p>In Chalk this design often leads to cycles in the proof tree. Example:</p>
+<pre><code class="language-rust">trait Foo { }
+// `WF(Self: Foo)` holds.
+ 
+impl Foo for u8 { }
+
+// Expanded to `trait Bar where Self: Foo, WF(Self: Foo)`
+trait Bar where Self: Foo { }
+
+// WF rule:
+// `WF(Self: Bar)` holds if `Self: Foo`, `WF(Self: Foo)`.
+
+// Reverse WF rules:
+// `Self: Foo` holds if `WF(Self: Bar)`
+// `WF(Self: Foo)` holds if `WF(Self: Bar)`</code></pre>
+<p>Now suppose we are asking whether <code>u8: Foo</code> holds. The following branch exists in the proof tree:
+<code>u8: Foo</code> holds if <code>WF(u8: Bar)</code> holds if <code>u8: Foo</code> holds.</p>
+<p>I <em>think</em> rustc would have the right behavior currently: just dismiss this branch since it only leads to the tautological rule <code>(u8: Foo) if (u8: Foo)</code>.</p>
+<p>In Chalk we have a more sophisticated cycle detection strategy based on tabling, which basically enables us to correctly answer “multiple solutions”, instead of “unique solution” if a simple <em>error-on-cycle</em> strategy were used. Would rustc need such a thing?</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<ul>
+<li>Implied bounds on types can feel like “implicit bounds” (although they are not: the types appear in the signature of a function / impl header, so it’s self-documenting).</li>
+<li>Removing a bound from a struct becomes a breaking change (note: this can already be the case for functions and traits).</li>
+</ul>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and Alternatives</a></h2>
+<h3 id="including-parameters-in-well-formedness-rules"><a class="header" href="#including-parameters-in-well-formedness-rules">Including parameters in well-formedness rules</a></h3>
+<p>Specific to this design: instead of disregarding parameters in well-formedness checks, we could have included them, and added reverse rules of the form: “<code>WF(T)</code> holds if <code>WF(Struct&lt;T&gt;)</code> holds”. From a theoretical point of view, this would have had the same effects as the current design, and would have avoided the whole <code>InputTypes</code> thing. However, implementation in Chalk revealed some tricky issues. Writing in Chalk-style, suppose we have rules like:</p>
+<pre><code>WF(Struct&lt;T&gt;) :- WF(T)
+WF(T) :- WF(Struct&lt;T&gt;)
+</code></pre>
+<p>then trying to prove <code>WF(i32)</code> gives birth to an infinite branch <code>WF(i32) :- WF(Struct&lt;i32&gt;) :- WF(Struct&lt;Struct&lt;i32&gt;&gt;) :- ...</code> in the proof tree, which is hard (at least that’s what we believe) to dismiss.</p>
+<h3 id="trait-aliases"><a class="header" href="#trait-aliases">Trait aliases</a></h3>
+<p>Trait aliases offer a way to factorize repeated constraints (<a href="https://github.com/rust-lang/rfcs/blob/master/text/1733-trait-alias.md">RFC 1733</a>), it’s useful especially for bounds on types, but it does not overcome the limitations for implied bounds on traits (the <code>where Bar: Into&lt;Self&gt;</code> example is a good one).</p>
+<h3 id="limiting-the-scope-of-implied-bounds"><a class="header" href="#limiting-the-scope-of-implied-bounds">Limiting the scope of implied bounds</a></h3>
+<p>These essentially try to address the breaking change when removing a bound on a type:</p>
+<ul>
+<li>do not derive implied bounds for types</li>
+<li>limit the use of implied bounds for types that are in your current crate only</li>
+<li>derive implied bounds in impl bodys only</li>
+<li>two distinct feature-gates, one for implied bounds on traits and another one for types</li>
+</ul>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<ul>
+<li>Should we try to limit the range of implied bounds to be crate-local (or module-local, etc)?</li>
+<li>@nikomatsakis pointed <a href="https://internals.rust-lang.org/t/lang-team-minutes-implied-bounds/4905">here</a> that implied bounds can interact badly with current inference rules.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="2086-allow-if-let-irrefutables.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="2091-inline-semantic.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="2086-allow-if-let-irrefutables.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="2091-inline-semantic.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

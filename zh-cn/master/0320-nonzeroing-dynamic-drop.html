@@ -1,0 +1,779 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>0320-nonzeroing-dynamic-drop - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: (none for the bulk of RFC); unsafe_no_drop_flag</li>
+<li>Start Date: 2014-09-24</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/320">rust-lang/rfcs#320</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/5016">rust-lang/rust#5016</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Remove drop flags from values implementing <code>Drop</code>, and remove automatic memory zeroing associated with dropping values.</p>
+<p>Keep dynamic drop semantics, by having each function maintain a (potentially empty) set of auto-injected boolean flags for the drop obligations for the function that need to be tracked dynamically (which we will call “dynamic drop obligations”).</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>Currently, implementing <code>Drop</code> on a struct (or enum) injects a hidden bit, known as the “drop-flag”, into the struct (and likewise, each of the enum variants).  The drop-flag, in tandem with Rust’s implicit zeroing of dropped values, tracks whether a value has already been moved to another owner or been dropped.  (See the <a href="#how-dynamic-drop-semantics-works">“How dynamic drop semantics works”</a> appendix for more details if you are unfamiliar with this part of Rust’s current implementation.)</p>
+<p>However, the above implementation is sub-optimal; problems include:</p>
+<ul>
+<li>
+<p>Most important: implicit memory zeroing is a hidden cost that today all Rust programs pay, in both execution time and code size. With the removal of the drop flag, we can remove implicit memory zeroing (or at least revisit its utility – there may be other motivations for implicit memory zeroing, e.g. to try to keep secret data from being exposed to unsafe code).</p>
+</li>
+<li>
+<p>Hidden bits are bad: Users coming from a C/C++ background expect <code>struct Foo { x: u32, y: u32 }</code> to occupy 8 bytes, but if <code>Foo</code> implements <code>Drop</code>, the hidden drop flag will cause it to double in size (16 bytes). See the [Program illustrating semantic impact of hidden drop flag] appendix for a concrete illustration.  Note that when <code>Foo</code> implements <code>Drop</code>, each instance of <code>Foo</code> carries a drop-flag, even in contexts like a <code>Vec&lt;Foo&gt;</code> where a program cannot actually move individual values out of the collection. Thus, the amount of extra memory being used by drop-flags is not bounded by program stack growth; the memory wastage is strewn throughout the heap.</p>
+</li>
+</ul>
+<p>An earlier RFC (the withdrawn <a href="https://github.com/rust-lang/rfcs/pull/210">RFC PR #210</a>) suggested resolving this problem by switching from a dynamic drop semantics to a “static drop semantics”, which was defined in that RFC as one that performs drop of certain values earlier to ensure that the set of drop-obligations does not differ at any control-flow merge point, i.e. to ensure that the set of values to drop is statically known at compile-time.</p>
+<p>However, discussion on the <a href="https://github.com/rust-lang/rfcs/pull/210">RFC PR #210</a> comment thread pointed out its policy for inserting early drops into the code is non-intuitive (in other words, that the drop policy should either be more aggressive, a la <a href="https://github.com/rust-lang/rfcs/pull/239">RFC PR #239</a>, or should stay with the dynamic drop status quo). Also, the mitigating mechanisms proposed by that RFC (<code>NoisyDrop</code>/<code>QuietDrop</code>) were deemed unacceptable.</p>
+<p>So, static drop semantics are a non-starter.  Luckily, the above strategy is not the only way to implement dynamic drop semantics. Rather than requiring that the set of drop-obligations be the same at every control-flow merge point, we can do a intra-procedural static analysis to identify the set of drop-obligations that differ at any merge point, and then inject a set of stack-local boolean-valued drop-flags that dynamically track them.  That strategy is what this RFC is describing.</p>
+<p>The expected outcomes are as follows:</p>
+<ul>
+<li>
+<p>We remove the drop-flags from all structs/enums that implement <code>Drop</code>. (There are still the injected stack-local drop flags, but those should be cheaper to inject and maintain.)</p>
+</li>
+<li>
+<p>Since invoking drop code is now handled by the stack-local drop flags and we have no more drop-flags on the values themselves, we can (and will) remove memory zeroing.</p>
+</li>
+<li>
+<p>Libraries currently relying on drop doing memory zeroing (i.e. libraries that check whether content is zero to decide whether its <code>fn drop</code> has been invoked will need to be revised, since we will not have implicit memory zeroing anymore.</p>
+</li>
+<li>
+<p>In the common case, most libraries using <code>Drop</code> will not need to change at all from today, apart from the caveat in the previous bullet.</p>
+</li>
+</ul>
+<h2 id="detailed-design"><a class="header" href="#detailed-design">Detailed design</a></h2>
+<h3 id="drop-obligations"><a class="header" href="#drop-obligations">Drop obligations</a></h3>
+<p>No struct or enum has an implicit drop-flag.  When a local variable is initialized, that establishes a set of “drop obligations”: a set of structural paths (e.g. a local <code>a</code>, or a path to a field <code>b.f.y</code>) that need to be dropped (or moved away to a new owner).</p>
+<p>The drop obligations for a local variable <code>x</code> of struct-type <code>T</code> are computed from analyzing the structure of <code>T</code>.  If <code>T</code> itself implements <code>Drop</code>, then <code>x</code> is a drop obligation.  If <code>T</code> does not implement <code>Drop</code>, then the set of drop obligations is the union of the drop obligations of the fields of <code>T</code>.</p>
+<p>When a path is moved to a new location, or consumed by a function call, or when control flow reaches the end of its owner’s lexical scope, the path is removed from the set of drop obligations.</p>
+<p>At control-flow merge points, e.g. nodes that have predecessor nodes P_1, P_2, …, P_k with drop obligation sets S_1, S_2, … S_k, we</p>
+<ul>
+<li>
+<p>First identify the set of drop obligations that differ between the predecessor nodes, i.e. the set:</p>
+<p><code>(S_1 | S_2 | ... | S_k) \ (S_1 &amp; S_2 &amp; ... &amp; S_k)</code></p>
+<p>where <code>|</code> denotes set-union, <code>&amp;</code> denotes set-intersection, <code>\</code> denotes set-difference.  These are the dynamic drop obligations induced by this merge point.  Note that if <code>S_1 = S_2 = ... = S_k</code>, the above set is empty.</p>
+</li>
+<li>
+<p>The set of drop obligations for the merge point itself is the union of the drop-obligations from all predecessor points in the control flow, i.e. <code>(S_1 | S_2 | ... | S_k)</code> in the above notation.</p>
+<p>(One could also just use the intersection here; it actually makes no difference to the static analysis, since all of the elements of the difference</p>
+<p><code>(S_1 | S_2 | ... | S_k) \ (S_1 &amp; S_2 &amp; ... &amp; S_k)</code></p>
+<p>have already been added to the set of dynamic drop obligations. But the overall code transformation is clearer if one keeps the dynamic drop obligations in the set of drop obligations.)</p>
+</li>
+</ul>
+<h3 id="stack-local-drop-flags"><a class="header" href="#stack-local-drop-flags">Stack-local drop flags</a></h3>
+<p>For every dynamic drop obligation induced by a merge point, the compiler is responsible for ensure that its drop code is run at some point. If necessary, it will inject and maintain boolean flag analogous to</p>
+<pre><code class="language-rust">enum NeedsDropFlag { NeedsLocalDrop, DoNotDrop }</code></pre>
+<p>Some compiler analysis may be able to identify dynamic drop obligations that do not actually need to be tracked.  Therefore, we do not specify the precise set of boolean flags that are injected.</p>
+<h3 id="example-of-code-with-dynamic-drop-obligations"><a class="header" href="#example-of-code-with-dynamic-drop-obligations">Example of code with dynamic drop obligations</a></h3>
+<p>The function <code>f2</code> below was copied from the static drop <a href="https://github.com/rust-lang/rfcs/pull/210">RFC PR #210</a>; it has differing sets of drop obligations at a merge point, necessitating a potential injection of a <code>NeedsDropFlag</code>.</p>
+<pre><code class="language-rust">fn f2() {
+
+    // At the outset, the set of drop obligations is
+    // just the set of moved input parameters (empty
+    // in this case).
+
+    //                                      DROP OBLIGATIONS
+    //                                  ------------------------
+    //                                  {  }
+    let pDD : Pair&lt;D,D&gt; = ...;
+    pDD.x = ...;
+    //                                  {pDD.x}
+    pDD.y = ...;
+    //                                  {pDD.x, pDD.y}
+    let pDS : Pair&lt;D,S&gt; = ...;
+    //                                  {pDD.x, pDD.y, pDS.x}
+    let some_d : Option&lt;D&gt;;
+    //                                  {pDD.x, pDD.y, pDS.x}
+    if test() {
+        //                                  {pDD.x, pDD.y, pDS.x}
+        {
+            let temp = xform(pDD.y);
+            //                              {pDD.x,        pDS.x, temp}
+            some_d = Some(temp);
+            //                              {pDD.x,        pDS.x, temp, some_d}
+        } // END OF SCOPE for `temp`
+        //                                  {pDD.x,        pDS.x, some_d}
+
+        // MERGE POINT PREDECESSOR 1
+
+    } else {
+        {
+            //                              {pDD.x, pDD.y, pDS.x}
+            let z = D;
+            //                              {pDD.x, pDD.y, pDS.x, z}
+
+            // This drops `pDD.y` before
+            // moving `pDD.x` there.
+            pDD.y = pDD.x;
+
+            //                              {       pDD.y, pDS.x, z}
+            some_d = None;
+            //                              {       pDD.y, pDS.x, z, some_d}
+        } // END OF SCOPE for `z`
+        //                                  {       pDD.y, pDS.x, some_d}
+
+        // MERGE POINT PREDECESSOR 2
+
+    }
+
+    // MERGE POINT: set of drop obligations do not
+    // match on all incoming control-flow paths.
+    //
+    // Predecessor 1 has drop obligations
+    // {pDD.x,        pDS.x, some_d}
+    // and Predecessor 2 has drop obligations
+    // {       pDD.y, pDS.x, some_d}.
+    //
+    // Therefore, this merge point implies that
+    // {pDD.x, pDD.y} are dynamic drop obligations,
+    // while {pDS.x, some_d} are potentially still
+    // resolvable statically (and thus may not need
+    // associated boolean flags).
+
+    // The resulting drop obligations are the following:
+
+    //                                  {pDD.x, pDD.y, pDS.x, some_d}.
+
+    // (... some code that does not change drop obligations ...)
+
+    //                                  {pDD.x, pDD.y, pDS.x, some_d}.
+
+    // END OF SCOPE for `pDD`, `pDS`, `some_d`
+}</code></pre>
+<p>After the static analysis has identified all of the dynamic drop obligations, code is injected to maintain the stack-local drop flags and to do any necessary drops at the appropriate points. Below is the updated <code>fn f2</code> with an approximation of the injected code.</p>
+<p>Note: we say “approximation”, because one does need to ensure that the drop flags are updated in a manner that is compatible with potential task <code>fail!</code>/<code>panic!</code>, because stack unwinding must be informed which state needs to be dropped; i.e. you need to initialize <code>_pDD_dot_x</code> before you start to evaluate a fallible expression to initialize <code>pDD.y</code>.</p>
+<pre><code class="language-rust">fn f2_rewritten() {
+
+    // At the outset, the set of drop obligations is
+    // just the set of moved input parameters (empty
+    // in this case).
+
+    //                                      DROP OBLIGATIONS
+    //                                  ------------------------
+    //                                  {  }
+    let _drop_pDD_dot_x : NeedsDropFlag;
+    let _drop_pDD_dot_y : NeedsDropFlag;
+
+    _drop_pDD_dot_x = DoNotDrop;
+    _drop_pDD_dot_y = DoNotDrop;
+
+    let pDD : Pair&lt;D,D&gt;;
+    pDD.x = ...;
+    _drop_pDD_dot_x = NeedsLocalDrop;
+    pDD.y = ...;
+    _drop_pDD_dot_y = NeedsLocalDrop;
+
+    //                                  {pDD.x, pDD.y}
+    let pDS : Pair&lt;D,S&gt; = ...;
+    //                                  {pDD.x, pDD.y, pDS.x}
+    let some_d : Option&lt;D&gt;;
+    //                                  {pDD.x, pDD.y, pDS.x}
+    if test() {
+        //                                  {pDD.x, pDD.y, pDS.x}
+        {
+            _drop_pDD_dot_y = DoNotDrop;
+            let temp = xform(pDD.y);
+            //                              {pDD.x,        pDS.x, temp}
+            some_d = Some(temp);
+            //                              {pDD.x,        pDS.x, temp, some_d}
+        } // END OF SCOPE for `temp`
+        //                                  {pDD.x,        pDS.x, some_d}
+
+        // MERGE POINT PREDECESSOR 1
+
+    } else {
+        {
+            //                              {pDD.x, pDD.y, pDS.x}
+            let z = D;
+            //                              {pDD.x, pDD.y, pDS.x, z}
+
+            // This drops `pDD.y` before
+            // moving `pDD.x` there.
+            _drop_pDD_dot_x = DoNotDrop;
+            pDD.y = pDD.x;
+
+            //                              {       pDD.y, pDS.x, z}
+            some_d = None;
+            //                              {       pDD.y, pDS.x, z, some_d}
+        } // END OF SCOPE for `z`
+        //                                  {       pDD.y, pDS.x, some_d}
+
+        // MERGE POINT PREDECESSOR 2
+
+    }
+
+    // MERGE POINT: set of drop obligations do not
+    // match on all incoming control-flow paths.
+    //
+    // Predecessor 1 has drop obligations
+    // {pDD.x,        pDS.x, some_d}
+    // and Predecessor 2 has drop obligations
+    // {       pDD.y, pDS.x, some_d}.
+    //
+    // Therefore, this merge point implies that
+    // {pDD.x, pDD.y} are dynamic drop obligations,
+    // while {pDS.x, some_d} are potentially still
+    // resolvable statically (and thus may not need
+    // associated boolean flags).
+
+    // The resulting drop obligations are the following:
+
+    //                                  {pDD.x, pDD.y, pDS.x, some_d}.
+
+    // (... some code that does not change drop obligations ...)
+
+    //                                  {pDD.x, pDD.y, pDS.x, some_d}.
+
+    // END OF SCOPE for `pDD`, `pDS`, `some_d`
+
+    // rustc-inserted code (not legal Rust, since `pDD.x` and `pDD.y`
+    // are inaccessible).
+
+    if _drop_pDD_dot_x { mem::drop(pDD.x); }
+    if _drop_pDD_dot_y { mem::drop(pDD.y); }
+}</code></pre>
+<p>Note that in a snippet like</p>
+<pre><code class="language-rust">       _drop_pDD_dot_y = DoNotDrop;
+       let temp = xform(pDD.y);</code></pre>
+<p>this is okay, in part because the evaluating the identifier <code>xform</code> is infallible.  If instead it were something like:</p>
+<pre><code class="language-rust">       _drop_pDD_dot_y = DoNotDrop;
+       let temp = lookup_closure()(pDD.y);</code></pre>
+<p>then that would not be correct, because we need to set <code>_drop_pDD_dot_y</code> to <code>DoNotDrop</code> after the <code>lookup_closure()</code> invocation.</p>
+<p>It may probably be more intellectually honest to write the transformation like:</p>
+<pre><code class="language-rust">       let temp = lookup_closure()({ _drop_pDD_dot_y = DoNotDrop; pDD.y });</code></pre>
+<h3 id="control-flow-sensitivity"><a class="header" href="#control-flow-sensitivity">Control-flow sensitivity</a></h3>
+<p>Note that the dynamic drop obligations are based on a control-flow analysis, <em>not</em> just the lexical nesting structure of the code.</p>
+<p>In particular: If control flow splits at a point like an if-expression, but the two arms never meet, then they can have completely sets of drop obligations.</p>
+<p>This is important, since in coding patterns like loops, one often sees different sets of drop obligations prior to a <code>break</code> compared to a point where the loop repeats, such as a <code>continue</code> or the end of a <code>loop</code> block.</p>
+<pre><code class="language-rust">    // At the outset, the set of drop obligations is
+    // just the set of moved input parameters (empty
+    // in this case).
+
+    //                                      DROP OBLIGATIONS
+    //                                  ------------------------
+    //                                  {  }
+    let mut pDD : Pair&lt;D,D&gt; = mk_dd();
+    let mut maybe_set : D;
+
+    //                                  {         pDD.x, pDD.y }
+    'a: loop {
+        // MERGE POINT
+
+        //                                  {     pDD.x, pDD.y }
+        if test() {
+            //                                  { pDD.x, pDD.y }
+            consume(pDD.x);
+            //                                  {        pDD.y }
+            break 'a;
+        }
+        // *not* merge point (only one path, the else branch, flows here)
+
+        //                                  {     pDD.x, pDD.y }
+
+        // never falls through; must merge with 'a loop.
+    }
+
+    // RESUME POINT: break 'a above flows here
+
+    //                                  {                pDD.y }
+
+    // This is the point immediately preceding `'b: loop`; (1.) below.
+
+    'b: loop {
+        // MERGE POINT
+        //
+        // There are *three* incoming paths: (1.) the statement
+        // preceding `'b: loop`, (2.) the `continue 'b;` below, and
+        // (3.) the end of the loop's block below.  The drop
+        // obligation for `maybe_set` originates from (3.).
+
+        //                                  {            pDD.y, maybe_set }
+
+        consume(pDD.y);
+
+        //                                  {                 , maybe_set }
+
+        if test() {
+            //                                  {             , maybe_set }
+            pDD.x = mk_d();
+            //                                  { pDD.x       , maybe_set }
+            break 'b;
+        }
+
+        // *not* merge point (only one path flows here)
+
+        //                                  {                 , maybe_set }
+
+        if test() {
+            //                                  {             , maybe_set }
+            pDD.y = mk_d();
+
+            // This is (2.) referenced above.   {        pDD.y, maybe_set }
+            continue 'b;
+        }
+        // *not* merge point (only one path flows here)
+
+        //                                  {                 , maybe_set }
+
+        pDD.y = mk_d();
+        // This is (3.) referenced above.   {            pDD.y, maybe_set }
+
+        maybe_set = mk_d();
+        g(&amp;maybe_set);
+
+        // This is (3.) referenced above.   {            pDD.y, maybe_set }
+    }
+
+    // RESUME POINT: break 'b above flows here
+
+    //                                  {         pDD.x       , maybe_set }
+
+    // when we hit the end of the scope of `maybe_set`;
+    // check its stack-local flag.</code></pre>
+<p>Likewise, a <code>return</code> statement represents another control flow jump, to the end of the function.</p>
+<h3 id="remove-implicit-memory-zeroing"><a class="header" href="#remove-implicit-memory-zeroing">Remove implicit memory zeroing</a></h3>
+<p>With the above in place, the remainder is relatively trivial. The compiler can be revised to no longer inject a drop flag into structs and enums that implement <code>Drop</code>, and likewise memory zeroing can be removed.</p>
+<p>Beyond that, the libraries will obviously need to be audited for dependence on implicit memory zeroing.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>The only reasons not do this are:</p>
+<ol>
+<li>
+<p>Some hypothetical reason to <em>continue</em> doing implicit memory zeroing, or</p>
+</li>
+<li>
+<p>We want to abandon dynamic drop semantics.</p>
+</li>
+</ol>
+<p>At this point Felix thinks the Rust community has made a strong argument in favor of keeping dynamic drop semantics.</p>
+<h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
+<ul>
+<li>
+<p>Static drop semantics <a href="https://github.com/rust-lang/rfcs/pull/210">RFC PR #210</a> has been referenced frequently in this document.</p>
+</li>
+<li>
+<p>Eager drops <a href="https://github.com/rust-lang/rfcs/pull/239">RFC PR #239</a> is the more aggressive semantics that would drop values immediately after their final use.  This would probably invalidate a number of RAII style coding patterns.</p>
+</li>
+</ul>
+<h2 id="optional-extensions"><a class="header" href="#optional-extensions">Optional Extensions</a></h2>
+<h3 id="a-lint-identifying-dynamic-drop-obligations"><a class="header" href="#a-lint-identifying-dynamic-drop-obligations">A lint identifying dynamic drop obligations</a></h3>
+<p>Add a lint (set by default to <code>allow</code>) that reports potential dynamic drop obligations, so that end-user code can opt-in to having them reported.  The expected benefits of this are:</p>
+<ol>
+<li>
+<p>developers may have intended for a value to be moved elsewhere on all paths within a function, and,</p>
+</li>
+<li>
+<p>developers may want to know about how many boolean dynamic drop flags are potentially being injected into their code.</p>
+</li>
+</ol>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<h3 id="how-to-handle-moves-out-of-arrayindex_expr"><a class="header" href="#how-to-handle-moves-out-of-arrayindex_expr">How to handle moves out of <code>array[index_expr]</code></a></h3>
+<p>Niko pointed out to me today that my prototype was not addressing moves out of <code>array[index_expr]</code> properly.  I was assuming that we would just make such an expression illegal (or that they should already be illegal).</p>
+<p>But they are not already illegal, and above assumption that we would make it illegal should have been explicit.  That, or we should address the problem in some other way.</p>
+<p>To make this concrete, here is some code that runs today:</p>
+<pre><code class="language-rust">#[deriving(Show)]
+struct AnnounceDrop { name: &amp;'static str }
+
+impl Drop for AnnounceDrop {
+    fn drop(&amp;mut self) { println!("dropping {}", self.name); }
+}
+
+fn foo&lt;A&gt;(a: [A, ..3], i: uint) -&gt; A {
+    a[i]
+}
+
+fn main() {
+    let a = [AnnounceDrop { name: "fst" },
+             AnnounceDrop { name: "snd" },
+             AnnounceDrop { name: "thd" }];
+    let r = foo(a, 1);
+    println!("foo returned {}", r);
+}</code></pre>
+<p>This prints:</p>
+<pre><code>dropping fst
+dropping thd
+foo returned AnnounceDrop { name: snd }
+dropping snd
+</code></pre>
+<p>because it first moves the entire array into <code>foo</code>, and then <code>foo</code> returns the second element, but still needs to drop the rest of the array.</p>
+<p>Embedded drop flags and zeroing support this seamlessly, of course. But the whole point of this RFC is to get rid of the embedded per-value drop-flags.</p>
+<p>If we want to continue supporting moving out of <code>a[i]</code> (and we probably do, I have been converted on this point), then the drop flag needs to handle this case.  Our current thinking is that we can support it by using a single <em><code>uint</code></em> flag (as opposed to the booleans used elsewhere) for such array that has been moved out of.  The <code>uint</code> flag represents “drop all elements from the array <em>except</em> for the one listed in the flag.”  (If it is only moved out of on one branch and not another, then we would either use an <code>Option&lt;uint&gt;</code>, or still use <code>uint</code> and just represent unmoved case via some value that is not valid index, such as the length of the array).</p>
+<h3 id="should-we-keep-unsafe_no_drop_flag-"><a class="header" href="#should-we-keep-unsafe_no_drop_flag-">Should we keep <code>#[unsafe_no_drop_flag]</code> ?</a></h3>
+<p>Currently there is an <code>unsafe_no_drop_flag</code> attribute that is used to indicate that no drop flag should be associated with a struct/enum, and instead the user-written drop code will be run multiple times (and thus must internally guard itself from its own side-effects; e.g. do not attempt to free the backing buffer for a <code>Vec</code> more than once, by tracking within the <code>Vec</code> itself if the buffer was previously freed).</p>
+<p>The “obvious” thing to do is to remove <code>unsafe_no_drop_flag</code>, since the per-value drop flag is going away.  However, we <em>could</em> keep the attribute, and just repurpose its meaning to instead mean the following: <em>Never</em> inject a dynamic stack-local drop-flag for this value.  Just run the drop code multiple times, just like today.</p>
+<p>In any case, since the semantics of this attribute are unstable, we will feature-gate it (with feature name <code>unsafe_no_drop_flag</code>).</p>
+<h2 id="appendices"><a class="header" href="#appendices">Appendices</a></h2>
+<h3 id="how-dynamic-drop-semantics-works"><a class="header" href="#how-dynamic-drop-semantics-works">How dynamic drop semantics works</a></h3>
+<p>(This section is just presenting background information on the semantics of <code>drop</code> and the drop-flag as it works in Rust today; it does not contain any discussion of the changes being proposed by this RFC.)</p>
+<p>A struct or enum implementing <code>Drop</code> will have its drop-flag automatically set to a non-zero value when it is constructed.  When attempting to drop the struct or enum (i.e. when control reaches the end of the lexical scope of its owner), the injected glue code will only execute its associated <code>fn drop</code> if its drop-flag is non-zero.</p>
+<p>In addition, the compiler injects code to ensure that when a value is moved to a new location in memory or dropped, then the original memory is entirely zeroed.</p>
+<p>A struct/enum definition implementing <code>Drop</code> can be tagged with the attribute <code>#[unsafe_no_drop_flag]</code>.  When so tagged, the struct/enum will not have a hidden drop flag embedded within it. In this case, the injected glue code will execute the associated glue code unconditionally, even though the struct/enum value may have been moved to a new location in memory or dropped (in either case, the memory representing the value will have been zeroed).</p>
+<p>The above has a number of implications:</p>
+<ul>
+<li>
+<p>A program can manually cause the drop code associated with a value to be skipped by first zeroing out its memory.</p>
+</li>
+<li>
+<p>A <code>Drop</code> implementation for a struct tagged with <code>unsafe_no_drop_flag</code> must assume that it will be called more than once.  (However, every call to <code>drop</code> after the first will be given zeroed memory.)</p>
+</li>
+</ul>
+<h4 id="program-illustrating-semantic-impact-of-hidden-drop-flag"><a class="header" href="#program-illustrating-semantic-impact-of-hidden-drop-flag">Program illustrating semantic impact of hidden drop flag</a></h4>
+<pre><code class="language-rust">#![feature(macro_rules)]
+
+use std::fmt;
+use std::mem;
+
+#[deriving(Clone,Show)]
+struct S {  name: &amp;'static str }
+
+#[deriving(Clone,Show)]
+struct Df { name: &amp;'static str }
+
+#[deriving(Clone,Show)]
+struct Pair&lt;X,Y&gt;{ x: X, y: Y }
+
+static mut current_indent: uint = 0;
+
+fn indent() -&gt; String {
+    String::from_char(unsafe { current_indent }, ' ')
+}
+
+impl Drop for Df {
+    fn drop(&amp;mut self) {
+        println!("{}dropping Df {}", indent(), self.name)
+    }
+}
+
+macro_rules! struct_Dn {
+    ($Dn:ident) =&gt; {
+
+        #[unsafe_no_drop_flag]
+        #[deriving(Clone,Show)]
+        struct $Dn { name: &amp;'static str }
+
+        impl Drop for $Dn {
+            fn drop(&amp;mut self) {
+                if unsafe { (0,0) == mem::transmute::&lt;_,(uint,uint)&gt;(self.name) } {
+                    println!("{}dropping already-zeroed {}",
+                             indent(), stringify!($Dn));
+                } else {
+                    println!("{}dropping {} {}",
+                             indent(), stringify!($Dn), self.name)
+                }
+            }
+        }
+    }
+}
+
+struct_Dn!(DnA)
+struct_Dn!(DnB)
+struct_Dn!(DnC)
+
+fn take_and_pass&lt;T:fmt::Show&gt;(t: T) {
+    println!("{}t-n-p took and will pass: {}", indent(), &amp;t);
+    unsafe { current_indent += 4; }
+    take_and_drop(t);
+    unsafe { current_indent -= 4; }
+}
+
+fn take_and_drop&lt;T:fmt::Show&gt;(t: T) {
+    println!("{}t-n-d took and will drop: {}", indent(), &amp;t);
+}
+
+fn xform(mut input: Df) -&gt; Df {
+    input.name = "transformed";
+    input
+}
+
+fn foo(b: || -&gt; bool) {
+    let mut f1 = Df  { name: "f1" };
+    let mut n2 = DnC { name: "n2" };
+    let f3 = Df  { name: "f3" };
+    let f4 = Df  { name: "f4" };
+    let f5 = Df  { name: "f5" };
+    let f6 = Df  { name: "f6" };
+    let n7 = DnA { name: "n7" };
+    let _fx = xform(f6);           // `f6` consumed by `xform`
+    let _n9 = DnB { name: "n9" };
+    let p = Pair { x: f4, y: f5 }; // `f4` and `f5` moved into `p`
+    let _f10 = Df { name: "f10" };
+
+    println!("foo scope start: {}", (&amp;f3, &amp;n7));
+    unsafe { current_indent += 4; }
+    if b() {
+        take_and_pass(p.x); // `p.x` consumed by `take_and_pass`, which drops it
+    }
+    if b() {
+        take_and_pass(n7); // `n7` consumed by `take_and_pass`, which drops it
+    }
+    
+    // totally unsafe: manually zero the struct, including its drop flag.
+    unsafe fn manually_zero&lt;S&gt;(s: &amp;mut S) {
+        let len = mem::size_of::&lt;S&gt;();
+        let p : *mut u8 = mem::transmute(s);
+        for i in range(0, len) {
+            *p.offset(i as int) = 0;
+        }
+    }
+    unsafe {
+        manually_zero(&amp;mut f1);
+        manually_zero(&amp;mut n2);
+    }
+    println!("foo scope end");
+    unsafe { current_indent -= 4; }
+
+    // here, we drop each local variable, in reverse order of declaration.
+    // So we should see the following drop sequence:
+    // drop(f10), printing "Df f10"
+    // drop(p)
+    //   ==&gt; drop(p.y), printing "Df f5"
+    //   ==&gt; attempt to drop(and skip) already-dropped p.x, no-op
+    // drop(_n9), printing "DnB n9"
+    // drop(_fx), printing "Df transformed"
+    // attempt to drop already-dropped n7, printing "already-zeroed DnA"
+    // no drop of `f6` since it was consumed by `xform`
+    // no drop of `f5` since it was moved into `p`
+    // no drop of `f4` since it was moved into `p`
+    // drop(f3), printing "f3"
+    // attempt to drop manually-zeroed `n2`, printing "already-zeroed DnC"
+    // attempt to drop manually-zeroed `f1`, no-op.
+}
+
+fn main() {
+    foo(|| true);
+}</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="0256-remove-refcounting-gc-of-t.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="0326-restrict-xXX-to-ascii.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="0256-remove-refcounting-gc-of-t.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="0326-restrict-xXX-to-ascii.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

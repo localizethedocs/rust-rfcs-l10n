@@ -1,0 +1,1295 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2388-try-expr - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>try_expr</code></li>
+<li>Start Date: 2018-04-04</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/2388">rust-lang/rfcs#2388</a></li>
+<li>Rust 議題：<a href="https://github.com/rust-lang/rust/issues/50412">rust-lang/rust#50412</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p><a href="https://github.com/rust-lang/rfcs/blob/master/text/0243-trait-based-exception-handling.md#choice-of-keywords">RFC 243</a> left the choice of keyword for <code>catch { .. }</code> expressions unresolved. This RFC settles the choice of keyword. Namely, it:</p>
+<ol>
+<li>reserves <code>try</code> as a keyword in edition 2018.</li>
+<li>replaces <code>do catch { .. }</code> with <code>try { .. }</code></li>
+<li>does <strong>not</strong> reserve <code>catch</code> as a keyword.</li>
+</ol>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>This RFC does not motivate <code>catch { .. }</code> or <code>try { .. }</code> expressions. To read the motivation for that, please consult <a href="https://github.com/rust-lang/rfcs/blob/master/text/0243-trait-based-exception-handling.md#catch-expressions">the original <code>catch</code> RFC</a>.</p>
+<h3 id="for-reserving-a-keyword"><a class="header" href="#for-reserving-a-keyword">For reserving a keyword</a></h3>
+<p>Whatever keyword is chosen, it can’t be contextual.</p>
+<p>As with <code>catch { .. }</code>, the syntactic form <code>&lt;word&gt; { .. }</code> where <code>&lt;word&gt;</code> is replaced with any possible keyword would conflict with a struct named <code>&lt;word&gt;</code> as seen in this perfectly legal snippet in Rust 2015, where <code>&lt;word&gt;</code> has been substituted for <code>try</code>:</p>
+<pre><code class="language-rust">struct try;
+fn main() {
+    try {
+    };
+}</code></pre>
+<h4 id="aside-note"><a class="header" href="#aside-note">Aside note:</a></h4>
+<p>The snippet above emits the following warning:</p>
+<pre><code>warning: type `try` should have a camel case name such as `Try`
+</code></pre>
+<p>which is also the case for <code>catch</code>. This warning decreases the risk that someone has defined a type named <code>try</code> anywhere in the ecosystem which happens to be beneficial to us.</p>
+<h3 id="for-reserving-try-specifically"><a class="header" href="#for-reserving-try-specifically">For reserving <code>try</code> specifically</a></h3>
+<p>This is discussed in the <a href="#rationale-for-try">rationale for <code>try</code></a>.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>The keyword <code>try</code> will be reserved. This will allow you to write expressions such as:</p>
+<pre><code class="language-rust">try {
+    let x = foo?;
+    let y = bar?;
+    // Note: OK-wrapping is assumed here, but it is not the goal of this RFC
+    // to decide either in favor or against OK-wrapping.
+    x + y
+}</code></pre>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<p>The word <code>try</code> is reserved as a keyword in the <a href="https://doc.rust-lang.org/book/second-edition/appendix-01-keywords.html#keywords-currently-in-use">list of keywords</a> in Rust edition 2018 and later editions.</p>
+<p>The keyword <code>try</code> is used in “try expressions” of the form <code>try { .. }</code>.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>There are two main drawbacks to the <code>try</code> keyword.</p>
+<h3 id="association-with-exception-handling---both-a-pro-and-con"><a class="header" href="#association-with-exception-handling---both-a-pro-and-con">Association with exception handling - Both a pro and con</a></h3>
+<blockquote>
+<p>I think that there is a belief – one that I have shared from time to time – that it is not helpful to use familiar keywords unless the semantics are a perfect match, the concern being that they will setup an intuition that will lead people astray. I think that is a danger, but it works both ways: those intuitions also help people to understand, particularly in the early days. So it’s a question of “how far along will you get before the differences start to matter” and “how damaging is it if you misunderstand for a while”.</p>
+<p>[..]</p>
+<p>Rust has a lot of concepts to learn. If we are going to succeed, it’s essential that people can learn them a bit at a time, and that we not throw everything at you at once. I think we should always be on the lookout for places where we can build on intuitions from other languages; it doesn’t have to be a 100% match to be useful.</p>
+</blockquote>
+<p>- <a href="https://internals.rust-lang.org/t/bikeshed-rename-catch-blocks-to-fallible-blocks/7121/4">Niko Matsakis</a></p>
+<p>For some people, the association to <code>try { .. } catch { .. }</code> in languages such as Java, and others in the <a href="#prior-art">prior-art</a> section, is unhelpful wrt. teachability because they see the explicit, reified, and manually propagated exceptions in Rust as something very different than the much more implicit exception handling stories in Java et al.</p>
+<p>However, we make the case that other languages which do have these explicit and reified exceptions as in Rust also use an exception vocabulary. Notably, Haskell calls the monad-transformer for adding exceptions <a href="https://hackage.haskell.org/package/mtl-2.2.2/docs/Control-Monad-Except.html#t:ExceptT"><code>ExceptT</code></a>.</p>
+<p>We also argue that even tho we are propagating exceptions manually, we are following tradition in that other languages have very different formulations of the exception idea.</p>
+<p>The benefit of familiarity, even if not a perfect match, as Niko puts it, helps in learning, particularly because Rust is not a language in lack of concepts to learn.</p>
+<h3 id="breakage-of-the-try-macro"><a class="header" href="#breakage-of-the-try-macro">Breakage of the <a href="https://doc.rust-lang.org/nightly/std/macro.try.html"><code>try!</code></a> macro</a></h3>
+<p>One possible result of introducing <code>try</code> as a keyword be that the old <code>try!</code> macro would break. This could potentially be avoided but with great technical challenges.</p>
+<p>With the prospect of breaking <a href="https://doc.rust-lang.org/nightly/std/macro.try.html"><code>try!</code></a>, a few notes are in order:</p>
+<ol>
+<li>
+<p><code>?</code> was stabilized in 1.13, November 2016, which is roughly 1.4 years since the date this RFC was started.</p>
+</li>
+<li>
+<p><code>try!</code> has been “deprecated” since then since:</p>
+<blockquote>
+<p>The <code>?</code> operator was added to replace <code>try!</code> and should be used instead.</p>
+</blockquote>
+</li>
+<li>
+<p><code>try!(expr)</code> can in virtually all instances be automatically <code>rustfix</code>ed automatically to <code>expr?</code>.</p>
+</li>
+<li>
+<p>There are very few questions on Stack Overflow that mention <code>try!</code>.</p>
+</li>
+<li>
+<p><a href="https://doc.rust-lang.org/book/second-edition/">“The Rust Programming Language”, 2nd edition</a> (book) and “Rust by Example” have both already removed all mentions of <code>try!</code>.</p>
+</li>
+</ol>
+<blockquote>
+<p>So overall I think it’s feasible to reduce the <code>try!</code> macro to a historical curiosity to the point it won’t be actively confusing to newbies coming to Rust.</p>
+</blockquote>
+<p>- <a href="https://internals.rust-lang.org/t/bikeshed-rename-catch-blocks-to-fallible-blocks/7121/49">kornel</a></p>
+<p>However,</p>
+<ol>
+<li>There are still plenty of materials out there which mention <code>try!</code>.</li>
+<li><code>try!</code> is essentially the inverse of <code>try { .. }</code>.</li>
+</ol>
+<blockquote>
+<p>Purging from the “collective memories of Rustaceans and Rust materials” is not something that easy.</p>
+</blockquote>
+<p>- <a href="https://internals.rust-lang.org/t/bikeshed-rename-catch-blocks-to-fallible-blocks/7121/50">Manish Goregaokar</a></p>
+<p>In the RFC author’s opinion however, the sum total benefits of <code>try { .. }</code> seem to outweigh the drawbacks of the difficulty with purging <a href="https://doc.rust-lang.org/nightly/std/macro.try.html"><code>try!</code></a> from our collective memory.</p>
+<h3 id="inverse-semantics-of-"><a class="header" href="#inverse-semantics-of-">Inverse semantics of <code>?</code></a></h3>
+<p>The <code>?</code> postfix operator is sometimes referred to as the “try operator”, and can be seen as having the inverse semantics as <code>try { .. }</code>.</p>
+<p>To many, this is a drawback. To others, this makes the <code>?</code> and <code>try { .. }</code> expression forms more closely related and therefore makes them more findable in relation to each other.</p>
+<p>There is currently some ongoing debate about renaming the <code>?</code> operator to something other than the “try operator”. This could help in mitigating the effects of picking <code>try</code> as the keyword.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h2>
+<h3 id="review-considerations"><a class="header" href="#review-considerations">Review considerations</a></h3>
+<p>Among the considerations when picking a keyword are, ordered by importance:</p>
+<ol>
+<li>
+<p>Fidelity to the construct’s actual behavior.</p>
+</li>
+<li>
+<p>Precedent from existing languages</p>
+<ol>
+<li>Popularity of the languages.</li>
+<li>Fidelity to behavior in those languages.</li>
+<li>Familiarity with respect to their analogous constructs.
+See the <a href="#prior-art">prior art</a> the <a href="#rationale-for-try">rationale for try</a> for more discussion on precedent.</li>
+</ol>
+</li>
+<li>
+<p>Brevity.</p>
+</li>
+<li>
+<p>Consistency with related standard library function conventions.</p>
+</li>
+<li>
+<p>Consistency with the naming of the trait used for <code>?</code> (the <a href="https://doc.rust-lang.org/nightly/std/ops/trait.Try.html"><code>Try</code></a> trait). Since the <code>Try</code> trait is unstable and the naming of the <code>?</code> operator in communication is still unsettled, this is not regarded as very important.</p>
+</li>
+<li>
+<p>Degree / Risk of breakage.</p>
+</li>
+<li>
+<p>Consistency with old learning material.</p>
+<ol>
+<li>Inversely: The extent of the old learning material
+That is, (in)consistency with <code>?</code> and the <code>try!()</code> macro. If the first clause is called <code>try</code>, then <code>try { }</code> and <code>try!()</code> would have essentially inverse meanings.</li>
+</ol>
+</li>
+</ol>
+<h3 id="rationale-for-try"><a class="header" href="#rationale-for-try">Rationale for <code>try</code></a></h3>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Very high</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> A lot, see <a href="#prior-art">prior-art</a></p>
+<ol>
+<li><strong>Popularity of the languages:</strong> Massive accumulated dominance</li>
+<li><strong>Fidelity to behavior in those languages:</strong> Very high</li>
+<li><strong>Familiarity with respect to their analogous constructs:</strong> Very high</li>
+</ol>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 3</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Consistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Consistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> High (if we assume <code>try!</code> will break, otherwise: Low)</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=try"><em>No</em></a>, <code>std::try!</code>, but it is technically possible to not break this macro. (unstable: <code>std::intrinsics::try</code> so irrelevant)</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/try"><em>Yes</em></a>. No reverse dependencies. Described as: <em>“Deprecation warning resistant try macro”</em></li>
+<li><strong>Usage (sourcegraph):</strong> <strong>27</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+try\s+=|(fn|impl|mod|struct|enum|union|trait)\s+try)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Inconsistent (<a href="https://doc.rust-lang.org/nightly/std/macro.try.html"><code>try!</code></a>)</p>
+</li>
+</ol>
+<h4 id="review"><a class="header" href="#review">Review</a></h4>
+<p>This is our choice of keyword, because it:</p>
+<ol>
+<li>has a massive dominance in both popular and less known languages and is sufficiently semantically faithful to what <code>try</code> means in those languages. Thus, we can leverage people’s intuitions and not spend too much of our complexity budget.</li>
+<li>is consistent with the standard library wrt. <code>Try</code> and <code>try_</code> prefixed methods.</li>
+<li>it is brief.</li>
+<li>it has high fidelity wrt. the concepts it attempts to communicate (exception boundary for <code>?</code>). This high fidelity is from the perspective of a programmers intent, i.e: “I want to try a bunch of stuff in this block”.</li>
+<li>it can be further extended with <code>catch { .. }</code> handlers if we wish.</li>
+</ol>
+<h3 id="alternative-reserving-catch"><a class="header" href="#alternative-reserving-catch">Alternative: reserving <code>catch</code></a></h3>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> High</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> Erlang and Tcl, see <a href="#prior-art">prior-art</a></p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 6</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Somewhat consistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=catch"><em>No</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/catch"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>21</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+catch\s+=|(fn|impl|mod|struct|enum|union|trait)\s+catch)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h4 id="review-1"><a class="header" href="#review-1">Review</a></h4>
+<p>We believe <code>catch</code> to be a poor choice of keyword, because it:</p>
+<ol>
+<li>is used in few in other languages to demarcate the body which can result in an exceptional path. Instead, it is almost exclusively used for exception handlers of the form: <code>catch(pat) { recover_expr }</code>.</li>
+<li>extending <code>catch</code> with handlers will require a different word such as <code>handler</code> to get <code>catch { .. } handler(e) { .. }</code> semantics if we want. This inversion compared to a lot of other languages will only harm teachability of the language and steal a lot of our strangeness budget.</li>
+<li>it is less brief than <code>try</code>.</li>
+<li>the consistency wrt. methods in the standard library is low - there’s only <code>catch_unwind</code>, but that has to do with panics, not <code>Try</code> style exceptions.</li>
+</ol>
+<p>However, <code>catch</code> has high fidelity wrt. the operational semantics of “catching” any exceptions in the <code>try { .. }</code> block.</p>
+<h3 id="alternative-keeping-do-catch---"><a class="header" href="#alternative-keeping-do-catch---">Alternative: keeping <code>do catch { .. }</code></a></h3>
+<ol>
+<li><strong>Fidelity to the construct’s actual behavior:</strong> Middle</li>
+<li><strong>Precedent from existing languages:</strong>
+<ul>
+<li><code>do</code>: Haskell, Idris</li>
+<li><code>catch</code>: Erlang and Tcl, see <a href="#prior-art">prior-art</a></li>
+</ul>
+</li>
+<li><strong>Brevity / Length:</strong> 8</li>
+<li><strong>Consistency with related libstd fn conventions:</strong> Tiny bit consistent</li>
+<li><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</li>
+<li><strong>Risk of breakage:</strong> Impossible (already reserved keyword)
+<ul>
+<li><strong>Used in std:</strong> <em>No</em>, the form <code>$ident $ident</code> is not a legal identifier.</li>
+<li><strong>Used as crate?</strong> <em>No</em>, as above.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>0</strong> regex: N/A</li>
+</ul>
+</li>
+<li><strong>Consistency with old learning material:</strong> Untaught</li>
+</ol>
+<p>An alternative would be to simply use the <code>do catch { ... }</code> syntax we have in the nightly compiler. However, this syntax was not in the accepted <code>catch</code> RFC and was only a temporary fix around <code>catch { .. }</code> not working.</p>
+<h3 id="alternative-do-try---"><a class="header" href="#alternative-do-try---">Alternative: <code>do try { .. }</code></a></h3>
+<ol>
+<li><strong>Fidelity to the construct’s actual behavior:</strong> High</li>
+<li><strong>Precedent from existing languages:</strong>
+<ul>
+<li><code>do</code>: Haskell, Idris</li>
+<li><code>try</code>: A lot, see <a href="#prior-art">prior-art</a></li>
+</ul>
+<ol>
+<li><strong>Popularity of the languages:</strong> Massive accumulated dominance</li>
+<li><strong>Fidelity to behavior in those languages:</strong> High</li>
+<li><strong>Familiarity with respect to their analogous constructs:</strong> High</li>
+</ol>
+</li>
+<li><strong>Brevity / Length:</strong> 6 (including space)</li>
+<li><strong>Consistency with related libstd fn conventions:</strong> Moderately consistent</li>
+<li><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Moderately consistent</li>
+<li><strong>Risk of breakage:</strong> Impossible (already reserved keyword)
+<ul>
+<li><strong>Used in std:</strong> <em>No</em>, the form <code>$ident $ident</code> is not a legal identifier.</li>
+<li><strong>Used as crate?</strong> <em>No</em>, as above.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>0</strong> regex: N/A</li>
+</ul>
+</li>
+<li><strong>Consistency with old learning material:</strong> Untaught</li>
+</ol>
+<h4 id="review-2"><a class="header" href="#review-2">Review</a></h4>
+<p>We could in fact decide to keep the <code>do</code>-prefix but change the suffix to <code>try</code>. The benefit here would be two-fold:</p>
+<ul>
+<li>
+<p>No keyword <code>try</code> would need to be introduced as <code>do</code> already is a keyword. Therefore, the <code>try!</code> macro would not break.</p>
+</li>
+<li>
+<p>An association with monads due to <code>do</code>. This can be considered a benfit since <code>try</code> can be seen as sugar for the family of error monads (modulo kinks wrt. imperative flow), and thus, the <code>do</code> prefix leads to a path of generality if more monads are introduced.</p>
+</li>
+</ul>
+<p>The drawbacks would be:</p>
+<ul>
+<li>
+<p>The wider association with monads can be seen as a drawback for those not familiar with monads.</p>
+</li>
+<li>
+<p><code>do try { .. }</code> over <code>try { .. }</code> adds a small degree of ergonomics overhead but not much (3 characters including the space). However, the frequency with which the <code>try { .. }</code> construct might be used can make the small overhead accumulate to a significant overhead when a large codebase is considered.</p>
+</li>
+</ul>
+<p>Other than this, the argument for <code>do try</code> over <code>do catch</code> boils down to an argument of <code>try</code> over <code>catch</code>.</p>
+<h3 id="alternative-using-do---"><a class="header" href="#alternative-using-do---">Alternative: using <code>do { .. }</code></a></h3>
+<ol>
+<li><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</li>
+<li><strong>Precedent from existing languages:</strong> Haskell, Idris
+<ol>
+<li><strong>Popularity of the languages:</strong> Haskell: Tiobe #42, PYPL #22</li>
+<li><strong>Fidelity to behavior in those languages:</strong> Good</li>
+<li><strong>Familiarity with respect to their analogous constructs:</strong> Poor</li>
+</ol>
+</li>
+<li><strong>Brevity / Length:</strong> 2</li>
+<li><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</li>
+<li><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</li>
+<li><strong>Risk of breakage:</strong> Impossible (already reserved keyword)</li>
+<li><strong>Consistency with old learning material:</strong> Untaught</li>
+</ol>
+<h4 id="review-3"><a class="header" href="#review-3">Review</a></h4>
+<p>The keyword <code>do</code> was probably originally reserved for two use cases:</p>
+<ol>
+<li>
+<p><code>do while { .. }</code></p>
+</li>
+<li>
+<p>Monadic <code>do</code>-notation a la Haskell:</p>
+<pre><code class="language-haskell">stuff = do
+    x &lt;- actionX
+    y &lt;- actionY x
+    z &lt;- actionZ
+    sideEffect
+    finalAction x y z
+</code></pre>
+<p>The which would be translated into the following pseudo-Rust:</p>
+<pre><code class="language-rust">let stuff = do {
+    x &lt;- actionX;
+    y &lt;- actionY(x);
+    z &lt;- actionZ;
+    sideEffect;
+    finalAction(x, y, z);
+};</code></pre>
+<p>Or particularly for the <code>try { .. }</code> case:</p>
+<pre><code class="language-rust">let stuff = try {
+    let x = actionX?;
+    let y = actionY(x)?;
+    let z = actionZ?;
+    sideEffect?;
+    finalAction(x, y, z)
+};</code></pre>
+<p>The Haskell version is syntactic sugar for:</p>
+<pre><code class="language-haskell">stuff =  actionX   &gt;&gt;=
+   \x -&gt; actionY x &gt;&gt;=
+   \y -&gt; actionZ   &gt;&gt;=
+   \z -&gt; sideEffect &gt;&gt;
+   finalAction x y z
+</code></pre>
+<p>or in Rust:</p>
+<pre><code class="language-rust">let stuff =
+    actionX.flat_map(|x| // or .and_then(..)
+        actionY(x).flat_map(|y|
+            actionZ.flat_map(|z|
+                sideEffect.flat_map(|_|
+                    finalAction(x, y, z)
+                )
+            )
+        )
+    );</code></pre>
+<p>In the Haskell version, <code>&gt;&gt;=</code> is defined in the <code>Monad</code> typeclass (trait):</p>
+<pre><code class="language-haskell">{-# LANGUAGE KindSignatures #-}
+
+class Applicative m =&gt; Monad (m :: * -&gt; *) where
+    return :: a -&gt; m a
+    (&gt;&gt;=)  :: m a -&gt; (a -&gt; m b) -&gt; m b
+
+    (&gt;&gt;)   :: m a -&gt; m b -&gt; m b
+    (&gt;&gt;) = \ma mb -&gt; ma &gt;&gt;= \_ -&gt; mb
+</code></pre>
+<p>And some instances (impls) of <code>Monad</code> are:</p>
+<pre><code class="language-haskell">-- | Same as Option&lt;T&gt;
+data Maybe a = Nothing | Just a
+
+instance Monad Maybe where
+    return = Just
+    (Just a) &gt;&gt;= f = f a
+    _        &gt;&gt;= _ = Nothing
+
+-- | `struct Norm&lt;T&gt; { value: T, normalized: bool }`
+data Norm a = Norm a Bool
+
+instance Monad Norm where
+    return a = Norm a False
+    (Norm a u) &gt;&gt;= f = let Norm b w = f a in  Norm b (u || w)
+</code></pre>
+</li>
+</ol>
+<p>Considering the latter case of do-notation, we saw how <code>try { .. }</code> and <code>do { .. }</code> relate. In fact, <code>try { .. }</code> is special to the <a href="https://doc.rust-lang.org/nightly/std/ops/trait.Try.html"><code>Try</code></a> (<a href="http://hackage.haskell.org/package/mtl-2.2.2/docs/Control-Monad-Error-Class.html#t:MonadError"><code>MonadError</code></a>) monads. There are also more forms of monads which you might want to use <code>do { .. }</code> for. Among these are: Futures, Iterators Due to having more monads than <a href="https://doc.rust-lang.org/nightly/std/ops/trait.Try.html"><code>Try</code></a>-based ones, using the <code>do { .. }</code> syntax directly as a replacement for <code>try { .. }</code> becomes problematic as it:</p>
+<ol>
+<li>confuses everyone familiar with do-notation and monads.</li>
+<li>is in the way of use for monads in general.</li>
+<li><code>do</code> is generic and unclear wrt. semantics.</li>
+</ol>
+<h3 id="alternative-reserving-trap"><a class="header" href="#alternative-reserving-trap">Alternative: reserving <code>trap</code></a></h3>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Good</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 4</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=trap"><em>No</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/trap"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>4</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+trap\s+=|(fn|impl|mod|struct|enum|union|trait)\s+trap)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h4 id="review-4"><a class="header" href="#review-4">Review</a></h4>
+<p>Arguably, this candidate keyword is a somewhat a good choice.</p>
+<p>To <code>trap</code> an error is sufficiently clear on the “exception boundary” semantics we wish to communicate.</p>
+<p>However, <code>trap</code> is used as an error handler in at least one language.</p>
+<p>It also does not have the familiarity that <code>try</code> does have and is entirely inconsistent wrt. naming in the standard library.</p>
+<h3 id="alternative-reserving-wrap"><a class="header" href="#alternative-reserving-wrap">Alternative: reserving <code>wrap</code></a></h3>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Somewhat good</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 4</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=wrap"><em>No</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/wrap"><em>Yes</em></a>, no reverse dependencies.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>37+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+wrap\s+=|(fn|impl|mod|struct|enum|union|trait)\s+wrap)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h4 id="review-5"><a class="header" href="#review-5">Review</a></h4>
+<p>With <code>wrap { .. }</code> we can say that it “wraps” the result of the block as a <code>Result</code> / <code>Option</code>, etc. and it is logically related to <code>.unwrap()</code>, which is however a partial function, wherefore the connotation might be bad.</p>
+<p>Also, <code>wrap</code> could be considered too generic as with <code>do</code> in that it could fit for any monad.</p>
+<h3 id="alternative-reserving-result"><a class="header" href="#alternative-reserving-result">Alternative: reserving <code>result</code></a></h3>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Somewhat good</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 6</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very high</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=result"><em>Yes</em></a> for the <code>{std, core}::result</code> modules.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/result"><em>Yes</em></a>. 6 reverse dependencies (transitive closure).</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>43+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+result\s+=|(fn|impl|mod|struct|enum|union|trait)\s+result)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h3 id="review-6"><a class="header" href="#review-6">Review</a></h3>
+<p>The fidelity of <code>result</code> is somewhat good due to the association with the <code>Result</code> type as well as <code>Try</code> being a <a href="http://okmij.org/ftp/tagless-final/course/lecture.pdf">final encoding</a> of <code>Result</code>.</p>
+<p>However, when you consider <code>Option</code>, the association is less direct, and thus it does not fit <code>Option</code> and other types well.</p>
+<p>The breakage of the <code>result</code> module is however quite problematic, making this particular choice of keyword more or less a non-starter.</p>
+<h3 id="alternative-a-smattering-of-other-possible-keywords"><a class="header" href="#alternative-a-smattering-of-other-possible-keywords">Alternative: a smattering of other possible keywords</a></h3>
+<p>There are a host of other keywords which have been suggested.</p>
+<h4 id="fallible"><a class="header" href="#fallible"><code>fallible</code></a></h4>
+<p>On an <a href="https://internals.rust-lang.org/t/bikeshed-rename-catch-blocks-to-fallible-blocks/7121/">internals thread</a>, <code>fallible</code> was suggested. However, this keyword lacks the verb-form that is the convention in Rust. Breaking with this convention should only be done if there are significant reasons to do so, which do not seem to exist in this case. It is also considerably longer than <code>try</code> (+5 character) which matters for constructions which are oft used.</p>
+<ol>
+<li><strong>Fidelity to the construct’s actual behavior:</strong>  High</li>
+<li><strong>Precedent from existing languages:</strong> None</li>
+<li><strong>Brevity / Length:</strong> 8</li>
+<li><strong>Consistency with related libstd fn conventions:</strong> Highly inconsistent</li>
+<li><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</li>
+<li><strong>Risk of breakage:</strong> Very low
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=fallible"><em>No</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/fallible"><em>Yes</em></a>, some reverse dependencies (all by the same author).</li>
+<li><strong>Usage (sourcegraph)</strong> <a href="https://sourcegraph.com/search?q=repogroup:crates+case:yes++%5Cb%28%28let%7Cconst%7Ctype%7C%29%5Cs%2Bfallible%5Cs%2B%3D%7C%28fn%7Cimpl%7Cmod%7Cstruct%7Cenum%7Cunion%7Ctrait%29%5Cs%2Bfallible%29%5Cb+max:400"><em>None</em></a></li>
+</ul>
+</li>
+<li><strong>Consistency with old learning material:</strong> Untaught</li>
+</ol>
+<h4 id="synonyms-of-catch"><a class="header" href="#synonyms-of-catch">Synonyms of <code>catch</code>:</a></h4>
+<p>Some synonyms of <code>catch</code> <a href="https://internals.rust-lang.org/t/bikeshed-rename-catch-blocks-to-fallible-blocks/7121/2">have been suggested</a>:</p>
+<h5 id="accept"><a class="header" href="#accept"><code>accept</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 6</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Medium</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=accept"><em>Yes</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/accept"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>79+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+accept\s+=|(fn|impl|mod|struct|enum|union|trait)\s+accept)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="capture"><a class="header" href="#capture"><code>capture</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Good.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 7</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=capture"><em>No</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/capture"><em>Yes</em></a>, no reverse dependencies.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>6+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+capture\s+=|(fn|impl|mod|struct|enum|union|trait)\s+capture)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="collect"><a class="header" href="#collect"><code>collect</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Very much not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 7</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very high</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=collect"><em>Yes</em></a> (<code>Iterator::collect</code>)</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/collect"><em>Yes</em></a>, no reverse dependencies.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>35+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+collect\s+=|(fn|impl|mod|struct|enum|union|trait)\s+collect)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="recover"><a class="header" href="#recover"><code>recover</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Good</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 7</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=recover"><em>No</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/recover"><em>No</em></a></li>
+<li><strong>Usage (sourcegraph):</strong> <strong>4+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+recover\s+=|(fn|impl|mod|struct|enum|union|trait)\s+recover)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="resolve"><a class="header" href="#resolve"><code>resolve</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 7</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Low to medium</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=resolve"><em>No</em></a></li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/resolve"><em>Yes</em></a>, 3 reverse dependencies</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>50+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+resolve\s+=|(fn|impl|mod|struct|enum|union|trait)\s+resolve)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="take"><a class="header" href="#take"><code>take</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 4</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Huge</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=take"><em>Yes</em></a>, <code>{Cell, HashSet, Read, Iterator, Option}::take</code>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/resolve"><em>Yes</em></a>, a lot of reverse dependency (transitive closure).</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>62+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+take\s+=|(fn|impl|mod|struct|enum|union|trait)\s+take)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="review-7"><a class="header" href="#review-7">Review</a></h5>
+<p>Of these, only <code>recover</code> and <code>capture</code> seem reasonable semantically. But <code>recover</code> is even more problematic than <code>catch</code> because it enhances the feeling of exception-handling instead of exception-boundaries. However, <code>capture</code> is reasonable as a substitute for <code>try</code>, but it seems obscure and lacks familiarity, which is counted as a strong downside.</p>
+<h4 id="and-some-other-keywords"><a class="header" href="#and-some-other-keywords"><a href="https://internals.rust-lang.org/t/bikeshed-rename-catch-blocks-to-fallible-blocks/7121/13">and some other keywords:</a></a></h4>
+<h5 id="coalesce"><a class="header" href="#coalesce"><code>coalesce</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 8</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Medium (itertools)</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=coalesce"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/coalesce"><em>Yes</em></a>, one reverse dependency.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>3+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+coalesce\s+=|(fn|impl|mod|struct|enum|union|trait)\s+coalesce)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="fuse"><a class="header" href="#fuse"><code>fuse</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 4</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Medium (libstd)</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=fuse"><em>Yes</em></a>, <code>Iterator::fuse</code>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/fuse"><em>Yes</em></a>, 8 reverse dependencies (transitive closure).</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>8+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+fuse\s+=|(fn|impl|mod|struct|enum|union|trait)\s+fuse)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="unite"><a class="header" href="#unite"><code>unite</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 5</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=unite"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/unite"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>0+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+unite\s+=|(fn|impl|mod|struct|enum|union|trait)\s+unite)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="cohere"><a class="header" href="#cohere"><code>cohere</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 6</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=cohere"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/cohere"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>0+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+cohere\s+=|(fn|impl|mod|struct|enum|union|trait)\s+cohere)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="consolidate"><a class="header" href="#consolidate"><code>consolidate</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 11</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=consolidate"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/consolidate"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>0+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+consolidate\s+=|(fn|impl|mod|struct|enum|union|trait)\s+consolidate)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="unify"><a class="header" href="#unify"><code>unify</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 5</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=unify"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/unify"><em>Yes</em></a>, no dependencies</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>1</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+take\s+=|(fn|impl|mod|struct|enum|union|trait)\s+take)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="combine"><a class="header" href="#combine"><code>combine</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 7</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Medium</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=combine"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/combine"><em>Yes</em></a>, 17 (direct dependencies)</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>6+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+combine\s+=|(fn|impl|mod|struct|enum|union|trait)\s+combine)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="resultof"><a class="header" href="#resultof"><code>resultof</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong> Somewhat</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 8</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Very inconsistent (not verb)</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong> Very low</p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=resultof"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/resultof"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>0+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+resultof\s+=|(fn|impl|mod|struct|enum|union|trait)\s+resultof)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="returned"><a class="header" href="#returned"><code>returned</code></a></h5>
+<ol>
+<li>
+<p><strong>Fidelity to the construct’s actual behavior:</strong>  Not at all.</p>
+</li>
+<li>
+<p><strong>Precedent from existing languages:</strong> None</p>
+</li>
+<li>
+<p><strong>Brevity / Length:</strong> 8</p>
+</li>
+<li>
+<p><strong>Consistency with related libstd fn conventions:</strong> Very inconsistent</p>
+</li>
+<li>
+<p><strong>Consistency with the naming of the trait used for <code>?</code>:</strong> Inconsistent</p>
+</li>
+<li>
+<p><strong>Risk of breakage:</strong></p>
+<ul>
+<li><strong>Used in std:</strong> <a href="https://doc.rust-lang.org/nightly/std/?search=returned"><em>No</em></a>.</li>
+<li><strong>Used as crate?</strong> <a href="https://crates.io/crates/returned"><em>No</em></a>.</li>
+<li><strong>Usage (sourcegraph):</strong> <strong>0+</strong> regex:</li>
+</ul>
+<pre><code>repogroup:crates case:yes max:400
+\b((let|const|type|)\s+returned\s+=|(fn|impl|mod|struct|enum|union|trait)\s+returned)\b
+</code></pre>
+</li>
+<li>
+<p><strong>Consistency with old learning material:</strong> Untaught</p>
+</li>
+</ol>
+<h5 id="review-8"><a class="header" href="#review-8">Review</a></h5>
+<p>Of these, only <code>resultof</code> seems to be semantically descriptive and has some support. However, it has three major drawbacks:</p>
+<ul>
+<li>
+<p>Length: Compared to <code>try</code>, it is 5 characters longer (see reasoning for <code>fallible</code>).</p>
+</li>
+<li>
+<p>Not a word: <code>resultof</code> is in fact a concatenation of <code>result</code> and <code>of</code>. This does not feel like a natural fit for Rust, as we tend to use a <code>_</code> separator. Furthermore, there are no current keywords in use that are concatenations of two word.</p>
+</li>
+<li>
+<p><code>Result&lt;T, E&gt;</code> oriented: <code>resultof</code> is too tied to <code>Result&lt;T, E&gt;</code> and fits poorly with <code>Option&lt;T&gt;</code> or other types that implement <code>Try</code>.</p>
+</li>
+</ul>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<p>All of the languages listed below have a <code>try { .. } &lt;handler_kw&gt; { .. }</code> concept (modulo layout syntax / braces) where <code>&lt;handler_kw&gt;</code> is one of: <code>catch</code>, <code>with</code>, <code>except</code>, <code>trap</code>, <code>rescue</code>.</p>
+<p>In total, these are 29 languages and they have massive ~80% dominance according to the <a href="https://www.tiobe.com/tiobe-index/">TIOBE index</a> and roughly the same with the <a href="http://pypl.github.io/PYPL.html">PYPL index</a>.</p>
+<ul>
+<li><a href="http://en.cppreference.com/w/cpp/language/try_catch">C++</a></li>
+<li><a href="https://tour.dlang.org/tour/en/basics/exceptions">D</a></li>
+<li><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/try-catch">C#</a></li>
+<li><a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/try.html">Java</a></li>
+<li><a href="https://stackoverflow.com/questions/18685573/try-catch-finally-return-value">Scala</a></li>
+<li><a href="https://kotlinlang.org/docs/reference/exceptions.html">Kotlin</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch">JavaScript</a></li>
+<li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-5.html">TypeScript</a></li>
+<li><a href="https://help.adobe.com/en_US/ActionScript/3.0_ProgrammingAS3/WS5b3ccc516d4fbf351e63e3d118a9b90204-7ed1.html#WS5b3ccc516d4fbf351e63e3d118a9b90204-7ec5">ActionScript</a></li>
+<li><a href="https://www.dartlang.org/resources/dart-tips/dart-tips-ep-9">Dart</a></li>
+<li><a href="https://docs.python.org/3/tutorial/errors.html">Python</a></li>
+<li><a href="http://php.net/manual/en/language.exceptions.php">PHP</a></li>
+<li><a href="https://se.mathworks.com/help/matlab/ref/try.html">Matlab</a></li>
+<li><a href="https://docs.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/try-catch-finally-statement">Visual Basic</a></li>
+<li><a href="https://ocaml.org/learn/tutorials/error_handling.html">OCaml</a></li>
+<li><a href="https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/exception-handling/the-try-with-expression">F#</a></li>
+<li><a href="https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/ErrorHandling/ErrorHandling.html#//apple_ref/doc/uid/TP40011210-CH9-SW3">Objective C</a></li>
+<li><a href="https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/ErrorHandling.html">Swift</a></li>
+<li><a href="https://stackoverflow.com/questions/6601147/how-to-correctly-write-try-finally-except-statements">Delphi</a></li>
+<li><a href="https://docs.julialang.org/en/stable/manual/control-flow/#The-try/catch-statement-1">Julia</a></li>
+<li><a href="https://elixir-lang.org/getting-started/try-catch-and-rescue.html">Elixir</a></li>
+<li><a href="http://erlang.org/doc/reference_manual/expressions.html#try">Erlang</a></li>
+<li><a href="https://clojuredocs.org/clojure.core/try">Clojure</a></li>
+<li><a href="https://www.rdocumentation.org/packages/base/versions/3.0.3/topics/conditions">R</a>, modulo minor syntactic difference.</li>
+<li><a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_try_catch_finally?view=powershell-6">Powershell</a></li>
+<li><a href="http://wiki.tcl.tk/8293">Tcl</a></li>
+<li><a href="https://developer.salesforce.com/page/An_Introduction_to_Exception_Handling">Apex</a></li>
+<li><a href="http://devnet.asna.com/documentation/Help102/AVR/_HTML/TRYCATCHFINALLY.htm">RPG</a></li>
+<li><a href="https://help.sap.com/doc/abapdocu_751_index_htm/7.51/en-US/abaptry.htm">ABAP</a></li>
+</ul>
+<p>The syntactic form <code>catch { .. }</code> seems quite rare and is, together with <code>trap</code>, <code>rescue</code>, <code>except</code>, only used for handlers. However, the <code>&lt;kw&gt; { .. }</code> expression we want to introduce is not a handler, but rather the body of expression we wish to <code>try</code>.</p>
+<p>There are however a few languages where <code>catch { .. }</code> is used for the fallible part and not for the handler, these languages are:</p>
+<ul>
+<li><a href="http://erlang.org/doc/reference_manual/expressions.html#catch">Erlang</a></li>
+<li><a href="https://www.tcl.tk/man/tcl/TclCmd/catch.htm">Tcl</a></li>
+</ul>
+<p>However, the combined popularity of these languages are not significant as compared to that for <code>try { .. }</code>.</p>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<p>None as of yet.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="2386-used.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="2394-async_await.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="2386-used.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="2394-async_await.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

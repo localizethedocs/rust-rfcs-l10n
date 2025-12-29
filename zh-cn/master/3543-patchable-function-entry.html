@@ -1,0 +1,428 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3543-patchable-function-entry - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>patchable_function_entry</code></li>
+<li>Start Date: 2023-12-12</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3543">rust-lang/rfcs#3543</a></li>
+<li>Tracking Issue: <a href="https://github.com/rust-lang/rust/issues/123115">rust-lang/rust#123115</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>This RFC proposes support for <code>patchable-function-entry</code> as present in <a href="https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fpatchable-function-entry"><code>clang</code></a> and <a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fpatchable-function-entry"><code>gcc</code></a>. This feature is generally used to allow hotpatching and instrumentation of code.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>The Linux kernel uses <code>-fpatchable-function-entry</code> heavily, including for <a href="https://www.kernel.org/doc/html/v6.6/trace/ftrace.html"><code>ftrace</code></a> and <a href="https://github.com/torvalds/linux/blob/26aff849438cebcd05f1a647390c4aa700d5c0f1/arch/x86/Kconfig#L2464"><code>FINEIBT</code> for x86</a>. Today, enabling these features alongside Rust will lead to confusing or broken behavior (<code>ftrace</code> will fail to trace Rust functions when developing, <code>FINEIBT</code> will conflict with the <code>kcfi</code> sanitizer, etc.). It also uses the <code>clang</code> and <code>gcc</code> attribute <code>patchable_function_entry</code> to disable this padding on fragile functions or those used for instrumentation.</p>
+<p>Integrating Rust code into this and other large projects which expect all native code to have these nop buffers will be made easier by allowing them to request the same treatment of native functions they get in C and C++.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p><code>patchable-function-entry</code> provides configurable nop padding before function symbols and after function symbols but before any generated code. We refer to the former as <code>prefix</code> padding and the latter as <code>entry</code> padding. For example, if we had a function <code>f</code> with <code>prefix_nops</code> set to 3 and <code>entry_nops</code> to 2, we’d expect to see:</p>
+<pre><code>nop
+nop
+nop
+f:
+nop
+nop
+// Code goes here
+</code></pre>
+<p>To set this for all functions in a crate, use <code>-C patchable-function-entry=total_nops=m,prefix_nops=n</code> where <code>total_nops = prefix_nops + entry_nops</code>. Usually, you’ll want to copy this value from a corresponding <code>-fpatchable-function-entry=</code> being passed to the C compiler in your project - <code>total_nops</code> will match the first parameter used by your C compiler, and the optional <code>offset</code> parameter passed to the C compiler will match <code>prefix_nops</code>.</p>
+<p>To set this for a specific function, use <code>#[patchable_function_entry(prefix_nops = m, entry_nops = n)]</code> to pad with m nops before the symbol and n after the symbol, but before the prelude. This will override the flag value. To disable padding for a specific function, for example because it is part of the instrumentation framework, use <code>#[patchable_function_entry(entry_nops = 0, prefix_nops = 0)]</code>.</p>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<p><code>patchable-function-entry</code> provides configurable nop padding before function symbols and after function symbols but before any generated code. We refer to the former as <code>prefix</code> padding and the latter as <code>entry</code> padding. For example, if we had a function <code>f</code> with <code>prefix_nops</code> set to 3 and <code>entry_nops</code> to 2, we’d expect to see:</p>
+<pre><code>f_pad:
+nop
+nop
+nop
+f:
+nop
+nop
+// Code goes here
+</code></pre>
+<p>Nop padding may not be supported on all architectures. As of the time of writing, support includes:</p>
+<ul>
+<li>aarch64</li>
+<li>aarch64_be</li>
+<li>loongarch32</li>
+<li>loongarch64</li>
+<li>riscv32</li>
+<li>riscv64</li>
+<li>i686</li>
+<li>x86_64</li>
+</ul>
+<p><code>f_pad</code> addresses for every padded symbol are aggregated in the <code>__patchable_function_entries</code> section of the resulting object. This is not a real symbol, just a collected location.</p>
+<h3 id="compiler-flag--c-patchable-function-entry"><a class="header" href="#compiler-flag--c-patchable-function-entry">Compiler flag <code>-C patchable-function-entry</code></a></h3>
+<p>This flag comes in two forms:</p>
+<ul>
+<li><code>-C patchable-function-entry=total_nops=m,prefix_nops=n</code></li>
+<li><code>-C patchable-function-entry=total_nops=m</code></li>
+</ul>
+<p>In the latter, <code>prefix_nops</code> is assumed to be zero. <code>total_nops</code> must be greater than or equal to <code>prefix_nops</code>, or it will be rejected.</p>
+<p>If unspecified, the current behavior is maintained, which is equivalent to <code>total_nops=0</code> here.</p>
+<p>This flag sets the default nop padding for all functions in the crate. In most cases, all crates in a compilation should use the same value of <code>-C patchable-function-entry</code> to reduce confusion. If not all crates in the compilation graph share the same <code>patchable-function-entry</code> configuration, the compiler may produce an error <em>or</em> use any patchability specification present in the graph as the default for any function.</p>
+<p><code>entry_nops</code> is calculated as <code>total_nops - prefix_nops</code>. This unusual mode of specification is intended to mimic the compiler flags of <code>clang</code> and <code>gcc</code> for ease of build system integration. The first mandatory parameter to their flags matches <code>total_nops</code>, and the optional parameter matches <code>prefix_nops</code>.</p>
+<p>Specifying the compiler flag for a backend or architecture which does not support this feature will result in an error. Some backend / architecture combinations may only support some values of <code>entry_nops</code> and <code>prefix_nops</code>, in which case an error will also be generated for invalid values.</p>
+<h3 id="attribute-patchable_function_entry"><a class="header" href="#attribute-patchable_function_entry">Attribute <code>#[patchable_function_entry]</code></a></h3>
+<p>This attribute allows specification of either the <code>prefix_nops</code> or <code>entry_nops</code> values or both, using the format <code>#[patchable_function_entry(prefix_nops = m, entry_nops = n)]</code>. If either is left unspecified, it overrides them to a default value of 0. Specifying neither <code>prefix_nops</code> nor <code>entry_nops</code> is an error, but explicitly setting them both to 0 is allowed.</p>
+<p>As this is specified via an attribute, it will persist across crate boundaries unlike the compiler flag.</p>
+<p>Specifying any amount of padding other than 0 in an attribute will result in an error on backends or architectures which do not support this feature. Some architecture/backend combinations may only support a subset of prefix and entry nop counts, and may generate errors when other counts are requested.</p>
+<h3 id="optimization-notes"><a class="header" href="#optimization-notes">Optimization Notes</a></h3>
+<p>Neither <code>#[patchable]</code> nor <code>-C patchable-function-entry</code> imply any restriction on inlining by themselves. If it is critical that patched code in the <code>entry</code> section be executed on <em>every</em> function invocation, not only in an advisory capacity, annotate the relevant functions with <code>#[inline(never)]</code> in addition.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>Not currently aware of any other than the complexity that comes from adding anything.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h2>
+<h3 id="implementation-levels"><a class="header" href="#implementation-levels">Implementation Levels</a></h3>
+<h4 id="status-quo"><a class="header" href="#status-quo">Status Quo</a></h4>
+<p>If we keep to the status quo, we need to go through the Linux kernel making Rust support disable a variety of features which depend on this codegen feature. While I have not taken a complete inventory, this includes debugging features (e.g. <code>ftrace</code>) and hardening features (e.g. <code>FINEIBT</code>).</p>
+<p>This alternative runs the risk of the Rust-for-Linux experiment not leaving experiment status, and similar systems with introspection considering Rust unsuitable.</p>
+<p>The primary advantage of this design is that it does not require us to do anything.</p>
+<h4 id="only-compiler-flag"><a class="header" href="#only-compiler-flag">Only compiler flag</a></h4>
+<p>In this design, we only add the <code>-C patchable-function-entry</code> flag and not the attribute. This is enough for today - it would allow Rust to participate in these schemes, and in the event that a user <em>deeply</em> needed an uninstrumented function, they could build it as a separate crate.</p>
+<p>This design has two drawbacks:</p>
+<ul>
+<li>It requires users to artificially structure their code as a form of annotation.</li>
+<li>The caveats around polymorphic functions using their codegen environment’s flags could be tricky or surprising.</li>
+</ul>
+<p>The primary advantage of this design is that it is purely a compiler feature, with no change to the language.</p>
+<h4 id="compiler-flag-and-no-padding-attribute"><a class="header" href="#compiler-flag-and-no-padding-attribute">Compiler flag and no-padding attribute</a></h4>
+<p>In this design, we add the compiler flag and an attribute that zeroes out padding for a function. This covers all the use cases I see in the Linux kernel today, so the only real downside is missing the opportunity to match <code>gcc</code> and <code>clang</code>’s capabilities with only a small bit more code.</p>
+<p>Some other project might use explicit padding configuration per-function, but a quick search across github only finds the <code>patchable_function_entry</code> attribute set to <code>(0, 0)</code> other than in compiler tests.</p>
+<h4 id="everything-proposed-design"><a class="header" href="#everything-proposed-design">Everything (proposed design)</a></h4>
+<p>The only real downside I see here is the complexity of adding one more thing to the language.</p>
+<h3 id="argument-style"><a class="header" href="#argument-style">Argument style</a></h3>
+<p>There are two basic ways being used today to specify this nop padding:</p>
+<ul>
+<li><code>nop_count</code>,<code>offset</code>, used by the attributes and flags in <code>gcc</code> and <code>clang</code>.</li>
+<li><code>prefix</code>, <code>entry</code>, used by the <em>LLVM</em> attributes after translation from the language level attributes and flags.</li>
+</ul>
+<p>The primary advantage of the first format is that it is used in <code>gcc</code> and <code>clang</code>. This means that existing documentation will not mislead users and tooling will have an easier time feeding the correct flag to Rust.</p>
+<p>The advantage of the second style is that <code>prefix</code> and <code>entry</code> don’t have validity constraints (<code>nop_count</code> must be greater than <code>offset</code>) and it’s more obvious what the user is asking for.</p>
+<h4 id="copy-gccclang-everywhere"><a class="header" href="#copy-gccclang-everywhere">Copy <code>gcc</code>/<code>clang</code> everywhere</a></h4>
+<p>This approach has the advantage of matching all existing docs and programmers coming over not being confused.</p>
+<h4 id="use-llvm-style-everywhere"><a class="header" href="#use-llvm-style-everywhere">Use LLVM-style everywhere</a></h4>
+<p>This format doesn’t require validation and is likely easier to understand for users not already exposed to this concept.</p>
+<h4 id="use-gccclang-for-flags-llvm-style-for-arguments-proposed"><a class="header" href="#use-gccclang-for-flags-llvm-style-for-arguments-proposed">Use <code>gcc</code>/<code>clang</code> for flags, LLVM-style for arguments (proposed)</a></h4>
+<p>Build systems tend to interact with our flag interface, and they already have <code>nop_count,offset</code> format flags constructed for their C compilers, so this is likely the easiest way for them to interface.</p>
+<p>Users are unlikely to be directly copying code with a manual attribute, and usually are just going to be disabling padding per a github search for the attribute. Setting padding to <code>(0, 0)</code> is compatible across both styles, and setting <code>prefix</code> and <code>entry</code> manually is likely to be more understandable for a new user.</p>
+<h4 id="use-gccclang-for-flags-support-both-styles-for-arguments"><a class="header" href="#use-gccclang-for-flags-support-both-styles-for-arguments">Use <code>gcc</code>/<code>clang</code> for flags, Support both styles for arguments</a></h4>
+<p>Our attribute system is more powerful than <code>clang</code> and <code>gcc</code>, so we have the option to support:</p>
+<ul>
+<li><code>prefix = n</code></li>
+<li><code>entry = n</code></li>
+<li><code>nop_count = n</code></li>
+<li><code>offset = n</code></li>
+</ul>
+<p>as modifiers to the attribute. We could make <code>prefix</code>/<code>entry</code> vs <code>nop_count</code>/<code>offset</code> an exclusive choice, and support both. This would provide the advantage of allowing users copying from or familiar with the other specification system to continue using it. The disadvantages would be more complex attribute parsing and potential confusion for people reading code.</p>
+<h4 id="support-both-styles-for-flags-and-arguments"><a class="header" href="#support-both-styles-for-flags-and-arguments">Support both styles for flags and arguments</a></h4>
+<p>In addition to supporting <code>nop_count</code>/<code>offset</code> for attributes, we could support this on the command line as well. This would have two forms:</p>
+<ul>
+<li><code>-C patchable-function-entry=nop_count=m,offset=n</code> (<code>nop_count=m</code>, <code>offset=n</code>, modern format, offset optional)</li>
+<li><code>-C patchable-function-entry=prefix=m,entry=n</code> (<code>prefix=m</code>, <code>entry=n</code>, modern format, either optional)</li>
+</ul>
+<p>This would have the benefit of making it more clear what’s being specified and allowing users to employ the simpler format on the command line if not integrating with an existing build.</p>
+<p>The primary disadvantage of this is having many ways to say the same thing.</p>
+<h4 id="use-llvm-style-for-flags-gccclang-for-arguments"><a class="header" href="#use-llvm-style-for-flags-gccclang-for-arguments">Use LLVM-style for flags, <code>gcc</code>/<code>clang</code> for arguments</a></h4>
+<p>I’m not sure why we would do this.</p>
+<h3 id="inlining"><a class="header" href="#inlining">Inlining</a></h3>
+<p>Inlining a function will prevent code in the <code>entry</code> patchable section from being executed. This raises the question of whether we should suppress or lint about inlining around this attribute or flag.</p>
+<p>Existing support in <code>gcc</code> and <code>clang</code> does not suppress inlining at all, but <code>rustc</code> makes much heavier use of inlining than they do by default, making it possible that we might want to make a different call.</p>
+<p>Linux’s usage of this flag does not consider inlining suppression to be desirable. The two primary usages are:</p>
+<ul>
+<li>Hardening, where only indirect calls are considered, and so inlining is a non-issue</li>
+<li>Tracing, where inlined calls are explicitly out of scope, and <code>noinline</code> is already explicitly added to C code which should be traced.</li>
+</ul>
+<p>Possible signals we could consider include beyond whether any padding is present:</p>
+<ul>
+<li>Whether the <code>entry</code> padding is nonzero, not considering <code>prefix</code> - <code>prefix</code> padding would not be executed by a direct call anyways</li>
+<li>Whether the padding was specified by an attribute or a flag</li>
+<li>Whether an explicit inlining annotation is present</li>
+</ul>
+<p>Possible actions we could take include:</p>
+<ul>
+<li>Nothing</li>
+<li>Warning/linting</li>
+<li>Suppress inlining implicitly</li>
+</ul>
+<p>Since we don’t have a way to “reset” inlining to default, any plan involving suppression of inlining also needs to come with additional configuration to suppress the suppression.</p>
+<h4 id="inline-suppression"><a class="header" href="#inline-suppression">Inline suppression</a></h4>
+<p>If the function has nonzero <code>entry</code> padding, prevent inlining.</p>
+<p>Add <code>-C allow-patchable-function-inlining</code> to disable this behavior.</p>
+<p>Add <code>#[patchable(inlinable = yes)]</code> to suppress inline suppression in the attribute.</p>
+<p>The advantage of this approach is that any instrumentation will always trigger when the function is called.</p>
+<p>Disadvantages:</p>
+<ul>
+<li>When the flag is passed, we will disable inlining <em>nearly everywhere</em>. This would be disastrous for performance, given the number of functions Rust depends on inlining to optimize.</li>
+<li>This does not match C/C++ behavior, which means most existing use cases will be surprised.</li>
+<li>We need to add flag complexity to match existing use cases.</li>
+</ul>
+<p>We could mitigate a portion of the disadvantages of this approach by only suppressing for the attribute rather than the flag. This would prevent the use of a flag to trace all function invocations.</p>
+<h4 id="lint-on-attribute"><a class="header" href="#lint-on-attribute">Lint on attribute</a></h4>
+<p>If the function has nonzero <code>entry</code> padding specified via attribute, and <code>#[inline]</code> is not explicitly set, trigger a lint.</p>
+<p>Use <code>#[allow]</code> to accept the inlinability, the same as any other lint.</p>
+<p>The advantage of this approach is that if the attribute is explicitly set, it will surface to the user to think about inlining. By using a lint, we avoid introducing new syntax, allow it to be ignored crate-wide if needed, and avoid user surprise.</p>
+<p>Disadvantages:</p>
+<ul>
+<li>There are no instances of the C/C++ side variants of this attribute in the wild being used with nonzero entry padding, so we don’t know if this behavior would actually be unexpected.</li>
+<li>There is no way for a user to use load-bearing entry padding on the whole program without annotating every function.</li>
+<li>The user would not be informed when patchability was triggered via a compilation flag.</li>
+</ul>
+<h4 id="do-not-suppress-inlining-proposed"><a class="header" href="#do-not-suppress-inlining-proposed">Do not suppress inlining (proposed)</a></h4>
+<p>Take no action on inlining other than mentioning it in the reference.</p>
+<p>This approach mirrors what C/C++ does today. It doesn’t close the door on taking the lint approach in the future, but we wouldn’t be able to do suppression in the future without reversing the sense of the extra flags.</p>
+<p>Disadvantages:</p>
+<ul>
+<li>There is no way for a user to use load-bearing entry padding on the whole program without annotating every function.</li>
+<li>Users not familiar with the C/C++ usage of the flag might be surprised when Rust’s more aggressive inlining fails to run an <code>entry</code> prelude in some scenarios.</li>
+</ul>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<ul>
+<li>Linux uses this flag and attribute extensively</li>
+<li><code>clang</code> <a href="https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fpatchable-function-entry">implements the flag</a></li>
+<li><code>clang</code> <a href="https://clang.llvm.org/docs/AttributeReference.html#patchable-function-entry">implements the attribute</a></li>
+<li><code>gcc</code> <a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fpatchable-function-entry">implements the flag</a></li>
+<li><code>gcc</code> <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-patchable_005ffunction_005fentry-function-attribute">implements the attribute</a></li>
+</ul>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<ul>
+<li>Should we use LLVM or <code>gcc</code>/<code>clang</code> style for a per-function attribute? Should we support both styles?</li>
+<li>Should we support a more explicit command line argument style?</li>
+<li>Should we reject linking crates with different default padding configurations?</li>
+</ul>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<p>We could potentially use these for dynamic tracing of rust programs, similar to <code>#[instrument]</code> in the <code>tracing</code> crate today, but with more configurable behavior and even lower overhead (since there will be no conditionals to check, just a nop sled to go down).</p>
+<p>We could consider adding <code>#[unpatchable]</code> as a shorthand for <code>#[patchable_function_entry(entry_nops = 0, prefix-nops = 0)]</code>.</p>
+<p>We could define the behavior around differing default patchability in the crate graph more narrowly (either require a hard error, or require that the compiler follows the declaring crate’s padding spec).</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3537-msrv-resolver.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3550-new-range.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3537-msrv-resolver.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3550-new-range.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

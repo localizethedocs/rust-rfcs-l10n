@@ -1,0 +1,491 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1298-incremental-compilation - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: incremental-compilation</li>
+<li>Start Date: 2015-08-04</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/1298">rust-lang/rfcs#1298</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust-roadmap-2017/issues/4">rust-lang/rust-roadmap-2017#4</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Enable the compiler to cache incremental workproducts.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>The goal of incremental compilation is, naturally, to improve build times when making small edits. Any reader who has never felt the need for such a feature is strongly encouraged to attempt hacking on the compiler or servo sometime (naturally, all readers are so encouraged, regardless of their opinion on the need for incremental compilation).</p>
+<h3 id="basic-usage"><a class="header" href="#basic-usage">Basic usage</a></h3>
+<p>The basic usage will be that one enables incremental compilation using a compiler flag like <code>-C incremental-compilation=TMPDIR</code>. The <code>TMPDIR</code> directory is intended to be an empty directory that the compiler can use to store intermediate by-products; the compiler will automatically “GC” this directory, deleting older files that are no longer relevant and creating new ones.</p>
+<h3 id="high-level-design"><a class="header" href="#high-level-design">High-level design</a></h3>
+<p>The high-level idea is that we will track the following intermediate workproducts for every function (and, indeed, for other kinds of items as well, but functions are easiest to describe):</p>
+<ul>
+<li>External signature
+<ul>
+<li>For a function, this would include the types of its arguments, where-clauses declared on the function, and so forth.</li>
+</ul>
+</li>
+<li>MIR
+<ul>
+<li>The MIR represents the type-checked statements in the body, in simplified forms. It is described by <a href="https://github.com/rust-lang/rfcs/pull/1211">RFC #1211</a>. As the MIR is not fully implemented, this is a non-trivial dependency. We could instead use the existing annotated HIR, however that would require a larger effort in terms of porting and adapting data structures to an incremental setting.  Using the MIR simplifies things in this respect.</li>
+</ul>
+</li>
+<li>Object files
+<ul>
+<li>This represents the final result of running LLVM. It may be that the best strategy is to “cache” compiled code in the form of an rlib that is progressively patched, or it may be easier to store individual <code>.o</code> files that must be relinked (anyone who has worked in a substantial C++ project can attest, however, that linking can take a non-trivial amount of time).</li>
+</ul>
+</li>
+</ul>
+<p>Of course, the key to any incremental design is to determine what must be changed. This can be encoded in a <em>dependency graph</em>. This graph connects the various bits of the HIR to the external products (signatures, MIR, and object files). It is of the utmost importance that this dependency graph is complete: if edges are missing, the result will be obscure errors where changes are not fully propagated, yielding inexplicable behavior at runtime. This RFC proposes an automatic scheme based on encapsulation.</p>
+<h4 id="interaction-with-lints-and-compiler-plugins"><a class="header" href="#interaction-with-lints-and-compiler-plugins">Interaction with lints and compiler plugins</a></h4>
+<p>Although rustc does not yet support compiler plugins through a stable interface, we have long planned to allow for custom lints, syntax extensions, and other sorts of plugins. It would be nice therefore to be able to accommodate such plugins in the design, so that their inputs can be tracked and accounted for as well.</p>
+<h3 id="interaction-with-optimization"><a class="header" href="#interaction-with-optimization">Interaction with optimization</a></h3>
+<p>It is important to clarify, though, that this design does not attempt to enable full optimizing for incremental compilation; indeed the two are somewhat at odds with one another, as full optimization may perform inlining and inter-function analysis, which can cause small edits in one function to affect the generated code of another. This situation is further exacerbated by the fact that LLVM does not provide any way to track these sorts of dependencies (e.g., one cannot even determine what inlining took place, though @dotdash suggested a clever trick of using llvm lifetime hints). Strategies for handling this are discussed in the <a href="#optimization">Optimization section</a> below.</p>
+<h2 id="detailed-design"><a class="header" href="#detailed-design">Detailed design</a></h2>
+<p>We begin with a high-level execution plan, followed by sections that explore aspects of the plan in more detail. The high-level summary includes links to each of the other sections.</p>
+<h3 id="high-level-execution-plan"><a class="header" href="#high-level-execution-plan">High-level execution plan</a></h3>
+<p>Regardless of whether it is invoked in incremental compilation mode or not, the compiler will always parse and macro expand the entire crate, resulting in a HIR tree. Once we have a complete HIR tree, and if we are invoked in incremental compilation mode, the compiler will then try to determine which parts of the crate have changed since the last execution. For each item, we compute a <a href="#defid">(mostly) stable id</a> based primarily on the item’s name and containing module. We then compute a hash of its contents and compare that hash against the hash that the item had in the compilation (if any).</p>
+<p>Once we know which items have changed, we consult a <a href="#depgraph">dependency graph</a> to tell us which artifacts are still usable. These artifacts can take the form of serializing MIR graphs, LLVM IR, compiled object code, and so forth. The dependency graph tells us which bits of AST contributed to each artifact. It is constructed by dynamically monitoring what the compiler accesses during execution.</p>
+<p>Finally, we can begin execution. The compiler is currently structured in a series of passes, each of which walks the entire AST. We do not need to change this structure to enable incremental compilation. Instead, we continue to do every pass as normal, but when we come to an item for which we have a pre-existing artifact (for example, if we are type-checking a fn that has not changed since the last execution), we can simply skip over that fn instead. Similar strategies can be used to enable lazy or parallel compilation at later times. (Eventually, though, it might be nice to restructure the compiler so that it operates in more of a demand driven style, rather than a series of sweeping passes.)</p>
+<p>When we come to the final LLVM stages, we must <a href="#optimization">separate the functions into distinct “codegen units”</a> for the purpose of LLVM code generation. This will build on the existing “codegen-units” used for parallel code generation. LLVM may perform inlining or interprocedural analysis within a unit, but not across units, which limits the amount of reoptimization needed when one of those functions changes.</p>
+<p>Finally, the RFC closes with a discussion of <a href="#testing">testing strategies</a> we can use to help avoid bugs due to incremental compilation.</p>
+<h4 id="staging"><a class="header" href="#staging">Staging</a></h4>
+<p>One important question is how to stage the incremental compilation work. That is, it’d be nice to start seeing some benefit as soon as possible. One possible plan is as follows:</p>
+<ol>
+<li>Implement stable def-ids (in progress, nearly complete).</li>
+<li>Implement the dependency graph and tracking system (started).</li>
+<li>Experiment with distinct modularization schemes to find the one which gives the best fragmentation with minimal performance impact. Or, at least, implement something finer-grained than today’s codegen-units.</li>
+<li>Persist compiled object code only.</li>
+<li>Persist intermediate MIR and generated LLVM as well.</li>
+</ol>
+<p>The most notable staging point here is that we can begin by just saving object code, and then gradually add more artifacts that get saved. The effect of saving fewer things (such as only saving object code) will simply be to make incremental compilation somewhat less effective, since we will be forced to re-type-check and re-trans functions where we might have gotten away with only generating new object code. However, this is expected to be a second order effect overall, particularly since LLVM optimization time can be a very large portion of compilation.</p>
+<p><a id="defid"></a></p>
+<h3 id="handling-defids"><a class="header" href="#handling-defids">Handling DefIds</a></h3>
+<p>In order to correlate artifacts between compilations, we need some stable way to name items across compilations (and across crates).  The compiler currently uses something called a <code>DefId</code> to identify each item. However, these ids today are based on a node-id, which is just an index into the HIR and hence will change whenever <em>anything</em> preceding it in the HIR changes. We need to make the <code>DefId</code> for an item independent of changes to other items.</p>
+<p>Conceptually, the idea is to change <code>DefId</code> into the pair of a crate and a path:</p>
+<pre><code>DEF_ID = (CRATE, PATH)
+CRATE = &lt;crate identifier&gt;
+PATH = PATH_ELEM | PATH :: PATH_ELEM
+PATH_ELEM = (PATH_ELEM_DATA, &lt;disambiguating integer&gt;)
+PATH_ELEM_DATA = Crate(ID)
+               | Mod(ID)
+               | Item(ID)
+               | TypeParameter(ID)
+               | LifetimeParameter(ID)
+               | Member(ID)
+               | Impl
+               | ...
+</code></pre>
+<p>However, rather than actually store the path in the compiler, we will instead intern the paths in the <code>CStore</code>, and the <code>DefId</code> will simply store an integer. So effectively the <code>node</code> field of <code>DefId</code>, which currently indexes into the HIR of the appropriate crate, becomes an index into the crate’s list of paths.</p>
+<p>For the most part, these paths match up with user’s intuitions. So a struct <code>Foo</code> declared in a module <code>bar</code> would just have a path like <code>bar::Foo</code>. However, the paths are also able to express things for which there is no syntax, such as an item declared within a function body.</p>
+<h4 id="disambiguation"><a class="header" href="#disambiguation">Disambiguation</a></h4>
+<p>For the most part, paths should naturally be unique. However, there are some cases where a single parent may have multiple children with the same path. One case would be erroneous programs, where there are (e.g.) two structs declared with the same name in the same module. Another is that some items, such as impls, do not have a name, and hence we cannot easily distinguish them. Finally, it is possible to declare multiple functions with the same name within function bodies:</p>
+<pre><code class="language-rust">fn foo() {
+    {
+        fn bar() { }
+    }
+
+    {
+        fn bar() { }
+    }
+}</code></pre>
+<p>All of these cases are handled by a simple <em>disambiguation</em> mechanism. The idea is that we will assign a path to each item as we traverse the HIR. If we find that a single parent has two children with the same name, such as two impls, then we simply assign them unique integers in the order that they appear in the program text. For example, the following program would use the paths shown (I’ve elided the disambiguating integer except where it is relevant):</p>
+<pre><code class="language-rust">mod foo {               // Path: &lt;root&gt;::foo
+    pub struct Type { } // Path: &lt;root&gt;::foo::Type
+    impl Type {         // Path: &lt;root&gt;::foo::(&lt;impl&gt;,0)
+        fn bar() {..}   // Path: &lt;root&gt;::foo::(&lt;impl&gt;,0)::bar
+    }
+    impl Type { }       // Path: &lt;root&gt;::foo::(&lt;impl&gt;,1)
+}</code></pre>
+<p>Note that the impls were arbitrarily assigned indices based on the order in which they appear. This does mean that reordering impls may cause spurious recompilations. We can try to mitigate this somewhat by making the path entry for an impl include some sort of hash for its header or its contents, but that will be something we can add later.</p>
+<p><em>Implementation note:</em> Refactoring DefIds in this way is a large task. I’ve made several attempts at doing it, but my latest branch appears to be working out (it is not yet complete). As a side benefit, I’ve uncovered a few fishy cases where we using the node id from external crates to index into the local crate’s HIR map, which is certainly incorrect. –nmatsakis</p>
+<p><a id="depgraph"></a></p>
+<h3 id="identifying-and-tracking-dependencies"><a class="header" href="#identifying-and-tracking-dependencies">Identifying and tracking dependencies</a></h3>
+<h4 id="core-idea-a-fine-grained-dependency-graph"><a class="header" href="#core-idea-a-fine-grained-dependency-graph">Core idea: a fine-grained dependency graph</a></h4>
+<p>Naturally any form of incremental compilation requires a detailed understanding of how each work item is dependent on other work items. This is most readily visualized as a dependency graph; the finer-grained the nodes and edges in this graph, the better. For example, consider a function <code>foo</code> that calls a function <code>bar</code>:</p>
+<pre><code class="language-rust">fn foo() {
+    ...
+    bar();
+    ...
+}</code></pre>
+<p>Now imagine that the body (but not the external signature) of <code>bar</code> changes. Do we need to type-check <code>foo</code> again? Of course not: <code>foo</code> only cares about the signature of <code>bar</code>, not its body. For the compiler to understand this, though, we’ll need to create distinct graph nodes for the signature and body of each function.</p>
+<p>(Note that our policy of making “external signatures” fully explicit is helpful here. If we supported, e.g., return type inference, than it would be harder to know whether a change to <code>bar</code> means <code>foo</code> must be recompiled.)</p>
+<h4 id="categories-of-nodes"><a class="header" href="#categories-of-nodes">Categories of nodes</a></h4>
+<p>This section gives a kind of “first draft” of the set of graph nodes/edges that we will use. It is expected that the full set of nodes/edges will evolve in the course of implementation (and of course over time as well).  In particular, some parts of the graph as presented here are intentionally quite coarse and we envision that the graph will be gradually more fine-grained.</p>
+<p>The nodes fall into the following categories:</p>
+<ul>
+<li><strong>HIR nodes.</strong> Represent some portion of the input HIR. For example, the body of a fn as a HIR node. These are the inputs to the entire compilation process.
+<ul>
+<li>Examples:
+<ul>
+<li><code>SIG(X)</code> would represent the signature of some fn item <code>X</code> that the user wrote (i.e., the names of the types, where-clauses, etc)</li>
+<li><code>BODY(X)</code> would be the body of some fn item <code>X</code></li>
+<li>and so forth</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Metadata nodes.</strong> These represent portions of the metadata from another crate. Each piece of metadata will include a hash of its contents. When we need information about an external item, we load that info out of the metadata and add it into the IR nodes below; this can be represented in the graph using edges. This means that incremental compilation can also work across crates.</li>
+<li><strong>IR nodes.</strong> Represent some portion of the computed IR. For example, the MIR representation of a fn body, or the <code>ty</code> representation of a fn signature. These also frequently correspond to a single entry in one of the various compiler hashmaps. These are the outputs (and intermediate steps) of the compilation process
+<ul>
+<li>Examples:
+<ul>
+<li><code>ITEM_TYPE(X)</code> – entry in the obscurely named <code>tcache</code> table for <code>X</code> (what is returned by the rather-more-clearly-named <code>lookup_item_type</code>)</li>
+<li><code>PREDICATES(X)</code> – entry in the <code>predicates</code> table</li>
+<li><code>ADT(X)</code> – ADT node for a struct (this may want to be more fine-grained, particularly to cover the ivars)</li>
+<li><code>MIR(X)</code> – the MIR for the item <code>X</code></li>
+<li><code>LLVM(X)</code> – the LLVM IR for the item <code>X</code></li>
+<li><code>OBJECT(X)</code> – the object code generated by compiling some item <code>X</code>; the precise way that this is saved will depend on whether we use <code>.o</code> files that are linked together, or if we attempt to amend the shared library in place.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Procedure nodes.</strong> These represent various passes performed by the compiler. For example, the act of type checking a fn body, or the act of constructing MIR for a fn body. These are the “glue” nodes that wind up reading the inputs and creating the outputs, and hence which ultimately tie the graph together.
+<ul>
+<li>Examples:
+<ul>
+<li><code>COLLECT(X)</code> – the collect code executing on item <code>X</code></li>
+<li><code>WFCHECK(X)</code> – the wfcheck code executing on item <code>X</code></li>
+<li><code>BORROWCK(X)</code> – the borrowck code executing on item <code>X</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>To see how this all fits together, let’s consider the graph for a simple example:</p>
+<pre><code class="language-rust">fn foo() {
+    bar();
+}
+
+fn bar() {
+}</code></pre>
+<p>This might generate a graph like the following (the following sections will describe how this graph is constructed). Note that this is not a complete graph, it only shows the data needed to produce <code>MIR(foo)</code>.</p>
+<pre><code>BODY(foo) ----------------------------&gt; TYPECK(foo) --&gt; MIR(foo)
+                                          ^ ^ ^ ^         |
+SIG(foo) ----&gt; COLLECT(foo)               | | | |         |
+                 |                        | | | |         v
+                 +--&gt; ITEM_TYPE(foo) -----+ | | |      LLVM(foo)
+                 +--&gt; PREDICATES(foo) ------+ | |         |
+                                              | |         |
+SIG(bar) ----&gt; COLLECT(bar)                   | |         v
+                 |                            | |     OBJECT(foo)
+                 +--&gt; ITEM_TYPE(bar) ---------+ |
+                 +--&gt; PREDICATES(bar) ----------+
+</code></pre>
+<p>As you can see, this graph indicates that if the signature of either function changes, we will need to rebuild the MIR for <code>foo</code>. But there is no path from the body of <code>bar</code> to the MIR for foo, so changes there need not trigger a rebuild (we are assuming here that <code>bar</code> is not inlined into <code>foo</code>; see the <a href="#optimization">section on optimizations</a> for more details on how to handle those sorts of dependencies).</p>
+<h4 id="building-the-graph"><a class="header" href="#building-the-graph">Building the graph</a></h4>
+<p>It is very important the dependency graph contain <em>all</em> edges. If any edges are missing, it will mean that we will get inconsistent builds, where something should have been rebuilt what was not. Hand-coding a graph like this, therefore, is probably not the best choice – we might get it right at first, but it’s easy to for such a setup to fall out of sync as the code is edited. (For example, if a new table is added, or a function starts reading data that it didn’t before.)</p>
+<p>Another consideration is compiler plugins. At present, of course, we don’t have a stable API for such plugins, but eventually we’d like to support a rich family of them, and they may want to participate in the incremental compilation system as well. So we need to have an idea of what data a plugin accesses and modifies, and for what purpose.</p>
+<p>The basic strategy then is to build the graph dynamically with an API that looks something like this:</p>
+<ul>
+<li><code>push_procedure(procedure_node)</code></li>
+<li><code>pop_procedure(procedure_node)</code></li>
+<li><code>read_from(data_node)</code></li>
+<li><code>write_to(data_node)</code></li>
+</ul>
+<p>Here, the <code>procedure_node</code> arguments are one of the procedure labels above (like <code>COLLECT(X)</code>), and the <code>data_node</code> arguments are either HIR or IR nodes (e.g., <code>SIG(X)</code>, <code>MIR(X)</code>).</p>
+<p>The idea is that we maintain for each thread a stack of active procedures. When <code>push_procedure</code> is called, a new entry is pushed onto that stack, and when <code>pop_procedure</code> is called, an entry is popped. When <code>read_from(D)</code> is called, we add an edge from <code>D</code> to the top of the stack (it is an error if the stack is empty). Similarly, <code>write_to(D)</code> adds an edge from the top of the stack to <code>D</code>.</p>
+<p>Naturally it is easy to misuse the above methods: one might forget to push/pop a procedure at the right time, or fail to invoke read/write. There are a number of refactorings we can do on the compiler to make this scheme more robust.</p>
+<h5 id="procedures"><a class="header" href="#procedures">Procedures</a></h5>
+<p>Most of the compiler passes operate an item at a time. Nonetheless, they are largely encoded using the standard visitor, which walks all HIR nodes. We can refactor most of them to instead use an outer visitor, which walks items, and an inner visitor, which walks a particular item. (Many passes, such as borrowck, already work this way.) This outer visitor will be parameterized with the label for the pass, and will automatically push/pop procedure nodes as appropriate. This means that as long as you base your pass on the generic framework, you don’t really have to worry.</p>
+<p>In general, while I described the general case of a stack of procedure nodes, it may be desirable to try and maintain the invariant that there is only ever one procedure node on the stack at a time. Otherwise, failing to push/pop a procedure at the right time could result in edges being added to the wrong procedure. It is likely possible to refactor things to maintain this invariant, but that has to be determined as we go.</p>
+<h5 id="ir-nodes"><a class="header" href="#ir-nodes">IR nodes</a></h5>
+<p>Adding edges to the IR nodes that represent the compiler’s intermediate byproducts can be done by leveraging privacy. The idea is to enforce the use of accessors to the maps and so forth, rather than allowing direct access. These accessors will call the <code>read_from</code> and <code>write_to</code> methods as appropriate to add edges to/from the current active procedure.</p>
+<h5 id="hir-nodes"><a class="header" href="#hir-nodes">HIR nodes</a></h5>
+<p>HIR nodes are a bit trickier to encapsulate. After all, the HIR map itself gives access to the root of the tree, which in turn gives access to everything else – and encapsulation is harder to enforce here.</p>
+<p>Some experimentation will be required here, but the rough plan is to:</p>
+<ol>
+<li>Leveraging the HIR, move away from storing the HIR as one large tree, and instead have a tree of items, with each item containing only its own content.
+<ul>
+<li>This way, giving access to the HIR node for an item doesn’t implicitly give access to all of its subitems.</li>
+<li>Ideally this would match precisely the HIR nodes we setup, which means that e.g. a function would have a subtree corresponding to its signature, and a separating subtree corresponding to its body.</li>
+<li>We can still register the lexical nesting of items by linking “indirectly” via a <code>DefId</code>.</li>
+</ul>
+</li>
+<li>Annotate the HIR map accessor methods so that they add appropriate read/write edges.</li>
+</ol>
+<p>This will integrate with the “default visitor” described under procedure nodes. This visitor can hand off just an opaque id for each item, requiring the pass itself to go through the map to fetch the actual HIR, thus triggering a read edge (we might also bake this behavior into the visitor for convenience).</p>
+<h4 id="persisting-the-graph"><a class="header" href="#persisting-the-graph">Persisting the graph</a></h4>
+<p>Once we’ve built the graph, we have to persist it, along with some associated information. The idea is that the compiler, when invoked, will be supplied with a directory. It will store temporary files in there. We could also consider extending the design to support use by multiple simultaneous compiler invocations, which could mean incremental compilation results even across branches, much like ccache (but this may require tweaks to the GC strategy).</p>
+<p>Once we get to the point of persisting the graph, we don’t need the full details of the graph. The process nodes, in particular, can be removed. They exist only to create links between the other nodes. To remove them, we first compute the transitive reachability relationship and then drop the process nodes out of the graph, leaving only the HIR nodes (inputs) and IR nodes (output).  (In fact, we only care about the IR nodes that we intend to persist, which may be only a subset of the IR nodes, so we can drop those that we do not plan to persist.)</p>
+<p>For each HIR node, we will hash the HIR and store that alongside the node. This indicates precisely the state of the node at the time. Note that we only need to hash the HIR itself; contextual information (like <code>use</code> statements) that are needed to interpret the text will be part of a separate HIR node, and there should be edges from that node to the relevant compiler data structures (such as the name resolution tables).</p>
+<p>For each IR node, we will serialize the relevant information from the table and store it. The following data will need to be serialized:</p>
+<ul>
+<li>Types, regions, and predicates</li>
+<li>ADT definitions</li>
+<li>MIR definitions</li>
+<li>Identifiers</li>
+<li>Spans</li>
+</ul>
+<p>This list was gathered primarily by spelunking through the compiler. It is probably somewhat incomplete. The appendix below lists an exhaustive exploration.</p>
+<h4 id="reusing-and-garbage-collecting-artifacts"><a class="header" href="#reusing-and-garbage-collecting-artifacts">Reusing and garbage collecting artifacts</a></h4>
+<p>The general procedure when the compiler starts up in incremental mode will be to parse and macro expand the input, create the corresponding set of HIR nodes, and compute their hashes. We can then load the previous dependency graph and reconcile it against the current state:</p>
+<ul>
+<li>If the dep graph contains a HIR node that is no longer present in the source, that node is queued for deletion.</li>
+<li>If the same HIR node exists in both the dep graph and the input, but the hash has changed, that node is queued for deletion.</li>
+<li>If there is a HIR node that exists only in the input, it is added to the dep graph with no dependencies.</li>
+</ul>
+<p>We then delete the transitive closure of nodes queued for deletion (that is, all the HIR nodes that have changed or been removed, and all nodes reachable from those HIR nodes). As part of the deletion process, we remove whatever on disk artifact that may have existed.</p>
+<p><a id="span"></a></p>
+<h4 id="handling-spans"><a class="header" href="#handling-spans">Handling spans</a></h4>
+<p>There are times when the precise span of an item is a significant part of its metadata. For example, debuginfo needs to identify line numbers and so forth. However, editing one fn will affect the line numbers for all subsequent fns in the same file, and it’d be best if we can avoid recompiling all of them. Our plan is to phase span support in incrementally:</p>
+<ol>
+<li>Initially, the AST hash will include the filename/line/column, which does mean that later fns in the same file will have to be recompiled (somewhat unnnecessarily).</li>
+<li>Eventually, it would be better to encode spans by identifying a particular AST node (relative to the root of the item). Since we are hashing the structure of the AST, we know the AST from the previous and current compilation will match, and thus we can compute the current span by finding the corresponding AST node and loading its span. This will require some refactoring and work however.</li>
+</ol>
+<p><a id="optimization"></a></p>
+<h3 id="optimization-and-codegen-units"><a class="header" href="#optimization-and-codegen-units">Optimization and codegen units</a></h3>
+<p>There is an inherent tension between incremental compilation and full optimization. Full optimization may perform inlining and inter-function analysis, which can cause small edits in one function to affect the generated code of another. This situation is further exacerbated by the fact that LLVM does not provide any means to track when one function was inlined into another, or when some sort of interprocedural analysis took place (to the best of our knowledge, at least).</p>
+<p>This RFC proposes a simple mechanism for permitting aggressive optimization, such as inlining, while also supporting reasonable incremental compilation. The idea is to create <em>codegen units</em> that compartmentalize closely related functions (for example, on a module boundary). This means that those compartmentalized functions may analyze one another, while treating functions from other compartments as opaque entities. This means that when a function in compartment X changes, we know that functions from other compartments are unaffected and their object code can be reused. Moreover, while the other functions in compartment X must be re-optimized, we can still reuse the existing LLVM IR. (These are the same codegen units as we use for parallel codegen, but setup differently.)</p>
+<p>In terms of the dependency graph, we would create one IR node representing the codegen unit. This would have the object code as an associated artifact. We would also have edges from each component of the codegen unit. As today, generic or inlined functions would not belong to any codegen unit, but rather would be instantiated anew into each codegen unit in which they are (transitively) referenced.</p>
+<p>There is an analogy here with C++, which naturally faces the same problems. In that setting, templates and inlineable functions are often placed into header files. Editing those header files naturally triggers more recompilation. The compiler could employ a similar strategy by replicating things that look like good candidates for inlining into each module; call graphs and profiling information may be a good input for such heuristics.</p>
+<p><a id="testing"></a></p>
+<h3 id="testing-strategy"><a class="header" href="#testing-strategy">Testing strategy</a></h3>
+<p>If we are not careful, incremental compilation has the potential to produce an infinite stream of irreproducible bug reports, so it’s worth considering how we can best test this code.</p>
+<h4 id="regression-tests"><a class="header" href="#regression-tests">Regression tests</a></h4>
+<p>The first and most obvious piece of infrastructure is something for reliable regression testing. The plan is simply to have a series of sources and patches. The source will have each patch applied in sequence, rebuilding (incrementally) at each point. We can then check that (a) we only rebuilt what we expected to rebuild and (b) compare the result with the result of a fresh build from scratch.  This allows us to build up tests for specific scenarios or bug reports, but doesn’t help with <em>finding</em> bugs in the first place.</p>
+<h4 id="replaying-cratesio-versions-and-git-history"><a class="header" href="#replaying-cratesio-versions-and-git-history">Replaying crates.io versions and git history</a></h4>
+<p>The next step is to search across crates.io for consecutive releases. For a given package, we can checkout version <code>X.Y</code> and then version <code>X.(Y+1)</code> and check that incrementally building from one to the other is successful and that all tests still yield the same results as before (pass or fail).</p>
+<p>A similar search can be performed across git history, where we identify pairs of consecutive commits. This has the advantage of being more fine-grained, but the disadvantage of being a MUCH larger search space.</p>
+<h4 id="fuzzing"><a class="header" href="#fuzzing">Fuzzing</a></h4>
+<p>The problem with replaying crates.io versions and even git commits is that they are probably much larger changes than the typical recompile. Another option is to use fuzzing, making “innocuous” changes that should trigger a recompile. Fuzzing is made easier here because we have an oracle – that is, we can check that the results of recompiling incrementally match the results of compiling from scratch. It’s also not necessary that the edits are valid Rust code, though we should test that too – in particular, we want to test that the proper errors are reported when code is invalid, as well.  @nrc also suggested a clever hybrid, where we use git commits as a source for the fuzzer’s edits, gradually building up the commit.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>The primary drawback is that incremental compilation may introduce a new vector for bugs. The design mitigates this concern by attempting to make the construction of the dependency graph as automated as possible. We also describe automated testing strategies.</p>
+<h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
+<p>This design is an evolution from <a href="https://github.com/rust-lang/rfcs/pull/594">RFC 594</a>.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p>None.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="1291-promote-libc.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="1300-intrinsic-semantics.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="1291-promote-libc.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="1300-intrinsic-semantics.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

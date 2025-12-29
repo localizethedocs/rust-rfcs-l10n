@@ -1,0 +1,699 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1845-shared-from-slice - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>shared_from_slice</code></li>
+<li>Start Date: 2017-01-05</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/1845">rust-lang/rfcs#1845</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/40475">rust-lang/rust#40475</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>This is an RFC to add the APIs: <code>From&lt;&amp;[T]&gt; for Rc&lt;[T]&gt;</code> where <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html"><code>T: Clone</code></a> or <a href="https://doc.rust-lang.org/std/marker/trait.Copy.html"><code>T: Copy</code></a> as well as <code>From&lt;&amp;str&gt; for Rc&lt;str&gt;</code>. In addition: <code>From&lt;Vec&lt;T&gt;&gt; for Rc&lt;[T]&gt;</code> and <code>From&lt;Box&lt;T: ?Sized&gt;&gt; for Rc&lt;T&gt;</code> will be added.</p>
+<p>Identical APIs will also be added for <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a>.</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<h3 id="caching-and-string-interning"><a class="header" href="#caching-and-string-interning">Caching and <a href="https://en.wikipedia.org/wiki/String_interning">string interning</a></a></h3>
+<p>These, and especially the latter - i.e: <code>From&lt;&amp;str&gt;</code>, trait implementations of <a href="https://doc.rust-lang.org/std/convert/trait.From.html"><code>From</code></a> are useful when dealing with any form of caching of slices.</p>
+<p>This especially applies to <em>controllable</em> <a href="https://en.wikipedia.org/wiki/String_interning">string interning</a>, where you can cheaply cache strings with a construct such as putting <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a>s into <a href="https://doc.rust-lang.org/std/collections/struct.HashSet.html"><code>HashSet</code></a>s, i.e: <code>HashSet&lt;Rc&lt;str&gt;&gt;</code>.</p>
+<p>An example of string interning:</p>
+<pre><code class="language-rust">#![feature(ptr_eq)]
+#![feature(shared_from_slice)]
+use std::rc::Rc;
+use std::collections::HashSet;
+use std::mem::drop;
+
+fn cache_str(cache: &amp;mut HashSet&lt;Rc&lt;str&gt;&gt;, input: &amp;str) -&gt; Rc&lt;str&gt; {
+     // If the input hasn't been cached, do it:
+     if !cache.contains(input) {
+         cache.insert(input.into());
+     }
+
+    // Retrieve the cached element.
+    cache.get(input).unwrap().clone()
+}
+
+let first   = "hello world!";
+let second  = "goodbye!";
+let mut set = HashSet::new();
+
+// Cache the slices:
+let rc_first  = cache_str(&amp;mut set, first);
+let rc_second = cache_str(&amp;mut set, second);
+let rc_third  = cache_str(&amp;mut set, second);
+
+// The contents match:
+assert_eq!(rc_first.as_ref(),  first);
+assert_eq!(rc_second.as_ref(), second);
+assert_eq!(rc_third.as_ref(),  rc_second.as_ref());
+
+// It was cached:
+assert_eq!(set.len(), 2);
+drop(set);
+assert_eq!(Rc::strong_count(&amp;rc_first),  1);
+assert_eq!(Rc::strong_count(&amp;rc_second), 2);
+assert_eq!(Rc::strong_count(&amp;rc_third),  2);
+assert!(Rc::ptr_eq(&amp;rc_second, &amp;rc_third));</code></pre>
+<p>One could imagine a scenario where you have an <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree">AST</a> with string literals that gets repeated a lot in it. For example, <a href="https://www.w3.org/TR/xml-names11/">namespaces</a> in <a href="https://en.wikipedia.org/wiki/XML">XML</a> documents tends to be repeated many times.</p>
+<p>The <a href="https://kmcallister.github.io/docs/html5ever/tendril/struct.Tendril.html">tendril</a> crate does one form of interning:</p>
+<blockquote>
+<p>Buffer sharing is accomplished through thread-local (non-atomic) reference counting</p>
+</blockquote>
+<p>It is useful to provide an implementation of <code>From&lt;&amp;[T]&gt;</code> as well, and not just for <a href="https://doc.rust-lang.org/std/primitive.str.html"><code>&amp;str</code></a>, because one might deal with non-utf8 strings, i.e: <code>&amp;[u8]</code>. One could potentially reuse this for <a href="https://doc.rust-lang.org/std/path/struct.Path.html"><code>Path</code></a>, <a href="https://doc.rust-lang.org/std/ffi/struct.OsStr.html"><code>OsStr</code></a>.</p>
+<h3 id="safe-abstraction-for-unsafe-code"><a class="header" href="#safe-abstraction-for-unsafe-code">Safe abstraction for <code>unsafe</code> code.</a></h3>
+<p>Providing these implementations in the current state of Rust requires substantial amount of <code>unsafe</code> code. Therefore, for the sake of confidence in that the implementations are safe - it is best done in the standard library.</p>
+<h3 id="rcbox-is-not-public"><a class="header" href="#rcbox-is-not-public"><a href="https://doc.rust-lang.org/src/alloc/rc.rs.html#242-246"><code>RcBox</code></a> is not public</a></h3>
+<p>Furthermore, since <a href="https://doc.rust-lang.org/src/alloc/rc.rs.html#242-246"><code>RcBox</code></a> is not exposed publicly from <a href="https://doc.rust-lang.org/std/rc/index.html"><code>std::rc</code></a>, one can’t make an implementation outside of the standard library for this without making assumptions about the internal layout of <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a>. The alternative is to roll your own implementation of <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a> in its entirety - but this in turn requires using a lot of feature gates, which makes using this on stable Rust in the near future unfeasible.</p>
+<h3 id="for-arc"><a class="header" href="#for-arc">For <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a></a></h3>
+<p>For <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a> the synchronization overhead of doing <code>.clone()</code> is probably greater than the overhead of doing <code>Arc&lt;Box&lt;str&gt;&gt;</code>. But once the clones have been made, <code>Arc&lt;str&gt;</code> would probably be cheaper to dereference due to locality.</p>
+<p>Most of the motivations for <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a> applies to <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a> as well, but the use cases might be fewer. Therefore, the case for adding the same API for <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a> is less clear. One could perhaps use it for multi threaded interning with a type such as: <code>Arc&lt;Mutex&lt;HashSet&lt;Arc&lt;str&gt;&gt;&gt;&gt;</code>.</p>
+<p>Because of the similarities between the layout of <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a> and <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a>, almost identical implementations could be added for <code>From&lt;&amp;[T]&gt; for Arc&lt;[T]&gt;</code> and <code>From&lt;&amp;str&gt; for Arc&lt;str&gt;</code>. It would also be consistent to do so.</p>
+<p>Taking all of this into account, adding the APIs for <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a> is warranted.</p>
+<h2 id="詳細設計"><a class="header" href="#詳細設計">詳細設計</a></h2>
+<h3 id="theres-already-an-implementation"><a class="header" href="#theres-already-an-implementation">There’s already an implementation</a></h3>
+<p>There is <a href="https://doc.rust-lang.org/nightly/src/alloc/rc.rs.html#417-440">already an implementation</a> of sorts <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>alloc::rc</code></a> for this. But it is hidden under the feature gate <code>rustc_private</code>, which, to the authors knowledge, will never be stabilized. The implementation is, on this day, as follows:</p>
+<pre><code class="language-rust">impl Rc&lt;str&gt; {
+    /// Constructs a new `Rc&lt;str&gt;` from a string slice.
+    #[doc(hidden)]
+    #[unstable(feature = "rustc_private",
+               reason = "for internal use in rustc",
+               issue = "0")]
+    pub fn __from_str(value: &amp;str) -&gt; Rc&lt;str&gt; {
+        unsafe {
+            // Allocate enough space for `RcBox&lt;str&gt;`.
+            let aligned_len = 2 + (value.len() + size_of::&lt;usize&gt;() - 1) / size_of::&lt;usize&gt;();
+            let vec = RawVec::&lt;usize&gt;::with_capacity(aligned_len);
+            let ptr = vec.ptr();
+            forget(vec);
+            // Initialize fields of `RcBox&lt;str&gt;`.
+            *ptr.offset(0) = 1; // strong: Cell::new(1)
+            *ptr.offset(1) = 1; // weak: Cell::new(1)
+            ptr::copy_nonoverlapping(value.as_ptr(), ptr.offset(2) as *mut u8, value.len());
+            // Combine the allocation address and the string length into a fat pointer to `RcBox`.
+            let rcbox_ptr: *mut RcBox&lt;str&gt; = mem::transmute([ptr as usize, value.len()]);
+            assert!(aligned_len * size_of::&lt;usize&gt;() == size_of_val(&amp;*rcbox_ptr));
+            Rc { ptr: Shared::new(rcbox_ptr) }
+        }
+    }
+}</code></pre>
+<p>The idea is to use the bulk of the implementation of that, generalize it to <a href="https://doc.rust-lang.org/std/collections/struct.HashSet.html"><code>Vec</code></a>s and <a href="https://doc.rust-lang.org/std/primitive.slice.html">slices</a>, specialize it for <a href="https://doc.rust-lang.org/std/primitive.str.html"><code>&amp;str</code></a>, provide documentation for both.</p>
+<h3 id="copy-and-clone"><a class="header" href="#copy-and-clone"><a href="https://doc.rust-lang.org/std/marker/trait.Copy.html"><code>Copy</code></a> and <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html"><code>Clone</code></a></a></h3>
+<p>For the implementation of <code>From&lt;&amp;[T]&gt; for Rc&lt;[T]&gt;</code>, <code>T</code> must be <a href="https://doc.rust-lang.org/std/marker/trait.Copy.html"><code>Copy</code></a> if <code>ptr::copy_nonoverlapping</code> is used because this relies on it being memory safe to simply copy the bits over. If instead, <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html"><code>T::clone()</code></a> is used in a loop, then <code>T</code> can simply be <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html"><code>Clone</code></a> instead. This is however slower than using <code>ptr::copy_nonoverlapping</code>.</p>
+<h3 id="vec-and-box"><a class="header" href="#vec-and-box"><a href="https://doc.rust-lang.org/std/collections/struct.HashSet.html"><code>Vec</code></a> and <a href="https://doc.rust-lang.org/alloc/boxed/struct.Box.html"><code>Box</code></a></a></h3>
+<p>For the implementation of <code>From&lt;Vec&lt;T&gt;&gt; for Rc&lt;[T]&gt;</code>, <code>T</code> need not be <a href="https://doc.rust-lang.org/std/marker/trait.Copy.html"><code>Copy</code></a>, nor <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html"><code>Clone</code></a>. The input vector already owns valid <code>T</code>s, and these elements are simply copied over bit for bit. After copying all elements, they are no longer owned in the vector, which is then deallocated. Unfortunately, at this stage, the memory used by the vector can not be reused - this could potentially be changed in the future.</p>
+<p>This is similar for <a href="https://doc.rust-lang.org/alloc/boxed/struct.Box.html"><code>Box</code></a>.</p>
+<h3 id="suggested-implementation"><a class="header" href="#suggested-implementation">Suggested implementation</a></h3>
+<p>The actual implementations could / will look something like:</p>
+<h4 id="for-rc"><a class="header" href="#for-rc">For <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a></a></h4>
+<pre><code class="language-rust">#[inline(always)]
+unsafe fn slice_to_rc&lt;'a, T, U, W, C&gt;(src: &amp;'a [T], cast: C, write_elems: W)
+   -&gt; Rc&lt;U&gt;
+where U: ?Sized,
+      W: FnOnce(&amp;mut [T], &amp;[T]),
+      C: FnOnce(*mut RcBox&lt;[T]&gt;) -&gt; *mut RcBox&lt;U&gt; {
+    // Compute space to allocate for `RcBox&lt;U&gt;`.
+    let susize = mem::size_of::&lt;usize&gt;();
+    let aligned_len = 2 + (mem::size_of_val(src) + susize - 1) / susize;
+
+    // Allocate enough space for `RcBox&lt;U&gt;`.
+    let vec = RawVec::&lt;usize&gt;::with_capacity(aligned_len);
+    let ptr = vec.ptr();
+    forget(vec);
+
+    // Combine the allocation address and the slice length into a
+    // fat pointer to RcBox&lt;[T]&gt;.
+    let rbp = slice::from_raw_parts_mut(ptr as *mut T, src.len())
+                as *mut [T] as *mut RcBox&lt;[T]&gt;;
+
+    // Initialize fields of RcBox&lt;[T]&gt;.
+    (*rbp).strong.set(1);
+    (*rbp).weak.set(1);
+    write_elems(&amp;mut (*rbp).value, src);
+
+    // Recast to RcBox&lt;U&gt; and yield the Rc:
+    let rcbox_ptr = cast(rbp);
+    assert_eq!(aligned_len * susize, mem::size_of_val(&amp;*rcbox_ptr));
+    Rc { ptr: Shared::new(rcbox_ptr) }
+}
+
+#[unstable(feature = "shared_from_slice",
+           reason = "TODO",
+           issue = "TODO")]
+impl&lt;T&gt; From&lt;Vec&lt;T&gt;&gt; for Rc&lt;[T]&gt; {
+    /// Constructs a new `Rc&lt;[T]&gt;` from a `Vec&lt;T&gt;`.
+    /// The allocated space of the `Vec&lt;T&gt;` is not reused,
+    /// but new space is allocated and the old is deallocated.
+    /// This happens due to the internal layout of `Rc`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// let arr = [1, 2, 3];
+    /// let vec = vec![Box::new(1), Box::new(2), Box::new(3)];
+    /// let rc: Rc&lt;[Box&lt;usize&gt;]&gt; = Rc::from(vec);
+    /// assert_eq!(rc.len(), arr.len());
+    /// for (x, y) in rc.iter().zip(&amp;arr) {
+    ///     assert_eq!(**x, *y);
+    /// }
+    /// ```
+    #[inline]
+    fn from(mut vec: Vec&lt;T&gt;) -&gt; Self {
+        unsafe {
+            let rc = slice_to_rc(vec.as_slice(), |p| p, |dst, src|
+                ptr::copy_nonoverlapping(
+                    src.as_ptr(), dst.as_mut_ptr(), src.len())
+            );
+            // Prevent vec from trying to drop the elements:
+            vec.set_len(0);
+            rc
+        }
+    }
+}
+
+#[unstable(feature = "shared_from_slice",
+           reason = "TODO",
+           issue = "TODO")]
+impl&lt;'a, T: Clone&gt; From&lt;&amp;'a [T]&gt; for Rc&lt;[T]&gt; {
+    /// Constructs a new `Rc&lt;[T]&gt;` by cloning all elements from the shared slice
+    /// [`&amp;[T]`][slice]. The length of the reference counted slice will be exactly
+    /// the given [slice].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// #[derive(PartialEq, Clone, Debug)]
+    /// struct Wrap(u8);
+    ///
+    /// let arr = [Wrap(1), Wrap(2), Wrap(3)];
+    /// let rc: Rc&lt;[Wrap]&gt; = Rc::from(arr.as_ref());
+    /// assert_eq!(rc.as_ref(), &amp;arr);   // The elements match.
+    /// assert_eq!(rc.len(), arr.len()); // The lengths match.
+    /// ```
+    ///
+    /// Using the [`Into`][Into] trait:
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// #[derive(PartialEq, Clone, Debug)]
+    /// struct Wrap(u8);
+    ///
+    /// let rc: Rc&lt;[Wrap]&gt; = arr.as_ref().into();
+    /// assert_eq!(rc.as_ref(), &amp;arr);   // The elements match.
+    /// assert_eq!(rc.len(), arr.len()); // The lengths match.
+    /// ```
+    ///
+    /// [Into]: https://doc.rust-lang.org/std/convert/trait.Into.html
+    /// [slice]: https://doc.rust-lang.org/std/primitive.slice.html
+    #[inline]
+    default fn from(slice: &amp;'a [T]) -&gt; Self {
+        unsafe {
+            slice_to_rc(slice, |p| p, |dst, src| {
+                for (d, s) in dst.iter_mut().zip(src) {
+                    ptr::write(d, s.clone())
+                }
+            })
+        }
+    }
+}
+
+#[unstable(feature = "shared_from_slice",
+           reason = "TODO",
+           issue = "TODO")]
+impl&lt;'a, T: Copy&gt; From&lt;&amp;'a [T]&gt; for Rc&lt;[T]&gt; {
+    /// Constructs a new `Rc&lt;[T]&gt;` from a shared slice [`&amp;[T]`][slice].
+    /// All elements in the slice are copied and the length is exactly that of
+    /// the given [slice]. In this case, `T` must be `Copy`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// let arr = [1, 2, 3];
+    /// let rc  = Rc::from(arr);
+    /// assert_eq!(rc.as_ref(), &amp;arr);   // The elements match.
+    /// assert_eq!(rc.len(), arr.len()); // The length is the same.
+    /// ```
+    ///
+    /// Using the [`Into`][Into] trait:
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// let arr          = [1, 2, 3];
+    /// let rc: Rc&lt;[u8]&gt; = arr.as_ref().into();
+    /// assert_eq!(rc.as_ref(), &amp;arr);   // The elements match.
+    /// assert_eq!(rc.len(), arr.len()); // The length is the same.
+    /// ```
+    ///
+    /// [Into]: ../../std/convert/trait.Into.html
+    /// [slice]: ../../std/primitive.slice.html
+    #[inline]
+    fn from(slice: &amp;'a [T]) -&gt; Self {
+        unsafe {
+            slice_to_rc(slice, |p| p, &lt;[T]&gt;::copy_from_slice)
+        }
+    }
+}
+
+#[unstable(feature = "shared_from_slice",
+           reason = "TODO",
+           issue = "TODO")]
+impl&lt;'a&gt; From&lt;&amp;'a str&gt; for Rc&lt;str&gt; {
+    /// Constructs a new `Rc&lt;str&gt;` from a [string slice].
+    /// The underlying bytes are copied from it.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// let slice = "hello world!";
+    /// let rc: Rc&lt;str&gt; = Rc::from(slice);
+    /// assert_eq!(rc.as_ref(), slice);    // The elements match.
+    /// assert_eq!(rc.len(), slice.len()); // The length is the same.
+    /// ```
+    ///
+    /// Using the [`Into`][Into] trait:
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// let slice = "hello world!";
+    /// let rc: Rc&lt;str&gt; = slice.into();
+    /// assert_eq!(rc.as_ref(), slice);    // The elements match.
+    /// assert_eq!(rc.len(), slice.len()); // The length is the same.
+    /// ```
+    ///
+    /// This can be useful in doing [string interning], and caching your strings.
+    ///
+    /// ```
+    /// // For Rc::ptr_eq
+    /// #![feature(ptr_eq)]
+    ///
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    /// use std::collections::HashSet;
+    /// use std::mem::drop;
+    ///
+    /// fn cache_str(cache: &amp;mut HashSet&lt;Rc&lt;str&gt;&gt;, input: &amp;str) -&gt; Rc&lt;str&gt; {
+    ///     // If the input hasn't been cached, do it:
+    ///     if !cache.contains(input) {
+    ///         cache.insert(input.into());
+    ///     }
+    ///
+    ///     // Retrieve the cached element.
+    ///     cache.get(input).unwrap().clone()
+    /// }
+    ///
+    /// let first   = "hello world!";
+    /// let second  = "goodbye!";
+    /// let mut set = HashSet::new();
+    ///
+    /// // Cache the slices:
+    /// let rc_first  = cache_str(&amp;mut set, first);
+    /// let rc_second = cache_str(&amp;mut set, second);
+    /// let rc_third  = cache_str(&amp;mut set, second);
+    ///
+    /// // The contents match:
+    /// assert_eq!(rc_first.as_ref(),  first);
+    /// assert_eq!(rc_second.as_ref(), second);
+    /// assert_eq!(rc_third.as_ref(),  rc_second.as_ref());
+    ///
+    /// // It was cached:
+    /// assert_eq!(set.len(), 2);
+    /// drop(set);
+    /// assert_eq!(Rc::strong_count(&amp;rc_first),  1);
+    /// assert_eq!(Rc::strong_count(&amp;rc_second), 2);
+    /// assert_eq!(Rc::strong_count(&amp;rc_third),  2);
+    /// assert!(Rc::ptr_eq(&amp;rc_second, &amp;rc_third));
+    ///
+    /// [string interning]: https://en.wikipedia.org/wiki/String_interning
+    fn from(slice: &amp;'a str) -&gt; Self {
+        // This is safe since the input was valid utf8 to begin with, and thus
+        // the invariants hold.
+        unsafe {
+            let bytes = slice.as_bytes();
+            slice_to_rc(bytes, |p| p as *mut RcBox&lt;str&gt;, &lt;[u8]&gt;::copy_from_slice)
+        }
+    }
+}
+
+#[unstable(feature = "shared_from_slice",
+           reason = "TODO",
+           issue = "TODO")]
+impl&lt;T: ?Sized&gt; From&lt;Box&lt;T&gt;&gt; for Rc&lt;T&gt; {
+    /// Constructs a new `Rc&lt;T&gt;` from a `Box&lt;T&gt;` where `T` can be unsized.
+    /// The allocated space of the `Box&lt;T&gt;` is not reused,
+    /// but new space is allocated and the old is deallocated.
+    /// This happens due to the internal layout of `Rc`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(shared_from_slice)]
+    /// use std::rc::Rc;
+    ///
+    /// let arr = [1, 2, 3];
+    /// let vec = vec![Box::new(1), Box::new(2), Box::new(3)].into_boxed_slice();
+    /// let rc: Rc&lt;[Box&lt;usize&gt;]&gt; = Rc::from(vec);
+    /// assert_eq!(rc.len(), arr.len());
+    /// for (x, y) in rc.iter().zip(&amp;arr) {
+    ///     assert_eq!(**x, *y);
+    /// }
+    /// ```
+    #[inline]
+    fn from(boxed: Box&lt;T&gt;) -&gt; Self {
+        unsafe {
+            // Compute space to allocate + alignment for `RcBox&lt;T&gt;`.
+            let sizeb  = mem::size_of_val(&amp;*boxed);
+            let alignb = mem::align_of_val(&amp;*boxed);
+            let align  = cmp::max(alignb, mem::align_of::&lt;usize&gt;());
+            let size   = offset_of_unsafe!(RcBox&lt;T&gt;, value) + sizeb;
+
+            // Allocate the space.
+            let alloc  = heap::allocate(size, align);
+
+            // Cast to fat pointer: *mut RcBox&lt;T&gt;.
+            let bptr      = Box::into_raw(boxed);
+            let rcbox_ptr = {
+                let mut tmp = bptr;
+                ptr::write(&amp;mut tmp as *mut _ as *mut * mut u8, alloc);
+                tmp as *mut RcBox&lt;T&gt;
+            };
+
+            // Initialize fields of RcBox&lt;T&gt;.
+            (*rcbox_ptr).strong.set(1);
+            (*rcbox_ptr).weak.set(1);
+            ptr::copy_nonoverlapping(
+                bptr as *const u8,
+                (&amp;mut (*rcbox_ptr).value) as *mut T as *mut u8,
+                sizeb);
+
+            // Deallocate box, we've already forgotten it.
+            heap::deallocate(bptr as *mut u8, sizeb, alignb);
+
+            // Yield the Rc:
+            assert_eq!(size, mem::size_of_val(&amp;*rcbox_ptr));
+            Rc { ptr: Shared::new(rcbox_ptr) }
+        }
+    }
+}</code></pre>
+<p>These work on zero sized slices and vectors as well.</p>
+<p>With more safe abstractions in the future, this can perhaps be rewritten with less unsafe code. But this should not change the API itself and thus will never cause a breaking change.</p>
+<h4 id="for-arc-1"><a class="header" href="#for-arc-1">For <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a></a></h4>
+<p>For the sake of brevity, just use the implementation above, and replace:</p>
+<ul>
+<li><code>slice_to_rc</code> with <code>slice_to_arc</code>,</li>
+<li><code>RcBox</code> with <code>ArcInner</code>,</li>
+<li><code>rcbox_ptr</code> with <code>arcinner_ptr</code>,</li>
+<li><code>Rc</code> with <code>Arc</code>.</li>
+</ul>
+<h2 id="how-we-teach-this"><a class="header" href="#how-we-teach-this">How We Teach This</a></h2>
+<p>The documentation provided in the <code>impls</code> should be enough.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>The main drawback would be increasing the size of the standard library.</p>
+<h2 id="替代方案"><a class="header" href="#替代方案">替代方案</a></h2>
+<ol>
+<li>Only implement this for <a href="https://doc.rust-lang.org/std/marker/trait.Copy.html"><code>T: Copy</code></a> and skip <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html"><code>T: Clone</code></a>.</li>
+<li>Let other libraries do this. This has the problems explained in the <a href="#motivation">motivation</a> section above regarding <a href="https://doc.rust-lang.org/src/alloc/rc.rs.html#242-246"><code>RcBox</code></a> not being publicly exposed as well as the amount of feature gates needed to roll ones own <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a> alternative - for little gain.</li>
+<li>Only implement this for <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a> and skip it for <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a>.</li>
+<li>Skip this for <a href="https://doc.rust-lang.org/std/collections/struct.HashSet.html"><code>Vec</code></a>.</li>
+<li>Only implement this for <a href="https://doc.rust-lang.org/std/collections/struct.HashSet.html"><code>Vec</code></a>.</li>
+<li>Skip this for <a href="https://doc.rust-lang.org/alloc/boxed/struct.Box.html"><code>Box</code></a>.</li>
+<li>Use <a href="https://doc.rust-lang.org/std/convert/trait.AsRef.html"><code>AsRef</code></a>. For example: <code>impl&lt;'a&gt; From&lt;&amp;'a str&gt; for Rc&lt;str&gt;</code> becomes <code>impl From&lt;AsRef&lt;str&gt;&gt; for Rc&lt;str&gt;</code>. It could potentially make the API a bit more ergonomic to use. However, it could run afoul of coherence issues, preventing other wanted impls. This RFC currently leans towards not using it.</li>
+<li>Add these trait implementations of <a href="https://doc.rust-lang.org/std/convert/trait.From.html"><code>From</code></a> as functions on <a href="https://doc.rust-lang.org/std/primitive.str.html"><code>&amp;str</code></a> like <code>.into_rc_str()</code> and on <a href="https://doc.rust-lang.org/std/primitive.slice.html"><code>&amp;[T]</code></a> like <code>.into_rc_slice()</code>. This RFC currently leans towards using <a href="https://doc.rust-lang.org/std/convert/trait.From.html"><code>From</code></a> implementations for the sake of uniformity and ergonomics. It also has the added benefit of letting you remember one method name instead of many. One could also consider <a href="https://doc.rust-lang.org/std/string/struct.String.html#method.into_boxed_str"><code>String::into_boxed_str</code></a> and <a href="https://doc.rust-lang.org/std/vec/struct.Vec.html#method.into_boxed_slice"><code>Vec::into_boxed_slice</code></a>, since these are similar with the difference being that this version uses the <a href="https://doc.rust-lang.org/std/convert/trait.From.html"><code>From</code></a> trait, and is converted into a shared smart pointer instead.</li>
+<li><strong>Also</strong> add these APIs as <a href="https://doc.rust-lang.org/book/method-syntax.html#associated-functions"><code>associated functions</code></a> on <a href="https://doc.rust-lang.org/std/rc/struct.Rc.html"><code>Rc</code></a> and <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a> as follows:</li>
+</ol>
+<pre><code class="language-rust">impl&lt;T: Clone&gt; Rc&lt;[T]&gt; {
+    fn from_slice(slice: &amp;[T]) -&gt; Self;
+}
+
+impl Rc&lt;str&gt; {
+  fn from_str(slice: &amp;str) -&gt; Self;
+}
+
+impl&lt;T: Clone&gt; Arc&lt;[T]&gt; {
+    fn from_slice(slice: &amp;[T]) -&gt; Self;
+}
+
+impl Arc&lt;str&gt; {
+  fn from_str(slice: &amp;str) -&gt; Self;
+}</code></pre>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<ul>
+<li>Should a special version of <a href="https://doc.rust-lang.org/stable/std/rc/struct.Rc.html#method.make_mut"><code>make_mut</code></a> be added for <code>Rc&lt;[T]&gt;</code>? This could look like:</li>
+</ul>
+<pre><code class="language-rust">impl&lt;T&gt; Rc&lt;[T]&gt; where T: Clone {
+    fn make_mut_slice(this: &amp;mut Rc&lt;[T]&gt;) -&gt; &amp;mut [T]
+}</code></pre>
+<!-- references -->
+<!-- references -->
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="1828-rust-bookshelf.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="1849-non-static-type-id.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="1828-rust-bookshelf.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="1849-non-static-type-id.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

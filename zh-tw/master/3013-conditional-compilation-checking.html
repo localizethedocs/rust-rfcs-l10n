@@ -1,0 +1,571 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3013-conditional-compilation-checking - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: N/A</li>
+<li>Start Date: 2020-11-04</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3013">rust-lang/rfcs#3013</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/82450">rust-lang/rust#82450</a></li>
+</ul>
+<h2 id="checking-conditional-compilation-at-compile-time"><a class="header" href="#checking-conditional-compilation-at-compile-time">Checking conditional compilation at compile time</a></h2>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>Rust supports conditional compilation, analogous to <code>#ifdef</code> in C / C++ / C#. Experience has shown that managing conditional compilation is a significant burden for large-scale development. One of the risks is that a condition may contain misspelled identifiers, or may use identifiers that are obsolete or have been removed from a product. For example:</p>
+<pre><code class="language-rust">#[cfg(feature = "widnows")]    // notice the typo!
+fn do_windows_thing() { /* ... */ }</code></pre>
+<p>The developer intended to test for the feature named <code>windows</code>. This could easily have been detected by <code>rustc</code> if it had known the set of all valid <code>feature</code> flags, not only the ones currently enabled.</p>
+<p>This RFC proposes adding new command-line options to <code>rustc</code>, which will allow Cargo (and other build tools) to inform <code>rustc</code> of the set of valid conditions, such as <code>feature</code> tests. Using conditions that are not valid will cause a diagnostic warning. This feature is opt-in, for backwards compatibility; if no valid configuration options are presented to <code>rustc</code> then no warnings are generated.</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<ul>
+<li>Stronger assurance that large code bases are correct.</li>
+<li>Protect against typos, bad merges, etc.</li>
+<li>Detect dead code, typically caused by feature flags that have been removed from a crate’s manifest, but which still have <code>#[cfg(...)]</code> attributes that mention those features.</li>
+</ul>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<h3 id="background"><a class="header" href="#background">Background</a></h3>
+<p>Rust programs can use conditional compilation in order to modify programs based on the features a user has selected, the target CPU architecture, the target OS, or other parameters under control of the user. Rust programs may use conditional compilation in these ways:</p>
+<ul>
+<li>By applying the <code>#[cfg(c)]</code> attribute to language elements, where <code>c</code> is a condition.</li>
+<li>By applying the <code>#[cfg_attr(c, attr)]</code> attribute to language elements, where <code>c</code> is a conditional and <code>attr</code> is an attribute to apply.</li>
+<li>By using the <code>cfg!(c)</code> built-in macro, where <code>c</code> is a condition. The compiler replaces the macro call with a <code>true</code> or <code>false</code> literal.</li>
+</ul>
+<p>A <em>condition</em> can take one of two forms:</p>
+<ul>
+<li>A single identifier, such as <code>#[cfg(test)]</code> or <code>#[cfg(linux)]</code>. These are Boolean conditions; they are either enabled or disabled.</li>
+<li>A condition may test whether a given value is present in a named list of values. For example, <code>#[cfg(feature = "lighting")]</code> tests whether the <code>lighting</code> feature is enabled. Note that a given condition name may have any number of enabled values; for example, it is legal to invoke <code>rustc --cfg feature="lighting" --cfg feature="bump_maps"</code>.</li>
+<li>Boolean operators on conditions, such as <code>not(...)</code>, <code>all(...)</code>, and <code>any(...)</code>.</li>
+</ul>
+<h3 id="checking-conditions-names"><a class="header" href="#checking-conditions-names">Checking conditions names</a></h3>
+<p><code>rustc</code> can optionally verify that condition names used in source code are valid. <em>Valid</em> is distinct from <em>enabled</em>. A <em>valid</em> condition is one that is allowed to appear in source code; the condition may be enabled or disabled, but it is still valid. An <em>enabled</em> condition is one which has been specified with a <code>--cfg foo</code> or <code>--cfg 'foo = "value"'</code> option.</p>
+<p>For example, <code>rustc</code> can detect this bug, where the <code>test</code> condition is misspelled as <code>tset</code>:</p>
+<pre><code class="language-rust">if cfg!(tset) {    // uh oh, should have been 'test'
+   ...
+}</code></pre>
+<p>To catch this error, we give <code>rustc</code> the set of valid condition names:</p>
+<pre><code class="language-bash">rustc --check-cfg 'names(name1, name2, ..., nameN)' ...
+</code></pre>
+<p>The <code>--check-cfg</code> option does two things: First, it turns on validation for the set of condition names (and separately for values). Second, it specifies the set of valid condition names (values).</p>
+<p>Like many <code>rustc</code> options the <code>--check-cfg</code> option can be specified in a single-argument form, with the option name and its argument joined by <code>=</code>, or can be specified in a two-argument form.</p>
+<h4 id="well-known-condition-names"><a class="header" href="#well-known-condition-names">Well-known condition names</a></h4>
+<p><code>rustc</code> defines a set of well-known conditions, such as <code>test</code>, <code>target_os</code>, etc. These conditions are always valid; it is not necessary to enable checking for these conditions. If these conditions are specified in a <code>--check-cfg names(...)</code> option then they will be ignored. This set of well-known names is a part of the stable interface of the compiler. New well-known conditions may be added in the future, because adding a new name cannot break existing code. However, a name may not be removed from the set of well-known names, because doing so would be a breaking change.</p>
+<p>These are the well-known conditions:</p>
+<ul>
+<li><code>feature</code></li>
+<li><code>linux</code></li>
+<li><code>test</code></li>
+<li><code>target_os</code></li>
+<li><code>target_arch</code></li>
+<li><code>windows</code></li>
+<li>TODO: finish enumerating this list during implementation</li>
+</ul>
+<h3 id="checking-key-value-conditions"><a class="header" href="#checking-key-value-conditions">Checking key-value conditions</a></h3>
+<p>For conditions that define a list of values, such as <code>feature</code>, we want to verify that any <code>#[cfg(feature = "v")]</code> test uses a valid value <code>v</code>. We want to detect this kind of bug:</p>
+<pre><code class="language-rust">if cfg!(feature = "awwwwsome") {    // should have been "awesome"
+    ...
+}</code></pre>
+<p>This kind of bug could be due to a typo or a bad PR merge. It could also occur because a feature was removed from a <code>Cargo.toml</code> file, but source code still contains references to it. Or, a feature name may have been renamed in one branch, while a new use of that feature was added in a second branch. We want to catch that kind of accident during a merge.</p>
+<p>To catch these errors, we give <code>rustc</code> the set of valid values for a given condition name, by specifying the <code>--check-cfg</code> option. For example:</p>
+<pre><code class="language-bash">rustc --check-cfg 'values(feature, "derive", "parsing", "printing", "proc-macro")' ...
+
+# specifying values for different names requires more than one --cfg option
+rustc --check-cfg 'values(foo, "red", "green")' --check-cfg 'values(bar, "up", "down")'
+</code></pre>
+<h3 id="checking-is-opt-in-disabled-by-default"><a class="header" href="#checking-is-opt-in-disabled-by-default">Checking is opt-in (disabled by default)</a></h3>
+<p>The default behavior of <code>rustc</code> is that conditional compilation names and values are not checked. This maintains compatibility with existing versions of Cargo and other build systems that might invoke <code>rustc</code> directly. All of the information for checking conditional compilation uses new syntactic forms of the existing <code>--cfg</code> option.</p>
+<p>Checking condition names is independent of checking condition values, for those conditions that use value lists.</p>
+<h4 id="example-checking-condition-names-but-not-values"><a class="header" href="#example-checking-condition-names-but-not-values">Example: Checking condition names, but not values</a></h4>
+<pre><code class="language-bash"># This turns on checking for condition names, but not values, such as 'feature' values.
+rustc --check-cfg 'names(is_embedded, has_feathers)' \
+      --cfg has_feathers \
+      --cfg 'feature = "zapping"'
+</code></pre>
+<pre><code class="language-rust">#[cfg(is_embedded)] // this is valid, and #[cfg] evaluates to disabled
+fn do_embedded() {}
+
+#[cfg(has_feathers)] // this is valid, and #[cfg] evaluates to enabled
+fn do_features() {}
+
+#[cfg(has_mumble_frotz)] // this is INVALID
+fn do_mumble_frotz() {}
+
+#[cfg(feature = "lasers")] // this is valid, because values() was never used
+fn shoot_lasers() {}</code></pre>
+<h4 id="example-checking-feature-values-but-not-condition-names"><a class="header" href="#example-checking-feature-values-but-not-condition-names">Example: Checking feature values, but not condition names</a></h4>
+<pre><code class="language-bash"># This turns on checking for feature values, but not for condition names.
+rustc --check-cfg 'values(feature, "zapping", "lasers")' \
+      --cfg 'feature="zapping"'
+</code></pre>
+<pre><code class="language-rust">#[cfg(is_embedded)]         // this is valid, because --check-cfg names(...) was never used
+fn do_embedded() {}
+
+#[cfg(has_feathers)]        // this is valid, because --check-cfg names(...) was never used
+fn do_features() {}
+
+#[cfg(has_mumble_frotz)]    // this is valid, because --check-cfg names(...) was never used
+fn do_mumble_frotz() {}
+
+#[cfg(feature = "lasers")]  // this is valid, because "lasers" is in the
+                            // --check-cfg values(feature) list
+fn shoot_lasers() {}
+
+#[cfg(feature = "monkeys")] // this is INVALID, because "monkeys" is not in the
+                            // --check-cfg values(feature) list
+fn write_shakespeare() {}</code></pre>
+<h4 id="example-checking-both-condition-names-and-feature-values"><a class="header" href="#example-checking-both-condition-names-and-feature-values">Example: Checking both condition names and feature values</a></h4>
+<pre><code class="language-bash"># This turns on checking for feature values and for condition names.
+rustc --check-cfg 'names(is_embedded, has_feathers)' \
+      --check-cfg 'values(feature, "zapping", "lasers")' \
+      --cfg has_feathers \
+      --cfg 'feature="zapping"' \
+</code></pre>
+<pre><code class="language-rust">#[cfg(is_embedded)]         // this is valid, and #[cfg] evaluates to disabled
+fn do_embedded() {}
+
+#[cfg(has_feathers)]        // this is valid, and #[cfg] evaluates to enabled
+fn do_features() {}
+
+#[cfg(has_mumble_frotz)]    // this is INVALID, because has_mumble_frotz is not in the
+                            // --check-cfg names(...) list
+fn do_mumble_frotz() {}
+
+#[cfg(feature = "lasers")]  // this is valid, because "lasers" is in the values(feature) list
+fn shoot_lasers() {}
+
+#[cfg(feature = "monkeys")] // this is INVALID, because "monkeys" is not in
+                            // the values(feature) list
+fn write_shakespear() {}</code></pre>
+<h3 id="cargo-support"><a class="header" href="#cargo-support">Cargo support</a></h3>
+<p>Cargo is ideally positioned to enable checking for <code>feature</code> flags, since Cargo knows the set of valid features. Cargo will invoke <code>rustc --check-cfg 'values(feature, "...", ...)'</code>, so that checking for features is enabled. Optionally, Cargo could also specify the set of valid condition names.</p>
+<p>Cargo users will not need to do anything to take advantage of this feature. Cargo will always specify the set of valid <code>feature</code> flags. This may cause warnings in crates that contain invalid <code>#[cfg]</code> conditions. (Rust is permitted to add new lints; new lints are not considered a breaking change.) If a user upgrades to a version of Cargo / Rust that supports validating features, and their crate now reports errors, then they will need to align their source code with their <code>Cargo.toml</code> file in order to fix the error. (Or use <code>#[allow(...)]</code> to suppress it.) This is a benefit, because it exposes potential existing bugs.</p>
+<h3 id="supporting-build-systems-other-than-cargo"><a class="header" href="#supporting-build-systems-other-than-cargo">Supporting build systems other than Cargo</a></h3>
+<p>Some users invoke <code>rustc</code> using build systems other than Cargo. In this case, <code>rustc</code> will provide the mechanism for validating conditions, but those build systems will need to be updated in order to take advantage of this feature. Doing so is expected to be easy and non-disruptive, since this feature does not change the meaning of the existing <code>--cfg</code> option.</p>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<h3 id="what-cargo-does"><a class="header" href="#what-cargo-does">What Cargo does</a></h3>
+<p>When Cargo builds a <code>rustc</code> command line, it knows which features are enabled and which are disabled. Cargo normally specifies the set of enabled features like so:</p>
+<pre><code class="language-bash">rustc --cfg 'feature="lighting"' --cfg 'feature="bump_maps"' ...
+</code></pre>
+<p>When conditional compilation checking is enabled, Cargo will also specify which features are valid, so that <code>rustc</code> can validate conditional compilation tests. For example:</p>
+<pre><code class="language-bash">rustc --cfg 'feature="lighting"' --cfg 'feature="bump_maps"' \
+      --check-cfg 'values(feature, "lighting", "bump_maps", "mip_maps", "vulkan")'
+</code></pre>
+<p>In this command-line, Cargo has specified the full set of <em>valid</em> features (<code>lighting</code>, <code>bump_maps</code>, <code>mip_maps</code>, <code>vulkan</code>) while also specifying which of those features are currently <em>enabled</em> (<code>lighting</code>, <code>bump_maps</code>).</p>
+<h3 id="command-line-arguments-reference"><a class="header" href="#command-line-arguments-reference">Command line arguments reference</a></h3>
+<p><code>rustc</code> accepts the <code>--check-cfg</code> option, which specifies whether to check conditions and how to check them. The <code>--check-cfg</code> option takes a value, called the <em>check cfg specification</em>. The check cfg specification is parsed using the Rust metadata syntax, just as the <code>--cfg</code> option is. (This allows for easy future extensibility, and for easily specifying moderately-complex data.)</p>
+<p>Each <code>--check-cfg</code> option can take one of two forms:</p>
+<ol>
+<li><code>--check-cfg names(...)</code> enables checking condition names.</li>
+<li><code>--check-cfg values(...)</code> enables checking the values within list-valued conditions.</li>
+</ol>
+<h4 id="the-names-form"><a class="header" href="#the-names-form">The <code>names(...)</code> form</a></h4>
+<p>This form uses a named metadata list:</p>
+<pre><code class="language-bash">rustc --check-cfg 'names(name1, name2, ... nameN)'
+</code></pre>
+<p>where each <code>name</code> is a bare identifier (has no quotes). The order of the names is not significant.</p>
+<p>If <code>--check-cfg names(...)</code> is specified at least once, then <code>rustc</code> will check all references to condition names. <code>rustc</code> will check every <code>#[cfg]</code> attribute, <code>#[cfg_attr]</code> attribute, and <code>cfg!(...)</code> call against the provided list of valid condition names. If a name is not present in this list, then <code>rustc</code> will report an <code>invalid_cfg_name</code> lint diagnostic. The default diagnostic level for this lint is <code>Warn</code>.</p>
+<p>If <code>--check-cfg names(...)</code> is not specified, then <code>rustc</code> will not check references to condition names.</p>
+<p><code>--check-cfg names(...)</code> may be specified more than once. The result is that the list of valid condition names is merged across all options. It is legal for a condition name to be specified more than once; redundantly specifying a condition name has no effect.</p>
+<p>To enable checking condition names with an empty set of valid condition names, use the following form. The parentheses are required.</p>
+<pre><code class="language-bash">rustc --check-cfg 'names()'
+</code></pre>
+<p>Note that <code>--check-cfg 'names()'</code> is <em>not</em> equivalent to omitting the option entirely. The first form enables checking condition names, while specifying that there are no valid condition names (outside of the set of well-known names defined by <code>rustc</code>). Omitting the <code>--check-cfg 'names(...)'</code> option does not enable checking condition names.</p>
+<p>Conditions that are enabled are implicitly valid; it is unnecessary (but legal) to specify a condition name as both enabled and valid. For example, the following invocations are equivalent:</p>
+<pre><code class="language-bash"># condition names will be checked, and 'has_time_travel' is valid
+rustc --cfg 'has_time_travel' --check-cfg 'names()'
+
+# condition names will be checked, and 'has_time_travel' is valid
+rustc --cfg 'has_time_travel' --check-cfg 'names(has_time_travel)'
+</code></pre>
+<p>In contrast, the following two invocations are <em>not</em> equivalent:</p>
+<pre><code class="language-bash"># condition names will not be checked (because there is no --check-cfg names(...))
+rustc --cfg 'has_time_travel'
+
+# condition names will be checked, and 'has_time_travel' is both valid and enabled.
+rustc --cfg 'has_time_travel' --check-cfg 'names(has_time_travel)'
+</code></pre>
+<h4 id="the-values-form"><a class="header" href="#the-values-form">The <code>values(...)</code> form</a></h4>
+<p>The <code>values(...)</code> form enables checking the values within list-valued conditions. It has this form:</p>
+<pre><code class="language-bash">rustc --check-cfg `values(name, "value1", "value2", ... "valueN")'
+</code></pre>
+<p>where <code>name</code> is a bare identifier (has no quotes) and each <code>"value"</code> term is a quoted literal string. <code>name</code> specifies the name of the condition, such as <code>feature</code> or <code>target_os</code>.</p>
+<p>When the <code>values(...)</code> option is specified, <code>rustc</code> will check every <code>#[cfg(name = "value")]</code> attribute, <code>#[cfg_attr(name = "value")]</code> attribute, and <code>cfg!(name = "value")</code> call. It will check that the <code>"value"</code> specified is present in the list of valid values. If <code>"value"</code> is not valid, then <code>rustc</code> will report an <code>invalid_cfg_value</code> lint diagnostic. The default diagnostic level for this lint is <code>Warn</code>.</p>
+<p>The form <code>values()</code> is an error, because it does not specify a condition name.</p>
+<p>To enable checking of values, but to provide an empty set of valid values, use this form:</p>
+<pre><code class="language-bash">rustc --check-cfg `values(name)`
+</code></pre>
+<p>The <code>--check-cfg values(...)</code> option can be repeated, both for the same condition name and for different names. If it is repeated for the same condition name, then the sets of values for that condition are merged together.</p>
+<blockquote>
+<p>The <code>--check-cfg names(...)</code> and <code>--check-cfg values(...)</code> options are independent. <code>names</code> checks the namespace of condition names; <code>values</code> checks the namespace of the values of list-valued conditions.</p>
+</blockquote>
+<h4 id="valid-values-can-be-split-across-multiple-options"><a class="header" href="#valid-values-can-be-split-across-multiple-options">Valid values can be split across multiple options</a></h4>
+<p>The valid condition values are the union of all options specified on the command line. For example, this command line:</p>
+<pre><code class="language-bash"># legal but redundant:
+rustc --check-cfg 'values(animals, "lion")' --check-cfg 'values(animals, "zebra")'
+
+# equivalent:
+rustc --check-cfg 'values(animals, "lion", "zebra")'
+</code></pre>
+<p>This is intended to give tool developers more flexibility when generating Rustc command lines.</p>
+<h4 id="enabled-condition-names-are-implicitly-valid"><a class="header" href="#enabled-condition-names-are-implicitly-valid">Enabled condition names are implicitly valid</a></h4>
+<p>Specifying an enabled condition name implicitly makes it valid. For example, the following invocations are equivalent:</p>
+<pre><code class="language-bash"># legal but redundant:
+rustc --check-cfg 'names(animals)' --cfg 'animals = "lion"'
+
+# equivalent:
+rustc --check-cfg 'names()' --cfg 'animals = "lion"'
+</code></pre>
+<h4 id="enabled-condition-values-are-implicitly-valid"><a class="header" href="#enabled-condition-values-are-implicitly-valid">Enabled condition values are implicitly valid</a></h4>
+<p>Specifying an enabled condition <em>value</em> implicitly makes that <em>value</em> valid. For example, the following invocations are equivalent:</p>
+<pre><code class="language-bash"># legal but redundant
+rustc --check-cfg 'values(animals, "lion", "zebra")' --cfg 'animals = "lion"'
+
+# equivalent
+rustc --check-cfg 'values(animals, "zebra")' --cfg 'animals = "lion"'
+</code></pre>
+<p>Specifying a condition value also implicitly marks that condition <em>name</em> as valid. For example, the following invocations are equivalent:</p>
+<pre><code class="language-bash"># legal but redundant:
+rustc --check-cfg 'names(other, animals)' --check-cfg 'values(animals, "lion")'
+
+# so the above can be simplified to:
+rustc --check-cfg 'names(other)' --check-cfg 'values(animals, "lion")'
+</code></pre>
+<h4 id="checking-condition-names-and-values-is-independent"><a class="header" href="#checking-condition-names-and-values-is-independent">Checking condition names and values is independent</a></h4>
+<p>Checking condition names may be enabled independently of checking condition values. If checking of condition values is enabled, then it is enabled separately for each condition name.</p>
+<p>Examples:</p>
+<pre><code class="language-bash">
+# no checking is performed
+rustc
+
+# names are checked, but values are not checked
+rustc --check-cfg 'names(has_time_travel)'
+
+# names are not checked, but 'feature' values are checked.
+# note that #[cfg(market = "...")] values are not checked.
+rustc --check-cfg 'values(feature, "lighting", "bump_maps")'
+
+# names are not checked, but 'feature' values _and_ 'market' values are checked.
+rustc --check-cfg 'values(feature, "lighting", "bump_maps")' \
+      --check-cfg 'values(market, "europe", "asia")'
+
+# names _and_ feature values are checked.
+rustc --check-cfg 'names(has_time_travel)' \
+      --check-cfg 'values(feature, "lighting", "bump_maps")'
+</code></pre>
+<h3 id="stabilizing"><a class="header" href="#stabilizing">Stabilizing</a></h3>
+<p>Until this feature is stabilized, it can only be used with a <code>nightly</code> compiler, and only when specifying the <code>rustc -Z check-cfg ...</code> option.</p>
+<p>Similarly, users of <code>nightly</code> Cargo builds must also opt-in to use this feature, by specifying <code>cargo build -Z check-cfg ...</code>.</p>
+<p>Experience gained during stabilization will determine how this feature is best enabled in the final product. Ideally, once the feature is stabilized in <code>rustc</code>, the <code>-Z check-cfg</code> requirement will be dropped from <code>rustc</code>. Stabilizing in Cargo may require a stable opt-in flag, however.</p>
+<h3 id="diagnostics"><a class="header" href="#diagnostics">Diagnostics</a></h3>
+<p>Conditional checking can report these diagnostics:</p>
+<ul>
+<li>
+<p><code>invalid_cfg_name</code>: Indicates that a condition name was not in the set of valid names. This diagnostic will only be reported if the command line options enable checking condition names (i.e. there is at least one <code>--cfg 'names(...)'</code> option and an invalid condition name is found during compilation.</p>
+</li>
+<li>
+<p><code>invalid_cfg_value</code>: Indicates that source code contained a condition value that was invalid. This diagnostic will only be reported if the command line options enable checking condition values for the specified condition name (i.e. there is a least one <code>--check-cfg 'values(c, ...)'</code> for a given condition name <code>c</code>).</p>
+</li>
+</ul>
+<p>All of the diagnostics defined by this RFC are reported as warnings. They can be upgraded to errors or silenced using the usual diagnostics controls.</p>
+<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<p>Consider this command line:</p>
+<pre><code class="language-bash">rustc --check-cfg 'name(feature)' \
+      --check-cfg 'values(feature,"lion","zebra")' \
+      --cfg 'feature="lion"'
+      example.rs
+</code></pre>
+<p>This command line indicates that this crate has two features: <code>lion</code> and <code>zebra</code>. The <code>lion</code> feature is enabled, while the <code>zebra</code> feature is disabled. Consider compiling this code:</p>
+<pre><code class="language-rust">// this is valid, and tame_lion() will be compiled
+#[cfg(feature = "lion")]
+fn tame_lion(lion: Lion) { ... }
+
+// this is valid, and ride_zebra() will NOT be compiled
+#[cfg(feature = "zebra")]
+fn ride_zebra(zebra: Zebra) { ... }
+
+// this is INVALID, and will cause a compiler error
+#[cfg(feature = "platypus")]
+fn poke_platypus() { ... }
+
+// this is INVALID, because 'feechure' is not a known condition name,
+// and will cause a compiler error.
+#[cfg(feechure = "lion")]
+fn tame_lion() { ... }</code></pre>
+<blockquote>
+<p>Note: The <code>--check-cfg names(feature)</code> option is necessary only to enable checking the condition name, as in the last example. <code>feature</code> is a well-known (always-valid) condition name, and so it is not necessary to specify it in a <code>--check-cfg 'names(...)'</code> option. That option can be shortened to &gt; <code>--check-cfg names()</code> in order to enable checking condition names.</p>
+</blockquote>
+<h3 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h3>
+<ul>
+<li>
+<p>Adds complexity, in the form of additional command-line options. Fortunately, this is complexity that will be mainly be exposed to build systems, such as Cargo.</p>
+</li>
+<li>
+<p>As with all lints, correct code may be trigger lints. Developers will need to take time to examine them and see whether they are legitimate or not.</p>
+</li>
+<li>
+<p>To take full advantage of this, build systems (including but not limited to Cargo) must be updated. However, for those systems that are not updated, there is no penalty or drawback, since <code>--check-cfg</code> is opt-in.</p>
+</li>
+<li>
+<p>This lint will not be able to detect invalid <code>#[cfg]</code> tests that are within modules that are not compiled, presumably because an ancestor <code>mod</code> is disabled due to a.  For example:</p>
+<p>File <code>lib.rs</code> (root module):</p>
+<pre><code class="language-rust">#[cfg(feature = "this_is_disabled_but_valid")]
+mod foo</code></pre>
+<p>File <code>foo.rs</code> (nested module):</p>
+<pre><code class="language-rust">#[cfg(feature = "oooooops_this_feature_is_misspelled_and_invalid")]
+mod uh_uh;</code></pre>
+<p>The invalid <code>#[cfg]</code> attribute in <code>foo.rs</code> will not be detected, because <code>foo.rs</code> was not read and parsed. This is a minor drawback, and should not prevent users from benefitting from checking in most common situations.</p>
+</li>
+</ul>
+<h3 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h3>
+<p>This design enables checking for a class of bugs at compile time, rather than detecting them by running code.</p>
+<p>This design does not break any existing usage of Rustc. It does not change the meaning of existing programs or existing Rustc command-line options. It is strictly opt-in. If the verification that this feature provides is valuable, then it could be promoted to a warning in the future, or eventually an error. There would need to be a cleanup period, though, where we detected failures in existing crates and fixed them.</p>
+<p>The impact of not doing this is that a class of bugs may go undetected. These bugs are often easy to find in relatively small systems of code, but experience shows that these kinds of bugs are much harder to verify in large code bases. Rust should enable developers to scale up from small to large systems, without losing agility or reliability.</p>
+<h3 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h3>
+<p>Rust has a very strong focus on finding defects at compile time, rather than allowing defects to be detected much later in the development cycle. Statically checking that conditional compilation is used correctly is consistent with this approach.</p>
+<p>Many languages have similar facilities for conditional compilation. C, C++, C#, and many of their variants make extensive use of conditional compilation. The author is unaware of any effort to systematically verify the correct usage of conditional compilation in these languages.</p>
+<h3 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h3>
+<p>This RFC specifies the exact syntax of this feature in source code and in the command-line options for <code>rustc</code>. However, it does not address how these will be used by tools, such as Cargo. This is a split between “mechanism” and “policy”; the mechanism (what goes in <code>rustc</code>) is specified in this RFC, but the policies that control this mechanism are intentionally left out of scope.</p>
+<p>We expect the stabilization process for the mechanism (the support in <code>rustc</code>) to stabilize relatively quickly. Separately, over a much longer time frame, we expect the polices that control those options to stabilize more slowly. For example, it seems uncontroversial for Cargo to enable checking for <code>feature = "..."</code> values immediately; this could be implemented and stabilized quickly.</p>
+<p>However, when (if ever) should Cargo enable checking condition <em>names</em>? For crates that do not have a <code>build.rs</code> script, Cargo could enable checking condition names immediately. But for crates that do have a <code>build.rs</code> script, we may need a way for those scripts to control the behavior of checking condition names.</p>
+<p>One possible source of problems may come from build scripts (<code>build.rs</code> files) that add <code>--cfg</code> options that Cargo is not aware of. For example, if a <code>Cargo.toml</code> file did <em>not</em> define a feature flag of <code>foo</code>, but the <code>build.rs</code> file added a <code>--cfg feature="foo"</code> option, then source code could use <code>foo</code> in a condition. My guess is that this is rare, and that a Crater run will expose this kind of problem.</p>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<ul>
+<li>Should these checks be enabled by default in Cargo?</li>
+<li>How many public crates would fail these checks?</li>
+<li>If these checks are enabled by default in Cargo, should they be warnings or errors?</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3007-panic-plan.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3014-must-not-suspend-lint.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3007-panic-plan.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3014-must-not-suspend-lint.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

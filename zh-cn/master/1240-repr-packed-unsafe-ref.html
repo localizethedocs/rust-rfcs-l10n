@@ -1,0 +1,632 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1240-repr-packed-unsafe-ref - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: NA</li>
+<li>Start Date: 2015-08-06</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/1240">rust-lang/rfcs#1240</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/27060">rust-lang/rust#27060</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Taking a reference into a struct marked <code>repr(packed)</code> should become <code>unsafe</code>, because it can lead to undefined behaviour. <code>repr(packed)</code> structs need to be banned from storing <code>Drop</code> types for this reason.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>Issue <a href="https://github.com/rust-lang/rust/issues/27060">#27060</a> noticed that it was possible to trigger undefined behaviour in safe code via <code>repr(packed)</code>, by creating references <code>&amp;T</code> which don’t satisfy the expected alignment requirements for <code>T</code>.</p>
+<p>Concretely, the compiler assumes that any reference (or raw pointer, in fact) will be aligned to at least <code>align_of::&lt;T&gt;()</code>, i.e. the following snippet should run successfully:</p>
+<pre><code class="language-rust">let some_reference: &amp;T = /* arbitrary code */;
+
+let actual_address = some_reference as *const _ as usize;
+let align = std::mem::align_of::&lt;T&gt;();
+
+assert_eq!(actual_address % align, 0);</code></pre>
+<p>However, <code>repr(packed)</code> allows on to violate this, by creating values of arbitrary types that are stored at “random” byte addresses, by removing the padding normally inserted to maintain alignment in <code>struct</code>s. E.g. suppose there’s a struct <code>Foo</code> defined like <code>#[repr(packed, C)] struct Foo { x: u8, y: u32 }</code>, and there’s an instance of <code>Foo</code> allocated at a 0x1000, the <code>u32</code> will be placed at <code>0x1001</code>, which isn’t 4-byte aligned (the alignment of <code>u32</code>).</p>
+<p>Issue #27060 has a snippet which crashes at runtime on at least two x86-64 CPUs (the author’s and the one playpen runs on) and almost certainly most other platforms.</p>
+<pre><code class="language-rust">#![feature(simd, test)]
+
+extern crate test;
+
+// simd types require high alignment or the CPU faults
+#[simd]
+#[derive(Debug, Copy, Clone)]
+struct f32x4(f32, f32, f32, f32);
+
+#[repr(packed)]
+#[derive(Copy, Clone)]
+struct Unalign&lt;T&gt;(T);
+
+struct Breakit {
+    x: u8,
+    y: Unalign&lt;f32x4&gt;
+}
+
+fn main() {
+    let val = Breakit { x: 0, y: Unalign(f32x4(0.0, 0.0, 0.0, 0.0)) };
+
+    test::black_box(&amp;val);
+
+    println!("before");
+
+    let ok = val.y;
+    test::black_box(ok.0);
+
+    println!("middle");
+
+    let bad = val.y.0;
+    test::black_box(bad);
+
+    println!("after");
+}</code></pre>
+<p>On playpen, it prints:</p>
+<pre><code>before
+middle
+playpen: application terminated abnormally with signal 4 (Illegal instruction)
+</code></pre>
+<p>That is, the <code>bad</code> variable is causing the CPU to fault. The <code>let</code> statement is (in pseudo-Rust) behaving like <code>let bad = load_with_alignment(&amp;val.y.0, align_of::&lt;f32x4&gt;());</code>, but the alignment isn’t satisfied. (The <code>ok</code> line is compiled to a <code>movupd</code> instruction, while the <code>bad</code> is compiled to a <code>movapd</code>: <code>u</code> == unaligned, <code>a</code> == aligned.)</p>
+<p>(NB. The use of SIMD types in the example is just to be able to demonstrate the problem on x86. That platform is generally fairly relaxed about pointer alignments and so SIMD &amp; its specialised <code>mov</code> instructions are the easiest way to demonstrate the violated assumptions at runtime. Other platforms may fault on other types.)</p>
+<p>Being able to assume that accesses are aligned is useful, for performance, and almost all references will be correctly aligned anyway (<code>repr(packed)</code> types and internal references into them are quite rare).</p>
+<p>The problems with unaligned accesses can be avoided by ensuring that the accesses are actually aligned (e.g. via runtime checks, or other external constraints the compiler cannot understand directly). For example, consider the following</p>
+<pre><code class="language-rust">#[repr(packed, C)]
+struct Bar {
+    x: u8,
+    y: u16,
+    z: u8,
+    w: u32,
+}</code></pre>
+<p>Taking a reference to some of those fields may cause undefined behaviour, but not always. It is always correct to take a reference to <code>x</code> or <code>z</code> since <code>u8</code> has alignment 1. If the struct value itself is 4-byte aligned (which is not guaranteed), <code>w</code> will also be 4-byte aligned since the <code>u8, u16, u8</code> take up 4 bytes, hence it is correct to take a reference to <code>w</code> in this case (and only that case). Similarly, it is only correct to take a reference to <code>y</code> if the struct is at an odd address, so that the <code>u16</code> starts at an even one (i.e. is 2-byte aligned).</p>
+<h2 id="detailed-design"><a class="header" href="#detailed-design">Detailed design</a></h2>
+<p>It is <code>unsafe</code> to take a reference to the field of a <code>repr(packed)</code> struct. It is still possible, but it is up to the programmer to ensure that the alignment requirements are satisfied. Referencing (by-reference, or by-value) a subfield of a struct (including indexing elements of a fixed-length array) stored inside a <code>repr(packed)</code> struct counts as taking a reference to the <code>packed</code> field and hence is unsafe.</p>
+<p>It is still legal to manipulate the fields of a <code>packed</code> struct by value, e.g. the following is correct (and not <code>unsafe</code>), no matter the alignment of <code>bar</code>:</p>
+<pre><code class="language-rust">let bar: Bar = ...;
+
+let x = bar.y;
+bar.w = 10;</code></pre>
+<p>It is illegal to store a type <code>T</code> implementing <code>Drop</code> (including a generic type) in a <code>repr(packed)</code> type, since the destructor of <code>T</code> is passed a reference to that <code>T</code>. The crater run (see appendix) found no crate that needs to use <code>repr(packed)</code> to store a <code>Drop</code> type (or a generic type). The generic type rule is conservatively approximated by disallowing generic <code>repr(packed)</code> structs altogether, but this can be relaxed (see Alternatives).</p>
+<p>Concretely, this RFC is proposing the introduction of the <code>// error</code>s in the following code.</p>
+<pre><code class="language-rust">struct Baz {
+    x: u8,
+}
+
+#[repr(packed)]
+struct Qux&lt;T&gt; { // error: generic repr(packed) struct
+    y: Baz,
+    z: u8,
+    w: String, // error: storing a Drop type in a repr(packed) struct
+    t: [u8; 4],
+}
+
+let mut qux = Qux { ... };
+
+// all ok:
+let y_val = qux.y;
+let z_val = qux.z;
+let t_val = qux.t;
+qux.y = Baz { ... };
+qux.z = 10;
+qux.t = [0, 1, 2, 3];
+
+// new errors:
+
+let y_ref = &amp;qux.y; // error: taking a reference to a field of a repr(packed) struct is unsafe
+let z_ref = &amp;mut qux.z; // ditto
+let y_ptr: *const _ = &amp;qux.y; // ditto
+let z_ptr: *mut _ = &amp;mut qux.z; // ditto
+
+let x_val = qux.y.x; // error: directly using a subfield of a field of a repr(packed) struct is unsafe
+let x_ref = &amp;qux.y.x; // ditto
+qux.y.x = 10; // ditto
+
+let t_val = qux.t[0]; // error: directly indexing an array in a field of a repr(packed) struct is unsafe
+let t_ref = &amp;qux.t[0]; // ditto
+qux.t[0] = 10; // ditto</code></pre>
+<p>(NB. the subfield and indexing cases can be resolved by first copying the packed field’s value onto the stack, and then accessing the desired value.)</p>
+<h3 id="staging"><a class="header" href="#staging">Staging</a></h3>
+<p>This change will first land as warnings indicating that code will be broken, with the warnings switched to the intended errors after one release cycle.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>This will cause some functionality to stop working in possibly-surprising ways (NB. the drawback here is mainly the “possibly-surprising”, since the functionality is broken with general <code>packed</code> types.). For example, <code>#[derive]</code> usually takes references to the fields of structs, and so <code>#[derive(Clone)]</code> will generate errors. However, this use of derive is incorrect in general (no guarantee that the fields are aligned), and, one can easily replace it by:</p>
+<pre><code class="language-rust">#[derive(Copy)]
+#[repr(packed)]
+struct Foo { ... }
+
+impl Clone for Foo { fn clone(&amp;self) -&gt; Foo { *self } }</code></pre>
+<p>Similarly, <code>println!("{}", foo.bar)</code> will be an error despite there not being a visible reference (<code>println!</code> takes one internally), however, this can be resolved by, for instance, assigning to a temporary.</p>
+<h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
+<ul>
+<li>A short-term solution would be to feature gate <code>repr(packed)</code> while the kinks are worked out of it</li>
+<li>Taking an internal reference could be made flat-out illegal, and the times when it is correct simulated by manual raw-pointer manipulation.</li>
+<li>The rules could be made less conservative in several cases, however the crater run didn’t indicate any need for this:
+<ul>
+<li>a generic <code>repr(packed)</code> struct can use the generic in ways that avoids problems with <code>Drop</code>, e.g. if the generic is bounded by <code>Copy</code>, or if the type is only used in ways that are <code>Copy</code> such as behind a <code>*const T</code>.</li>
+<li>using a subfield of a field of a <code>repr(packed)</code> struct by-value could be OK.</li>
+</ul>
+</li>
+</ul>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p>None.</p>
+<h2 id="appendix"><a class="header" href="#appendix">Appendix</a></h2>
+<h3 id="crater-analysis"><a class="header" href="#crater-analysis">Crater analysis</a></h3>
+<p>Crater was run on 2015/07/23 with a patch that feature gated <code>repr(packed)</code>.</p>
+<p>High-level summary:</p>
+<ul>
+<li>several unnecessary uses of <code>repr(packed)</code> (patches have been submitted and merged to remove all of these)</li>
+<li>most necessary ones are to match the declaration of a struct in C</li>
+<li>many “necessary” uses can be replaced by byte arrays/arrays of smaller types</li>
+<li>8 crates are currently on stable themselves (unsure about deps), 4 are already on nightly
+<ul>
+<li>1 of the 8, http2parse, is essentially only used by a nightly-only crate (tendril)</li>
+<li>4 of the stable and 1 of the nightly crates don’t need <code>repr(packed)</code> at all</li>
+</ul>
+</li>
+</ul>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>stable</th><th>needed</th><th>FFI only</th></tr>
+</thead>
+<tbody>
+<tr><td>image</td><td>✓</td><td></td><td></td></tr>
+<tr><td>nix</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>tendril</td><td></td><td>✓</td><td></td></tr>
+<tr><td>assimp-sys</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>stemmer</td><td>✓</td><td></td><td></td></tr>
+<tr><td>x86</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>http2parse</td><td>✓</td><td>✓</td><td></td></tr>
+<tr><td>nl80211rs</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>openal</td><td>✓</td><td></td><td></td></tr>
+<tr><td>elfloader</td><td></td><td>✓</td><td>✓</td></tr>
+<tr><td>x11</td><td>✓</td><td></td><td></td></tr>
+<tr><td>kiss3d</td><td>✓</td><td></td><td></td></tr>
+</tbody>
+</table>
+</div>
+<p>More detailed analysis inline with broken crates. (Don’t miss <code>kiss3d</code> in the non-root section.)</p>
+<h4 id="regression-report-c85ba3e9cb4620c6ec8273a34cce6707e91778cb-vs-7a265c6d1280932ba1b881f31f04b03b20c258e5"><a class="header" href="#regression-report-c85ba3e9cb4620c6ec8273a34cce6707e91778cb-vs-7a265c6d1280932ba1b881f31f04b03b20c258e5">Regression report c85ba3e9cb4620c6ec8273a34cce6707e91778cb vs. 7a265c6d1280932ba1b881f31f04b03b20c258e5</a></h4>
+<ul>
+<li>From: c85ba3e9cb4620c6ec8273a34cce6707e91778cb</li>
+<li>To: 7a265c6d1280932ba1b881f31f04b03b20c258e5</li>
+</ul>
+<h5 id="coverage"><a class="header" href="#coverage">Coverage</a></h5>
+<ul>
+<li>2617 crates tested: 1404 working / 1151 broken / 40 regressed / 0 fixed / 22 unknown.</li>
+</ul>
+<h5 id="regressions"><a class="header" href="#regressions">Regressions</a></h5>
+<ul>
+<li>There are 11 root regressions</li>
+<li>There are 40 regressions</li>
+</ul>
+<h5 id="root-regressions-sorted-by-rank"><a class="header" href="#root-regressions-sorted-by-rank">Root regressions, sorted by rank:</a></h5>
+<ul>
+<li>
+<p><a href="https://crates.io/crates/image">image-0.3.11</a> (<a href="https://tools.taskcluster.net/task-inspector/#V6QBA9LfTT6mhFJ0Yo7nJg">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#QU9d4XEPSWOg7CIGFpATDg">after</a>)</p>
+<ul>
+<li><a href="https://github.com/PistonDevelopers/image/blob/8e64e0d78e465ddfa13cd6627dede5fd258386f6/src/tga/decoder.rs#L75">use</a> seems entirely unnecessary (no raw bytewise operations on the struct itself)
+On stable.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/nix">nix-0.3.9</a> (<a href="https://tools.taskcluster.net/task-inspector/#X3HMXrq4S_GMNbeeAY8i6w">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#kz0vDaAhRRuKww2l-FvYpQ">after</a>)</p>
+<ul>
+<li><a href="https://github.com/carllerche/nix-rust/blob/5801318c0c4c6eeb3431144a89496830f55d6628/src/sys/epoll.rs#L98">use</a> required to match <a href="https://github.com/torvalds/linux/blob/de182468d1bb726198abaab315820542425270b7/include/uapi/linux/eventpoll.h#L53-L62">C struct</a>
+On stable.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/tendril">tendril-0.1.2</a> (<a href="https://tools.taskcluster.net/task-inspector/#zQH7ShADR5O9eQe1mg3e6A">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#zI-PoIZHTm-7Urq3CLsXeg">after</a>)</p>
+<ul>
+<li><a href="https://github.com/servo/tendril/blob/faf97ded26213e561f8ad2768113cc05b6424748/src/buf32.rs#L19">use 1</a> not strictly necessary?</li>
+<li><a href="https://github.com/servo/tendril/blob/faf97ded26213e561f8ad2768113cc05b6424748/src/tendril.rs#L43">use 2</a> required on 64-bit platforms to get size_of::&lt;Header&gt;() == 12 rather than 16.</li>
+<li><a href="https://github.com/servo/tendril/blob/faf97ded26213e561f8ad2768113cc05b6424748/src/tendril.rs#L91">use 3</a>, as above, does some precise tricks with the layout for optimisation.
+Requires nightly.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/assimp-sys">assimp-sys-0.0.3</a> (<a href="https://tools.taskcluster.net/task-inspector/#rTrUh0VQR2uWXMQw14kRIA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#AR36o35FRV-mVInHKWFDrg">after</a>)</p>
+<ul>
+<li>
+<p><a href="https://github.com/Eljay/assimp-sys/search?utf8=%E2%9C%93&amp;q=packed">many uses</a>, required to match <a href="https://github.com/assimp/assimp/blob/f3d418a199cfb7864c826665016e11c65ddd7aa9/include/assimp/types.h#L227">C structs</a> (one example). In author’s words:</p>
+<blockquote>
+<p>[11:36:15] &lt;eljay&gt; huon: well my assimp binding is basically abandoned for now if you are just worried about breaking things, and seems unlikely anyone is using it :P</p>
+</blockquote>
+</li>
+</ul>
+<p>On stable.</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/stemmer">stemmer-0.1.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#0Affr5PrTnGoBukeRwuiKw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#8xGRmPxOQS2NHbvgXMvmWQ">after</a>)</p>
+<ul>
+<li><a href="https://github.com/lady-segfault/stemmer-rs/blob/4090dcf7a258df5031c10754c8de118e0ca93512/src/stemmer.rs#L7">use</a>, completely unnecessary
+On stable.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/x86">x86-0.2.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#__VYVs6QSYm4JF68fSXibw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#xj8paeiaR0OGkK1v2raHYg">after</a>)</p>
+<ul>
+<li><a href="https://github.com/gz/rust-x86/search?utf8=%E2%9C%93&amp;q=packed">several similar uses</a>, specific layout necessary for raw interaction with CPU features
+Requires nightly.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/http2parse">http2parse-0.0.3</a> (<a href="https://tools.taskcluster.net/task-inspector/#CUr_5dfgQMywZmG_ER7ZGQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#rQO3m_8iQQapN2l-PvGrRw">after</a>)</p>
+<ul>
+<li><a href="https://github.com/reem/rust-http2parse/blob/b363139ac2f81fa25db504a9256face9f8c799b6/src/payload.rs#L206">use</a>, used to get super-fast “parsing” of headers, by transmuting <code>&amp;[u8]</code> to <code>&amp;[Setting]</code>.
+On stable, however:</li>
+</ul>
+<pre><code class="language-irc">[11:30:38] &lt;huon&gt; reem: why is https://github.com/reem/rust-http2parse/blob/b363139ac2f81fa25db504a9256face9f8c799b6/src/payload.rs#L208 packed?
+[11:31:59] &lt;reem&gt; huon: I transmute from &amp; [u8] to &amp; [Setting]
+[11:32:35] &lt;reem&gt; So repr packed gets me the layout I need
+[11:32:47] &lt;reem&gt; With no padding between the u8 and u16
+[11:33:11] &lt;reem&gt; and between Settings
+[11:33:17] &lt;huon&gt; ok
+[11:33:22] &lt;huon&gt; (stop doing bad things :P )
+[11:34:00] &lt;huon&gt; (there's some problems with repr(packed) https://github.com/rust-lang/rust/issues/27060 and we may be feature gating it)
+[11:35:02] &lt;huon&gt; reem: wait, aren't there endianness problems?
+[11:36:16] &lt;reem&gt; Ah yes, looks like I forgot to finish the Setting interface
+[11:36:27] &lt;reem&gt; The identifier and value methods take care of converting to types values
+[11:36:39] &lt;reem&gt; The goal is just to avoid copying the whole buffer and requiring an allocation
+[11:37:01] &lt;reem&gt; Right now the whole parser takes like 9 ns to parse a frame
+[11:39:11] &lt;huon&gt; would you be sunk if repr(packed) was feature gated?
+[11:40:17] &lt;huon&gt; or, is maybe something like `struct SettingsRaw { identifier:  [u8; 2], value:  [u8; 4] }` OK (possibly with conversion functions etc.)?
+[11:40:46] &lt;reem&gt; Yea, I could get around it if I needed to
+[11:40:58] &lt;reem&gt; Anyway the primary consumer is transfer and I'm running on nightly there
+[11:41:05] &lt;reem&gt; So it doesn't matter too much
+</code></pre>
+</li>
+<li>
+<p><a href="https://crates.io/crates/nl80211rs">nl80211rs-0.1.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#rhEG57vQQHWiVCcS3kIWrA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#s97ED8oXQ4WN-Pbm3ZsFJQ">after</a>)</p>
+<ul>
+<li><a href="https://github.com/carrotsrc/nl80211rs/search?utf8=%E2%9C%93&amp;q=packed">three similar uses</a> to match <a href="http://lxr.free-electrons.com/source/include/uapi/linux/nl80211.h#L2288">C struct</a>.
+On stable.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/openal">openal-0.2.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#XUvl-638T82xgGwkrxpz5g">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#Oc9wEFpbQM2Tja9sv0qt4g">after</a>)</p>
+<ul>
+<li><a href="https://github.com/meh/rust-openal/blob/9e35fd284f25da7fe90a8307de85a6ec6d392ea1/src/util.rs#L6">several similar uses</a>, probably unnecessary, just need the struct to behave like <code>[f32; 3]</code>: pointers to it <a href="https://github.com/meh/rust-openal/blob/9e35fd284f25da7fe90a8307de85a6ec6d392ea1/src/listener/listener.rs#L204-L205">are passed</a> to <a href="https://github.com/meh/rust-openal-sys/blob/master/src/al.rs#L146">functions expecting <code>*mut f32</code></a> pointers.
+On stable.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/elfloader">elfloader-0.0.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#ssE4lk0xR3q1qYZBXK24aA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#SAH7AAVIToKkhf7QRK4C1g">after</a>)</p>
+<ul>
+<li><a href="https://github.com/gz/rust-elfloader/blob/d61db7c83d66ce65da92aed5e33a4baf35f4c1e7/src/elf.rs#L362">two similar uses</a>, required to match file headers/formats exactly.
+Requires nightly.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/x11cap">x11cap-0.1.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#7wn8cjqXSOaZfpekKRY-yw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#bA6LwPreTMa8R_zYNt8Z3w">after</a>)</p>
+<ul>
+<li><a href="https://github.com/bryal/X11Cap/blob/d11b7170e6fa7c1ab370c69887b9ce71a542335d/src/lib.rs#L41">use</a> unnecessary.
+Requires nightly.</li>
+</ul>
+</li>
+</ul>
+<h5 id="non-root-regressions-sorted-by-rank"><a class="header" href="#non-root-regressions-sorted-by-rank">Non-root regressions, sorted by rank:</a></h5>
+<ul>
+<li>
+<p><a href="https://crates.io/crates/glium">glium-0.8.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#m5yEIEu-QEeM_2t4_11Opg">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#Wztxoh9SQ-GqA4F3inaR9Q">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/mio">mio-0.4.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#RtT-HmwbTYuG0djpAkVLvA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#Lx1d3ukPSGyRIwIDt_w0gw">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/piston_window">piston_window-0.11.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#QE421inlRgShgoXKcUkEEA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#wIKQPW_7TjmrztHQ4Kk3hw">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/piston2d-gfx_graphics">piston2d-gfx_graphics-0.4.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#hIUDm8m6QrCdOpSF30aPjQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#HOw14MCoQxGj7GjYIy-Lng">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/piston-gfx_texture">piston-gfx_texture-0.2.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#om-wlRW-Tm65MTlrpa8u7Q">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#m9e9Vx58RA6KhCljujzzMQ">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/piston2d-glium_graphics">piston2d-glium_graphics-0.3.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#vHeYcL2gRT2aIz9JeksAfw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#yEKBSm1BQ_C0O-4GKhQgUQ">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/html5ever">html5ever-0.2.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#C0yCazihTWa4x2GxCUxasQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#Vbl4HjqcQlq4-sJ2m1yBnQ">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/caribon">caribon-0.6.2</a> (<a href="https://tools.taskcluster.net/task-inspector/#AJZzG5gLSY-WVMKc-MoV5w">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#ornLa3ZaSC-Zbz7ICg33Tg">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/gj">gj-0.0.2</a> (<a href="https://tools.taskcluster.net/task-inspector/#xhaiB76FQAKCEsmBkQtp1A">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#rBJke3wpQqaq7wmEiQtLJA">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/glium_text">glium_text-0.5.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#IMdXVtTYSIaDrCRQ6SbLTA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#t322h_mzQGarVmsf5MHqKA">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/glyph_packer">glyph_packer-0.0.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#JmIVzau8RyOhnlTvdsRIHQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#7k9GF09SQPya4ZrLuR6cJw">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/html5ever_dom_sink">html5ever_dom_sink-0.2.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#7GJmaAYKS9WNqnbCx5XMrw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#pHotnKLkTAqK4-LP-n2MUQ">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/identicon">identicon-0.1.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#15nnASVgStmrwqdCS1q8Rg">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#WgJb_jEMQIebNgb_D2uq7Q">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/assimp">assimp-0.0.4</a> (<a href="https://tools.taskcluster.net/task-inspector/#-i-FYpJ2Rz-bcmxGVmxoOQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#HXR8V8NeRMyOxF0Nnhdl0w">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/jamkit">jamkit-0.2.4</a> (<a href="https://tools.taskcluster.net/task-inspector/#mcpl8Z62Td-DFfoi9AqRnw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#XGOIXxqpRbCMy5bZ42GV5w">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/coap">coap-0.1.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#SI137HlpRsSuQrlhxlRHpQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#dT3pt46pQtmy3CvIaC_71Q">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/kiss3d">kiss3d-0.1.2</a> (<a href="https://tools.taskcluster.net/task-inspector/#2Bbro6uZQQCudv2ClalFTw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#9vRbugDKTDm94fjw6BcS6A">after</a>)</p>
+<ul>
+<li><a href="https://github.com/sebcrozet/kiss3d/blob/1c1d39d5f8a428609b2f7809c7237e8853ac24e9/src/text/glyph.rs#L7">use</a> seems to be unnecessary: semantically useless, just a space “optimisation”, which actually makes no difference because the Vec field will be appropriately aligned always.
+On stable.</li>
+</ul>
+</li>
+<li>
+<p><a href="https://crates.io/crates/compass-sprite">compass-sprite-0.0.3</a> (<a href="https://tools.taskcluster.net/task-inspector/#dTcfDsk1QYKWtK7EH5gnwg">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#rElhdv9GS8-Zi14LSL-6Ng">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/dcpu16-gui">dcpu16-gui-0.0.3</a> (<a href="https://tools.taskcluster.net/task-inspector/#mtbOQfFUTDiZcMUc65LD3w">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#co31ZVgNQ1mYyDCnSwBxJg">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/piston3d-gfx_voxel">piston3d-gfx_voxel-0.1.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#2nZmq4zORIOdJ-ErCOCmww">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#epzWs2zuSiWxfoWyMCv0Kw">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/dev">dev-0.0.7</a> (<a href="https://tools.taskcluster.net/task-inspector/#5hSafPV2RlKlubg7WHniPw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#ITQ6zXYpSAC3_AtmMe4xRw">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/rustty">rustty-0.1.3</a> (<a href="https://tools.taskcluster.net/task-inspector/#jlstxp6mSPqzQ1n3FgHSRA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#HgrQz6UVQ5yCkVX25Py-2w">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/skeletal_animation">skeletal_animation-0.1.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#nyMUzqs6RZKIZJ1v1xcglA">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#10lM9Vh5SBa7YD3swbm6pw">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/slabmalloc">slabmalloc-0.0.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#li_vsJY8S9-OKEP_KIzEyQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#1lcKVbKVQNqkKSfwEKIvkg">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/spidev">spidev-0.1.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#5YidcvWyQ0KSmX_9yHjL5A">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#mmDafSdlSIS-xfDvyeIckQ">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/sysfs_gpio">sysfs_gpio-0.3.2</a> (<a href="https://tools.taskcluster.net/task-inspector/#KEO87BJHSB-9wNHvTGgEiQ">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#44Qnzq6CSBSrMti4utYEZQ">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/texture_packer">texture_packer-0.0.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#-yNhXPaFSBK59eEPRBChVw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#dY5YnW-uTRuCAxxh93_P1w">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/falcon">falcon-0.0.1</a> (<a href="https://tools.taskcluster.net/task-inspector/#hsFGvgrWTL6yY5JVjm20Sw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#YMYfL2KkTH2fct8CD9nqUg">after</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/filetype">filetype-0.2.0</a> (<a href="https://tools.taskcluster.net/task-inspector/#bCC3ps_gT6m05BNm5lEnFw">before</a>) (<a href="https://tools.taskcluster.net/task-inspector/#trGw9uPMTgiuxp-w821ZgA">after</a>)</p>
+</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="1238-nonparametric-dropck.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="1241-no-wildcard-deps.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="1238-nonparametric-dropck.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="1241-no-wildcard-deps.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

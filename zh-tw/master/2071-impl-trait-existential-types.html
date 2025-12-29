@@ -1,0 +1,570 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2071-impl-trait-existential-types - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: impl-trait-existential-types</li>
+<li>Start Date: 2017-07-20</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/2071">rust-lang/rfcs#2071</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/63063">rust-lang/rust#63063</a> (existential types)</li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/63065">rust-lang/rust#63065</a> (impl Trait in const/static/let)</li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>Add the ability to create named existential types and support <code>impl Trait</code> in <code>let</code>, <code>const</code>, and <code>static</code> declarations.</p>
+<pre><code class="language-rust">// existential types
+existential type Adder: Fn(usize) -&gt; usize;
+fn adder(a: usize) -&gt; Adder {
+    |b| a + b
+}
+
+// existential type in associated type position:
+struct MyType;
+impl Iterator for MyType {
+    existential type Item: Debug;
+    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt; {
+        Some("Another item!")
+    }
+}
+
+// `impl Trait` in `let`, `const`, and `static`:
+
+const ADD_ONE: impl Fn(usize) -&gt; usize = |x| x + 1;
+static MAYBE_PRINT: Option&lt;impl Fn(usize)&gt; = Some(|x| println!("{}", x));
+fn my_func() {
+    let iter: impl Iterator&lt;Item = i32&gt; = (0..5).map(|x| x * 5);
+    ...
+}</code></pre>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>This RFC proposes two expansions to Rust’s <code>impl Trait</code> feature. <code>impl Trait</code>, first introduced in <a href="https://github.com/rust-lang/rfcs/blob/master/text/1522-conservative-impl-trait.md">RFC 1522</a>, allows functions to return types which implement a given trait, but whose concrete type remains anonymous. <code>impl Trait</code> was expanded upon in <a href="https://github.com/rust-lang/rfcs/blob/master/text/1951-expand-impl-trait.md">RFC 1951</a>, which added <code>impl Trait</code> to argument position and resolved questions around syntax and parameter scoping. In its current form, the feature makes it possible for functions to return unnameable or complex types such as closures and iterator combinators. <code>impl Trait</code> also allows library authors to hide the concrete type returned by a function, making it possible to change the return type later on.</p>
+<p>However, the current feature has some severe limitations. Right now, it isn’t possible to return an <code>impl Trait</code> type from a trait implementation. This is a huge restriction which this RFC fixes by making it possible to create a named existential type:</p>
+<pre><code class="language-rust">// `impl Trait` in traits:
+struct MyStruct;
+impl Iterator for MyStruct {
+
+    // Here we can declare an associated type whose concrete type is hidden
+    // to other modules.
+    //
+    // External users only know that `Item` implements the `Debug` trait.
+    existential type Item: Debug;
+
+    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt; {
+        Some("hello")
+    }
+}</code></pre>
+<p>This syntax allows us to declare multiple items which refer to the same existential type:</p>
+<pre><code class="language-rust">// Type `Foo` refers to a type that implements the `Debug` trait.
+// The concrete type to which `Foo` refers is inferred from this module,
+// and this concrete type is hidden from outer modules (but not submodules).
+pub existential type Foo: Debug;
+
+const FOO: Foo = 5;
+
+// This function can be used by outer modules to manufacture an instance of
+// `Foo`. Other modules don't know the concrete type of `Foo`,
+// so they can't make their own `Foo`s.
+pub fn get_foo() -&gt; Foo {
+    5
+}
+
+// We know that the argument and return value of `get_larger_foo` must be the
+// same type as is returned from `get_foo`.
+pub fn get_larger_foo(x: Foo) -&gt; Foo {
+    let x: i32 = x;
+    x + 10
+}
+
+// Since we know that all `Foo`s have the same (hidden) concrete type, we can
+// write a function which returns `Foo`s acquired from different places.
+fn one_of_the_foos(which: usize) -&gt; Foo {
+    match which {
+        0 =&gt; FOO,
+        1 =&gt; foo1(),
+        2 =&gt; foo2(),
+        3 =&gt; opt_foo().unwrap(),
+
+        // It also allows us to make recursive calls to functions with an
+        // `impl Trait` return type:
+        x =&gt; one_of_the_foos(x - 4),
+    }
+}</code></pre>
+<p>Separately, this RFC adds the ability to store an <code>impl Trait</code> type in a <code>let</code>, <code>const</code> or <code>static</code>. This makes <code>const</code> and <code>static</code> declarations more concise, and makes it possible to store types such as closures or iterator combinators in <code>const</code>s and <code>static</code>s.</p>
+<p>In a future world where <code>const fn</code> has been expanded to trait functions, one could imagine iterator constants such as this:</p>
+<pre><code class="language-rust">const THREES: impl Iterator&lt;Item = i32&gt; = (0..).map(|x| x * 3);</code></pre>
+<p>Since the type of <code>THREES</code> contains a closure, it is impossible to write down. The <a href="https://github.com/rust-lang/rfcs/pull/2010"><code>const</code>/<code>static</code> type annotation elison RFC</a> has suggested one possible solution. That RFC proposes to let users omit the types of <code>const</code>s and <code>statics</code>s. However, in some cases, completely omitting the types of <code>const</code> and <code>static</code> items could make it harder to tell what sort of value is being stored in a <code>const</code> or <code>static</code>. Allowing <code>impl Trait</code> in <code>const</code>s and <code>static</code>s would resolve the unnameable type issue while still allowing users to provide some information about the type.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-Level Explanation</a></h2>
+<h3 id="guide-impl-trait-in-let-const-and-static"><a class="header" href="#guide-impl-trait-in-let-const-and-static">Guide: <code>impl Trait</code> in <code>let</code>, <code>const</code> and <code>static</code>:</a></h3>
+<p><code>impl Trait</code> can be used in <code>let</code>, <code>const</code>, and <code>static</code> declarations, like this:</p>
+<pre><code class="language-rust">use std::fmt::Display;
+
+let displayable: impl Display = "Hello, world!";
+println!("{}", displayable);</code></pre>
+<p>Declaring a variable of type <code>impl Trait</code> will hide its concrete type. This is useful for declaring a value which implements a trait, but whose concrete type might change later on. In our example above, this means that, while we can “display” the value of <code>displayable</code>, the concrete type <code>&amp;str</code> is hidden:</p>
+<pre><code class="language-rust">use std::fmt::Display;
+
+// Without `impl Trait`:
+const DISPLAYABLE: &amp;str = "Hello, world!";
+fn display() {
+    println!("{}", DISPLAYABLE);
+    assert_eq!(DISPLAYABLE.len(), 5);
+}
+
+// With `impl Trait`:
+const DISPLAYABLE: impl Display = "Hello, world!";
+
+fn display() {
+    // We know `DISPLAYABLE` implements `Display`.
+    println!("{}", DISPLAYABLE);
+
+    // ERROR: no method `len` on `impl Display`
+    // We don't know the concrete type of `DISPLAYABLE`,
+    // so we don't know that it has a `len` method.
+    assert_eq!(DISPLAYABLE.len(), 5);
+}</code></pre>
+<p><code>impl Trait</code> declarations are also useful when declaring constants or static with types that are impossible to name, like closures:</p>
+<pre><code class="language-rust">// Without `impl Trait`, we can't declare this constant because we can't
+// write down the type of the closure.
+const MY_CLOSURE: ??? = |x| x + 1;
+
+// With `impl Trait`:
+const MY_CLOSURE: impl Fn(i32) -&gt; i32 = |x| x + 1;</code></pre>
+<p>Finally, note that <code>impl Trait</code> <code>let</code> declarations hide the concrete types of local variables:</p>
+<pre><code class="language-rust">let displayable: impl Display = "Hello, world!";
+
+// We know `displayable` implements `Display`.
+println!("{}", displayable);
+
+// ERROR: no method `len` on `impl Display`
+// We don't know the concrete type of `displayable`,
+// so we don't know that it has a `len` method.
+assert_eq!(displayable.len(), 5);</code></pre>
+<p>At first glance, this behavior doesn’t seem particularly useful. Indeed, <code>impl Trait</code> in <code>let</code> bindings exists mostly for consistency with <code>const</code>s and <code>static</code>s. However, it can be useful for documenting the specific ways in which a variable is used. It can also be used to provide better error messages for complex, nested types:</p>
+<pre><code class="language-rust">// Without `impl Trait`:
+let x = (0..100).map(|x| x * 3).filter(|x| x % 5 == 0);
+
+// ERROR: no method named `bogus_missing_method` found for type
+// `std::iter::Filter&lt;std::iter::Map&lt;std::ops::Range&lt;{integer}&gt;, [closure@src/main.rs:2:26: 2:35]&gt;, [closure@src/main.rs:2:44: 2:58]&gt;` in the current scope
+x.bogus_missing_method();
+
+// With `impl Trait`:
+let x: impl Iterator&lt;Item = i32&gt; = (0..100).map(|x| x * 3).filter(|x| x % 5);
+
+// ERROR: no method named `bogus_missing_method` found for type
+// `impl std::iter::Iterator` in the current scope
+x.bogus_missing_method();</code></pre>
+<h3 id="guide-existential-types"><a class="header" href="#guide-existential-types">Guide: Existential types</a></h3>
+<p>Rust allows users to declare <code>existential type</code>s. An existential type allows you to give a name to a type without revealing exactly what type is being used.</p>
+<pre><code class="language-rust">use std::fmt::Debug;
+
+existential type Foo: Debug;
+
+fn foo() -&gt; Foo {
+    5i32
+}</code></pre>
+<p>In the example above, <code>Foo</code> refers to <code>i32</code>, similar to a type alias. However, unlike a normal type alias, the concrete type of <code>Foo</code> is hidden outside of the module. Outside the module, the only thing that is known about <code>Foo</code> is that it implements the traits that appear in its declaration (e.g. <code>Debug</code> in <code>existential type Foo: Debug;</code>). If a user outside the module tries to use a <code>Foo</code> as an <code>i32</code>, they will see an error:</p>
+<pre><code class="language-rust">use std::fmt::Debug;
+
+mod my_mod {
+  pub existential type Foo: Debug;
+
+  pub fn foo() -&gt; Foo {
+      5i32
+  }
+
+  pub fn use_foo_inside_mod() -&gt; Foo {
+      // Creates a variable `x` of type `i32`, which is equal to type `Foo`
+      let x: i32 = foo();
+      x + 5
+  }
+}
+
+fn use_foo_outside_mod() {
+    // Creates a variable `x` of type `Foo`, which is only known to implement `Debug`
+    let x = my_mod::foo();
+
+    // Because we're outside `my_mod`, the user cannot determine the type of `Foo`.
+    let y: i32 = my_mod::foo(); // ERROR: expected type `i32`, found existential type `Foo`
+
+    // However, the user can use its `Debug` impl:
+    println!("{:?}", x);
+}</code></pre>
+<p>This makes it possible to write modules that hide their concrete types from the outside world, allowing them to change implementation details without affecting consumers of their API.</p>
+<p>Note that it is sometimes necessary to manually specify the concrete type of an existential type, like in <code>let x: i32 = foo();</code> above. This aids the function’s ability to locally infer the concrete type of <code>Foo</code>.</p>
+<p>One particularly noteworthy use of existential types is in trait implementations. With this feature, we can declare associated types as follows:</p>
+<pre><code class="language-rust">struct MyType;
+impl Iterator for MyType {
+    existential type Item: Debug;
+    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt; {
+        Some("Another item!")
+    }
+}</code></pre>
+<p>In this trait implementation, we’ve declared that the item returned by our iterator implements <code>Debug</code>, but we’ve kept its concrete type (<code>&amp;'static str</code>) hidden from the outside world.</p>
+<p>We can even use this feature to specify unnameable associated types, such as closures:</p>
+<pre><code class="language-rust">struct MyType;
+impl Iterator for MyType {
+    existential type Item: Fn(i32) -&gt; i32;
+    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt; {
+        Some(|x| x + 5)
+    }
+}</code></pre>
+<p>Existential types can also be used to reference unnameable types in a struct definition:</p>
+<pre><code class="language-rust">existential type Foo: Debug;
+fn foo() -&gt; Foo { 5i32 }
+
+struct ContainsFoo {
+    some_foo: Foo
+}</code></pre>
+<p>It’s also possible to write generic existential types:</p>
+<pre><code class="language-rust">#[derive(Debug)]
+struct MyStruct&lt;T: Debug&gt; {
+    inner: T
+};
+
+existential type Foo&lt;T&gt;: Debug;
+
+fn get_foo&lt;T: Debug&gt;(x: T) -&gt; Foo&lt;T&gt; {
+    MyStruct {
+        inner: x
+    }
+}</code></pre>
+<p>Similarly to <code>impl Trait</code> under <a href="https://github.com/rust-lang/rfcs/blob/master/text/1951-expand-impl-trait.md">RFC 1951</a>, <code>existential type</code> implicitly captures all generic type parameters in scope. In practice, this means that existential associated types may contain generic parameters from their impl:</p>
+<pre><code class="language-rust">struct MyStruct;
+trait Foo&lt;T&gt; {
+    type Bar;
+    fn bar() -&gt; Bar;
+}
+
+impl&lt;T&gt; Foo&lt;T&gt; for MyStruct {
+    existential type Bar: Trait;
+    fn bar() -&gt; Self::Bar {
+        ...
+        // Returns some type MyBar&lt;T&gt;
+    }
+}</code></pre>
+<p>However, as in 1951, lifetime parameters must be explicitly annotated.</p>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-Level Explanation</a></h2>
+<h3 id="reference-impl-trait-in-let-const-and-static"><a class="header" href="#reference-impl-trait-in-let-const-and-static">Reference: <code>impl Trait</code> in <code>let</code>, <code>const</code> and <code>static</code>:</a></h3>
+<p>The rules for <code>impl Trait</code> values in <code>let</code>, <code>const</code>, and <code>static</code> declarations work mostly the same as <code>impl Trait</code> return values as specified in <a href="https://github.com/rust-lang/rfcs/blob/master/text/1951-expand-impl-trait.md">RFC 1951</a>.</p>
+<p>These values hide their concrete type and can only be used as a value which is known to implement the specified traits. They inherit any type parameters in scope. One difference from <code>impl Trait</code> return types is that they also inherit any lifetime parameters in scope. This is necessary in order for <code>let</code> bindings to use <code>impl Trait</code>. <code>let</code> bindings often contain references which last for anonymous scope-based lifetimes, and annotating these lifetimes manually would be impossible.</p>
+<h3 id="reference-existential-types"><a class="header" href="#reference-existential-types">Reference: Existential Types</a></h3>
+<p>Existential types are similar to normal type aliases, except that their concrete type is determined from the scope in which they are defined (usually a module or a trait impl). For example, the following code has to examine the body of <code>foo</code> in order to determine that the concrete type of <code>Foo</code> is <code>i32</code>:</p>
+<pre><code class="language-rust">existential type Foo: Debug;
+
+fn foo() -&gt; Foo {
+    5i32
+}</code></pre>
+<p><code>Foo</code> can be used as <code>i32</code> in multiple places throughout the module. However, each function that uses <code>Foo</code> as <code>i32</code> must independently place constraints upon <code>Foo</code> such that it <em>must</em> be <code>i32</code>:</p>
+<pre><code class="language-rust">fn add_to_foo_1(x: Foo) {
+    x + 1 // ERROR: binary operation `+` cannot be applied to existential type `Foo`
+//  ^ `x` here is type `Foo`.
+//    Type annotations needed to resolve the concrete type of `x`.
+//    (^ This particular error should only appear within the module in which
+//      `Foo` is defined)
+}
+
+fn add_to_foo_2(x: Foo) {
+    let x: i32 = x;
+    x + 1
+}
+
+fn return_foo(x: Foo) -&gt; Foo {
+    // This is allowed.
+    // We don't need to know the concrete type of `Foo` for this function to
+    // typecheck.
+    x
+}</code></pre>
+<p>Each existential type declaration must be constrained by at least one function body or const/static initializer. A body or initializer must either fully constrain or place no constraints upon a given existential type.</p>
+<p>Outside of the module, existential types behave the same way as <code>impl Trait</code> types: their concrete type is hidden from the module. However, it can be assumed that two values of the same existential type are actually values of the same type:</p>
+<pre><code class="language-rust">mod my_mod {
+    pub existential type Foo: Debug;
+    pub fn foo() -&gt; Foo {
+        5i32
+    }
+    pub fn bar() -&gt; Foo {
+        10i32
+    }
+    pub fn baz(x: Foo) -&gt; Foo {
+        let x: i32 = x;
+        x + 5
+    }
+}
+
+fn outside_mod() -&gt; Foo {
+    if true {
+        my_mod::foo()
+    } else {
+        my_mod::baz(my_mod::bar())
+    }
+}</code></pre>
+<p>One last difference between existential type aliases and normal type aliases is that existential type aliases cannot be used in <code>impl</code> blocks:</p>
+<pre><code class="language-rust">existential type Foo: Debug;
+impl Foo { // ERROR: `impl` cannot be used on existential type aliases
+    ...
+}
+impl MyTrait for Foo { // ERROR ^
+    ...
+}</code></pre>
+<p>While this feature may be added at some point in the future, it’s unclear exactly what behavior it should have– should it result in implementations of functions and traits on the underlying type? It seems like the answer should be “no” since doing so would give away the underlying type being hidden beneath the impl. Still, some version of this feature could be used eventually to implement traits or functions for closures, or to express conditional bounds in existential type signatures (e.g. <code>existential type Foo&lt;T&gt;: Debug; impl&lt;T: Clone&gt; Clone for Foo&lt;T&gt; { ... }</code>). This is a complicated design space which has not yet been explored fully enough. In the future, such a feature could be added backwards-compatibly.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>This RFC proposes the addition of a complicated feature that will take time for Rust developers to learn and understand. There are potentially simpler ways to achieve some of the goals of this RFC, such as making <code>impl Trait</code> usable in traits. This RFC instead introduces a more complicated solution in order to allow for increased expressiveness and clarity.</p>
+<p>This RFC makes <code>impl Trait</code> feel even more like a type by allowing it in more locations where formerly only concrete types were allowed. However, there are other places such a type can appear where <code>impl Trait</code> cannot, such as <code>impl</code> blocks and <code>struct</code> definitions (i.e. <code>struct Foo { x: impl Trait }</code>). This inconsistency may be surprising to users.</p>
+<h2 id="替代方案"><a class="header" href="#替代方案">替代方案</a></h2>
+<p>We could instead expand <code>impl Trait</code> in a more focused but limited way, such as specifically extending <code>impl Trait</code> to work in traits without allowing full existential type aliases. A draft RFC for such a proposal can be seen <a href="https://github.com/cramertj/impl-trait-goals/blob/impl-trait-in-traits/0000-impl-trait-in-traits.md">here</a>. Any such feature could, in the future, be added as essentially syntax sugar on top of this RFC, which is strictly more expressive. The current RFC will also help us to gain experience with how people use existential type aliases in practice, allowing us to resolve some remaining questions in the linked draft, specifically around how <code>impl Trait</code> associated types are used.</p>
+<p>Throughout the process we have considered a number of alternative syntaxes for existential types. The syntax <code>existential type Foo: Trait;</code> is intended to be a placeholder for a more concise and accessible syntax, such as <code>abstract type Foo: Trait;</code>. A variety of variations on this theme have been considered:</p>
+<ul>
+<li>Instead of <code>abstract type</code>, it could be some single keyword like <code>abstype</code>.</li>
+<li>We could use a different keyword from <code>abstract</code>, like <code>opaque</code> or <code>exists</code>.</li>
+<li>We could omit a keyword altogether and use <code>type Foo: Trait;</code> syntax (outside of trait definitions).</li>
+</ul>
+<p>A more divergent alternative is not to have an “existential type” feature at all, but instead just have <code>impl Trait</code> be allowed in type alias position. Everything written <code>existential type $NAME: $BOUND;</code> in this RFC would instead be written <code>type $NAME = impl $BOUND;</code>.</p>
+<p>This RFC opted to avoid the <code>type Foo = impl Trait;</code> syntax because of its potential teaching difficulties. As a result of <a href="https://github.com/rust-lang/rfcs/blob/master/text/1951-expand-impl-trait.md">RFC 1951</a>, <code>impl Trait</code> is sometimes universal quantification and sometimes existential quantification. By providing a separate syntax for “explicit” existential quantification, <code>impl Trait</code> can be taught as a syntactic sugar for generics and existential types. By “just using <code>impl Trait</code>” for named existential type declarations, there would be no desugaring-based explanation for all forms of <code>impl Trait</code>.</p>
+<p>This choice has some disadvantages in comparison impl Trait in type aliases:</p>
+<ul>
+<li>We introduce another new syntax on top of <code>impl Trait</code>, which inherently has some costs.</li>
+<li>Users can’t use it in a nested fashion without creating an additional existential type.</li>
+</ul>
+<p>Because of these downsides, we are open to reconsidering this question with more practical experience, and the final syntax is left as an unresolved question for the RFC.</p>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<p>As discussed in the <a href="#alternatives">alternatives</a> section above, we will need to reconsider the optimal syntax before stabilizing this feature.</p>
+<p>Additionally, the following extensions should be considered in the future:</p>
+<ul>
+<li>Conditional bounds. Even with this proposal, there’s no way to specify the <code>impl Trait</code> bounds necessary to implement traits like <code>Iterator</code>, which have functions whose return types implement traits conditional on the input, e.g. <code>fn foo&lt;T&gt;(x: T) -&gt; impl Clone if T: Clone</code>.</li>
+<li>Associated-type-less <code>impl Trait</code> in trait declarations and implementations, such as the proposal mentioned in the alternatives section. As mentioned above, this feature would be strictly less expressive than this RFC. The more general feature proposed in this RFC would help us to define a better version of this alternative which could be added in the future.</li>
+<li>A more general form of inference for <code>impl Trait</code> type aliases. This RFC forces each function to either fully constrain or place no constraints upon an <code>impl Trait</code> type. It’s possible to allow some partial constraints through a process like the one described in <a href="https://github.com/rust-lang/rfcs/pull/2071#issuecomment-320458113">this comment</a>. However, these partial bounds present implementation concerns, so they have been removed from this RFC. If it turns out that partial bounds would be greatly useful in practice, they can be added backwards-compatibly in a future RFC.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="2070-panic-implementation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="2071-impl-trait-type-alias.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="2070-panic-implementation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="2071-impl-trait-type-alias.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

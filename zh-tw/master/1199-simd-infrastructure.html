@@ -1,0 +1,450 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1199-simd-infrastructure - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: repr_simd, platform_intrinsics, cfg_target_feature</li>
+<li>Start Date: 2015-06-02</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/1199">rust-lang/rfcs#1199</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/27731">rust-lang/rust#27731</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>Lay the ground work for building powerful SIMD functionality.</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>SIMD (Single-Instruction Multiple-Data) is an important part of performant modern applications. Most CPUs used for that sort of task provide dedicated hardware and instructions for operating on multiple values in a single instruction, and exposing this is an important part of being a low-level language.</p>
+<p>This RFC lays the ground-work for building nice SIMD functionality, but doesn’t fill everything out. The goal here is to provide the raw types and access to the raw instructions on each platform.</p>
+<p>(An earlier variant of this RFC was discussed as a <a href="https://internals.rust-lang.org/t/pre-rfc-simd-groundwork/2343">pre-RFC</a>.)</p>
+<h3 id="where-does-this-code-go-aka-why-not-in-std"><a class="header" href="#where-does-this-code-go-aka-why-not-in-std">Where does this code go? Aka. why not in <code>std</code>?</a></h3>
+<p>This RFC is focused on building stable, powerful SIMD functionality in external crates, not <code>std</code>.</p>
+<p>This makes it much easier to support functionality only “occasionally” available with Rust’s preexisting <code>cfg</code> system. There’s no way for <code>std</code> to conditionally provide an API based on the target features used for the final artifact. Building <code>std</code> in every configuration is certainly untenable. Hence, if it were to be in <code>std</code>, there would need to be some highly delayed <code>cfg</code> system to support that sort of conditional API exposure.</p>
+<p>With an external crate, we can leverage <code>cargo</code>’s existing build infrastructure: compiling with some target features will rebuild with those features enabled.</p>
+<h2 id="詳細設計"><a class="header" href="#詳細設計">詳細設計</a></h2>
+<p>The design comes in three parts, all on the path to stabilisation:</p>
+<ul>
+<li>types (<code>feature(repr_simd)</code>)</li>
+<li>operations (<code>feature(platform_intrinsics)</code>)</li>
+<li>platform detection (<code>feature(cfg_target_feature)</code>)</li>
+</ul>
+<p>The general idea is to avoid bad performance cliffs, so that an intrinsic call in Rust maps to preferably one CPU instruction, or, if not, the “optimal” sequence required to do the given operation anyway. This means exposing a <em>lot</em> of platform specific details, since platforms behave very differently: both across architecture families (x86, x86-64, ARM, MIPS, …), and even within a family (x86-64’s Skylake, Haswell, Nehalem, …).</p>
+<p>There is definitely a common core of SIMD functionality shared across many platforms, but this RFC doesn’t try to extract that, it is just building tools that can be wrapped into a more uniform API later.</p>
+<h3 id="types"><a class="header" href="#types">Types</a></h3>
+<p>There is a new attribute: <code>repr(simd)</code>.</p>
+<pre><code class="language-rust">#[repr(simd)]
+struct f32x4(f32, f32, f32, f32);
+
+#[repr(simd)]
+struct Simd2&lt;T&gt;(T, T);</code></pre>
+<p>The <code>simd</code> <code>repr</code> can be attached to a struct and will cause such a struct to be compiled to a SIMD vector. It can be generic, but it is required that any fully monomorphised instance of the type consist of only a single “primitive” type, repeated some number of times.</p>
+<p>The <code>repr(simd)</code> may not enforce that any trait bounds exists/does the right thing at the type checking level for generic <code>repr(simd)</code> types. As such, it will be possible to get the code-generator to error out (ala the old <code>transmute</code> size errors), however, this shouldn’t cause problems in practice: libraries wrapping this functionality would layer type-safety on top (i.e. generic <code>repr(simd)</code> types would use some <code>unsafe</code> trait as a bound that is designed to only be implemented by types that will work).</p>
+<p>Adding <code>repr(simd)</code> to a type may increase its minimum/preferred alignment, based on platform behaviour. (E.g. x86 wants its 128-bit SSE vectors to be 128-bit aligned.)</p>
+<h3 id="operations"><a class="header" href="#operations">Operations</a></h3>
+<p>CPU vendors usually offer “standard” C headers for their CPU specific operations, such as <a href="http://infocenter.arm.com/help/topic/com.arm.doc.ihi0073a/IHI0073A_arm_neon_intrinsics_ref.pdf"><code>arm_neon.h</code></a> and <a href="https://software.intel.com/sites/landingpage/IntrinsicsGuide">the <code>...mmintrin.h</code> headers for x86(-64)</a>.</p>
+<p>All of these would be exposed as compiler intrinsics with names very similar to those that the vendor suggests (only difference would be some form of manual namespacing, e.g. prefixing with the CPU target), loadable via an <code>extern</code> block with an appropriate ABI. This subset of intrinsics would be on the path to stabilisation (that is, one can “import” them with <code>extern</code> in stable code), and would not be exported by <code>std</code>.</p>
+<p>Example:</p>
+<pre><code class="language-rust">extern "platform-intrinsic" {
+    fn x86_mm_abs_epi16(a: Simd8&lt;i16&gt;) -&gt; Simd8&lt;i16&gt;;
+    // ...
+}</code></pre>
+<p>These all use entirely concrete types, and this is the core interface to these intrinsics: essentially it is just allowing code to exactly specify a CPU instruction to use. These intrinsics only actually work on a subset of the CPUs that Rust targets, and will result in compile time errors if they are called on platforms that do not support them. The signatures are typechecked, but in a “duck-typed” manner: it will just ensure that the types are SIMD vectors with the appropriate length and element type, it will not enforce a specific nominal type.</p>
+<p>NB. The structural typing is just for the declaration: if a SIMD intrinsic is declared to take a type <code>X</code>, it must always be called with <code>X</code>, even if other types are structurally equal to <code>X</code>. Also, within a signature, SIMD types that must be structurally equal must be nominally equal. I.e. if the <code>add_...</code> all refer to the same intrinsic to add a SIMD vector of bytes,</p>
+<pre><code class="language-rust">// (same length)
+struct A(u8, u8, ..., u8);
+struct B(u8, u8, ..., u8);
+
+extern "platform-intrinsic" {
+    fn add_aaa(x: A, y: A) -&gt; A; // ok
+    fn add_bbb(x: B, y: B) -&gt; B; // ok
+    fn add_aab(x: A, y: A) -&gt; B; // error, expected B, found A
+    fn add_bab(x: B, y: A) -&gt; B; // error, expected A, found B
+}
+
+fn double_a(x: A) -&gt; A {
+    add_aaa(x, x)
+}
+fn double_b(x: B) -&gt; B {
+    add_aaa(x, x) // error, expected A, found B
+}</code></pre>
+<p>There would additionally be a small set of cross-platform operations that are either generally efficiently supported everywhere or are extremely useful. These won’t necessarily map to a single instruction, but will be shimmed as efficiently as possible.</p>
+<ul>
+<li>shuffles and extracting/inserting elements</li>
+<li>comparisons</li>
+<li>arithmetic</li>
+<li>conversions</li>
+</ul>
+<p>All of these intrinsics are imported via an <code>extern</code> directive similar to the process for pre-existing intrinsics like <code>transmute</code>, however, the SIMD operations are provided under a special ABI: <code>platform-intrinsic</code>. Use of this ABI (and hence the intrinsics) is initially feature-gated under the <code>platform_intrinsics</code> feature name. Why <code>platform-intrinsic</code> rather than say <code>simd-intrinsic</code>? There are non-SIMD platform-specific instructions that may be nice to expose (for example, Intel defines an <code>_addcarry_u32</code> intrinsic corresponding to the <code>ADC</code> instruction).</p>
+<h4 id="shuffles--element-operations"><a class="header" href="#shuffles--element-operations">Shuffles &amp; element operations</a></h4>
+<p>One of the most powerful features of SIMD is the ability to rearrange data within vectors, giving super-linear speed-ups sometimes. As such, shuffles are exposed generally: intrinsics that represent arbitrary shuffles.</p>
+<p>This may violate the “one instruction per intrinsic” principal depending on the shuffle, but rearranging SIMD vectors is extremely useful, and providing a direct intrinsic lets the compiler (a) do the programmers work in synthesising the optimal (short) sequence of instructions to get a given shuffle and (b) track data through shuffles without having to understand all the details of every platform specific intrinsic for shuffling.</p>
+<pre><code class="language-rust">extern "platform-intrinsic" {
+    fn simd_shuffle2&lt;T, U&gt;(v: T, w: T, idx: [i32; 2]) -&gt; U;
+    fn simd_shuffle4&lt;T, U&gt;(v: T, w: T, idx: [i32; 4]) -&gt; U;
+    fn simd_shuffle8&lt;T, U&gt;(v: T, w: T, idx: [i32; 8]) -&gt; U;
+    fn simd_shuffle16&lt;T, U&gt;(v: T, w: T, idx: [i32; 16]) -&gt; U;
+    // ...
+}</code></pre>
+<p>The raw definitions are only checked for validity at monomorphisation time, ensure that <code>T</code> and <code>U</code> are SIMD vector with the same element type, <code>U</code> has the appropriate length etc. Libraries can use traits to ensure that these will be enforced by the type checker too.</p>
+<p>This approach has similar type “safety”/code-generation errors to the vectors themselves.</p>
+<p>These operations are semantically:</p>
+<pre><code class="language-rust">// vector of double length
+let z = concat(v, w);
+
+return [z[idx[0]], z[idx[1]], z[idx[2]], ...]</code></pre>
+<p>The index array <code>idx</code> has to be compile time constants. Out of bounds indices yield errors.</p>
+<p>Similarly, intrinsics for inserting/extracting elements into/out of vectors are provided, to allow modelling the SIMD vectors as actual CPU registers as much as possible:</p>
+<pre><code class="language-rust">extern "platform-intrinsic" {
+    fn simd_insert&lt;T, Elem&gt;(v: T, i0: u32, elem: Elem) -&gt; T;
+    fn simd_extract&lt;T, Elem&gt;(v: T, i0: u32) -&gt; Elem;
+}</code></pre>
+<p>The <code>i0</code> indices do not have to be constant. These are equivalent to <code>v[i0] = elem</code> and <code>v[i0]</code> respectively. They are type checked similarly to the shuffles.</p>
+<h4 id="comparisons"><a class="header" href="#comparisons">Comparisons</a></h4>
+<p>Comparisons are implemented via intrinsics. The raw signatures would look like:</p>
+<pre><code class="language-rust">extern "platform-intrinsic" {
+    fn simd_eq&lt;T, U&gt;(v: T, w: T) -&gt; U;
+    fn simd_ne&lt;T, U&gt;(v: T, w: T) -&gt; U;
+    fn simd_lt&lt;T, U&gt;(v: T, w: T) -&gt; U;
+    fn simd_le&lt;T, U&gt;(v: T, w: T) -&gt; U;
+    fn simd_gt&lt;T, U&gt;(v: T, w: T) -&gt; U;
+    fn simd_ge&lt;T, U&gt;(v: T, w: T) -&gt; U;
+}</code></pre>
+<p>These are type checked during code-generation similarly to the shuffles: ensuring that <code>T</code> and <code>U</code> have the same length, and that <code>U</code> is appropriately “boolean”-y. Libraries can use traits to ensure that these will be enforced by the type checker too.</p>
+<h4 id="arithmetic"><a class="header" href="#arithmetic">Arithmetic</a></h4>
+<p>Intrinsics will be provided for arithmetic operations like addition and multiplication.</p>
+<pre><code class="language-rust">extern "platform-intrinsic" {
+    fn simd_add&lt;T&gt;(x: T, y: T) -&gt; T;
+    fn simd_mul&lt;T&gt;(x: T, y: T) -&gt; T;
+    // ...
+}</code></pre>
+<p>These will have codegen time checks that the element type is correct:</p>
+<ul>
+<li><code>add</code>, <code>sub</code>, <code>mul</code>: any float or integer type</li>
+<li><code>div</code>: any float type</li>
+<li><code>and</code>, <code>or</code>, <code>xor</code>, <code>shl</code> (shift left), <code>shr</code> (shift right): any integer type</li>
+</ul>
+<p>(The integer types are <code>i8</code>, …, <code>i64</code>, <code>u8</code>, …, <code>u64</code> and the float types are <code>f32</code> and <code>f64</code>.)</p>
+<h4 id="why-not-inline-asm"><a class="header" href="#why-not-inline-asm">Why not inline asm?</a></h4>
+<p>One alternative to providing intrinsics is to instead just use inline-asm to expose each CPU instruction. However, this approach has essentially only one benefit (avoiding defining the intrinsics), but several downsides, e.g.</p>
+<ul>
+<li>assembly is generally a black-box to optimisers, inhibiting optimisations, like algebraic simplification/transformation,</li>
+<li>programmers would have to manually synthesise the right sequence of operations to achieve a given shuffle, while having a generic shuffle intrinsic lets the compiler do it (NB. the intention is that the programmer will still have access to the platform specific operations for when the compiler synthesis isn’t quite right),</li>
+<li>inline assembly is not currently stable in Rust and there’s not a strong push for it to be so in the immediate future (although this could change).</li>
+</ul>
+<p>Benefits of manual assembly writing, like instruction scheduling and register allocation don’t apply to the (generally) one-instruction <code>asm!</code> blocks that replace the intrinsics (they need to be designed so that the compiler has full control over register allocation, or else the result will be strictly worse). Those possible advantages of hand written assembly over intrinsics only come in to play when writing longer blocks of raw assembly, i.e. some inner loop might be faster when written as a single chunk of asm rather than as intrinsics.</p>
+<h3 id="platform-detection"><a class="header" href="#platform-detection">Platform Detection</a></h3>
+<p>The availability of efficient SIMD functionality is very fine-grained, and our current <code>cfg(target_arch = "...")</code> is not precise enough. This RFC proposes a <code>target_feature</code> <code>cfg</code>, that would be set to the features of the architecture that are known to be supported by the exact target e.g.</p>
+<ul>
+<li>a default x86-64 compilation would essentially only set <code>target_feature = "sse"</code> and <code>target_feature = "sse2"</code></li>
+<li>compiling with <code>-C target-feature="+sse4.2"</code> would set <code>target_feature = "sse4.2"</code>, <code>target_feature = "sse.4.1"</code>, …, <code>target_feature = "sse"</code>.</li>
+<li>compiling with <code>-C target-cpu=native</code> on a modern CPU might set <code>target_feature = "avx2"</code>, <code>target_feature = "avx"</code>, …</li>
+</ul>
+<p>The possible values of <code>target_feature</code> will be a selected whitelist, not necessarily just everything LLVM understands. There are other non-SIMD features that might have <code>target_feature</code>s set too, such as <code>popcnt</code> and <code>rdrnd</code> on x86/x86-64.)</p>
+<p>With a <code>cfg_if!</code> macro that expands to the first <code>cfg</code> that is satisfied (ala <a href="https://crates.io/crates/cfg-if">@alexcrichton’s <code>cfg-if</code></a>), code might look like:</p>
+<pre><code class="language-rust">cfg_if_else! {
+    if #[cfg(target_feature = "avx")] {
+        fn foo() { /* use AVX things */ }
+    } else if #[cfg(target_feature = "sse4.1")] {
+        fn foo() { /* use SSE4.1 things */ }
+    } else if #[cfg(target_feature = "sse2")] {
+        fn foo() { /* use SSE2 things */ }
+    } else if #[cfg(target_feature = "neon")] {
+        fn foo() { /* use NEON things */ }
+    } else {
+        fn foo() { /* universal fallback */ }
+    }
+}</code></pre>
+<h2 id="extensions"><a class="header" href="#extensions">Extensions</a></h2>
+<ul>
+<li>
+<p>scatter/gather operations allow (partially) operating on a SIMD vector of pointers. This would require allowing pointers(/references?) in <code>repr(simd)</code> types.</p>
+</li>
+<li>
+<p>allow (and ignore for everything but type checking) zero-sized types in <code>repr(simd)</code> structs, to allow tagging them with markers</p>
+</li>
+<li>
+<p>the shuffle intrinsics could be made more relaxed in their type checking (i.e. not require that they return their second type parameter), to allow more type safety when combined with generic simd types:</p>
+<pre><code>#[repr(simd)] struct Simd2&lt;T&gt;(T, T);
+extern "platform-intrinsic" {
+    fn simd_shuffle2&lt;T, U&gt;(x: T, y: T, idx: [u32; 2]) -&gt; Simd2&lt;U&gt;;
+}
+</code></pre>
+<p>This should be a backwards-compatible generalisation.</p>
+</li>
+</ul>
+<h2 id="替代方案"><a class="header" href="#替代方案">替代方案</a></h2>
+<ul>
+<li>
+<p>Intrinsics could instead by namespaced by ABI, <code>extern "x86-intrinsic"</code>, <code>extern "arm-intrinsic"</code>.</p>
+</li>
+<li>
+<p>There could be more syntactic support for shuffles, either with true syntax, or with a syntax extension. The latter might look like: <code>shuffle![x, y, i0, i1, i2, i3, i4, ...]</code>. However, this requires that shuffles are restricted to a single type only (i.e. <code>Simd4&lt;T&gt;</code> can be shuffled to <code>Simd4&lt;T&gt;</code> but nothing else), or some sort of type synthesis. The compiler has to somehow work out the return value:</p>
+<pre><code class="language-rust">let x: Simd4&lt;u32&gt; = ...;
+let y: Simd4&lt;u32&gt; = ...;
+
+// reverse all the elements.
+let z = shuffle![x, y, 7, 6, 5, 4, 3, 2, 1, 0];</code></pre>
+<p>Presumably <code>z</code> should be <code>Simd8&lt;u32&gt;</code>, but it’s not obvious how the compiler can know this. The <code>repr(simd)</code> approach means there may be more than one SIMD-vector type with the <code>Simd8&lt;u32&gt;</code> shape (or, in fact, there may be zero).</p>
+</li>
+<li>
+<p>With type-level integers, there could be one shuffle intrinsic:</p>
+<p>fn simd_shuffle&lt;T, U, const N: usize&gt;(x: T, y: T, idx: [u32; N]) -&gt; U;</p>
+<p>NB. It is possible to add this as an additional intrinsic (possibly deprecating the <code>simd_shuffleNNN</code> forms) later.</p>
+</li>
+<li>
+<p>Type-level values can be applied more generally: since the shuffle indices have to be compile time constants, the shuffle could be</p>
+<pre><code>fn simd_shuffle&lt;T, U, const N: usize, const IDX: [u32; N]&gt;(x: T, y: T) -&gt; U;
+</code></pre>
+</li>
+<li>
+<p>Instead of platform detection, there could be feature detection (e.g. “platform supports something equivalent to x86’s <code>DPPS</code>”), but there probably aren’t enough cross-platform commonalities for this to be worth it. (Each “feature” would essentially be a platform specific <code>cfg</code> anyway.)</p>
+</li>
+<li>
+<p>Check vector operators in debug mode just like the scalar versions.</p>
+</li>
+<li>
+<p>Make fixed length arrays <code>repr(simd)</code>-able (via just flattening), so that, say, <code>#[repr(simd)] struct u32x4([u32; 4]);</code> and <code>#[repr(simd)] struct f64x8([f64; 4], [f64; 4]);</code> etc works. This will be most useful if/when we allow generic-lengths, <code>#[repr(simd)] struct Simd&lt;T, n&gt;([T; n]);</code></p>
+</li>
+<li>
+<p>have 100% guaranteed type-safety for generic <code>#[repr(simd)]</code> types and the generic intrinsics. This would probably require a relatively complicated set of traits (with compiler integration).</p>
+</li>
+</ul>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<ul>
+<li>Should integer vectors get division automatically? Most CPUs don’t support them for vectors.</li>
+<li>How should out-of-bounds shuffle and insert/extract indices be handled?</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="1194-set-recovery.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="1200-cargo-install.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="1194-set-recovery.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="1200-cargo-install.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

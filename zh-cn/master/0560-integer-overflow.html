@@ -1,0 +1,445 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>0560-integer-overflow - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Start Date: 2014-06-30</li>
+<li>RFC PR #: https://github.com/rust-lang/rfcs/pull/560</li>
+<li>Rust Issue #: https://github.com/rust-lang/rust/issues/22020</li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Change the semantics of the built-in fixed-size integer types from being defined as wrapping around on overflow to it being considered a program error (but <em>not</em> undefined behavior in the C sense). Implementations are <em>permitted</em> to check for overflow at any time (statically or dynamically). Implementations are <em>required</em> to at least check dynamically when <code>debug_assert!</code> assertions are enabled. Add a <code>WrappingOps</code> trait to the standard library with operations defined as wrapping on overflow for the limited number of cases where this is the desired semantics, such as hash functions.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>Numeric overflow prevents a difficult situation. On the one hand, overflow (and <a href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Integer_Types">underflow</a>) is known to be a common source of error in other languages. Rust, at least, does not have to worry about memory safety violations, but it is still possible for overflow to lead to bugs. Moreover, Rust’s safety guarantees do not apply to <code>unsafe</code> code, which carries the <a href="http://phrack.org/issues/60/10.html#article">same risks as C code when it comes to overflow</a>. Unfortunately, banning overflow outright is not feasible at this time. Detecting overflow statically is not practical, and detecting it dynamically can be costly. Therefore, we have to steer a middle ground.</p>
+<p>The RFC has several major goals:</p>
+<ol>
+<li>Ensure that code which intentionally uses wrapping semantics is clearly identified.</li>
+<li>Help users to identify overflow problems and help those who wish to be careful about overflow to do so.</li>
+<li>Ensure that users who wish to detect overflow can safely enable overflow checks and dynamic analysis, both on their code and on libraries they use, with a minimal risk of “false positives” (intentional overflows leading to a panic).</li>
+<li>To the extent possible, leave room in the future to move towards universal overflow checking if it becomes feasible. This may require opt-in from end-users.</li>
+</ol>
+<p>To that end the RFC proposes two mechanisms:</p>
+<ol>
+<li>Optional, dynamic overflow checking. Ordinary arithmetic operations (e.g., <code>a+b</code>) would conditionally check for overflow. If an overflow occurs when checking is enabled, a thread panic will be signaled. Specific intrinsics and library support are provided to permit either explicit overflow checks or explicit wrapping.</li>
+<li>Overflow checking would be, by default, tied to debug assertions (<code>debug_assert!</code>). It can be seen as analogous to a debug assertion: an important safety check that is too expensive to perform on all code.</li>
+</ol>
+<p>We expect that additional and finer-grained mechanisms for enabling overflows will be added in the future. One easy option is a command-line switch to enable overflow checking universally or within specific crates. Another option might be lexically scoped annotations to enable overflow (or perhaps disable) checking in specific blocks. Neither mechanism is detailed in this RFC at this time.</p>
+<h3 id="why-tie-overflow-checking-to-debug-assertions"><a class="header" href="#why-tie-overflow-checking-to-debug-assertions">Why tie overflow checking to debug assertions</a></h3>
+<p>The reasoning behind connecting overflow checking and debug assertion is that it ensures that pervasive checking for overflow is performed <em>at some point</em> in the development cycle, even if it does not take place in shipping code for performance reasons. The goal of this is to prevent “lock-in” where code has a de-facto reliance on wrapping semantics, and thus incorrectly breaks when stricter checking is enabled.</p>
+<p>We would like to allow people to switch “pervasive” overflow checks on by default, for example. However, if the default is not to check for overflow, then it seems likely that a pervasive check like that could not be used, because libraries are sure to come to rely on wrapping semantics, even if accidentally.</p>
+<p>By making the default for debugging code be checked overflow, we help ensure that users will encounter overflow errors in practice, and thus become aware that overflow in Rust is not the norm. It will also help debug simple errors, like unsigned underflow leading to an infinite loop.</p>
+<h2 id="detailed-design"><a class="header" href="#detailed-design">Detailed design</a></h2>
+<h3 id="arithmetic-operations-with-error-conditions"><a class="header" href="#arithmetic-operations-with-error-conditions">Arithmetic operations with error conditions</a></h3>
+<p>There are various operations which can sometimes produce error conditions (detailed below). Typically these error conditions correspond to under/overflow but not exclusively. It is the programmers responsibility to avoid these error conditions: any failure to do so can be considered a bug, and hence can be flagged by a static/dynamic analysis tools as an error. This is largely a semantic distinction, though.</p>
+<p>The result of an error condition depends upon the state of overflow checking, which can be either <em>enabled</em> or <em>default</em> (this RFC does not describe a way to disable overflow checking completely). If overflow checking is <em>enabled</em>, then an error condition always results in a panic. For efficiency reasons, this panic may be delayed over some number of pure operations, as described below.</p>
+<p>If overflow checking is <em>default</em>, that means that erroneous operations will produce a value as specified below. Note though that code which encounters an error condition is still considered buggy. In particular, Rust source code (in particular library code) cannot rely on wrapping semantics, and should always be written with the assumption that overflow checking <em>may</em> be enabled. This is because overflow checking may be enabled by a downstream consumer of the library.</p>
+<p>In the future, we could add some way to explicitly <em>disable</em> overflow checking in a scoped fashion. In that case, the result of each error condition would simply be the same as the optional state when no panic occurs, and this would requests for override checking specified elsewhere. However, no mechanism for disabling overflow checks is provided by this RFC: instead, it is recommended that authors use the wrapped primitives.</p>
+<p>The error conditions that can arise, and their defined results, are as follows. The intention is that the defined results are the same as the defined results today. The only change is that now a panic may result.</p>
+<ul>
+<li>The operations <code>+</code>, <code>-</code>, <code>*</code>, can underflow and overflow. When checking is enabled this will panic. When checking is disabled this will two’s complement wrap.</li>
+<li>The operations <code>/</code>, <code>%</code> for the arguments <code>INT_MIN</code> and <code>-1</code> will unconditionally panic. This is unconditional for legacy reasons.</li>
+<li>Shift operations (<code>&lt;&lt;</code>, <code>&gt;&gt;</code>) on a value of width <code>N</code> can be passed a shift value &gt;= <code>N</code>. It is unclear what behaviour should result from this, so the shift value is unconditionally masked to be modulo <code>N</code> to ensure that the argument is always in range.</li>
+</ul>
+<h3 id="enabling-overflow-checking"><a class="header" href="#enabling-overflow-checking">Enabling overflow checking</a></h3>
+<p>Compilers should present a command-line option to enable overflow checking universally. Additionally, when building in a default “debug” configuration (i.e., whenever <code>debug_assert</code> would be enabled), overflow checking should be enabled by default, unless the user explicitly requests otherwise. The precise control of these settings is not detailed in this RFC.</p>
+<p>The goal of this rule is to ensure that, during debugging and normal development, overflow detection is on, so that users can be alerted to potential overflow (and, in particular, for code where overflow is expected and normal, they will be immediately guided to use the wrapping methods introduced below). However, because these checks will be compiled out whenever an optimized build is produced, final code will not pay a performance penalty.</p>
+<p>In the future, we may add additional means to control when overflow is checked, such as scoped attributes or a global, independent compile-time switch.</p>
+<h3 id="delayed-panics"><a class="header" href="#delayed-panics">Delayed panics</a></h3>
+<p>If an error condition should occur and a thread panic should result, the compiler is not required to signal the panic at the precise point of overflow. It is free to coalesce checks from adjacent pure operations. Panics may never be delayed across an unsafe block nor may they be skipped entirely, however. The precise details of how panics may be deferred – and the definition of a pure operation – can be hammered out over time, but the intention here is that, at minimum, overflow checks for adjacent numeric operations like <code>a+b-c</code> can be coalesced into a single check. Another useful example might be that, when summing a vector, the final overflow check could be deferred until the summation is complete.</p>
+<h3 id="methods-for-explicit-wrapping-arithmetic"><a class="header" href="#methods-for-explicit-wrapping-arithmetic">Methods for explicit wrapping arithmetic</a></h3>
+<p>For those use cases where explicit wraparound on overflow is required, such as hash functions, we must provide operations with such semantics. Accomplish this by providing the following methods defined in the inherent impls for the various integral types.</p>
+<pre><code class="language-rust">impl i32 { // and i8, i16, i64, isize, u8, u32, u64, usize
+    fn wrapping_add(self, rhs: Self) -&gt; Self;
+    fn wrapping_sub(self, rhs: Self) -&gt; Self;
+    fn wrapping_mul(self, rhs: Self) -&gt; Self;
+    fn wrapping_div(self, rhs: Self) -&gt; Self;
+    fn wrapping_rem(self, rhs: Self) -&gt; Self;
+
+    fn wrapping_lshift(self, amount: u32) -&gt; Self;
+    fn wrapping_rshift(self, amount: u32) -&gt; Self;
+}</code></pre>
+<p>These are implemented to preserve the pre-existing, wrapping semantics unconditionally.</p>
+<h4 id="wrappingt-type-for-convenience"><a class="header" href="#wrappingt-type-for-convenience"><code>Wrapping&lt;T&gt;</code> type for convenience</a></h4>
+<p>For convenience, the <code>std::num</code> module also provides a <code>Wrapping&lt;T&gt;</code> newtype for which the operator overloads are implemented using the <code>WrappingOps</code> trait:</p>
+<pre><code>pub struct Wrapping&lt;T&gt;(pub T);
+
+impl&lt;T: WrappingOps&gt; Add&lt;Wrapping&lt;T&gt;, Wrapping&lt;T&gt;&gt; for Wrapping&lt;T&gt; {
+    fn add(&amp;self, other: &amp;Wrapping&lt;T&gt;) -&gt; Wrapping&lt;T&gt; {
+        self.wrapping_add(*other)
+    }
+}
+
+// Likewise for `Sub`, `Mul`, `Div`, and `Rem`
+</code></pre>
+<p>Note that this is only for potential convenience. The type-based approach has the drawback that e.g. <code>Vec&lt;int&gt;</code> and <code>Vec&lt;Wrapping&lt;int&gt;&gt;</code> are incompatible types.</p>
+<h3 id="lint"><a class="header" href="#lint">Lint</a></h3>
+<p>In general it seems inadvisable to use operations with error conditions (like a naked <code>+</code> or <code>-</code>) in unsafe code. It would be better to use explicit <code>checked</code> or <code>wrapped</code> operations as appropriate. The same holds for destructors, since unwinding in destructors is inadvisable. Therefore, the RFC recommends a lint be added against such operations, defaulting to warn, though the details (such as the name of this lint) are not spelled out.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p><strong>Making choices is hard.</strong> Having to think about whether wraparound arithmetic is appropriate may cause an increased cognitive burden. However, wraparound arithmetic is almost never the intended behavior. Therefore, programmers should be able to keep using the built-in integer types and to not think about this. Where wraparound semantics are required, it is generally a specialized use case with the implementor well aware of the requirement.</p>
+<p><strong>Loss of additive commutativity and benign overflows.</strong> In some cases, overflow behavior can be benign. For example, given an expression like <code>a+b-c</code>, intermediate overflows are not harmful so long as the final result is within the range of the integral type.  To take advantage of this property, code would have to be written to use the wrapping constructs, such as <code>a.wrapping_add(b).wrapping_sub(c)</code>. However, this drawback is counterbalanced by the large number of arithmetic expressions which do not have the same behavior when overflow occurs. A common example is <code>(max+min)/2</code>, which is a typical ingredient for <a href="http://googleresearch.blogspot.com/2006/06/extra-extra-read-all-about-it-nearly.html">binary searches and the like</a> and can lead to very surprising behavior. Moreover, the use of <code>wrapping_add</code> and <code>wrapping_sub</code> to highlight the fact that the intermediate result may overflow seems potentially useful to an end-reader.</p>
+<p><strong>Danger of triggering additional panics from within unsafe code.</strong> This proposal creates more possibility for panics to occur, at least when checks are enabled.  As usual, a panic at an inopportune time can lead to bugs if code is not exception safe. This is particularly worrisome in unsafe code, where crucial safety guarantees can be violated. However, this danger already exists, as there are numerous ways to trigger a panic, and hence unsafe code must be written with this in mind.  It seems like the best advice is for unsafe code to eschew the plain <code>+</code> and <code>-</code> operators, and instead prefer explicit checked or wrapping operations as appropriate (hence the proposed lint). Furthermore, the danger of an unexpected panic occurring in unsafe code must be weighed against the danger of a (silent) overflow, which can also lead to unsafety.</p>
+<p><strong>Divergence of debug and optimized code.</strong> The proposal here causes additional divergence of debug and optimized code, since optimized code will not include overflow checking. It would therefore be recommended that robust applications run tests both with and without optimizations (and debug assertions). That said, this state of affairs already exists. First, the use of <code>debug_assert!</code> causes debug/optimized code to diverge, but also, optimizations are known to cause non-trivial changes in behavior. For example, recursive (but pure) functions may be optimized away entirely by LLVM. Therefore, it always makes sense to run tests in both modes. This situation is not unique to Rust; most major projects do something similar. Moreover, in most languages, <code>debug_assert!</code> is in fact the only (or at least predominant) kind of of assertion, and hence the need to run tests both with and without assertions enabled is even stronger.</p>
+<p><strong>Benchmarking.</strong> Someone may conduct a benchmark of Rust with overflow checks turned on, post it to the Internet, and mislead the audience into thinking that Rust is a slow language. The choice of defaults minimizes this risk, however, since doing an optimized build in cargo (which ought to be a prerequisite for any benchmark) also disables debug assertions (or ought to).</p>
+<p><strong>Impact of overflow checking on optimization.</strong> In addition to the direct overhead of checking for overflow, there is some additional overhead when checks are enabled because compilers may have to forego other optimizations or code motion that might have been legal. This concern seems minimal since, in optimized builds, overflow checking will not be enabled. Certainly if we ever decided to change the default for overflow checking to <em>enabled</em> in optimized builds, we would want to measure carefully and likely include some means of disabling checks in particularly hot paths.</p>
+<h2 id="alternatives-and-possible-future-directions"><a class="header" href="#alternatives-and-possible-future-directions">Alternatives and possible future directions</a></h2>
+<h3 id="do-nothing-for-now"><a class="header" href="#do-nothing-for-now">Do nothing for now</a></h3>
+<p>Defer any action until later, as advocated by:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010494.html">Patrick Walton on June 22</a></li>
+</ul>
+<p>Reasons this was not pursued: The proposed changes are relatively well-contained. Doing this after 1.0 would require either breaking existing programs which rely on wraparound semantics, or introducing an entirely new set of integer types and porting all code to use those types, whereas doing it now lets us avoid needlessly proliferating types. Given the paucity of circumstances where wraparound semantics is appropriate, having it be the default is defensible only if better options aren’t available.</p>
+<h3 id="scoped-attributes-to-control-runtime-checking"><a class="header" href="#scoped-attributes-to-control-runtime-checking">Scoped attributes to control runtime checking</a></h3>
+<p>The <a href="https://github.com/rust-lang/rfcs/pull/146">original RFC</a> proposed a system of scoped attributes for enabling/disabling overflow checking. Nothing in the current RFC precludes us from going in this direction in the future. Rather, this RFC is attempting to answer the question (left unanswered in the original RFC) of what the behavior ought to be when no attribute is in scope.</p>
+<p>The proposal for scoped attributes in the original RFC was as follows. Introduce an <code>overflow_checks</code> attribute which can be used to turn runtime overflow checks on or off in a given scope. <code>#[overflow_checks(on)]</code> turns them on, <code>#[overflow_checks(off)]</code> turns them off. The attribute can be applied to a whole <code>crate</code>, a <code>mod</code>ule, an <code>fn</code>, or (as per <a href="https://github.com/rust-lang/rfcs/blob/master/active/0040-more-attributes.md">RFC 40</a>) a given block or a single expression. When applied to a block, this is analogous to the <code>checked { }</code> blocks of C#. As with lint attributes, an <code>overflow_checks</code> attribute on an inner scope or item will override the effects of any <code>overflow_checks</code> attributes on outer scopes or items. Overflow checks can, in fact, be thought of as a kind of run-time lint. Where overflow checks are in effect, overflow with the basic arithmetic operations and casts on the built-in fixed-size integer types will invoke task failure. Where they are not, the checks are omitted, and the result of the operations is left unspecified (but will most likely wrap).</p>
+<p>Significantly, turning <code>overflow_checks</code> on or off should only produce an observable difference in the behavior of the program, beyond the time it takes to execute, if the program has an overflow bug.</p>
+<p>It should also be emphasized that <code>overflow_checks(off)</code> only disables <em>runtime</em> overflow checks. Compile-time analysis can and should still be performed where possible. Perhaps the name could be chosen to make this more obvious, such as <code>runtime_overflow_checks</code>, but that starts to get overly verbose.</p>
+<p>Illustration of use:</p>
+<pre><code>// checks are on for this crate
+#![overflow_checks(on)]
+
+// but they are off for this module
+#[overflow_checks(off)]
+mod some_stuff {
+
+    // but they are on for this function
+    #[overflow_checks(on)]
+    fn do_thing() {
+        ...
+
+        // but they are off for this block
+        #[overflow_checks(off)] {
+            ...
+            // but they are on for this expression
+            let n = #[overflow_checks(on)] (a * b + c);
+            ...
+        }
+
+        ...
+    }
+
+    ...
+}
+
+...
+</code></pre>
+<h3 id="checks-off-means-wrapping-on"><a class="header" href="#checks-off-means-wrapping-on">Checks off means wrapping on</a></h3>
+<p>If we adopted a model of overflow checks, one could use an explicit request to turn overflow checks <em>off</em> as a signal that wrapping is desired. This would allow us to do without the <code>WrappingOps</code> trait and to avoid having unspecified results. See:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010590.html">Daniel Micay on June 24</a></li>
+</ul>
+<p>Reasons this was not pursued: The official semantics of a type should not change based on the context. It should be possible to make the choice between turning checks <code>on</code> or <code>off</code> solely based on performance considerations. It should be possible to distinguish cases where checking was too expensive from where wraparound was desired. (Wraparound is not usually desired.)</p>
+<h3 id="different-operators"><a class="header" href="#different-operators">Different operators</a></h3>
+<p>Have the usual arithmetic operators check for overflow, and introduce a new set of operators with wraparound semantics, as done by Swift. Alternately, do the reverse: make the normal operators wrap around, and introduce new ones which check.</p>
+<p>Reasons this was not pursued: New, strange operators would pose an entrance barrier to the language. The use cases for wraparound semantics are not common enough to warrant having a separate set of symbolic operators.</p>
+<h3 id="different-types"><a class="header" href="#different-types">Different types</a></h3>
+<p>Have separate sets of fixed-size integer types which wrap around on overflow and which are checked for overflow (e.g. <code>u8</code>, <code>u8c</code>, <code>i8</code>, <code>i8c</code>, …).</p>
+<p>Reasons this was not pursued: Programmers might be confused by having to choose among so many types. Using different types would introduce compatibility hazards to APIs. <code>Vec&lt;u8&gt;</code> and <code>Vec&lt;u8c&gt;</code> are incompatible. Wrapping arithmetic is not common enough to warrant a whole separate set of types.</p>
+<h3 id="just-use-checked"><a class="header" href="#just-use-checked">Just use <code>Checked*</code></a></h3>
+<p>Just use the existing <code>Checked</code> traits and a <code>Checked&lt;T&gt;</code> type after the same fashion as the <code>Wrapping&lt;T&gt;</code> in this proposal.</p>
+<p>Reasons this was not pursued: Wrong defaults. Doesn’t enable distinguishing “checking is slow” from “wrapping is desired” from “it was the default”.</p>
+<h3 id="runtime-closed-range-types"><a class="header" href="#runtime-closed-range-types">Runtime-closed range types</a></h3>
+<p><a href="https://github.com/bill-myers/rfcs/blob/no-integer-overflow/active/0000-no-integer-overflow.md">As proposed by Bill Myers.</a></p>
+<p>Reasons this was not pursued: My brain melted. :(</p>
+<h3 id="making-as-be-checked"><a class="header" href="#making-as-be-checked">Making <code>as</code> be checked</a></h3>
+<p>The RFC originally specified that using <code>as</code> to convert between types would cause checked semantics. However, we now use <code>as</code> as a primitive type operator. This decision was discussed on the <a href="http://internals.rust-lang.org/t/on-casts-and-checked-overflow/1710/">discuss message board</a>.</p>
+<p>The key points in favor of reverting <code>as</code> to its original semantics were:</p>
+<ol>
+<li><code>as</code> is already a fairly low-level operator that can be used (for example) to convert between <code>*mut T</code> and <code>*mut U</code>.</li>
+<li><code>as</code> is the only way to convert types in constants, and hence it is important that it covers all possibilities that constants might need (eventually, <a href="https://github.com/rust-lang/rfcs/pull/911">const fn</a> or other approaches may change this, but those are not going to be stable for 1.0).</li>
+<li>The <a href="https://github.com/rust-lang/rfcs/pull/803">type ascription RFC</a> set the precedent that <code>as</code> is used for “dangerous” coercions that require care.</li>
+<li>Eventually, checked numeric conversions (and perhaps most or all uses of <code>as</code>) can be ergonomically added as methods.  The precise form of this will be resolved in the future. <a href="https://github.com/rust-lang/rfcs/pull/911">const fn</a> can then allow these to be used in constant expressions.</li>
+</ol>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p>None today (see Updates section below).</p>
+<h2 id="future-work"><a class="header" href="#future-work">Future work</a></h2>
+<ul>
+<li>
+<p>Look into adopting imprecise exceptions and a similar design to Ada’s, and to what is explored in the research on AIR (As Infinitely Ranged) semantics, to improve the performance of checked arithmetic. See also:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010483.html">Cameron Zwarich on June 22</a></li>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010527.html">John Regehr on June 23</a></li>
+</ul>
+</li>
+<li>
+<p>Make it easier to use integer types of unbounded size, i.e. actual mathematical integers and naturals.</p>
+</li>
+</ul>
+<h2 id="updates-since-being-accepted"><a class="header" href="#updates-since-being-accepted">Updates since being accepted</a></h2>
+<p>Since it was accepted, the RFC has been updated as follows:</p>
+<ol>
+<li>The wrapping methods were moved to be inherent, since we gained the capability for libstd to declare inherent methods on primitive integral types.</li>
+<li><code>as</code> was changed to restore the behavior before the RFC (that is, it truncates to the target bitwidth and reinterprets the highest order bit, a.k.a. sign-bit, as necessary, as a C cast would).</li>
+<li>Shifts were specified to mask off the bits of over-long shifts.</li>
+<li>Overflow was specified to be two’s complement wrapping (this was mostly a clarification).</li>
+<li><code>INT_MIN / -1</code> and <code>INT_MIN % -1</code> panics.</li>
+</ol>
+<h2 id="acknowledgements-and-further-reading"><a class="header" href="#acknowledgements-and-further-reading">Acknowledgements and further reading</a></h2>
+<p>This RFC was <a href="https://github.com/rust-lang/rfcs/pull/146">initially written by Gábor Lehel</a> and was since edited by Nicholas Matsakis into its current form. Although the text has changed significantly, the spirit of the original is preserved (at least in our opinion). The primary changes from the original are:</p>
+<ol>
+<li>Define the results of errors in some cases rather than using undefined values.</li>
+<li>Move discussion of scoped attributes to the “future directions” section.</li>
+<li>Define defaults for when overflow checking is enabled.</li>
+</ol>
+<p>Many aspects of this proposal and many of the ideas within it were influenced and inspired by <a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010363.html">a discussion on the rust-dev mailing list</a>. The author is grateful to everyone who provided input, and would like to highlight the following messages in particular as providing motivation for the proposal.</p>
+<p>On the limited use cases for wrapping arithmetic:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010410.html">Jerry Morrison on June 20</a></li>
+</ul>
+<p>On the value of distinguishing where overflow is valid from where it is not:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010371.html">Gregory Maxwell on June 18</a></li>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010580.html">Gregory Maxwell on June 24</a></li>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010602.html">Robert O’Callahan on June 24</a></li>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010596.html">Jerry Morrison on June 24</a></li>
+</ul>
+<p>The idea of scoped attributes:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010566.html">Daniel Micay on June 23</a></li>
+</ul>
+<p>On the drawbacks of a type-based approach:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010598.html">Daniel Micay on June 24</a></li>
+</ul>
+<p>In general:</p>
+<ul>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010558.html">John Regehr on June 23</a></li>
+<li><a href="https://mail.mozilla.org/pipermail/rust-dev/2014-June/010579.html">Lars Bergstrom on June 24</a></li>
+</ul>
+<p>Further credit is due to the commenters in the <a href="https://github.com/rust-lang/rfcs/pull/146">GitHub discussion thread</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="0558-require-parentheses-for-chained-comparisons.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="0563-remove-ndebug.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="0558-require-parentheses-for-chained-comparisons.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="0563-remove-ndebug.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

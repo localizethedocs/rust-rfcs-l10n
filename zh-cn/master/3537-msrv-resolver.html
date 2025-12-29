@@ -1,0 +1,1273 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3537-msrv-resolver - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>msrv-resolver</code></li>
+<li>Start Date: 2023-11-14</li>
+<li>Pre-RFC: <a href="https://internals.rust-lang.org/t/pre-rfc-msrv-aware-resolver/19871">internals</a></li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3537">rust-lang/rfcs#3537</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/cargo/issues/9930">rust-lang/cargo#9930</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Provide a happy path for developers needing to work with older versions of Rust by</p>
+<ul>
+<li>Preferring MSRV (minimum-supported-rust-version) compatible dependencies when Cargo resolves dependencies</li>
+<li>Ensuring compatible version requirements when <code>cargo add</code> auto-selects a version</li>
+<li>Smoothing out the path for setting and maintaining a verified MSRV so the above will be more likely to pick a working version.</li>
+</ul>
+<p>Note: <code>cargo install</code> is intentionally left out for now to decouple discussions on how to handle the security ramifications.</p>
+<p><strong>Note:</strong> Approval of this RFC does not mean everything is set in stone, like with all RFCs. This RFC will be rolled out gradually as we stabilize each piece. In particular, we expect to make the <code>cargo new</code> change last as it is dependent on the other changes to work well. In evaluating stabilization, we take into account changes in the ecosystem and feedback from testing unstable features. Based on that evaluation, we may make changes from what this RFC says. Whether we make changes or not, stabilization will then require approval of the cargo team to merge (explicit acknowledgement from all but 2 members with no concerns from any member) followed by a 10 days Final Comment Period (FCP) for the remaining 2 team members and the wider community. Cargo FCPs are now tracked in This Week in Rust to ensure the community is aware and can participate. Even then, a change like <code>cargo new</code> can be reverted without an RFC, likely only needing to follow the FCP process.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<h3 id="status-quo"><a class="header" href="#status-quo">Status Quo</a></h3>
+<details><summary>Ensuring you have a <code>Cargo.lock</code> with dependencies compatible with your minimum-supported Rust version (MSRV) is an arduous task of running <code>cargo update &lt;dep&gt; --precise &lt;ver&gt;</code> until it works</summary>
+<p>Let’s step through a simple scenario where a user develops with the latest Rust version but production uses an older version:</p>
+<pre><code class="language-console">$ cargo new msrv-resolver
+     Created binary (application) `msrv-resolver` package
+$ cd msrv-resolver
+$ # ... add `package.rust-version = "1.64.0"` to `Cargo.toml`
+$ cargo add clap
+    Updating crates.io index
+      Adding clap v4.4.8 to dependencies.
+             Features:
+...
+    Updating crates.io index
+$ git commit -a -m "WIP" &amp;&amp; git push
+...
+</code></pre>
+<p>After 30 minutes, CI fails. The first step is to reproduce this locally</p>
+<pre><code class="language-console">$ rustup install 1.64.0
+...
+$ cargo +1.64.0 check
+    Updating crates.io index
+       Fetch [===============&gt;         ]  67.08%, (28094/50225) resolving deltas
+</code></pre>
+<p>After waiting several minutes, cursing being stuck on a version from before sparse registry support was added…</p>
+<pre><code class="language-console">$ cargo +1.64.0 check
+    Updating crates.io index
+  Downloaded clap v4.4.8
+  Downloaded clap_builder v4.4.8
+  Downloaded clap_lex v0.6.0
+  Downloaded anstyle-parse v0.2.2
+  Downloaded anstyle v1.0.4
+  Downloaded anstream v0.6.4
+  Downloaded 6 crates (289.3 KB) in 0.35s
+error: package `clap_builder v4.4.8` cannot be built because it requires rustc 1.70.0 or newer, while the currently ac
+tive rustc version is 1.64.0
+</code></pre>
+<p>Thankfully, crates.io now shows <a href="https://crates.io/crates/clap_builder/versions">supported Rust versions</a>, so I pick v4.3.24.</p>
+<pre><code class="language-console">$ cargo update -p clap_builder --precise 4.3.24
+    Updating crates.io index
+error: failed to select a version for the requirement `clap_builder = "=4.4.8"`
+candidate versions found which didn't match: 4.3.24
+location searched: crates.io index
+required by package `clap v4.4.8`
+    ... which satisfies dependency `clap = "^4.4.8"` (locked to 4.4.8) of package `msrv-resolver v0.1.0 (/home/epage/src/personal/dump/msrv-resolver)`
+perhaps a crate was updated and forgotten to be re-vendored?
+</code></pre>
+<p>After browsing on some forums, I edit my <code>Cargo.toml</code> to roll back to <code>clap = "4.3.24"</code> and try again</p>
+<pre><code class="language-console">$ cargo update -p clap --precise 4.3.24
+    Updating crates.io index
+ Downgrading anstream v0.6.4 -&gt; v0.3.2
+ Downgrading anstyle-wincon v3.0.1 -&gt; v1.0.2
+      Adding bitflags v2.4.1
+ Downgrading clap v4.4.8 -&gt; v4.3.24
+ Downgrading clap_builder v4.4.8 -&gt; v4.3.24
+ Downgrading clap_lex v0.6.0 -&gt; v0.5.1
+      Adding errno v0.3.6
+      Adding hermit-abi v0.3.3
+      Adding is-terminal v0.4.9
+      Adding libc v0.2.150
+      Adding linux-raw-sys v0.4.11
+      Adding rustix v0.38.23
+$ cargo +1.64.0 check
+  Downloaded clap_builder v4.3.24
+  Downloaded errno v0.3.6
+  Downloaded clap_lex v0.5.1
+  Downloaded bitflags v2.4.1
+  Downloaded clap v4.3.24
+  Downloaded rustix v0.38.23
+  Downloaded libc v0.2.150
+  Downloaded linux-raw-sys v0.4.11
+  Downloaded 8 crates (2.8 MB) in 1.15s (largest was `linux-raw-sys` at 1.4 MB)
+error: package `anstyle-parse v0.2.2` cannot be built because it requires rustc 1.70.0 or newer, while the currently a
+ctive rustc version is 1.64.0
+</code></pre>
+<p>Again, consulting <a href="https://crates.io/crates/anstyle-parse/versions">crates.io</a></p>
+<pre><code class="language-console">$ cargo update -p anstyle-parse --precise 0.2.1
+    Updating crates.io index
+ Downgrading anstyle-parse v0.2.2 -&gt; v0.2.1
+$ cargo +1.64.0 check
+error: package `clap_lex v0.5.1` cannot be built because it requires rustc 1.70.0 or newer, while the currently active
+ rustc version is 1.64.0
+</code></pre>
+<p>Again, consulting <a href="https://crates.io/crates/clap_lex/versions">crates.io</a></p>
+<pre><code class="language-console">$ cargo update -p clap_lex --precise 0.5.0
+    Updating crates.io index
+ Downgrading clap_lex v0.5.1 -&gt; v0.5.0
+$ cargo +1.64.0 check
+error: package `anstyle v1.0.4` cannot be built because it requires rustc 1.70.0 or newer, while the currently active
+rustc version is 1.64.0
+</code></pre>
+<p>Again, consulting <a href="https://crates.io/crates/anstyle/versions">crates.io</a></p>
+<pre><code class="language-console">cargo update -p anstyle --precise 1.0.2
+    Updating crates.io index
+ Downgrading anstyle v1.0.4 -&gt; v1.0.2
+$ cargo +1.64.0 check
+  Downloaded anstyle v1.0.2
+  Downloaded 1 crate (14.0 KB) in 0.60s
+   Compiling rustix v0.38.23
+    Checking bitflags v2.4.1
+    Checking linux-raw-sys v0.4.11
+    Checking utf8parse v0.2.1
+    Checking anstyle v1.0.2
+    Checking colorchoice v1.0.0
+    Checking anstyle-query v1.0.0
+    Checking clap_lex v0.5.0
+    Checking strsim v0.10.0
+    Checking anstyle-parse v0.2.1
+    Checking is-terminal v0.4.9
+    Checking anstream v0.3.2
+    Checking clap_builder v4.3.24
+    Checking clap v4.3.24
+    Checking msrv-resolver v0.1.0 (/home/epage/src/personal/dump/msrv-resolver)
+    Finished dev [unoptimized + debuginfo] target(s) in 2.96s
+</code></pre>
+<p>Success! Mixed with many tears and less hair.</p>
+</details>
+<p>How wide spread is this?  Take this with a grain of salt but based on crates.io user agents:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th style="text-align: right">Common MSRVs</th><th style="text-align: left">% Compatible Requests</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right">N (<code>1.73.0</code>)</td><td style="text-align: left">47.432%</td></tr>
+<tr><td style="text-align: right">N-2 (<code>1.71.0</code>)</td><td style="text-align: left">74.003%</td></tr>
+<tr><td style="text-align: right">~6 mo (<code>1.69.0</code>)</td><td style="text-align: left">93.272%</td></tr>
+<tr><td style="text-align: right">~1 year (<code>1.65.0</code>)</td><td style="text-align: left">98.766%</td></tr>
+<tr><td style="text-align: right">Debian (<code>1.63.0</code>)</td><td style="text-align: left">99.106%</td></tr>
+<tr><td style="text-align: right">~2 years (<code>1.56.0</code>)</td><td style="text-align: left">99.949%</td></tr>
+</tbody>
+</table>
+</div>
+<p><em>(<a href="https://rust-lang.zulipchat.com/#narrow/stream/318791-t-crates-io/topic/cargo.20version.20usage/near/401440149">source</a>)</em></p>
+<p>This was aided by the presence of <code>package.rust-version</code>. Of all packages (137,569), only 8,857 (6.4%) have that field set. When limiting to the 61,758 “recently” published packages (an upload since the start of 2023), only 8,550 (13.8%) have the field set.</p>
+<p>People have tried to reduce the pain from MSRV with its own costs:</p>
+<ul>
+<li>Treating it as a breaking change:
+<ul>
+<li>This leads to extra churn in the ecosystem when a fraction of users are likely going to benefit</li>
+<li>We have the precedence elsewhere in the Rust ecosystem for build and runtime system requirement changes not being breaking, like when rustc requires newer versions of glibc, Android NDK, etc.</li>
+</ul>
+</li>
+<li>Adding upper limits to version requirements:
+<ul>
+<li>This fractures the ecosystem by making packages incompatible with each other and the Cargo team <a href="https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#multiple-requirements">discourages doing this</a></li>
+</ul>
+</li>
+<li>Avoiding dependencies, re-implementing it themselves at the cost of their time and the risk for bugs, especially if <code>unsafe</code> is involved</li>
+<li>Ensuring dependencies have a more inclusive MSRV policy then themselves
+<ul>
+<li>This has lead to long arguments in the ecosystem over what is the right policy for updating a minimum-supported Rust version (MSRV), wearing on all (e.g. <a href="https://github.com/rust-lang/libs-team/issues/72">libc</a>, <a href="https://github.com/time-rs/time/discussions/535">time</a> )</li>
+</ul>
+</li>
+</ul>
+<p>The sooner we improve the status quo, the better, as it can take years for these changes to percolate out to those exclusively developing with an older Rust version (in contrast with the example above). This delay can be reduced somewhat if a newer toolchain can be used for development version without upgrading the MSRV.</p>
+<h3 id="workflows"><a class="header" href="#workflows">Workflows</a></h3>
+<p>In solving this, we need to keep in mind how people are using Cargo and how to prioritize when needs of different workflows conflict. We will then look at the potential designs within the context of this framework.</p>
+<p>Some design criteria we can use for evaluating workflows:</p>
+<ul>
+<li>Cargo should not make major breaking changes</li>
+<li>Low barrier to entry</li>
+<li>The costs of “non-recommended” setups should focused on those that need them</li>
+<li>Encourage a standard of quality within the ecosystem, including
+<ul>
+<li>Assumption that things will work as advertised (e.g. our success with MSRV)</li>
+<li>A pleasant experience (e.g. meaningful error messages)</li>
+<li>Secure</li>
+</ul>
+</li>
+<li>Every feature has a cost and we should balance the cost against the value we expect
+<ul>
+<li>Features can further constrain what can be done in the future due to backwards compatibility</li>
+<li>Features increase maintenance burden</li>
+<li>The larger the user-facing surface, the less likely users will find the feature they need and instead use the quickest shortcut</li>
+</ul>
+</li>
+<li>Being transparent makes debugging easier, helps in evaluating risks (including security), and builds confidence in users</li>
+<li>Encourage progress and avoid stagnation
+<ul>
+<li>Proactively upgrading means the total benefit to developers from investments made in Rust is higher</li>
+<li>Conversely, when most of the community is on old versions, it has a chilling effect on improving Rust</li>
+<li>This also means feedback can come more quickly, making it easier and cheaper to pivot with user needs</li>
+<li>Spreading the cost of upgrades over time makes forced-upgrades (e.g. for a security vulnerability) less of an emergency</li>
+<li>Our commitment to compatibility helps keep the cost of upgrade low</li>
+</ul>
+</li>
+<li>When not competing with the above, we should do the right thing for the user rather than disrupt their flow to tell them what they should instead do</li>
+</ul>
+<p>And keeping in mind</p>
+<ul>
+<li>The Rust project only supports the latest version (e.g bug and security fixes) and the burden for support for older versions is on the vendor providing the older Rust toolchain.</li>
+<li>Even keeping upgrade costs low, there is still a re-validation cost that mission critical applications must pay</li>
+<li>Dependencies in <code>Cargo.lock</code> are not expected to change from contributors using different versions of the Rust toolchain without an explicit action like changing <code>Cargo.toml</code> or running <code>cargo update</code>
+<ul>
+<li>e.g. If the maintainer does <code>cargo add foo &amp;&amp; git commit &amp;&amp; git push</code>, then a contributor doing <code>git pull &amp;&amp; cargo check</code> should not have a different selection of dependencies, independent of their toolchain versions (which might mean the second user sees an error about an incompatible package).</li>
+</ul>
+</li>
+</ul>
+<p>Some implications:</p>
+<ul>
+<li>“Support” in MSRV implies the same quality and responsiveness to bug reports, regardless of Rust version</li>
+<li>MSRV applies to all interactions with a project within the maintainers control (including as a registry dependency, <code>cargo install --locked</code>, as a git dependency, contributor experience; excluding transitive dependencies, rust-analyzer, etc), unless documented otherwise like
+<ul>
+<li>Some projects may document that enabling a feature will affect the MSRV (e.g. <a href="https://docs.rs/moka/0.12.1/moka/#minimum-supported-rust-versions">moka</a>)</li>
+<li>Some projects may have a higher MSRV for building the repo (e.g. <code>Cargo.lock</code> with newer dependencies, reliance on cargo features that get stripped on publish)</li>
+</ul>
+</li>
+<li>We should focus the cost for maintaining support for older versions of Rust on the user of the old version and away from the maintainer or the other users of the library or tool
+<ul>
+<li>Costs include lower developer productivity due to lack of access to features, APIs that don’t integrate with the latest features, and slower build times due to pulling in extra code to make up for missing features (e.g. clap dropping its dependency on <a href="https://crates.io/crates/is-terminal">is-terminal</a> in favor of <a href="https://doc.rust-lang.org/std/io/trait.IsTerminal.html"><code>IsTerminal</code></a> cut build time from <a href="https://github.com/rosetta-rs/argparse-rosetta-rs/commit/378cd2c30679afdf9b9843dbadea3e8951090809">6s to 3s</a>)</li>
+</ul>
+</li>
+</ul>
+<h4 id="latest-rust-with-no-msrv"><a class="header" href="#latest-rust-with-no-msrv">Latest Rust with no MSRV</a></h4>
+<p>A user runs <code>cargo new</code> and starts development.</p>
+<p>A maintainer may also want to avoid constraining their dependents, for a variety of reasons, and leave MSRV support as a gray area.</p>
+<p><strong>Priority 1 because:</strong></p>
+<ul>
+<li>✅ No MSRV is fine as pushing people to have an MSRV would lead to either
+<ul>
+<li>an inaccurate reported MSRV from it going stale which would lower the quality of the ecosystem</li>
+<li>raise the barrier to entry by requiring more process for packages and pushing the cost of old Rust versions on people who don’t care</li>
+</ul>
+</li>
+</ul>
+<p><strong>Pain points:</strong></p>
+<p>The Rust toolchain does not provide a way to help users know new dependency versions are available, to support the users in staying up-to-date. MSRV build errors from new dependency versions is one way to do it though not ideal as this disrupts the user. Otherwise, they must actively run <code>rustup update</code> or follow Rust news.</p>
+<p>For dependents, this makes it harder to know what versions are “safe” to use.</p>
+<h4 id="latest-rust-as-the-msrv"><a class="header" href="#latest-rust-as-the-msrv">Latest Rust as the MSRV</a></h4>
+<p>A maintainer regularly updates their MSRV to latest. They can choose to provide a level of support for old MSRVs by reserving MSRV changes to minor version bumps, giving them room to backport fixes. Due to the pain points listed below, the target audience for this workflow is likely small, likely pushing them to not specify their MSRV.</p>
+<p><strong>Priority 2 because:</strong></p>
+<ul>
+<li>✅ Low barrier to maintaining a high quality of support for their MSRV</li>
+<li>✅ Being willing to advertising an MSRV, even if latest, improves the information available to developers, increasing the quality of the ecosystem</li>
+<li>✅ Costs for dealing with old Rust toolchains is shifted from the maintainer and the users on a supported toolchain to those on an unsupported toolchain</li>
+<li>✅ By focusing new development on latest MSRV, this provides a carrot to encourage others to actively upgrading</li>
+</ul>
+<p><strong>Pain points (in addition to the prior workflow):</strong></p>
+<p>In addition to their toolchain version, the Rust toolchain does not help these users with keeping their MSRV up-to-date. They can use other tools like <a href="https://github.com/rust-lang/cargo/blob/87eb374d499100bc945dc0e50ae5194ae539b964/.github/renovate.json5#L12-L24">RenovateBot</a> though that causes extra churn in the repo.</p>
+<p>A package could offer a lower MSRV in an unofficial capacity or with a lower quality of support but the requirement that dependents always pass <code>--ignore-rust-version</code> makes this disruptive.</p>
+<h4 id="extended-msrv"><a class="header" href="#extended-msrv">Extended MSRV</a></h4>
+<p>This could be people exclusively running one version or that support a range of versions. So why are people on old versions?</p>
+<ul>
+<li>Not everyone is focused on Rust development and might only touch their Rust code once every couple of months, making it a pain if they have to update every time.
+<ul>
+<li>Think back to slow git index updates when you’ve stepped away and consider people who we’d be telling to run <code>rustup update</code> every time they touch Rust</li>
+</ul>
+</li>
+<li>While a distribution provides rust to build other packages in the distribution, users might assume that is a version to use, rather than getting Rust through <code>rustup</code></li>
+<li>Re-validation costs for updating core parts of the image for an embedded Linux developers can be high, keeping them on older versions</li>
+<li>Updates can be slow within tightly controlled environments (airgaps, paperwork, etc)</li>
+<li>Qualifying Rust toolchains takes time and money, see <a href="https://ferrous-systems.com/ferrocene/">Ferrocene</a></li>
+<li>Built on or for systems that are no longer supported by rustc (e.g. old glibc, AndroidNDK, etc)</li>
+<li>Library and tool maintainers catering to the above use cases</li>
+</ul>
+<p>The MSRV may extend back only a couple releases or to a year+ and they may choose to update on an as-need basis or keep to a strict cadence.</p>
+<p>Depending on the reason they are working with an old version, they might be developing the project with it or they might be using the latest toolchain. For some of these use cases, they might controlling their “MSRV” via <code>rust-toolchain.toml</code>, rather than <code>package.rust-version</code>, as its their only supported Rust version (e.g. an application with a vetted toolchain).</p>
+<p>When multiple Rust versions are supported, like with library and tool maintainers, they will need to verify at least their MSRV and latest. Ideally, they also <a href="https://doc.rust-lang.org/cargo/guide/continuous-integration.html#verifying-latest-dependencies">verify their latest dependencies</a> though this is already a recommended practice when people follow the <a href="https://doc.rust-lang.org/cargo/faq.html#why-have-cargolock-in-version-control">default choice to commit their lockfile</a>. The way they verify dependencies is restricted as they can’t rely on always updating via Dependabot/RenovateBot as a way to verify them. Maintainers likely only need to do a compilation check for MSRV as their regular CI runs ensure that the behavior (which is usually independent of rust version) is correct for the MSRV-compatible dependencies.</p>
+<p><strong>Priority 3 because:</strong></p>
+<ul>
+<li>✅ Several use cases for this workflow have little alternative</li>
+<li>✅ MSRV applies to all interactions to the project which also means that the level of “support” is consistent</li>
+<li>❌ This implies stagnation and there are cases where people could more easily use newer toolchains, like Debian users, but that is less so the case for other users</li>
+<li>❌ For library and tool maintainers, they are absorbing costs from these less common use cases
+<ul>
+<li>They could shift these costs to those that need old versions by switching to the “Latest MSRV” workflow by allowing their users to backport fixes to prior MSRV releases</li>
+</ul>
+</li>
+</ul>
+<p><strong>Pain points:</strong></p>
+<p>Maintaining a working <code>Cargo.lock</code> is frustrating, as demonstrated earlier.</p>
+<p>When developing with the latest toolchain, feedback is delayed until CI or an embedded image build process which can be frustrating (using too-new dependencies, using too-new Cargo or Rust features, etc).</p>
+<h4 id="extended-published-msrv-w-latest-development-msrv"><a class="header" href="#extended-published-msrv-w-latest-development-msrv">Extended published MSRV w/ latest development MSRV</a></h4>
+<p>This is where the published package for a project claims an extended MSRV but interactions within the repo require the latest toolchain. The requirement on the latest MSRV could come from the <code>Cargo.lock</code> containing dependencies with the latest MSRV or they could be using Cargo features that don’t affect the published package. In some cases, the advertised MSRV might be for a lower tier of support than what is supported for the latest version. For instance, a project might intentionally skip testing against their MSRV because of known bugs that will fail the test suite.</p>
+<p>In some cases, the MSRV-incompatible dependencies might be restricted to <code>dev-dependencies</code>. Though local development can’t be performed with the MSRV, the fact that the tests are verifying (on a newer toolchain) that the build/normal dependencies work gives a good amount of confidence that they will work on the MSRV so long as they compile.</p>
+<p>Compared to the above workflow, this is likely targeted at just library and tool maintainers as other use cases don’t have access to the latest version or they are needing the repo to be compatible with their MSRV.</p>
+<p><strong>Priority 4 because:</strong></p>
+<ul>
+<li>❌ The MSRV has various carve outs, providing an inconsistent experience compared to other packages using other workflows and affecting the quality of the ecosystem
+<ul>
+<li>For workspaces with bins, <code>cargo install --locked</code> is expected to work with the MSRV but won’t</li>
+<li>If they use new Cargo features, then <code>[patch]</code>ing in a git source for the dependency won’t work</li>
+<li>For contributors, they must be on an unspecified Rust toolchain version</li>
+</ul>
+</li>
+<li>❌ The caveats involved in this approach (see prior item) would lead to worse documentation which lowers the quality to users</li>
+<li>❌ This still leads to stagnation despite being able to use the latest dependencies as they are limited in what they can use from them and they can’t use features from the latest Rust toolchain</li>
+<li>❌ These library and tool maintainers are absorbing costs from the less common use cases of their dependents
+<ul>
+<li>They could shift these costs to those that need old versions by switching to the “Latest MSRV” workflow by allowing their users to backport fixes to prior MSRV releases</li>
+</ul>
+</li>
+</ul>
+<p><strong>Pain points:</strong></p>
+<p>Like the prior workflow, when developing with the latest toolchain, feedback is delayed until CI or an embedded image build process which can be frustrating (using too-new dependencies, using too-new Cargo or Rust features, etc).</p>
+<p>When <code>Cargo.lock</code> is resolved for latest dependencies, independent of MSRV, verifying the MSRV becomes difficult as they  must either juggle two lockfiles, keeping them in sync, or use the unstable <code>-Zminimal-versions</code>. The two lockfile approach also has all of the problems shown earlier in writing the lockfile.</p>
+<p>When only keeping MSRV-incompatible <code>dev-dependencies</code>, one lockfile can be used but it can be difficult to edit the <code>Cargo.lock</code> to ensure you get new <code>dev-dependencies</code> without infecting other dependency types.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>We are introducing several new concepts</p>
+<ul>
+<li>A v3 resolver (<code>package.resolver</code>) that will prefer packages compatible with your <code>package.rust-version</code> over those that aren’t
+<ul>
+<li>If <code>package.rust-version</code> is unset, then your current Rust toolchain version will be used</li>
+<li>This resolver version will be the default for the next edition</li>
+<li>A <code>.cargo/config.toml</code> field will be added to disable this, e.g. for CI</li>
+</ul>
+</li>
+<li>Cargo will ensure users are aware their dependencies are behind the latest in a unobtrusive way</li>
+<li><code>cargo add</code> will select version requirements that can be met by a dependency with a compatible version</li>
+<li>A new value for <code>package.rust-version</code>, <code>"tbd-name-representing-currently-running-rust-toolchain"</code>, which will advertise in your published package your current toolchain version as the minimum-supported Rust version
+<ul>
+<li><code>cargo new</code> will default to <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code></li>
+</ul>
+</li>
+<li>A deny-by-default lint will replace the build error from a package having an incompatible Rust version, allowing users to opt-in to overriding it</li>
+</ul>
+<h3 id="example-documentation-updates"><a class="header" href="#example-documentation-updates">Example documentation updates</a></h3>
+<h4 id="the-rust-version-field"><a class="header" href="#the-rust-version-field">The <code>rust-version</code> field</a></h4>
+<p><em>(update to <a href="https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field">manifest documentation</a>)</em></p>
+<p>The <code>rust-version</code> field is an optional key that tells cargo what version of the Rust language and compiler you support compiling your package with. If the currently selected version of the Rust compiler is older than the stated version, cargo will exit with an error, telling the user what version is required. To support this, Cargo will prefer dependencies that are compatible with your <code>rust-version</code>.</p>
+<pre><code class="language-toml">[package]
+# ...
+rust-version = "1.56"
+</code></pre>
+<p>The Rust version can be a bare version number with two or three components; it cannot include semver operators or pre-release identifiers. Compiler pre-release identifiers such as -nightly will be ignored while checking the Rust version. The <code>rust-version</code> must be equal to or newer than the version that first introduced the configured <code>edition</code>.</p>
+<p>The Rust version can also be <code>"tbd-name-representing-currently-running-rust-toolchain"</code>. This will act the same as if it was set to the version of your Rust toolchain. Your published manifest will have <code>"tbd-name-representing-currently-running-rust-toolchain"</code> replaced with the version of your Rust toolchain.</p>
+<p>Setting the <code>rust-version</code> key in <code>[package]</code> will affect all targets/crates in the package, including test suites, benchmarks, binaries, examples, etc.</p>
+<p><em>Note: The first version of Cargo that supports this field was released with Rust 1.56.0. In older releases, the field will be ignored, and Cargo will display a warning.</em></p>
+<h4 id="rust-version"><a class="header" href="#rust-version">Rust Version</a></h4>
+<p><em>(update to <a href="https://doc.rust-lang.org/cargo/reference/resolver.html">Dependency Resolution’s Other Constraints documentation</a>)</em></p>
+<p>When multiple versions of a dependency satisfy all version requirements, cargo will prefer those with a compatible <code>package.rust-version</code> over those that aren’t compatible. Some details may change over time though <code>cargo check &amp;&amp; rustup update &amp;&amp; cargo check</code> should not cause <code>Cargo.lock</code> to change.</p>
+<h6 id="resolverprecedence"><a class="header" href="#resolverprecedence"><code>resolver.precedence</code></a></h6>
+<p><em>(update to <a href="https://doc.rust-lang.org/cargo/reference/config.html">Configuration</a>)</em></p>
+<ul>
+<li>Type: string</li>
+<li>Default: “rust-version”</li>
+<li>Environment: <code>CARGO_RESOLVER_PRECEDENCE</code></li>
+</ul>
+<p>Controls how <code>Cargo.lock</code> gets updated on changes to <code>Cargo.toml</code> and with <code>cargo update</code>.  This does not affect <code>cargo install</code>.</p>
+<ul>
+<li><code>maximum</code>: prefer the highest compatible versions of dependencies</li>
+<li><code>rust-version</code>: prefer dependencies where their <code>package.rust-version</code> is less than or equal to your <code>package.rust-version</code></li>
+</ul>
+<p><code>rust-version</code> can be overridden with <code>--ignore-rust-version</code> which will fallback to <code>maximum</code>.</p>
+<h3 id="example-workflows"><a class="header" href="#example-workflows">Example workflows</a></h3>
+<p>We’ll step through several scenarios to highlight the changes in the user experience.</p>
+<h4 id="latest-rust-with-msrv"><a class="header" href="#latest-rust-with-msrv">Latest Rust with MSRV</a></h4>
+<p>I’m learning Rust and wanting to write my first application. The book suggested I install using <code>rustup</code>.</p>
+<details><summary>Expand for step through of this workflow</summary>
+<p>I’ve recently updated my toolchain</p>
+<pre><code class="language-console">$ rustup update
+Downloading and install 1.92
+</code></pre>
+<p>At some point, I start a project:</p>
+<pre><code class="language-console">$ cargo new foo
+$ cat foo/Cargo.toml
+</code></pre>
+<pre><code class="language-toml">[package]
+name = "foo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "tbd-name-representing-currently-running-rust-toolchain"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+</code></pre>
+<pre><code class="language-console">$ cargo add clap -F derive
+Adding clap 5.10.30
+</code></pre>
+<p><em>(note: this user would traditionally be a “Latest Rust” user but <code>package.rust-version</code> automatically them moved to “Latest Rust with MSRV” without extra validation effort or risk of their MSRV going stale)</em></p>
+<p>After some time, I get back to my project and decide to add completion support:</p>
+<pre><code class="language-console">$ cargo add clap_complete
+Adding clap_complete 5.10.40
+warning: clap_complete 5.11.0 exists but requires Rust 1.93 while you are running 1.92.
+To use the clap_complete@5.11.0 with a compatible Rust version, run `rustup update &amp;&amp; cargo add clap_complete@5.11.0`.
+To force the use of clap_complete@5.11.0 independent of your toolchain, run `cargo add clap_complete@5.11.0`
+</code></pre>
+<p>Wanting to be on the latest version, I run</p>
+<pre><code class="language-console">$ rustup update
+Downloading and install 1.94
+$ cargo update
+Updating clap v5.10.30 -&gt; v5.11.0
+Updating clap_complete v5.10.40 -&gt; v5.11.0
+</code></pre>
+<p><strong>Alternate:</strong> But what if I manually edited <code>Cargo.toml</code> instead of <code>cargo add</code>? Here, we can shortcut some questions about version requirements because clap aligns on minor releases.</p>
+<pre><code class="language-toml">[package]
+name = "foo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "tbd-name-representing-currently-running-rust-toolchain"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "5.10.30", features = ["derive"] }
+clap_complete = "5.10"  # &lt;-- new
+</code></pre>
+<p>And away I go:</p>
+<pre><code class="language-console">$ cargo check
+Warning: adding clap_complete@5.10.40 because 5.11.0 requires Rust 1.93 while you are running 1.92.
+To use the clap_complete@5.11.0 with a compatible Rust version, run `rustup update &amp;&amp; cargo update`.
+To force the use of clap_complete@5.11.0 independent of your toolchain, run `cargo update --ignore-rust-version`
+</code></pre>
+<p>But I am in a hurry and don’t want to disrupt my flow. <code>clap_complete@5.10.40</code> is likely fine. I am running <code>clap@5.10.30</code> and that has been working for me. I might even run <a href="https://crates.io/crates/cargo-deny"><code>cargo deny</code></a> to see if there are known vulnerabilities. So I continue development.</p>
+<p>Later I run:</p>
+<pre><code class="language-console">$ cargo update
+Name          Current Latest Note
+============= ======= ====== ==================
+clap          5.10.30 5.11.0 requires Rust 1.93
+clap_complete 5.10.40 5.11.0 requires Rust 1.93
+note: To use the latest depednencies, run `rustup update &amp;&amp; cargo update`.
+To force the use of the latest dependencies, independent of your toolchain, run `cargo update --ignore-rust-version`
+$ rustup update
+Downloading and install 1.94
+$ cargo update
+Updating clap v5.10.30 -&gt; v5.11.0
+Updating clap_complete v5.10.40 -&gt; v5.11.0
+</code></pre>
+<p>At this point, I want to publish</p>
+<pre><code class="language-console">$ cargo publish
+... crates.io error about missing fields
+$ $EDITOR `Cargo.toml`
+$ cargo publish
+Published foo 0.1.0
+</code></pre>
+<p>If I look on crates.io, the new 0.1.0 version shows up with a rust-version of 1.94 without me having to manual update the field and relying on the <code>cargo publish</code>s verify step to verify the correctness of that MSRV.</p>
+</details>
+<h4 id="extended-msrv-with-an-application"><a class="header" href="#extended-msrv-with-an-application">Extended “MSRV” with an application</a></h4>
+<p>I am developing an application using a certified toolchain. I specify this toolchain using a <code>rust-toolchain.toml</code> file.</p>
+<p>Rust 1.94 is the latest but my certified toolchain is 1.92.</p>
+<details><summary>Expand for step through of this workflow</summary>
+<p>At some point, I start a project:</p>
+<pre><code class="language-console">$ cargo new foo
+$ cat foo/Cargo.toml
+</code></pre>
+<pre><code class="language-toml">[package]
+name = "foo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "tbd-name-representing-currently-running-rust-toolchain"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+</code></pre>
+<pre><code class="language-console">$ cargo add clap -F derive
+Adding clap 5.10.30
+warning: clap 5.11.0 exists but requires Rust 1.93 while you are running 1.92.
+To use the clap@5.11.0 with a compatible Rust version, run `rustup update &amp;&amp; cargo add clap@5.10.0`.
+To force the use of clap_complete@5.11.0 independent of your toolchain, run `cargo add clap@5.10.0`
+</code></pre>
+<p>At this point, I have a couple of options</p>
+<ol>
+<li>I check and clap advertises that they “support” Rust 1.92 by cherry-picking fixes into 5.10 and I feel comfortable with that</li>
+<li>I check <code>cargo deny</code> and don’t see any vulnerabilities and that is good enough for me, knowing that the majority of my users are likely on newer versions</li>
+<li>I decide that clap doesn’t align with my interests and use something else</li>
+</ol>
+<p>Assuming (1) or (2) applies, I ignore the warning and move on.</p>
+</details>
+<h4 id="extended-msrv-with-an-application-targeting-multiple-rust-versions"><a class="header" href="#extended-msrv-with-an-application-targeting-multiple-rust-versions">Extended MSRV with an application targeting multiple Rust versions</a></h4>
+<p><em>(this is a re-imagining of the Motivation’s example)</em></p>
+<p>I’m building an application that is deployed to multiple embedded Linux targets. Each target’s image builder uses a different Rust toolchain version to avoid re-validating the image.</p>
+<details><summary>Expand for step through of this workflow</summary>
+<p>I’ve recently updated my toolchain</p>
+<pre><code class="language-console">$ rustup update
+Downloading and install 1.94
+</code></pre>
+<p>At some point, I start a project:</p>
+<pre><code class="language-console">$ cargo new foo
+$ cat foo/Cargo.toml
+</code></pre>
+<pre><code class="language-toml">[package]
+name = "foo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "tbd-name-representing-currently-running-rust-toolchain"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+</code></pre>
+<pre><code class="language-console">$ cargo add clap -F derive
+Adding clap 5.11.0
+</code></pre>
+<p>I send this to my image builder and I get this failure for one of my embedded targets:</p>
+<pre><code class="language-console">$ cargo build
+error: clap 5.11.0 requires Rust 1.93.0 while you are running 1.92.0
+
+note: downgrade to 5.10.30 for a version compatible with Rust 1.92.0
+note: set `package.rust-version = "1.92.0"` to ensure compatible versions are selected in the future
+note: lint `cargo::incompatible-msrv` is denied by default
+
+</code></pre>
+<p>I make the prescribed changes:</p>
+<pre><code class="language-toml">[package]
+name = "foo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"  # &lt;-- was "tbd-name-representing-currently-running-rust-toolchain" before I edited it
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "5.10.30", features = ["derive"] }  # &lt;-- downgraded
+</code></pre>
+<p>And my image build works!</p>
+<p>After some time, I run:</p>
+<pre><code class="language-console">$ cargo update
+Name          Current Latest Note
+============= ======= ====== ==================
+clap          5.10.30 5.11.0 requires Rust 1.93
+clap_complete 5.10.40 5.11.0 requires Rust 1.93
+note: To use the latest depednencies, run `rustup update &amp;&amp; cargo update`.
+To force the use of the latest dependencies, independent of your toolchain, run `cargo update --ignore-rust-version`
+</code></pre>
+<p>We’ve EOLed the last embedded target that supported 1.92 and so we can update our <code>package.rust-version</code>, so we can update it and our dependencies:</p>
+<pre><code class="language-console">$ cargo update --update-rust-version
+Updating clap 5.10.30 to 5.11.0
+Updating foo's rust-version from 1.92 to 1.93
+</code></pre>
+</details>
+<h4 id="extended-msrv-for-a-library"><a class="header" href="#extended-msrv-for-a-library">Extended MSRV for a Library</a></h4>
+<p>I’m developing a new library and am willing to take on some costs for supporting people on older toolchains.</p>
+<details><summary>Expand for step through of this workflow</summary>
+<p>I’ve recently updated my toolchain</p>
+<pre><code class="language-console">$ rustup update
+Downloading and install 1.94
+</code></pre>
+<p>At some point, I start a project:</p>
+<pre><code class="language-console">$ cargo new foo --lib
+</code></pre>
+<p>I’ve decided on an “N-2” MSRV policy:</p>
+<pre><code class="language-toml">[package]
+name = "foo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"  # &lt;-- was "tbd-name-representing-currently-running-rust-toolchain" before I edited it
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+</code></pre>
+<pre><code class="language-console">$ cargo add clap -F derive
+Adding clap 5.10.30
+warning: clap 5.11.0 exists but requires Rust 1.93 while `foo` has `package.rust-version = "1.92"`
+To use clap@5.11.0 with a compatible package.rust-version, run `cargo add clap@5.11.0 --update-rust-version`
+To force the use of clap@5.11.0 independent of your toolchain, run `cargo add clap@5.11.0`
+</code></pre>
+<p>At this point, I have a couple of options</p>
+<ol>
+<li>I check and clap advertises that they “support” Rust 1.92 by cherry-picking fixes into 5.10 and I feel comfortable with that</li>
+<li>I check <code>cargo deny</code> and don’t see any vulnerabilities and that is good enough for me, knowing that the majority of my users are likely on newer versions</li>
+<li>I decide that clap doesn’t align with my interests and use something else</li>
+</ol>
+<p>Assuming (1) or (2) applies, I ignore the warning and move on.</p>
+<p>After some time, I run:</p>
+<pre><code class="language-console">$ cargo update
+Name          Current Latest Note
+============= ======= ====== ==================
+clap          5.10.30 5.11.0 requires Rust 1.93
+clap_complete 5.10.40 5.11.0 requires Rust 1.93
+note: To use the latest depednencies, run `rustup update &amp;&amp; cargo update`.
+To force the use of the latest dependencies, independent of your toolchain, run `cargo update --ignore-rust-version`
+</code></pre>
+<p>At this point, 1.95 is out, so I’m fine updating my MSRV and I run:</p>
+<pre><code class="language-console">$ cargo update --update-rust-version
+Updating clap 5.10.30 to 5.11.0
+Updating foo's rust-version from 1.92 to 1.93
+</code></pre>
+<p>Instead, if a newer clap version was out needing 1.94 or 1.95, I would instead edit <code>Cargo.toml</code> myself.</p>
+</details>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<p>We expect these changes to be independent enough and beneficial on their own that they can be stabilized as each is completed.</p>
+<h3 id="cargo-resolver"><a class="header" href="#cargo-resolver">Cargo Resolver</a></h3>
+<p>We will be adding a v3 resolver, specified through <code>workspace.resolver</code> / <code>package.resolver</code>. This will become default with the next Edition.</p>
+<p>When <code>resolver = "3"</code> is set, Cargo’s resolver will change to <em>prefer</em> MSRV compatible versions over incompatible versions when resolving new dependencies, except for <code>cargo install</code>. Initially, dependencies without <code>package.rust-version</code> will be preferred over MSRV-incompatible packages but less than those that are compatible. The exact details for how preferences are determined may change over time, particularly when no MSRV is specified, but this shouldn’t affect existing <code>Cargo.lock</code> files since the currently resolved dependencies always get preference.</p>
+<p>This can be overridden with <code>--ignore-rust-version</code> and config’s <code>resolver.precedence</code>.</p>
+<p>Implications</p>
+<ul>
+<li>If you use <code>cargo update --precise &lt;msrv-incompatible-ver&gt;</code>, it will work</li>
+<li>If you use <code>--ignore-rust-version</code> once, you don’t need to specify it again to keep those dependencies though you might need it again on the next edit of <code>Cargo.toml</code> or <code>cargo update</code> run</li>
+<li>If a dependency doesn’t specify <code>package.rust-version</code> but its transitive dependencies specify an incompatible <code>package.rust-version</code>, we won’t backtrack to older versions of the dependency to find one with a MSRV-compatible transitive dependency.</li>
+<li>A package with multiple MSRVs, depending on the features selected, can still do this as version requirements can still require versions newer than the MSRV and <code>Cargo.lock</code> can depend on those as well.</li>
+</ul>
+<p>As there is no <code>workspace.rust-version</code>, the resolver will pick the lowest version among workspace members. This will be less optimal for workspaces with multiple MSRVs and dependencies unique to the higher-MSRV packages. Users can workaround this by raising the version requirement or using <code>cargo update --precise</code>.</p>
+<p>When <code>rust-version</code> is unset, we’ll fallback to <code>rustc --version</code> if its not a pre-release. This is primarily targeted at helping users with a <a href="https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file"><code>rust-toolchain.toml</code> file</a> (to reduce duplication) though this would also help users who happen to be on an old rustc, for whatever reason. As this is just a preference for resolving dependencies, rather than prescriptive, this shouldn’t cause churn of the <code>Cargo.lock</code> file. We already call <code>rustc</code> for feature resolution, so hopefully this won’t have a performance impact.</p>
+<h3 id="cargo-config"><a class="header" href="#cargo-config">Cargo config</a></h3>
+<p>We’ll add a <code>resolver.precedence </code> field to <code>.cargo/config.toml</code> which will control the package version prioritization policy.</p>
+<pre><code class="language-toml">[build]
+resolver.precedence = "rust-version"  # Default with `v3`
+</code></pre>
+<p>with potential values being:</p>
+<ul>
+<li><code>maximum</code>: behavior today (default for v1 and v2 resolvers)
+<ul>
+<li>Needed for <a href="https://doc.rust-lang.org/nightly/cargo/guide/continuous-integration.html#verifying-latest-dependencies">verifying latest dependencies</a></li>
+</ul>
+</li>
+<li><code>minimum</code> (unstable): <code>-Zminimal-versions</code>
+<ul>
+<li>As this is just precedence, <code>-Zdirect-minimal-versions</code> doesn’t fit into this</li>
+</ul>
+</li>
+<li><code>rust-version</code>:  what is defined in the package (default for v3 resolver)</li>
+<li><code>rust-version=</code> (future possibility)
+<ul>
+<li><code>package</code>: long form of <code>rust-version</code></li>
+<li><code>rustc</code>: the current running version
+<ul>
+<li>Needed for “separate development / publish MSRV” workflow</li>
+</ul>
+</li>
+<li><code>&lt;x&gt;[.&lt;y&gt;[.&lt;z&gt;]]</code>: manually override the version used</li>
+</ul>
+</li>
+</ul>
+<p>If a <code>rust-version</code> value is used, we’d switch to <code>maximum</code> when <code>--ignore-rust-version</code> is set.</p>
+<h3 id="cargo-build"><a class="header" href="#cargo-build"><code>cargo build</code></a></h3>
+<p>The MSRV-compatibility build check will be demoted from an error to a <code>deny</code>-by-default workspace <a href="https://github.com/rust-lang/cargo/issues/12235">diagnostic</a>, allowing users to intentionally use dependencies on an unsupported (or less supported) version of Rust without requiring <code>--ignore-rust-version</code> on every invocation.</p>
+<p>Ideally, we present all of the MSRV issues upfront to be resolved together. At minimum, we should present a top-down message, rather than bottom up.</p>
+<p>If <code>package.rust-version</code> is unset or <code>"tbd-name-representing-currently-running-rust-toolchain"</code>, the diagnostic should suggest setting it to help raise awareness of <code>package.rust-version</code> being able to reduce future resolution errors. This would benefit from knowing the oldest MSRV.</p>
+<h3 id="cargo-update"><a class="header" href="#cargo-update"><code>cargo update</code></a></h3>
+<p><code>cargo update</code> will inform users when an MSRV or semver incompatible version is available. <code>cargo update --dry-run</code> will also report this information so that users can check on the status of this at any time.</p>
+<p>Users may pass</p>
+<ul>
+<li><code>--ignore-rust-version</code> to pick the latest dependencies, ignoring all <code>rust-version</code> fields (your own and from dependencies)</li>
+<li><code>--update-rust-version</code> to pick the <code>rustc --version</code>-compatible dependencies, updating your <code>package.rust-version</code> if needed to match the highest of your dependencies</li>
+<li><code>&lt;pkgname&gt; --precise &lt;version&gt;</code> to pick a specific version, independent of the <code>rust-version</code> field</li>
+</ul>
+<p>We expect the notice to inform users of these options for allowing them to upgrade.</p>
+<p>Those flags will also be added to <code>cargo generate-lockfile</code></p>
+<h3 id="syncing-cargotoml-to-cargolock-on-any-cargo-command"><a class="header" href="#syncing-cargotoml-to-cargolock-on-any-cargo-command">Syncing <code>Cargo.toml</code> to <code>Cargo.lock</code> on any Cargo command</a></h3>
+<p>In addition to the <code>cargo update</code> output to report when things are held back (both MSRV and semver), we will try having dependency resolves highlight newly selected dependency versions that were held back due to MSRV or semver. Whether we do this and how much will be subject to factors like noisy output, performance, etc.</p>
+<p>Some approaches we can take for doing this include:</p>
+<p>After resolving, we can do a depth-first diff of the trees, stopping and reporting on the first different node. This would let us report on any command that changes the way the tree is resolved (from explicit changes with <code>cargo update</code> to <code>cargo build</code> syncing <code>Cargo.toml</code> changes to <code>Cargo.lock</code>). We’d likely want to limit the output to only the sub-tree that changed. If there wasn’t previously a <code>Cargo.lock</code>, this would mean everything.</p>
+<p>We could either always do the second resolve or only do the second resolve if the resolver changed anything, whichever is faster.</p>
+<p>Its unknown whether making the inputs available for multiple resolves would have a performance impact.</p>
+<p>While a no-change resolve is fast, if this negatively impacts it enough, we could explore hashing the resolve inputs and storing that in the lockfile, allowing us to detect if the inputs have changed and only resolving then.</p>
+<h3 id="cargo-add"><a class="header" href="#cargo-add"><code>cargo add</code></a></h3>
+<p><code>cargo add &lt;pkg&gt;</code> (no version) will pick a version requirement that is low enough so that when it resolves, it can pick a dependency that is MSRV-compatible. <code>cargo add</code> will warn when it does this.</p>
+<p>Users may pass</p>
+<ul>
+<li><code>--ignore-rust-version</code> to pick the latest dependencies, ignoring all <code>rust-version</code> fields (your own and from dependencies)</li>
+<li><code>--update-rust-version</code> to pick the <code>rustc --version</code>-compatible dependencies, updating your <code>package.rust-version</code> if needed to match the highest of your dependencies</li>
+</ul>
+<h3 id="cargo-publish"><a class="header" href="#cargo-publish"><code>cargo publish</code></a></h3>
+<p><code>package.rust-version</code> will gain support for an <code>"tbd-name-representing-currently-running-rust-toolchain"</code> value, in addition to partial versions. On <code>cargo publish</code> / <code>cargo package</code>, the generated <code>*.crate</code>s <code>Cargo.toml</code> will have <code>"tbd-name-representing-currently-running-rust-toolchain"</code> replaced with <code>rustc --version</code>. If <code>rustc --version</code> is a pre-release, publish will fail.</p>
+<p><code>cargo new</code> will include <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code>.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>Users upgrading to the next Edition (or changing to <code>resolver = '3"</code>), will have to manually update their CI to test the latest dependencies with <code>CARGO_RESOLVER_PRECEDENCE=maximum</code>.</p>
+<p>Workspaces have no <code>edition</code>, so its easy for users to not realize they need to set <code>resolver = "3"</code> or to update their <code>resolver = "2"</code> to <code>"3"</code> (Cargo only warns on <a href="https://github.com/rust-lang/cargo/pull/10910">virtual manifests without an explicit <code>workspace.resolver</code></a>).</p>
+<p>While we hope this will give maintainers more freedom to upgrade their MSRV, this could instead further entrench rust-version stagnation in the ecosystem.</p>
+<p>For projects with larger MSRVs than their dependencies, this introduces another form of drift from the latest dependencies (in addition to <a href="https://doc.rust-lang.org/cargo/faq.html#why-have-cargolock-in-version-control">lockfiles</a>). However, we already recommend people <a href="https://doc.rust-lang.org/nightly/cargo/guide/continuous-integration.html#verifying-latest-dependencies">verify their latest dependencies</a>, so the only scenario this further degrades is when lockfiles are verified by always updating to the latest, like with RenovateBot, and only in the sense that the user needs to know to explicitly take action to add another verification job to CI.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h2>
+<p>Misc alternatives</p>
+<ul>
+<li>Dependencies with unspecified <code>package.rust-version</code>: we could mark these as always-compatible or always-incompatible; there really isn’t a right answer here.</li>
+<li>The resolver doesn’t support backtracking as that is extra complexity that we can always adopt later as we’ve reserved the right to make adjustments to what <code>cargo generate-lockfile</code> will produce over time.</li>
+<li><code>CARGO_RESOLVER_PRECEDENCE</code> is used, rather than a CLI option (e.g. ensuring every command has <code>--ignore-rust-version</code> or a <code>--rust-version &lt;x.y.z&gt;</code>)
+<ul>
+<li>This is unlikely to be used in one-off cases but across whole interactions which is better suited for config / env variables, rather than CLI options</li>
+<li>Minimize CLI clutter</li>
+</ul>
+</li>
+<li><code>CARGO_RESOLVER_PRECEDENCE=rust-version</code> implies maximal resolution among MSRV-compatible dependencies.   Generally MSRV doesn’t decrease over versions, so minimal resolution will likely pick packages with compatible rust-versions.
+<ul>
+<li><code>cargo add</code> helps by selecting rust-version-compatible minimum bounds</li>
+<li>This bypasses a lot of complexity either from exploding the number of states we support or giving users control over the fallback by making the field an array of strategies.</li>
+</ul>
+</li>
+<li>Instead of <code>resolver = "3"</code>, we could just change the default for everyone
+<ul>
+<li>The number of maintainers verifying latest dependencies is likely relatively low and they are more likely to be “in the know”, making them less likely to be negatively affected by this. Therefore, we could probably get away with treating this as a minor incompatibility</li>
+<li>Either way, the concern is to ensure that the change receives attention. We wouldn’t want this to be like sparse registries where a setting exists and we change the default and people hardly notice (besides any improvements)</li>
+</ul>
+</li>
+<li><code>cargo build</code> will treat incompatible MSRVs as a workspace-level lint, rather than a package level lint, to avoid the complexity of mapping the dependency to a workspace-member to select <code>[lint]</code> tables to respect and then dealing with unifying conflicting levels in between <code>[lint]</code> tables among members.</li>
+<li><code>--ignore-rust-version</code> picks absolutely the latest dependencies to support both users on latest rustc and users wanting “unsupported” dependencies, at the cost of users not on the latest rustc but still wanting latest more up-to-date dependencies than their MSRV allows</li>
+<li>Compilation commands (e.g. <code>cargo check</code>) will take on two meanings for <code>--ignore-rust-version</code>, (1) <code>allow</code> the workspace diagnostic and (2) resolve changed dependencies to latest when syncing <code>Cargo.toml</code> to <code>Cargo.lock</code>.
+<ul>
+<li>This expansion of scope is for consistency</li>
+<li>Being a flag to turn the <code>deny</code> into an <code>allow</code> is a high friction workflow that we expect users to not be too negatively impacted by this expansion.</li>
+<li>With the resolver config and the configurable lint, we also expect the flag on compilation commands to be diminished in value.  Maybe in the future we could even deprecate it and/or hide it.</li>
+</ul>
+</li>
+<li><code>--update-rust-version</code> picks <code>rustc --version</code>-compatible dependencies so users can easily walk the treadmill of updating their dependencies / MSRV , no matter their <code>rustc</code> version.
+<ul>
+<li>There is little reason to select an MSRV higher than their Rust toolchain</li>
+<li>We should still be warning the user that new dependencies are available if they upgrade their Rust toolchain</li>
+<li>This comes at the cost of inconsistency with <code>--ignore-rust-version</code>.</li>
+</ul>
+</li>
+<li>Nightly <code>cargo publish</code> with <code>"tbd-name-representing-currently-running-rust-toolchain"</code> fails because there isn’t a good value to use and this gives us flexibility to change it later (e.g. just leaving the <code>rust-version</code> as unset).</li>
+</ul>
+<h3 id="ensuring-the-registry-index-has-rust-version-without-affecting-quality"><a class="header" href="#ensuring-the-registry-index-has-rust-version-without-affecting-quality">Ensuring the registry Index has <code>rust-version</code> without affecting quality</a></h3>
+<p>The user experience for this is based on the extent and quality of the data. Ensuring we have <code>package.rust-version</code> populated more often (while maintaining quality of that data) is an important problem but does not have to be solved to get value out of this RFC and can be handled separately.</p>
+<p>We chose an opt-in for populating <code>package.rust-version</code> based on <code>rustc --version</code> (<code>"tbd-name-representing-currently-running-rust-toolchain"</code>). This will encourage a baseline of quality as users are developing with that version and <code>cargo publish</code> will do a verification step, by default. This will help seed the Index with more <code>package.rust-version</code> data for the resolver to work with. The downside is that the <code>package.rust-version</code> will likely be higher than it absolutely needs. However, considering our definition of “support” and that the user isn’t bothering to set an MSRV themself, aggressively updating is likely fine in this case, especially since we’ll let dependents override the build failure for MSRV-incompatible packages.</p>
+<p>Some alternative solutions include:</p>
+<p>When missing, <code>cargo publish</code> could inject <code>package.rust-version</code> using the version of rustc used during publish. <strong>However</strong>, this will err on the side of a higher MSRV than necessary and the only way to work around it is to set <code>CARGO_RESOLVER_PRECEDENCE=maximum</code> which will then lose all other protections. As we said, this is likely fine but then there will be no way to opt-out for the subset of maintainers who want to keep their support definition vague. As things evolve, we could re-evaluate making <code>"tbd-name-representing-currently-running-rust-toolchain"</code> the default.</p>
+<p><del>We could encourage people to set their MSRV by having <code>cargo new</code> default <code>package.rust-version</code>.</del> <strong>However</strong>, if people aren’t committed to verifying that was implicitly set, it is likely to go stale and will claim an MSRV much older than what is used in practice. If we had the hard-error resolver mode and <a href="https://github.com/rust-lang/rust-clippy/issues/6324">clippy warning people when using API items stabilized after their MSRV</a>, this will at least annoy people into either being somewhat compatible or removing the field.</p>
+<p><del>When missing, <code>cargo publish</code> could inject <code>package.rust-version</code> inferred from <code>package.edition</code> and/or other <code>Cargo.toml</code> fields.</del> <strong>However</strong>, this will err on the side of too low of an MSRV. These fields have an incomplete picture. While this helps ensure there is more data for the MSRV-aware resolver, future analysis wouldn’t be able to distinguish between inferred and explicit <code>package.rust-version</code>s. We’d also need an explicit opt-out for those who intentionally don’t want one set.</p>
+<p>Alternatively, <code>cargo publish</code> / the registry could add new fields to the Index to represent an inferred MSRV, the published version, etc so it can inform our decisions without losing the intent of the publisher.</p>
+<p>We could help people keep their MSRV up to date, by letting them specify a policy (e.g. <code>rust-version-policy = "stable - 2"</code> or <code>rust-version-policy = "stable"</code>); then, every time the user runs <code>cargo update</code>, we could automatically update their <code>rust-version</code> field as well. This would also be an alternative to <code>--update-rust-version</code> that can be further explored in the future if desired. There are aspects of this that need to be worked out before going down this route</p>
+<ul>
+<li>Without gating this behind a flag, this will push people away from bumping their MSRV only on minor version bumps.</li>
+<li>Tying this to <code>cargo update</code> encourages other side effects by default (<code>--workspace</code> flag would be needed to do no other update) which pushes people to a more casual approach to MSRV updating, even if we have a flag</li>
+<li>We need to figure out what policies are appropriate and what syntax to use for them
+<ul>
+<li>While a continuous sliding window (<code>N-M</code>) is most commonly used today, it is unclear if that is the right policy to bake in compared to others like periodic updates (<code>*/M</code> in cron syntax) to be helping the “Extended MSRV” users along with everyone else.</li>
+</ul>
+</li>
+<li>Is <code>stable</code> clear enough to mean “current version a time of <code>cargo update</code> with ratcheting semantics”?  What name can work best?</li>
+</ul>
+<p>When there still isn’t an MSRV set, the resolver could</p>
+<ul>
+<li>Assume the MSRV of the next published package with an MSRV set</li>
+<li>Sort no-MSRV versions by minimal versions, the lower the version the more likely it is to be compatible
+<ul>
+<li>This runs into quality issues with version requirements that are likely too low for what the package actually needs</li>
+<li>For dependencies that never set their MSRV, this effectively switches us from maximal versions to minimal versions.</li>
+</ul>
+</li>
+</ul>
+<h3 id="configuring-the-resolver-mode-on-the-command-line-or-cargotoml"><a class="header" href="#configuring-the-resolver-mode-on-the-command-line-or-cargotoml">Configuring the resolver mode on the command-line or <code>Cargo.toml</code></a></h3>
+<p>The Cargo team is very interested in <a href="https://github.com/rust-lang/cargo/issues/12738">moving project-specific config to manifests</a>. However, there is a lot more to define for us to get there.  Some routes that need further exploration include:</p>
+<ul>
+<li>If its a CLI flag, then its transient, and its unclear which modes should be transient now and in the future
+<ul>
+<li>We could make it sticky by tracking this in <code>Cargo.lock</code> but that becomes less obvious what resolver mode you are in and how to change</li>
+</ul>
+</li>
+<li>We could put this in <code>Cargo.toml</code> but that implies it unconditionally applies to everything
+<ul>
+<li>But we want <code>cargo install</code> to use the latest dependencies so people get bug/security fixes</li>
+<li>This gets in the way of “Extended published MSRV w/ latest development MSRV” being able to change it in CI to verify MSRV and “Extended MSRV” being able to change it in CI to verify latest dependencies</li>
+</ul>
+</li>
+</ul>
+<p>By relying on config we can have a stabilized solution sooner and we can work out more of the details as we better understand the relevant problems.</p>
+<h3 id="add-workspacerust-version"><a class="header" href="#add-workspacerust-version">Add <code>workspace.rust-version</code></a></h3>
+<p>Instead of using the lowest MSRV among workspace members, we could add <code>workspace.rust-version</code>.</p>
+<p>This opens its own set of questions</p>
+<ul>
+<li>Do packages implicitly inherit this?</li>
+<li>What are the semantics if its unset?</li>
+<li>Would it be confusing to have this be set in mixed-MSRV workspaces?  Would blocking it be incompatible with the semantics when unset?</li>
+<li>In mixed-MSRV workspaces, does it need to be the highest or lowest MSRV of your packages?
+<ul>
+<li>For the resolver, it would need to be the lowest but there might be other use cases where it needs to be the highest</li>
+</ul>
+</li>
+</ul>
+<p>The proposed solution does not block us from later going down this road but allows us to move forward without having to figure out all of these details.</p>
+<h3 id="resolver-behavior"><a class="header" href="#resolver-behavior">Resolver behavior</a></h3>
+<p>Effects of current solution on workflows (including non-resolver behavior):</p>
+<ol>
+<li>Latest Rust with no MSRV</li>
+</ol>
+<ul>
+<li>✅ <code>cargo new</code> setting <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> moves most users to “Latest Rust as the MSRV” with no extra maintenance cost</li>
+<li>✅ Dealing with incompatible dependencies will have a friendlier face because the hard build error after changing dependencies is changed to a notification during update suggesting they upgrade to get the new dependency because we fallback to <code>rustc --version</code> when <code>package.rust-version</code> is unset (as a side effect of us capturing <code>rust-toolchain.toml</code>)</li>
+</ul>
+<ol start="2">
+<li>Latest Rust as the MSRV</li>
+</ol>
+<ul>
+<li>✅ Packages can more easily keep their MSRV up-to-date with
+<ul>
+<li><code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> (no policy around when it is changed) though this is dependent on your Rust toolchain being up-to-date (see “Latest Rust with no MSRV” for more)</li>
+<li><code>cargo update --update-rust-version</code> (e.g. when updating minor version) though this is dependent on what you dependencies are using for an MSRV</li>
+</ul>
+</li>
+<li>✅ Packages can more easily offer unofficial support for an MSRV due to shifting the building with MSRV-incompatible dependencies from an error to a <code>deny</code> diagnostic</li>
+</ul>
+<ol start="3">
+<li>Extended MSRV</li>
+</ol>
+<ul>
+<li>✅ <code>Cargo.lock</code> will Just Work</li>
+</ul>
+<ol start="4">
+<li>Extended published MSRV w/ latest development MSRV</li>
+</ol>
+<ul>
+<li>❌ Maintainers will have to opt-in to latest dependencies, in a <code>.cargo/config.toml</code></li>
+<li>✅ Verifying MSRV will no longer require juggling <code>Cargo.lock</code> files or using unstable features</li>
+</ul>
+<p>A short term benefit (hence why this is separate) is that an MSRV-aware resolver by default is that we can use it as a polyfill for <a href="https://dev-doc.rust-lang.org/stable/unstable-book/language-features/cfg-version.html"><code>cfg(version)</code></a> (which will likely need a lot of work in cargo after we finish stabilizing it for rustc). A polyfill package can exist that has multiple maintained semver-compatible versions with different MSRVs with the older ones leveraging external libraries while the newer ones leverage the standard library.</p>
+<h4 id="make-this-opt-in-rather-than-opt-out"><a class="header" href="#make-this-opt-in-rather-than-opt-out">Make this opt-in rather than opt-out</a></h4>
+<p>Instead of adding <code>resolver = "3"</code>, we could keep the default resolver the same as today but allow opt-in to MSRV-aware resolver via <code>CARGO_RESOLVER_PRECEDENCE=rust-version</code>.</p>
+<ul>
+<li>When building with old Rust versions, error messages could suggest re-resolving with <code>CARGO_RESOLVER_PRECEDENCE=rust-version</code>. The next corrective step (and suggestion from cargo) depends on what the user is doing and could be either
+<ul>
+<li><code>git checkout main -- Cargo.lock &amp;&amp; cargo check</code></li>
+<li><code>cargo generate-lockfile</code></li>
+</ul>
+</li>
+<li>We’d drop from this proposal <code>cargo update [--ignore-rust-version|--update-rust-version]</code> as they don’t make sense with this new default</li>
+</ul>
+<p>This has no impact on the other proposals (<code>cargo add</code> picking compatible versions, <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code>, <code>cargo build</code> error to diagnostic).</p>
+<p>Effects on workflows (including non-resolver behavior):</p>
+<ol>
+<li>Latest Rust with no MSRV</li>
+</ol>
+<ul>
+<li>✅ <code>cargo new</code> setting <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> moves most users to “Latest Rust as the MSRV” with no extra maintenance cost</li>
+<li>🟰 <del>Dealing with incompatible dependencies will have a friendlier face because the hard build error after changing dependencies is changed to a notification during update suggesting they upgrade to get the new dependency because we fallback to <code>rustc --version</code> when <code>package.rust-version</code> is unset (as a side effect of us capturing <code>rust-toolchain.toml</code>)</del></li>
+</ul>
+<ol start="2">
+<li>Latest Rust as the MSRV</li>
+</ol>
+<ul>
+<li>✅ Packages can more easily keep their MSRV up-to-date with
+<ul>
+<li><code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> (no policy around when it is changed) though this is dependent on your Rust toolchain being up-to-date (see “Latest Rust with no MSRV” for more)</li>
+<li><del><code>cargo update --update-rust-version</code> (e.g. when updating minor version) though this is dependent on what you dependencies are using for an MSRV</del></li>
+</ul>
+</li>
+<li>❌ Without <code>cargo update --update-rust-version</code>, <code>"tbd-name-representing-currently-running-rust-toolchain"</code> will be more of a default path, leading to more maintainers updating their MSRV more aggressively and waiting until minors</li>
+<li>✅ Packages can more easily offer unofficial support for an MSRV due to shifting the building with MSRV-incompatible dependencies from an error to a <code>deny</code> diagnostic</li>
+</ul>
+<ol start="3">
+<li>Extended MSRV</li>
+</ol>
+<ul>
+<li>✅ Users will be able to opt-in to MSRV-compatible dependencies, in a <code>.cargo/config.toml</code></li>
+<li>❌ Users will be frustrated that the tool knew what they wanted and didn’t do it</li>
+</ul>
+<ol start="4">
+<li>Extended published MSRV w/ latest development MSRV</li>
+</ol>
+<ul>
+<li>🟰 <del>Maintainers will have to opt-in to latest dependencies, in a <code>.cargo/config.toml</code></del></li>
+<li>✅ Verifying MSRV will no longer require juggling <code>Cargo.lock</code> files or using unstable features</li>
+</ul>
+<h4 id="make-cargo_resolver_precedencerustc-the-default"><a class="header" href="#make-cargo_resolver_precedencerustc-the-default">Make <code>CARGO_RESOLVER_PRECEDENCE=rustc</code> the default</a></h4>
+<p>Instead of <code>resolver = "3"</code> changing the behavior to <code>CARGO_RESOLVER_PRECEDENCE=rust-version</code>, it is changed to <code>CARGO_RESOLVER_PRECEDENCE=rustc</code> where the resolver selects packages compatible with current toolchain, matching the <code>cargo build</code> incompatible dependency error.</p>
+<ul>
+<li>We would still support <code>CARGO_RESOLVER_PRECEDENCE=rust-version</code> to help “Extended MSRV” users</li>
+<li>We’d drop from this proposal <code>cargo update [--ignore-rust-version|--update-rust-version]</code> as they don’t make sense with this new default</li>
+</ul>
+<p>This has no impact on the other proposals (<code>cargo add</code> picking compatible versions, <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code>, <code>cargo build</code> error to diagnostic).</p>
+<p>This is an auto-adapting variant where</p>
+<ul>
+<li>If they are on the latest toolchain, they get the current behavior</li>
+<li>If their toolchain matches their MSRV, they get an MSRV-aware resolver</li>
+</ul>
+<p>Effects on workflows (including non-resolver behavior):</p>
+<ol>
+<li>Latest Rust with no MSRV</li>
+</ol>
+<ul>
+<li>✅ <code>cargo new</code> setting <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> moves most users to “Latest Rust as the MSRV” with no extra maintenance cost</li>
+<li>✅ Dealing with incompatible dependencies will have a friendlier face because the hard build error after changing dependencies is changed to a notification during update suggesting they upgrade to get the new dependency because we fallback to <code>rustc --version</code> when <code>package.rust-version</code> is unset (as a side effect of us capturing <code>rust-toolchain.toml</code>)</li>
+</ul>
+<ol start="2">
+<li>Latest Rust as the MSRV</li>
+</ol>
+<ul>
+<li>✅ Packages can more easily keep their MSRV up-to-date with
+<ul>
+<li><code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> (no policy around when it is changed) though this is dependent on your Rust toolchain being up-to-date (see “Latest Rust with no MSRV” for more)</li>
+<li><del><code>cargo update --update-rust-version</code> (e.g. when updating minor version) though this is dependent on what you dependencies are using for an MSRV</del></li>
+</ul>
+</li>
+<li>❌ Without <code>cargo update --update-rust-version</code>, <code>"tbd-name-representing-currently-running-rust-toolchain"</code> will be more of a default path, leading to more maintainers updating their MSRV more aggressively and waiting until minors</li>
+<li>✅ Packages can more easily offer unofficial support for an MSRV due to shifting the building with MSRV-incompatible dependencies from an error to a <code>deny</code> diagnostic</li>
+</ul>
+<ol start="3">
+<li>Extended MSRV</li>
+</ol>
+<ul>
+<li>✅ Users will be able to opt-in to MSRV-compatible dependencies, in a <code>.cargo/config.toml</code></li>
+<li>❌ Users will be frustrated that the tool knew what they wanted and didn’t do it</li>
+<li>❌ This may encourage maintainers to develop using their MSRV, reducing the quality of their experience (not getting latest lints, not getting latest cargo features like “wait for publish”, etc)</li>
+</ul>
+<ol start="4">
+<li>Extended published MSRV w/ latest development MSRV</li>
+</ol>
+<ul>
+<li>❌ Maintainers will have to opt-in to ensure they get the latest dependencies in a <code>.cargo/config.toml</code></li>
+<li>✅ Verifying MSRV will no longer require juggling <code>Cargo.lock</code> files or using unstable features</li>
+</ul>
+<h4 id="hard-error"><a class="header" href="#hard-error">Hard-error</a></h4>
+<p>Instead of <em>preferring</em> MSRV-compatible dependencies, the resolver could hard error if only MSRV-incompatible versions are available.</p>
+<ul>
+<li><code>--ignore-rust-version</code> would need to be “sticky” in the <code>Cargo.lock</code> to avoid the next run command from rolling back the <code>Cargo.lock</code> which might be confusing because it is “out of sight; out of mind”.</li>
+<li>To avoid <code>Cargo.lock</code> churn, we can’t fallback to <code>rustc --version</code> when <code>package.rust-version</code> is not present</li>
+</ul>
+<p>In addition to errors, differences from the “preference” solutions include:</p>
+<ul>
+<li>Increase the chance of an MSRV-compatible <code>Cargo.lock</code> because the resolver can backtrack on MSRV-incompatible transitive dependencies, trying alternative versions of direct dependencies</li>
+<li>When workspace members have different MSRVs, dependencies exclusive to a higher MSRV package can use higher versions</li>
+</ul>
+<p>To get the error reporting to be of sufficient quality will require major work in a complex, high risk area of Cargo (the resolver). This would block stabilization indefinitely. We could adopt this approach in the future, if desired</p>
+<p>Effects on workflows (including non-resolver behavior):</p>
+<ol>
+<li>Latest Rust with no MSRV</li>
+</ol>
+<ul>
+<li>✅ <code>cargo new</code> setting <code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> moves most users to “Latest Rust as the MSRV” with no extra maintenance cost</li>
+<li>❌ Dealing with incompatible dependencies will have a friendlier face because the hard build error after changing dependencies is changed to a notification during update suggesting they upgrade to get the new dependency because we fallback to <code>rustc --version</code> when <code>package.rust-version</code> is unset (as a side effect of us capturing <code>rust-toolchain.toml</code>)</li>
+</ul>
+<ol start="2">
+<li>Latest Rust as the MSRV</li>
+</ol>
+<ul>
+<li>✅ Packages can more easily keep their MSRV up-to-date with
+<ul>
+<li><code>package.rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code> (no policy around when it is changed) though this is dependent on your Rust toolchain being up-to-date (see “Latest Rust with no MSRV” for more)</li>
+<li><code>cargo update --update-rust-version</code> (e.g. when updating minor version) though this is dependent on what you dependencies are using for an MSRV</li>
+</ul>
+</li>
+<li>✅ Packages can more easily offer unofficial support for an MSRV due to shifting the building with MSRV-incompatible dependencies from an error to a <code>deny</code> diagnostic</li>
+</ul>
+<ol start="3">
+<li>Extended MSRV</li>
+</ol>
+<ul>
+<li>✅ <code>Cargo.lock</code> will Just Work for <code>package.rust-version</code></li>
+<li>❌ Application developers using <code>rust-toolchain.toml</code> will have to duplicate that in <code>package.rust-version</code> and keep it in sync</li>
+</ul>
+<ol start="4">
+<li>Extended published MSRV w/ latest development MSRV</li>
+</ol>
+<ul>
+<li>❌ A design not been worked out to allow this workflow</li>
+<li>❌ If this is done unconditionally, then the <code>Cargo.lock</code> will change on upgrade</li>
+<li>❌ This is incompatible with per-<code>feature</code> MSRVs</li>
+</ul>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<ul>
+<li>Python: instead of tying packages to a particular tooling version, the community instead focuses on their equivalent of the <a href="https://crates.io/crates/rustversion"><code>rustversion</code> crate</a> combined with tool-version-conditional dependencies that allow polyfills.
+<ul>
+<li>We have <a href="https://github.com/rust-lang/rust/issues/64797">cfg_accessible</a> as a first step though it has been stalled</li>
+<li>These don’t have to be mutually exclusive solutions as conditional compilation offers flexibility at the cost of maintenance.  Different maintainers might make different decisions in how much they leverage each</li>
+<li>One big difference is Python continues to support previous releases which sets a standard within the community for “MSRV” policies.</li>
+</ul>
+</li>
+<li><a href="https://getcomposer.org/doc/01-basic-usage.md#platform-packages">PHP Platform Packages</a> is a more general mechanism than MSRV that allows declaring dependencies on external runtime requirements, like the interpreter version, interpreter extensions presence and version, or even whether the interpreter is 64-bit.
+<ul>
+<li>Resolves to current system</li>
+<li>Can be overridden to so current system is always considered compatible</li>
+<li>Not tracked in their lockfile</li>
+<li>When run on an incompatible system, it will error and require running a command to re-resolve the dependencies for the current system</li>
+<li>One difference is that PHP is interpreted and that their lockfile must encompass not just development dependencies but deployment dependencies.  This is in contrast to Rust which has development and deployment-build dependencies tracked with a lockfile while deployment uses OS-specific dependencies, like shared-object dependencies of ELF binaries which are not locked by their nature but instead developers rely on other technologies like docker or Nix (not even static linking can help as they that still leaves them subject to the kernel version in non-bare metal deployments).</li>
+</ul>
+</li>
+</ul>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p>The config field is fairly rough</p>
+<ul>
+<li>The name isn’t very clear</li>
+<li>The values are awkward</li>
+<li>Should we instead just have a <code>resolver.rust-version = true</code>?
+<ul>
+<li>If we later add “resolve to toolchain” version, this might be confusing.</li>
+<li>Maybe enumeration, like <code>resolver.rust-version = &lt;manifest|toolchain|ignore&gt;</code>?</li>
+</ul>
+</li>
+</ul>
+<p><code>rust-version = "tbd-name-representing-currently-running-rust-toolchain"</code>’s field name is unsettled and deciding on it is not blocking for stabilization. Ideally, we make it clear that this is not inferred from syntax, that this is the currently running toolchain, that we ignore pre-release toolchains, and the name works well for resolver config if we decide to add “resolve to toolchain version” and want these to be consistent. Some options include:</p>
+<ul>
+<li><code>"tbd-name-representing-currently-running-rust-toolchain"</code> can imply “infer from syntactic minimum”</li>
+<li><code>latest</code> can imply “latest globally (ie from rust-lang.org)</li>
+<li><code>stable</code> can imply “latest globally (ie from rust-lang.org)</li>
+<li><code>toolchain</code> might look weird?</li>
+<li><code>local</code> implies a <code>remote</code></li>
+<li><code>current</code> is like <code>latest</code> but a little softer and might work</li>
+</ul>
+<p>Resolving with an unset <code>package.rust-version</code> falls back to <code>rustc --version</code> only if its a non-pre-release. Should we instead pick the previous stable release (e.g. nightly 1.77 would resolve for 1.76)?</p>
+<p>Whether we report stale dependencies only on <code>cargo update</code> or on every command. See “Syncing <code>Cargo.toml</code> to <code>Cargo.lock</code> on any Cargo command”.</p>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<h3 id="integrate-cargo-audit"><a class="header" href="#integrate-cargo-audit">Integrate <code>cargo audit</code></a></h3>
+<p>If we <a href="https://github.com/rust-lang/cargo/issues/7678">integrate <code>cargo audit</code></a>, we can better help users on older dependencies identify security vulnerabilities, reducing the risks associated with being on older versions.</p>
+<h3 id="cargo-upgrade"><a class="header" href="#cargo-upgrade">“cargo upgrade”</a></h3>
+<p>As we pull <a href="https://github.com/rust-lang/cargo/issues/12425"><code>cargo upgrade</code> into cargo</a>, we’ll want to make it respect MSRV as well</p>
+<h3 id="cargo-install"><a class="header" href="#cargo-install">cargo install</a></h3>
+<p><code>cargo install</code> could auto-select a top-level package that is compatible with the version of rustc that will be used to build it.</p>
+<p>This could be controlled through a config field and a smaller step towards this is we could stabilize the field without changing the default away from <code>maximum</code>, allowing people to intentionally opt-in to auto-selecting a compatible top-level paclage.</p>
+<p>Dependency resolution could be controlled through a config field <code>install.resolver.precedence</code>, mirroring <code>resolver.precedence</code>. The value add of this compared to <code>--locked</code> is unclear.</p>
+<p>See <a href="https://github.com/rust-lang/cargo/issues/10903">rust-lang/cargo#10903</a> for more discussion.</p>
+<p><strong>Note:</strong> <a href="https://github.com/rust-lang/cargo/pull/12798">rust-lang/cago#12798</a> (released in 1.75) made it so <code>cargo install</code> will error upfront, suggesting a version of the package to use and to pass <code>--locked</code> assuming the bundled <code>Cargo.lock</code> has MSRV compatible dependencies.</p>
+<h3 id="cargo-publish-1"><a class="header" href="#cargo-publish-1">cargo publish</a></h3>
+<p>If you publish a library using your MSRV and MSRV-incompatible dependencies exist, the publish verification step will fail. You can workaround this by</p>
+<ul>
+<li>Upgrading</li>
+<li>Running with <code>--no-verify</code></li>
+</ul>
+<p>See <a href="https://github.com/rust-lang/cargo/issues/13306">rust-lang/cargo#13306</a>.</p>
+<h3 id="resolverprecedence--rust-versionxyz"><a class="header" href="#resolverprecedence--rust-versionxyz"><code>resolver.precedence = "rust-version=&lt;X&gt;[.&lt;Y&gt;[.&lt;Z&gt;]]"</code></a></h3>
+<p>We could allow people setting an effective rust-version within the config. This would be useful for people who have a reason to not set <code>package.rust-version</code> as well as to reproduce behavior with different Rust versions.</p>
+<h3 id="rustup-supporting-msrv"><a class="header" href="#rustup-supporting-msrv">rustup supporting <code>+msrv</code></a></h3>
+<p>See https://github.com/rust-lang/rustup/issues/1484#issuecomment-1494058857</p>
+<h3 id="language-version-lints"><a class="header" href="#language-version-lints">Language-version lints</a></h3>
+<p>We could make developing with the latest toolchain with old MSRVs easier if we provided lints. Due to accuracy of information, this might start as a clippy lint, see <a href="https://github.com/rust-lang/rust-clippy/issues/6324">#6324</a>. This doesn’t have to be perfect (covering all facets of the language) to be useful in helping developers identify their change is MSRV incompatible as early as possible.</p>
+<p>If we allowed this to bypass caplints, then you could more easily track when a dependency with an unspecified MSRV is incompatible.</p>
+<h3 id="language-version-awareness-for-rust-analyzer"><a class="header" href="#language-version-awareness-for-rust-analyzer">Language-version awareness for rust-analyzer</a></h3>
+<p>rust-analyzer could mark auto-complete options as being incompatible with the MSRV and automatically bump the MSRV if selected, much like auto-adding a <code>use</code> statement.</p>
+<h3 id="establish-a-policy-on-msrv"><a class="header" href="#establish-a-policy-on-msrv">Establish a policy on MSRV</a></h3>
+<p>For us to say “your MSRV should be X” would likely be both premature and would have a lot of caveats for different use cases.</p>
+<p>With <a href="https://github.com/rust-lang/cargo/pull/13056">rust-lang/cargo#13056</a>, we at least made it explicit that people should verify their MSRV.</p>
+<p>Ideally, we’d at least facilitate people in setting their MSRV.  Some data that could help includes:</p>
+<ul>
+<li>A report of rust-versions used making requests to crates.io as determined by the user-agent</li>
+<li>A report of <code>package.rust-version</code> for the latest versions of packages on crates.io</li>
+<li>A report of <code>package.rust-version</code> for the recently downloaded versions of packages on crates.io</li>
+</ul>
+<p>Once people have more data to help them in picking an MSRV policy, it would help to also document trade-offs on whether an MSRV policy should proactive or reactive on when to bump it.</p>
+<h3 id="warn-when-adding-dependencies-with-unspecified-msrvs"><a class="header" href="#warn-when-adding-dependencies-with-unspecified-msrvs">Warn when adding dependencies with unspecified MSRVs</a></h3>
+<p>When adding packages without an MSRV, its not clear whether it will work with your project. Knowing that they haven’t declared support for your toolchain version could be important, after we’ve made it easier to declare an MSRV.</p>
+<h3 id="track-version-maintenance-status-on-cratesio"><a class="header" href="#track-version-maintenance-status-on-cratesio">Track version maintenance status on crates.io</a></h3>
+<p>If you <code>cargo add</code> a dependency and it says that a newer version is available but it supports a dramatically different MSRV than you, it would be easy to assume there is a mismatch in expectations and you shouldn’t use that dependency. However, you may still be supported via an LTS but that information can only be captured in documentation which is not within the flow of the developer.</p>
+<p>If crates.io had a mutable package and package version metadata database, maintainers could report the maintenance status of specific versions (or maybe encode their maintenance policy), allowing cargo to report not just whether you are on latest, but whether you are supported.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3535-constants-in-patterns.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3543-patchable-function-entry.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3535-constants-in-patterns.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3543-patchable-function-entry.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

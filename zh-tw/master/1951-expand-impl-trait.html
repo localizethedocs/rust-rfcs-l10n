@@ -1,0 +1,693 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1951-expand-impl-trait - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: expanded_impl_trait</li>
+<li>Start Date: 2017-03-12</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/1951">rust-lang/rfcs#1951</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/42183">rust-lang/rust#42183</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>This RFC proposes several steps forward for <code>impl Trait</code>:</p>
+<ul>
+<li>
+<p>Settling on a particular syntax design, resolving questions around the <code>some</code>/<code>any</code> proposal and others.</p>
+</li>
+<li>
+<p>Resolving questions around which type and lifetime parameters are considered in scope for an <code>impl Trait</code>.</p>
+</li>
+<li>
+<p>Adding <code>impl Trait</code> to argument position.</p>
+</li>
+</ul>
+<p>The first two proposals, in particular, put us into a position to stabilize the current version of the feature in the near future.</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>To recap, the current <code>impl Trait</code> feature allows functions to write a return type like <code>impl Iterator&lt;Item = u64&gt;</code> or <code>impl Fn(u64) -&gt; bool</code>, which says that the function’s return type satisfies the given trait bounds, but nothing more about it can be assumed. It’s useful to impose an abstraction barrier and to avoid writing down complex (or un-nameable) types. The current feature was designed very conservatively, and only allows <code>impl Trait</code> to be used in function return position on inherent or free functions.</p>
+<p>The core motivation for this RFC is to pave the way toward stabilization of <code>impl Trait</code>; from that perspective, it inherits the motivation of <a href="https://github.com/rust-lang/rfcs/pull/1522">the previous RFC</a>. Making progress on this front falls clearly under the rubric of the productivity and learnability goals for <a href="https://github.com/rust-lang/rfcs/pull/1774">the 2017 roadmap</a>.</p>
+<p>Stabilization is currently blocked on three inter-related questions:</p>
+<ul>
+<li>
+<p>Will <code>impl Trait</code> ever be usable in argument position? With what semantics?</p>
+</li>
+<li>
+<p>Will we want to distinguish between <code>some</code> and <code>any</code>, that is, between existential types (where the callee chooses the type) and universal types (where the caller chooses)? Or is it enough to deduce the desired meaning from context?</p>
+</li>
+<li>
+<p>When you use <code>impl Trait</code>, what lifetime and type parameters are in scope for the hidden, concrete type that will be returned? Can you customize this set?</p>
+</li>
+</ul>
+<p>This RFC is aimed squarely at resolving these questions. However, by resolving some of them, it also unlocks the door to an expansion of the feature to new locations (arguments, traits, trait impls), as we’ll see.</p>
+<h3 id="motivation-for-expanding-to-argument-position"><a class="header" href="#motivation-for-expanding-to-argument-position">Motivation for expanding to argument position</a></h3>
+<p>This RFC proposes to allow <code>impl Trait</code> to be used in argument position, with “universal” (aka generics-style) semantics. There are three lines of argument in favor of doing so, given here along with rebuttals from the lang team.</p>
+<h4 id="argument-from-learnability"><a class="header" href="#argument-from-learnability">Argument from learnability</a></h4>
+<p>There’s been a lot of discussion around universals vs. existentials (in today’s Rust, generics vs <code>impl Trait</code>). The RFC makes a few assumptions:</p>
+<ul>
+<li>Most programmers won’t come to Rust with a crisp understanding of the distinction.</li>
+<li>Even when people learn the distinction, it’s often confusing and hard to remember with precision.</li>
+<li>But, on the other hand, programmers have a very deep intuition around the difference between arguments and return values, and “who” provides which (amongst caller and callee).</li>
+</ul>
+<p>Now, consider a new Rust programmer, who has learned about generics:</p>
+<pre><code class="language-rust">fn take_iter&lt;T: Iterator&gt;(t: T)</code></pre>
+<p>What happens when they want to return an unstated iterator instead? It’s pretty natural to reach for:</p>
+<pre><code class="language-rust">fn give_iter&lt;T: Iterator&gt;() -&gt; T</code></pre>
+<p>if you don’t have a crisp understanding of the unversal/existential distinction. If we only allowed <code>impl Trait</code> in return position, we’d have to say: when returning an unknown type, please use a completely different mechanism.</p>
+<p>By contrast, a programmer who first learned:</p>
+<pre><code class="language-rust">fn take_iter(t: impl Iterator)</code></pre>
+<p>and then tried:</p>
+<pre><code class="language-rust">fn give_iter() -&gt; impl Iterator</code></pre>
+<p>would be successful, without any rigorous understanding that they just transitioned from a universal to an existential.</p>
+<p>What’s at play here is <strong>who gets to pick a type</strong>? And as above, programmers have a strong intuition about callers providing arguments, and callees providing return values. The proposed <code>impl Trait</code> extension to argument aligns with this intuition (and with what is most definitely the common case in practice), so that:</p>
+<ul>
+<li>If you pick the value, you also pick the type</li>
+</ul>
+<p>Thus in <code>fn f(x: impl Foo) -&gt; impl Bar</code>, the caller picks the value of <code>x</code> and so picks the type for <code>impl Foo</code>, but the function picks the return value, so it picks the type for <code>impl Bar</code>.</p>
+<p>This intuitive basis lets you get a lot of work done without learning the deeper distinction; you can fake it ’til you make it. If we, in addition, have an explicit syntax, you can eventually come to a fully rigorous understanding in terms of that syntax. And then you can go back to mostly operating intuitively with <code>impl Trait</code>, reaching for the fine distinctions only when you need them (<a href="https://terrytao.wordpress.com/career-advice/there%E2%80%99s-more-to-mathematics-than-rigour-and-proofs/">the “post-rigorous” stage of learning</a>).</p>
+<p><a href="https://github.com/rust-lang/rfcs/pull/1951#issuecomment-287493061">@solson did a great job of laying this kind of argument out.</a></p>
+<h4 id="argument-from-ergonomics"><a class="header" href="#argument-from-ergonomics">Argument from ergonomics</a></h4>
+<p><a href="https://blog.rust-lang.org/2017/03/02/lang-ergonomics.html">Ergonomics is rarely about raw character count</a>, and the argument here isn’t about shaving off a few characters. Rather, it’s about how much you have to hold in your head.</p>
+<p>Generic syntax requires you to introduce a name for an argument’s type, and to separate information about that type from the argument itself:</p>
+<pre><code class="language-rust">fn map&lt;U, F: FnOnce(T) -&gt; U&gt;(self, f: F) -&gt; Option&lt;U&gt;</code></pre>
+<p>To read this signature, you have to first parse the type parameters and bounds, then remember which ones applied to <code>F</code>, and then see where <code>F</code> shows up in the argument.</p>
+<p>By contrast:</p>
+<pre><code class="language-rust">fn map&lt;U&gt;(self, f: impl FnOnce(T) -&gt; U) -&gt; Option&lt;U&gt;</code></pre>
+<p>Here, there are no additional names or indirections to hold in your head, and the relevant information about the argument type is located right next to the argument’s name. Even better:</p>
+<pre><code class="language-rust">fn map&lt;U&gt;(self, f: FnOnce(T) -&gt; U) -&gt; Option&lt;U&gt;</code></pre>
+<p>Also, when programming at speed, the fact that you can use the same <code>impl Trait</code> syntax in argument and return position – and it almost always has the meaning you want – means less pausing to think “hm, am I dealing with an existential here?”</p>
+<h4 id="argument-from-familiarity"><a class="header" href="#argument-from-familiarity">Argument from familiarity</a></h4>
+<p>Finally, there’s an argument from familiarity, which was given eloquently by @withoutboats:</p>
+<blockquote>
+<p>The proposal is (syntactically) more like Java. In Java, non-static methods aren’t parametric; generics are used at the type level, and you just use interfaces at the method level.</p>
+<p>We’d end up with APIs that look very similar to Java or C#:</p>
+<pre><code class="language-rust">impl&lt;T&gt; Option&lt;T&gt; {
+    fn map&lt;U&gt;(self, f: impl FnOnce(T) -&gt; U) -&gt; Option&lt;U&gt; { ... }
+}</code></pre>
+<p>I think this is a good thing from the pre-rigorous/rigourous/post-rigourous sense: you have this incremental onboarding experience in which at first blush it is quite similar to what you’re used to. What I like even more, though, is that under the hood its all parametric polymorphism. In Java you actually have inheritance, and interfaces, and generics, and they all interact but not in a very unified way. In Rust, this is just a syntactic easement into a unitary polymorphism system which is fundamentally one idea: parametric polymorphism with trait constraints.</p>
+</blockquote>
+<h4 id="critique-from-the-lang-team"><a class="header" href="#critique-from-the-lang-team">Critique from the lang team</a></h4>
+<p>@nrc argued that there’s also a learnability downside, because Rust programmers now have one additional syntax for generic arguments to learn.</p>
+<p><strong>Rebuttal</strong>: I agree that there’s an additional syntax to learn, but a key here is that there’s no <em>genuine</em> complexity addition: it’s pure sugar. In other words, it’s not a new <em>concept</em>, and learning that there’s an alternative, more verbose and expressive syntax tends to be a relatively easy step to take in practice. In addition, treating it as “anonymous generics” (for arguments) makes it pretty easy to understand the relationship.</p>
+<hr>
+<p>@nrc argued that there would also be stylistic overhead: when to use <code>impl Trait</code> vs generics vs where clauses? And won’t you often end up having to use <code>where</code> clauses anyway, when things get longer?</p>
+<p><strong>Rebuttal</strong>: @withoutboats pointed out that <code>impl Trait</code> can actually help ease such style questions:</p>
+<pre><code class="language-rust">fn foo&lt;
+    T: Whatever + SomethingElse,
+    U: Whatever,
+&gt;(
+    t: T,
+    u: U,
+)
+
+// vs
+
+fn foo&lt;T, U&gt;(t: T, u: U) where
+    T: Whatever + SomethingElse,
+    U: Whatever,
+
+// vs
+
+fn foo(
+    t: impl Whatever + SomethingElse,
+    u: impl Whatever,
+)</code></pre>
+<p>It seems plausible that <code>impl Trait</code> syntax should simply <em>always</em> be used whenever it can be, since expanding out an argument list into multiple lines tends to be preferable to expanding out a <code>where</code> clause to multiple lines (and even more so, expanding out a generics list).</p>
+<hr>
+<p>@joshtriplett raised concerns about the purported learnability benefits absent having an explicit syntax for the “rigorous” stage.</p>
+<p><strong>Rebuttal</strong>: the RFC takes as a basic assumption that we will eventually have such a syntax. But I think it’s worth diving into greater detail on the learnability tradeoffs here. I think that if we offered an explicit syntax that was similar to today’s generic syntax, it could help tell a coherent, intuitive story.</p>
+<hr>
+<p>@nrc raised <a href="https://github.com/rust-lang/rfcs/pull/1951#issuecomment-290522499">his point about auto traits</a>.</p>
+<p><strong>Rebuttal</strong>: the auto trait story here is essentially the same as with generics:</p>
+<pre><code class="language-rust">fn foo(t: impl Trait) -&gt; impl Trait { t }
+fn foo&lt;T: Trait&gt;(t: T) -&gt; T { t }</code></pre>
+<p>In both of these functions, if you pass in an argument that is <code>Send</code>, you will be able to rely on <code>Send</code> in the return value.</p>
+<h2 id="詳細設計"><a class="header" href="#詳細設計">詳細設計</a></h2>
+<h3 id="the-proposal-in-a-nutshell"><a class="header" href="#the-proposal-in-a-nutshell">The proposal in a nutshell</a></h3>
+<ul>
+<li>
+<p>Expand <code>impl Trait</code> to allow use in arguments, where it behaves like an anonymous generic parameter. <strong>This will be separately feature-gated</strong>.</p>
+</li>
+<li>
+<p>Stick with the <code>impl Trait</code> syntax, rather than introducing a <code>some</code>/<code>any</code> distinction.</p>
+</li>
+<li>
+<p>Treat all type parameters as in scope for the concrete “witness” type underlying a use of <code>impl Trait</code>.</p>
+</li>
+<li>
+<p>Treat any explicit lifetime bounds (as in <code>impl Trait + 'a</code>) as bringing those lifetimes into scope, and no other lifetime parameters are explicitly in scope. However, type parameters may mention lifetimes which are hence <em>indirectly</em> in scope.</p>
+</li>
+</ul>
+<h3 id="background"><a class="header" href="#background">Background</a></h3>
+<p>Before diving more deeply into the design, let’s recap some of the background that’s emerged over time for this corner of the language.</p>
+<h4 id="universals-any-versus-existentials-some"><a class="header" href="#universals-any-versus-existentials-some">Universals (<code>any</code>) versus existentials (<code>some</code>)</a></h4>
+<p>There are basically two ways to talk about an “unknown type” in something like a function signature:</p>
+<ul>
+<li>
+<p><strong>Universal quantification</strong>, i.e. “for any type T”, i.e. “caller chooses”. This is how generics work today. When you write <code>fn foo&lt;T&gt;(t: T)</code>, you’re saying that the function will work for <em>any</em> choice of <code>T</code>, and leaving it to your caller to choose the <code>T</code>.</p>
+</li>
+<li>
+<p><strong>Existential quantification</strong>, i.e. “for some type T”, i.e. “callee chooses”. This is how <code>impl Trait</code> works today (which is in return position only). When you write <code>fn foo() -&gt; impl Iterator</code>, you’re saying that the function will produce <em>some</em> type <code>T</code> that implements <code>Iterator</code>, but the caller is not allowed to assume anything else about that type.</p>
+</li>
+</ul>
+<p>When it comes to functions, we <em>usually</em> want <code>any T</code> for arguments, and <code>some T</code> for return values. However, consider the following function:</p>
+<pre><code class="language-rust">fn thin_air&lt;T: Default&gt;() -&gt; T {
+    T::default()
+}</code></pre>
+<p>The <code>thin_air</code> function says it can produce a value of type <code>T</code> for <em>any</em> <code>T</code> the caller chooses—so long as <code>T: Default</code>. The <code>collect</code> function works similarly. But this pattern is relatively uncommon.</p>
+<p>As we’ll see later, there are also considerations for <em>higher-order</em> functions, i.e. when you take another function as an argument.</p>
+<p>In any case, one longstanding proposal for <code>impl Trait</code> is to split it into two distinct features: <code>some Trait</code> and <code>any Trait</code>. Then you’d have:</p>
+<pre><code class="language-rust">// These two are equivalent
+fn foo&lt;T: MyTrait&gt;(t: T)
+fn foo(t: any MyTrait)
+
+// These two are equivalent
+fn foo() -&gt; impl Iterator
+fn foo() -&gt; some Iterator
+
+// These two are equivalent
+fn foo&lt;T: Default&gt;() -&gt; T
+fn foo() -&gt; any Default</code></pre>
+<h4 id="scoping-for-lifetime-and-type-parameters"><a class="header" href="#scoping-for-lifetime-and-type-parameters">Scoping for lifetime and type parameters</a></h4>
+<p>There’s a subtle issue for the semantics of <code>impl Trait</code>: what lifetime and type parameters are considered “in scope” for the underlying concrete type that implements <code>Trait</code>?</p>
+<h5 id="type-parameters-and-type-equalities"><a class="header" href="#type-parameters-and-type-equalities">Type parameters and type equalities</a></h5>
+<p>It’s easiest to understand this issue through examples where it matters. Suppose we have the following function:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(t: T) -&gt; impl MyTrait { .. }</code></pre>
+<p>Here we’re saying that the function will yield <em>some</em> type back, whose identity we don’t know, but which implements <code>MyTrait</code>. But, in addition, we have the type parameter <code>T</code>. The question is: can the return type of the function depend on <code>T</code>?</p>
+<p>Concretely, we expect at least the following to work:</p>
+<pre><code class="language-rust">vec![
+    foo(0u8),
+    foo(1u8),
+]</code></pre>
+<p>because we expect both expressions to have the same type, and hence be eligible to place into a single vector. That’s because, although we don’t know the identity of the return type, everything it could depend on is the same in both cases: <code>T</code> is instantiated with <code>u8</code>. (Note: there are “generative” variants of existentials for which this is not the case; see <a href="#unresolved-questions">Unresolved questions</a>);</p>
+<p>But what about the following:</p>
+<pre><code class="language-rust">vec![
+    foo(0u8),
+    foo(0u16),
+]</code></pre>
+<p>Here, we’re making different choices of <code>T</code> in the two expressions; can that affect what return type we get? The <code>impl Trait</code> semantics needs to give an answer to that question.</p>
+<p>Clearly there are cases where the return type very much depends on type parameters, for example the following:</p>
+<pre><code class="language-rust">fn buffer&lt;T: Write&gt;(t: T) -&gt; impl Write {
+    BufWriter::new(t)
+}</code></pre>
+<p>But there are also cases where there isn’t a dependency, and tracking that information may be important for type equalities like the vectors above. And this applies equally to lifetime parameters as well.</p>
+<h5 id="lifetime-parameters"><a class="header" href="#lifetime-parameters">Lifetime parameters</a></h5>
+<p>It’s vital to know what lifetime parameters might be used in the concrete type underlying an <code>impl Trait</code>, because that information will affect lifetime inference.</p>
+<p>For concrete types, we’re pretty used to thinking about this. Let’s take slices:</p>
+<pre><code class="language-rust">impl&lt;T&gt; [T] {
+    fn len(&amp;self) -&gt; usize { ... }
+    fn first(&amp;self) -&gt; Option&lt;&amp;T&gt; { ... }
+}</code></pre>
+<p>A seasoned Rustacean can read the ownership story directly from these two signatures. In the case of <code>len</code>, the fact that the return type does not involve any borrowed data means that the borrow of <code>self</code> is only used within <code>len</code>, and doesn’t need to persist afterwards. For <code>first</code>, by contrast, the return value contains <code>&amp;T</code>, which will extend the borrow of <code>self</code> for at least as long as that return value is kept around by the caller.</p>
+<p>As a caller, this difference is quite apparent:</p>
+<pre><code class="language-rust">{
+    let len = my_slice.len(); // the borrow of `my_slice` lasts only for this line
+    *my_slice[0] = 1;         // ... so this mutable borrow is allowed
+}
+
+{
+    let first = my_slice.first(); // the borrow of `my_slice` lasts for the rest of this scope
+    *my_slice[0] = 1;             // ... so this mutable borrow is *NOT* allowed
+}</code></pre>
+<p>Now, the issue is that for <code>impl Trait</code>, we’re not writing down the concrete return type, <em>so it’s not obvious what borrows might be active within it</em>. In other words, if we write:</p>
+<pre><code class="language-rust">impl&lt;T&gt; [T] {
+    fn bork(&amp;self) -&gt; impl SomeTrait { ... }
+}</code></pre>
+<p>it’s not clear whether the function is more like <code>len</code> or more like <code>first</code>.</p>
+<p>This is again a question of <em>what lifetime parameters are in scope</em> for the actual return type. It’s a question that needs a clear answer (and some flexibility) for the <code>impl Trait</code> design.</p>
+<h3 id="core-assumptions"><a class="header" href="#core-assumptions">Core assumptions</a></h3>
+<p>The design in this RFC is guided by several assumptions which are worth laying out explicitly.</p>
+<h4 id="assumption-1-we-will-eventually-have-a-fully-expressive-and-explicit-syntax-for-existentials"><a class="header" href="#assumption-1-we-will-eventually-have-a-fully-expressive-and-explicit-syntax-for-existentials">Assumption 1: we will eventually have a fully expressive and explicit syntax for existentials</a></h4>
+<p>The <code>impl Trait</code> syntax can be considered an “implicit” or “sugary” syntax in that it (1) does not introduce a name for the existential type and (2) does not allow you to control the scope in which the underlying concrete type is known.</p>
+<p>Moreover, some versions of the design (including in this RFC) impose further limitations on the power of the feature for the sake of simplicity.</p>
+<p>This is done under the assumption that we will eventually introduce a fully expressive, explicit syntax for existentials. Such a syntax is sketched in an appendix to this RFC.</p>
+<h4 id="assumption-2-treating-all-type-variables-as-in-scope-for-impl-trait-suffices-for-the-vast-majority-of-cases"><a class="header" href="#assumption-2-treating-all-type-variables-as-in-scope-for-impl-trait-suffices-for-the-vast-majority-of-cases">Assumption 2: treating all <em>type</em> variables as in scope for <code>impl Trait</code> suffices for the vast majority of cases</a></h4>
+<p>The background section discussed scoping issues for <code>impl Trait</code>, and the main implication for <em>type</em> parameters (as opposed to lifetimes) is what type equalities you get for an <code>impl Trait</code> return type. We’re making two assumptions about that:</p>
+<ul>
+<li>In practice, you usually need to close over most of all of the type parameters.</li>
+<li>In practice, you usually don’t care much about type equalities with <code>impl Trait</code>.</li>
+</ul>
+<p>This latter point means, for example, that it’s relatively unusual to do things like construct the vectors described in the background section.</p>
+<h4 id="assumption-3-there-should-be-an-explicit-marker-when-a-lifetime-could-be-embedded-in-a-return-type"><a class="header" href="#assumption-3-there-should-be-an-explicit-marker-when-a-lifetime-could-be-embedded-in-a-return-type">Assumption 3: there should be an explicit marker when a lifetime could be embedded in a return type</a></h4>
+<p>As mentioned in a <a href="https://blog.rust-lang.org/2017/03/02/lang-ergonomics.html">recent blog post</a>, one regret we have around lifetime elision is the fact that it applies when leaving off a lifetime for a non-<code>&amp;</code> type constructor that expects one. For example, consider:</p>
+<pre><code class="language-rust">impl&lt;T&gt; SomeType&lt;T&gt; {
+    fn bork(&amp;self) -&gt; Ref&lt;T&gt; { ... }
+}</code></pre>
+<p>To know whether the borrow of <code>self</code> persists in the return value, you have to know that <code>Ref</code> takes a lifetime parameter that’s being left out here. This is a tad too implicit for something as central as ownership.</p>
+<p>Now, we also don’t want to force you to write an explicit lifetime. We’d instead prefer a notation that says “there <em>is</em> a lifetime here; it’s the usual one from elision”. As a purely strawman syntax (an actual RFC on the topic is upcoming), we might write:</p>
+<pre><code class="language-rust">impl&lt;T&gt; SomeType&lt;T&gt; {
+    fn bork(&amp;self) -&gt; Ref&lt;'_, T&gt; { ... }
+}</code></pre>
+<p>In any case, to avoid compounding the mistake around elision, there should be <em>some</em> marker when using <code>impl Trait</code> that a lifetime is being captured.</p>
+<h4 id="assumption-4-existentials-are-vastly-more-common-in-return-position-and-universals-in-argument-position"><a class="header" href="#assumption-4-existentials-are-vastly-more-common-in-return-position-and-universals-in-argument-position">Assumption 4: existentials are vastly more common in return position, and universals in argument position</a></h4>
+<p>As discussed in the background section, it’s possible to make sense of <code>some Trait</code> and <code>any Trait</code> in arbitrary positions in a function signature. But experience with the language strongly suggests that <code>some Trait</code> semantics is virtually never wanted in argument position, and <code>any Trait</code> semantics is rarely used in return position.</p>
+<h4 id="assumption-5-we-may-be-interested-in-eventually-pursuing-a-bare-fn-foo---trait-syntax-rather-than-fn-foo---impl-trait"><a class="header" href="#assumption-5-we-may-be-interested-in-eventually-pursuing-a-bare-fn-foo---trait-syntax-rather-than-fn-foo---impl-trait">Assumption 5: we may be interested in eventually pursuing a bare <code>fn foo() -&gt; Trait</code> syntax rather than <code>fn foo() -&gt; impl Trait</code></a></h4>
+<p>Today, traits can be used directly as (unsized) types, so that you can write things like <code>Box&lt;MyTrait&gt;</code> to designate a trait object. However, with the advent of <code>impl Trait</code>, there’s been a desire to repurpose that syntax, and <a href="https://github.com/rust-lang/rfcs/pull/1603">instead write <code>Box&lt;dyn Trait&gt;</code></a> or some such to designate trait objects.</p>
+<p>That would, in particular, allow syntax like the following when taking a closure:</p>
+<pre><code class="language-rust">fn map&lt;U&gt;(self, f: FnOnce(T) -&gt; U) -&gt; Option&lt;U&gt;</code></pre>
+<p>The pros, cons, and logistics of such a change are out of scope for this RFC. However, it’s taken as an assumption that we want to keep the door open to such a syntax, and so shouldn’t stabilize any variant of <code>impl Trait</code> that lacks a good story for evolving into a bare <code>Trait</code> syntax later on.</p>
+<h3 id="sticking-with-the-impl-trait-syntax"><a class="header" href="#sticking-with-the-impl-trait-syntax">Sticking with the <code>impl Trait</code> syntax</a></h3>
+<p>This RFC proposes to stabilize the <code>impl Trait</code> feature with its current syntax, while also expanding it to encompass argument position. That means, in particular, <em>not</em> introducing an explicit <code>some</code>/<code>any</code> distinction.</p>
+<p>This choice is based partly on the core assumptions:</p>
+<ul>
+<li>Assumption 1, we’ll have a fully expressive syntax later.</li>
+<li>Assumption 4, we can use the <code>some</code> semantics in return position and <code>any</code> in argument position, and almost always be right.</li>
+<li>Assumption 5, we may want bare <code>Trait</code> syntax, which would not give “syntactic space” for a <code>some</code>/<code>any</code> distinction.</li>
+</ul>
+<p>One important question is: will people find it easier to understand and use <code>impl Trait</code>, or something like <code>some Trait</code> and <code>any Trait</code>? Having an explicit split may make it easier to understand what’s going on. But on the other hand, it’s a somewhat complicated distinction to make, and while you usually know <em>intuitively</em> what you want, being forced to spell it out by choosing the correct choice of <code>some</code> or <code>any</code> seems like an unnecessary burden, especially if the choice is almost always dictated by the position.</p>
+<p>Pedagogically, if we have an explicit syntax, we retain the option of explaining what’s going on with <code>impl Trait</code> by “desugaring” it into that syntax. From that standpoint, <code>impl Trait</code> is meant purely for ergonomics, which means <a href="https://blog.rust-lang.org/2017/03/02/lang-ergonomics.html">not just what you type, but also what you have to remember</a>. Having <code>impl Trait</code> “just do the right thing” seems pretty clearly to be the right choice ergonomically.</p>
+<h3 id="expansion-to-arguments"><a class="header" href="#expansion-to-arguments">Expansion to arguments</a></h3>
+<p>This RFC proposes to allow <code>impl Trait</code> in function arguments, in addition to return position, with the <code>any Trait</code> semantics (as per assumption 4). In other words:</p>
+<pre><code class="language-rust">// These two are equivalent
+fn map&lt;U&gt;(self, f: impl FnOnce(T) -&gt; U) -&gt; Option&lt;U&gt;
+fn map&lt;U, F&gt;(self, f: F) -&gt; Option&lt;U&gt; where F: FnOnce(T) -&gt; U</code></pre>
+<p>However, this RFC also proposes to <em>disallow</em> use of <code>impl Trait</code> within <code>Fn</code> trait sugar or higher-ranked bounds, i.e. to disallow examples like the following:</p>
+<pre><code class="language-rust">fn foo(f: impl Fn(impl SomeTrait) -&gt; impl OtherTrait)
+fn bar() -&gt; (impl Fn(impl SomeTrait) -&gt; impl OtherTrait)</code></pre>
+<p>While we will eventually want to allow such uses, it’s likely that we’ll want to introduce nested universal quantifications (i.e., higher-ranked bounds) in at least some cases; we don’t yet have the ability to do so. We can revisit this question later on, once higher-ranked bounds have gained full expressiveness.</p>
+<h4 id="explicit-instantiation"><a class="header" href="#explicit-instantiation">Explicit instantiation</a></h4>
+<p>This RFC does <em>not</em> propose any means of explicitly instantiating an <code>impl Trait</code> in argument position. In other words:</p>
+<pre><code class="language-rust">fn foo&lt;T: Trait&gt;(t: T)
+fn bar(t: impl Trait)
+
+foo::&lt;u32&gt;(0) // this is allowed
+bar::&lt;u32&gt;(0) // this is not</code></pre>
+<p>Thus, while <code>impl Trait</code> in argument position in some sense “desugars” to a generic parameter, the parameter is treated fully anonymously.</p>
+<h3 id="scoping-for-type-and-lifetime-parameters"><a class="header" href="#scoping-for-type-and-lifetime-parameters">Scoping for type and lifetime parameters</a></h3>
+<p>In argument position, the type fulfilling an <code>impl Trait</code> is free to reference any types or lifetimes whatsoever. So in a signature like:</p>
+<pre><code class="language-rust">fn foo(iter: impl Iterator&lt;Item = u32&gt;);</code></pre>
+<p>the actual argument type may contain arbitrary lifetimes and mention arbitrary types. This follows from the desugaring to “anonymous” generic parameters.</p>
+<p>For return position, things are more nuanced.</p>
+<p>This RFC proposes that <em>all</em> type parameters are considered in scope for <code>impl Trait</code> in return position, as per Assumption 2 (which claims that this suffices for most use-cases) and Assumption 1 (which claims that we’ll eventually provide an explicit syntax with finer-grained control).</p>
+<p>The lifetimes in scope include only those mentioned “explicitly” in a bound on the <code>impl Trait</code>. That is:</p>
+<ul>
+<li>For <code>impl SomeTrait + 'a</code>, the <code>'a</code> is in scope for the concrete witness type.</li>
+<li>For <code>impl SomeTrait + '_</code>, the lifetime that elision would imply is in scope (this is again using the strawman shorthand syntax for an elided lifetime).</li>
+</ul>
+<p>Note, however, that the witness type can freely mention type parameters, which may themselves involve embedded lifetimes. Consider, for example:</p>
+<pre><code class="language-rust">fn transform(iter: impl Iterator&lt;Item = u32&gt;) -&gt; impl Iterator&lt;Item = u32&gt;</code></pre>
+<p>Here, if the actual argument type was <code>SomeIter&lt;'a&gt;</code>, the return type can mention <code>SomeIter&lt;'a&gt;</code>, and therefore can <em>indirectly</em> mention <code>'a</code>.</p>
+<p>In terms of Assumption 3 – the constraint that lifetime embedding must be explicitly marked – we clearly get that for the explicitly in-scope variables. For <em>indirect</em> mentions of lifetimes, it follows from whatever is provided for the type parameters, much like the following:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(v: Vec&lt;T&gt;) -&gt; vec::IntoIter&lt;T&gt;</code></pre>
+<p>In this example, the return type can of course reference any lifetimes that <code>T</code> does, but this is apparent from the signature. Likewise with <code>impl Trait</code>, where you should assume that <em>all</em> type parameters could appear in the return type.</p>
+<h4 id="relationship-to-trait-objects"><a class="header" href="#relationship-to-trait-objects">Relationship to trait objects</a></h4>
+<p>It’s worth noting that this treatment of lifetimes is related but not identical to the way they’re handled for trait objects.</p>
+<p>In particular, <code>Box&lt;SomeTrait&gt;</code> imposes a <code>'static</code> requirement on the underlying object, while <code>Box&lt;SomeTrait + 'a&gt;</code> only imposes a <code>'a</code> constraint. The key difference is that, for <code>impl Trait</code>, in-scope type parameters can appear, which indirectly mention additional lifetimes, so <code>impl SomeTrait</code> imposes <code>'static</code> only if those type parameters do:</p>
+<pre><code class="language-rust">// In these cases, we know that the concrete return type is 'static
+fn foo() -&gt; impl SomeTrait;
+fn foo(x: u32) -&gt; impl SomeTrait;
+fn foo&lt;T: 'static&gt;(t: T) -&gt; impl SomeTrait;
+
+// In the following case, the concrete return type may embed lifetimes that appear in T:
+fn foo&lt;T&gt;(t: T) -&gt; impl SomeTrait;
+
+// ... whereas with Box, the 'static constraint is imposed
+fn foo&lt;T&gt;(t: T) -&gt; Box&lt;SomeTrait&gt;;</code></pre>
+<p>This difference is a natural one when you consider the difference between generics and trait objects in general – which is precisely that with generics, the actual types are <em>not</em> erased, and hence auto traits like <code>Send</code> work transparently, as do lifetime constraints.</p>
+<h2 id="how-we-teach-this"><a class="header" href="#how-we-teach-this">How We Teach This</a></h2>
+<p>Generics and traits are a fundamental aspect of Rust, so the pedagogical approach here is really important. We’ll outline the basic contours below, but in practice it’s going to take some trial and error to find the best approach.</p>
+<p>One of the hopes for <code>impl Trait</code>, as extended by this RFC, is that it <em>aids</em> learnability along several dimensions:</p>
+<ul>
+<li>
+<p>It makes it possible to meaningfully work with traits without visibly using generics, which can provide a gentler learning curve. In particular, signatures involving closures are <em>much</em> easier to understand. This effect would be further heightened if we eventually dropped the need for <code>impl</code>, so that you could write <code>fn map&lt;U&gt;(self, f: FnOnce(T) -&gt; U) -&gt; Option&lt;U&gt;</code>.</p>
+</li>
+<li>
+<p>It provides a greater degree of analogy between static and dynamic dispatch when working with traits. Introducing trait objects is easier when they can be understood as a variant of <code>impl Trait</code>, rather than a completely different approach. This effect would be further heightened if we moved to <code>dyn Trait</code> syntax for trait objects.</p>
+</li>
+<li>
+<p>It provides a more intuitive way of working with traits and static dispatch in an “object” style, smoothing the transition to Rust’s take on the topic.</p>
+</li>
+<li>
+<p>It provides a more uniform story for static dispatch, allowing it to work in both argument and return position.</p>
+</li>
+</ul>
+<p>There are two ways of teaching <code>impl Trait</code>:</p>
+<ul>
+<li>
+<p>Introduce it <em>prior</em> to bounded generics, as the first way you learn to “consume” traits. That works particularly well with teaching <code>Iterator</code> as one of the first real traits you see, since <code>impl Trait</code> is a strong match for working with iterators. As mentioned above, this approach also provides a more intuitive stepping stone for those coming from OO-ish languages. Later, bounded generics can be introduced as a more powerful, explicit syntax, which can also reveal a bit more about the underlying semantic model of <code>impl Trait</code>.  In this approach, the existential use case doesn’t need a great deal of ceremony—it just follows naturally from the basic feature.</p>
+</li>
+<li>
+<p>Alternatively, introduce it <em>after</em> bounded generics, as (1) a sugar for generics and (2) a separate mechanism for existentials. This is, of course, the way all existing Rust users will come to learn <code>impl Trait</code>. And it’s ultimately important to understand the mechanism in this way. But it’s likely <em>not</em> the ideal way to introduce it at first.</p>
+</li>
+</ul>
+<p>In either case, people should learn <code>impl Trait</code> early (since it will appear often) and in particular prior to learning trait objects. As mentioned above, trait objects can then be taught using intuitions from <code>impl Trait</code>.</p>
+<p>There’s also some ways in which <code>impl Trait</code> can introduce confusion, which we’ll cover in the drawbacks section below.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>It’s widely recognized that we need <em>some</em> form of static existentials for return position, both to be able to return closures (which have un-nameable types) and to ergonomically return things like iterator chains.</p>
+<p>However, there are two broad classes of drawbacks to the approach taken in this RFC.</p>
+<h3 id="relatively-inexpressive-sugary-syntax"><a class="header" href="#relatively-inexpressive-sugary-syntax">Relatively inexpressive sugary syntax</a></h3>
+<p>This RFC is built on the idea that we’ll eventually have a fully expressive explicit syntax, and so we should tailor the “sugary” <code>impl Trait</code> syntax to the most common use cases and intuitions.</p>
+<p>That means, however, that we give up an opportunity to provide more expressive but still sugary syntax like <code>some Trait</code> and <code>any Trait</code>-–we certainly don’t want all three.</p>
+<p>That syntax is further discussed in Alternatives below.</p>
+<h3 id="potential-for-confusion"><a class="header" href="#potential-for-confusion">Potential for confusion</a></h3>
+<p>There are two main avenues for confusion around <code>impl Trait</code>:</p>
+<ul>
+<li>
+<p>Because it’s written where a type would normally go, one might expect it to be usable <em>everywhere</em> a type is accepted (e.g., within <code>struct</code> definitions and <code>impl</code> headers). While it’s feasible to allow the feature to be used in more locations, the semantics is tricky, and in any case it doesn’t behave like a normal type, since it’s introducing an existential. The approach in this RFC is to have a very clear line: <code>impl Trait</code> is a notation for function signatures only, and there’s a separate explicit notation (TBD) that can be used to provide more general existentials (which can then be used as if they were normal types).</p>
+</li>
+<li>
+<p>You can use <code>impl Trait</code> in both argument and return position, but the meaning is different in the two cases. On the one hand, the meaning is generally the intuitive one—it behaves as one would likely expect. But it blurs the line a bit between the <code>some</code> and <code>any</code> meanings, which could lead to people trying to use generics for existentials. We may be able to provide some help through errors, or eventually provide a syntax like <code>&lt;out T&gt;</code> for named existentials.</p>
+</li>
+</ul>
+<p>There’s also the fact that <code>impl Trait</code> introduces “yet another” way to take a bounded generic argument (in addition to <code>&lt;T: Trait&gt;</code> and <code>&lt;T&gt; where T: Trait</code>). However, these ways of writing a signature are not <em>semantically</em> distinct ways; they’re just <em>stylistically</em> different. It’s feasible that rustfmt could even make the choice automatically.</p>
+<h2 id="替代方案"><a class="header" href="#替代方案">替代方案</a></h2>
+<p>There’s been a <em>lot</em> of discussion about the <code>impl Trait</code> feature and various alternatives. Let’s look at some of the most prominent of them.</p>
+<ul>
+<li>
+<p><strong>Limiting to return position forever</strong>. A particularly conservative approach would be to treat <code>impl Trait</code> as used purely for existentials and limit its use to return position in functions (and perhaps some other places where we want to allow for existentials). Limiting the feature in this way, however, loses out on some significant ergonomic and pedagogical wins (previously discussed in the RFC), and risks confusion around the “special case” treatment of return types.</p>
+</li>
+<li>
+<p><strong>Finer grained sugary syntax</strong>. There are a couple options for making the sugary syntax more powerful:</p>
+<ul>
+<li>
+<p><code>some</code>/<code>any</code> notation, which allows selecting between universals and existentials at will. The RFC has already made some argument for why it does not seem so important to permit this distinction for <code>impl Trait</code>. And doing so has some significant downsides: it demands a more sophisticated understanding of the underlying type theory, which precludes using <code>impl Trait</code> as an early teaching tool; it seems easy to get confused and choose the wrong variant; and we’d almost certainly need different keywords (that don’t mirror the existing <code>Some</code> and <code>Any</code> names), but it’s not clear that there are good choices.</p>
+</li>
+<li>
+<p><code>impl&lt;...&gt; Trait</code> syntax, as a way of giving more precise control over which type and lifetime parameters are in scope. The idea is that the parameters listed in the <code>&lt;...&gt;</code> are in scope, and nothing else is. This syntax, however, is not forward-compatible with a bare <code>Trait</code> syntax. It’s also not clear how to get the right <em>defaults</em> without introducing some inconsistency; if you leave off the <code>&lt;&gt;</code> altogether, we’d presumably like something like the defaults proposed in this RFC (otherwise, the feature would be very unergonomic). But that would mean that, when transitioning from no <code>&lt;&gt;</code> to including a <code>&lt;&gt;</code> section, you go from including <em>all</em> type parameters to including only the listed set, which is a bit counterintuitive.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<p><strong>Full evidence for core assumptions</strong>. The assumptions in this RFC are stated with anecdotal and intuitive evidence, but the argument would be stronger with more empirical evidence. It’s not entirely clear how best to gather that, though many of the assumptions could be validated by using an unstable version of the proposed feature.</p>
+<p><strong>The precedence rules around <code>impl Trait + 'a</code> need to be nailed down.</strong></p>
+<p><strong>The RFC assumes that we only want “applicative” existentials</strong>, which always resolve to the same type when in-scope parameters are the same:</p>
+<pre><code class="language-rust">fn foo() -&gt; impl SomeTrait { ... }
+
+fn bar() {
+    // valid, because we know the underlying return type will be the same in both cases:
+    let v = vec![foo(), foo()];
+}</code></pre>
+<p>However, it’s also possible to provide “generative” existentials, which give you a <em>fresh</em> type whenever they are unpacked, even when their arguments are the same—which would rule out the example above. That’s a powerful feature, because it means in effect that you can generate a fresh type <em>for every dynamic invocation of a function</em>, thereby giving you a way to hoist dynamic information into the type system.</p>
+<p>As one example, generative existentials can be used to “bless” integers as being in bounds for a particular slice, so that bounds checks can be safely elided. This is currently possible to encode in Rust by using callbacks with fresh lifetimes (see Section 6.3 of <a href="https://github.com/Gankro/thesis/raw/master/thesis.pdf">@Gankro’s thesis</a>, but generative existentials would provide a much more natural mechanism.</p>
+<p>We may want to consider adding some form of generative existentials in the future, but would almost certainly want to do so via the fully expressive/explicit syntax, rather than through <code>impl Trait</code>.</p>
+<h2 id="appendix-a-sketch-of-a-fully-explicit-syntax"><a class="header" href="#appendix-a-sketch-of-a-fully-explicit-syntax">Appendix: a sketch of a fully-explicit syntax</a></h2>
+<p>This section contains a <strong>brief sketch</strong> of a fully-explicit syntax for existentials. It’s a strawman proposal based on many previously-discussed ideas, and should not be bikeshedded as part of this RFC. The goal is just to give a flavor of how the full system could eventually fit together.</p>
+<p>The basic idea is to introduce an <code>abstype</code> item for declaring abstract types:</p>
+<pre><code class="language-rust">abstype MyType: SomeTrait;</code></pre>
+<p>This construct would be usable anywhere items currently are. It would declare an existential type whose concrete implementation is known <strong>within the item scope in which it is declared</strong>, and that concrete type would be determined by inference based on the same scope. Outside of that scope, the type would be opaque in the same way as <code>impl Trait</code>.</p>
+<p>So, for example:</p>
+<pre><code class="language-rust">mod example {
+    static NEXT_TOKEN: Cell&lt;u64&gt; = Cell::new(0);
+
+    pub abstype Token: Eq;
+    pub fn fresh() -&gt; Token {
+        let r = NEXT_TOKEN.get();
+        NEXT_TOKEN.set(r + 1);
+        r
+    }
+}
+
+fn main() {
+    assert!(example::fresh() != example::fresh());
+
+    // fails to compile, because in this scope we don't know that `Token` is `u64`
+    let _ = example::fresh() + 1;
+}</code></pre>
+<p>Of course, in this particular example we could just as well have used <code>fn fresh() -&gt; impl Eq</code>, but <code>abstype</code> allows us to use the <em>same</em> existential type in multiple locations in an API:</p>
+<pre><code class="language-rust">mod example {
+    pub abstype Secret: SomeTrait;
+
+    pub fn foo() -&gt; Secret { ... }
+    pub fn bar(s: Secret) -&gt; Secret { ... }
+
+    pub struct Baz {
+        quux: Secret,
+        // ...
+    }
+}</code></pre>
+<p>Already <code>abstype</code> gives greater expressiveness than <code>impl Trait</code> in several respects:</p>
+<ul>
+<li>
+<p>It allows existentials to be named, so that the same one can be referred to multiple times within an API.</p>
+</li>
+<li>
+<p>It allows existentials to appear within structs.</p>
+</li>
+<li>
+<p>It allows existentials to appear within function arguments.</p>
+</li>
+<li>
+<p>It gives tight control over the “scope” of the existential—what portion of the code is allowed to know what the concrete witness type for the existential is. For <code>impl Trait</code>, it’s always just a single function.</p>
+</li>
+</ul>
+<p>But we also wanted more control over scoping of type and lifetime parameters. For this, we can introduce existential <em>type constructors</em>:</p>
+<pre><code class="language-rust">abstype MyIter&lt;'a&gt;: Iterator&lt;Item = u32&gt;;
+
+impl SomeType&lt;T&gt; {
+    // we know that 'a is in scope for the return type, but *not* `T`
+    fn iter&lt;'a&gt;(&amp;'a self, ) -&gt; MyIter&lt;'a&gt; { ... }
+}</code></pre>
+<p>(These type constructors raise various issues around inference, which I believe are tractable, but are out of scope for this sketch).</p>
+<p>It’s worth noting that there’s some relationship between <code>abstype</code> and the “newtype deriving” concept: from an external perspective, <code>abstype</code> introduces a new type but automatically delegates any of the listed trait bounds to the underlying witness type.</p>
+<p>Finally, a word on syntax:</p>
+<ul>
+<li>
+<p>Why <code>abstype Foo: Trait;</code> rather than <code>type Foo = impl Trait;</code>?</p>
+<ul>
+<li>Two reasons. First, to avoid confusion about <code>impl Trait</code> seeming to be like a type, when it is actually an existential. Second, for forward compatibility with bare <code>Trait</code> syntax.</li>
+</ul>
+</li>
+<li>
+<p>Why not <code>type Foo: Trait</code>?</p>
+<ul>
+<li>That may be a fine syntax, but for clarity in presenting the idea I preferred to introduce a new keyword.</li>
+</ul>
+</li>
+</ul>
+<p>There are many detailed questions that would need to be resolved to fully specify this more expressive syntax, but the hope here is to show that (1) there’s a plausible direction to take here and (2) give a sense for how <code>impl Trait</code> and a more expressive form could fit together.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="1946-intra-rustdoc-links.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="1961-clamp.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="1946-intra-rustdoc-links.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="1961-clamp.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

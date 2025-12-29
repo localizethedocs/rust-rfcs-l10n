@@ -1,0 +1,1125 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2873-inline-asm - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>asm</code></li>
+<li>Start Date: 2020-01-13</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/2873">rust-lang/rfcs#2873</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/72016">rust-lang/rust#72016</a></li>
+<li>Project group repository: <a href="https://github.com/rust-lang/project-inline-asm">rust-lang/project-inline-asm</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>This RFC specifies a new syntax for inline assembly which is suitable for eventual stabilization.</p>
+<p>The initial implementation of this feature will focus on the ARM, x86 and RISC-V architectures. Support for more architectures will be added based on user demand.</p>
+<p>The transition from the existing <code>asm!</code> macro is described in RFC <a href="https://github.com/rust-lang/rfcs/pull/2843">2843</a>. The existing <code>asm!</code> macro will be renamed to <code>llvm_asm!</code> to provide an easy way to maintain backwards-compatibility with existing code using inline asm. However <code>llvm_asm!</code> is not intended to ever be stabilized.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>In systems programming some tasks require dropping down to the assembly level. The primary reasons are for performance, precise timing, and low level hardware access. Using inline assembly for this is sometimes convenient, and sometimes necessary to avoid function call overhead.</p>
+<p>The inline assembler syntax currently available in nightly Rust is very ad-hoc. It provides a thin wrapper over the inline assembly syntax available in LLVM IR. For stabilization a more user-friendly syntax that lends itself to implementation across various backends is preferable.</p>
+<p>Inline assembly is widely used in the Rust community and is one of the top reasons keeping people on the nightly toolchain. Examples of crates using inline assembly include <code>cortex-m</code>, <code>x86</code>, <code>riscv</code>, <code>parking_lot</code>, <code>libprobe</code>, <code>msp430</code>, etc. A collection of use cases for inline asm can also be found in <a href="https://github.com/bjorn3/inline_asm_catalogue/">this repository</a>.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>Rust provides support for inline assembly via the <code>asm!</code> macro. It can be used to embed handwritten assembly in the assembly output generated by the compiler. Generally this should not be necessary, but might be where the required performance or timing cannot be otherwise achieved. Accessing low level hardware primitives, e.g. in kernel code, may also demand this functionality.</p>
+<blockquote>
+<p><strong>Note</strong>: the examples here are given in x86/x86-64 assembly, but ARM, AArch64 and RISC-V are also supported.</p>
+</blockquote>
+<h3 id="basic-usage"><a class="header" href="#basic-usage">Basic usage</a></h3>
+<p>Let us start with the simplest possible example:</p>
+<pre><code class="language-rust">unsafe {
+    asm!("nop");
+}</code></pre>
+<p>This will insert a NOP (no operation) instruction into the assembly generated by the compiler. Note that all <code>asm!</code> invocations have to be inside an <code>unsafe</code> block, as they could insert arbitrary instructions and break various invariants. The instructions to be inserted are listed in the first argument of the <code>asm!</code> macro as a string literal.</p>
+<h3 id="inputs-and-outputs"><a class="header" href="#inputs-and-outputs">Inputs and outputs</a></h3>
+<p>Now inserting an instruction that does nothing is rather boring. Let us do something that actually acts on data:</p>
+<pre><code class="language-rust">let x: u64;
+unsafe {
+    asm!("mov {}, 5", out(reg) x);
+}
+assert_eq!(x, 5);</code></pre>
+<p>This will write the value <code>5</code> into the <code>u64</code> variable <code>x</code>. You can see that the string literal we use to specify instructions is actually a template string. It is governed by the same rules as Rust <a href="https://doc.rust-lang.org/std/fmt/#syntax">format strings</a>. The arguments that are inserted into the template however look a bit different then you may be familiar with. First we need to specify if the variable is an input or an output of the inline assembly. In this case it is an output. We declared this by writing <code>out</code>. We also need to specify in what kind of register the assembly expects the variable. In this case we put it in an arbitrary general purpose register by specifying <code>reg</code>. The compiler will choose an appropriate register to insert into the template and will read the variable from there after the inline assembly finishes executing.</p>
+<p>Let us see another example that also uses an input:</p>
+<pre><code class="language-rust">let i: u64 = 3;
+let o: u64;
+unsafe {
+    asm!(
+        "mov {0}, {1}",
+        "add {0}, {number}",
+        out(reg) o,
+        in(reg) i,
+        number = const 5,
+    );
+}
+assert_eq!(o, 8);</code></pre>
+<p>This will add <code>5</code> to the input in variable <code>i</code> and write the result to variable <code>o</code>. The particular way this assembly does this is first copying the value from <code>i</code> to the output, and then adding <code>5</code> to it.</p>
+<p>The example shows a few things:</p>
+<p>First, we can see that <code>asm!</code> allows multiple template string arguments; each one is treated as a separate line of assembly code, as if they were all joined together with newlines between them. This makes it easy to format assembly code.</p>
+<p>Second, we can see that inputs are declared by writing <code>in</code> instead of <code>out</code>.</p>
+<p>Third, one of our operands has a type we haven’t seen yet, <code>const</code>. This tells the compiler to expand this argument to value directly inside the assembly template. This is only possible for constants and literals.</p>
+<p>Fourth, we can see that we can specify an argument number, or name as in any format string. For inline assembly templates this is particularly useful as arguments are often used more than once. For more complex inline assembly using this facility is generally recommended, as it improves readability, and allows reordering instructions without changing the argument order.</p>
+<p>We can further refine the above example to avoid the <code>mov</code> instruction:</p>
+<pre><code class="language-rust">let mut x: u64 = 3;
+unsafe {
+    asm!("add {0}, {number}", inout(reg) x, number = const 5);
+}
+assert_eq!(x, 8);</code></pre>
+<p>We can see that <code>inout</code> is used to specify an argument that is both input and output. This is different from specifying an input and output separately in that it is guaranteed to assign both to the same register.</p>
+<p>It is also possible to specify different variables for the input and output parts of an <code>inout</code> operand:</p>
+<pre><code class="language-rust">let x: u64 = 3;
+let y: u64;
+unsafe {
+    asm!("add {0}, {number}", inout(reg) x =&gt; y, number = const 5);
+}
+assert_eq!(y, 8);</code></pre>
+<h3 id="late-output-operands"><a class="header" href="#late-output-operands">Late output operands</a></h3>
+<p>The Rust compiler is conservative with its allocation of operands. It is assumed that an <code>out</code> can be written at any time, and can therefore not share its location with any other argument. However, to guarantee optimal performance it is important to use as few registers as possible, so they won’t have to be saved and reloaded around the inline assembly block. To achieve this Rust provides a <code>lateout</code> specifier. This can be used on any output that is written only after all inputs have been consumed. There is also a <code>inlateout</code> variant of this specifier.</p>
+<p>Here is an example where <code>inlateout</code> <em>cannot</em> be used:</p>
+<pre><code class="language-rust">let mut a: u64 = 4;
+let b: u64 = 4;
+let c: u64 = 4;
+unsafe {
+    asm!(
+        "add {0}, {1}",
+        "add {0}, {2}",
+        inout(reg) a,
+        in(reg) b,
+        in(reg) c,
+    );
+}
+assert_eq!(a, 12);</code></pre>
+<p>Here the compiler is free to allocate the same register for inputs <code>b</code> and <code>c</code> since it knows they have the same value. However it must allocate a separate register for <code>a</code> since it uses <code>inout</code> and not <code>inlateout</code>. If <code>inlateout</code> was used, then <code>a</code> and <code>c</code> could be allocated to the same register, in which case the first instruction to overwrite the value of <code>c</code> and cause the assembly code to produce the wrong result.</p>
+<p>However the following example can use <code>inlateout</code> since the output is only modified after all input registers have been read:</p>
+<pre><code class="language-rust">let mut a: u64 = 4;
+let b: u64 = 4;
+unsafe {
+    asm!("add {0}, {1}", inlateout(reg) a, in(reg) b);
+}
+assert_eq!(a, 8);</code></pre>
+<p>As you can see, this assembly fragment will still work correctly if <code>a</code> and <code>b</code> are assigned to the same register.</p>
+<h3 id="explicit-register-operands"><a class="header" href="#explicit-register-operands">Explicit register operands</a></h3>
+<p>Some instructions require that the operands be in a specific register. Therefore, Rust inline assembly provides some more specific constraint specifiers. While <code>reg</code> is generally available on any architecture, these are highly architecture specific. E.g. for x86 the general purpose registers <code>eax</code>, <code>ebx</code>, <code>ecx</code>, <code>edx</code>, <code>ebp</code>, <code>esi</code>, and <code>edi</code> among others can be addressed by their name.</p>
+<pre><code class="language-rust">let cmd = 0xd1;
+unsafe {
+    asm!("out 0x64, eax", in("eax") cmd);
+}</code></pre>
+<p>In this example we call the <code>out</code> instruction to output the content of the <code>cmd</code> variable to port <code>0x64</code>. Since the <code>out</code> instruction only accepts <code>eax</code> (and its sub registers) as operand we had to use the <code>eax</code> constraint specifier.</p>
+<p>Note that unlike other operand types, explicit register operands cannot be used in the template string: you can’t use <code>{}</code> and should write the register name directly instead. Also, they must appear at the end of the operand list after all other operand types.</p>
+<p>Consider this example which uses the x86 <code>mul</code> instruction:</p>
+<pre><code class="language-rust">fn mul(a: u64, b: u64) -&gt; u128 {
+    let lo: u64;
+    let hi: u64;
+
+    unsafe {
+        asm!(
+            // The x86 mul instruction takes rax as an implicit input and writes
+            // the 128-bit result of the multiplication to rax:rdx.
+            "mul {}",
+            in(reg) a,
+            inlateout("rax") b =&gt; lo,
+            lateout("rdx") hi,
+        );
+    }
+
+    ((hi as u128) &lt;&lt; 64) + lo as u128
+}</code></pre>
+<p>This uses the <code>mul</code> instruction to multiply two 64-bit inputs with a 128-bit result. The only explicit operand is a register, that we fill from the variable <code>a</code>. The second operand is implicit, and must be the <code>rax</code> register, which we fill from the variable <code>b</code>. The lower 64 bits of the result are stored in <code>rax</code> from which we fill the variable <code>lo</code>. The higher 64 bits are stored in <code>rdx</code> from which we fill the variable <code>hi</code>.</p>
+<h3 id="clobbered-registers"><a class="header" href="#clobbered-registers">Clobbered registers</a></h3>
+<p>In many cases inline assembly will modify state that is not needed as an output. Usually this is either because we have to use a scratch register in the assembly, or instructions modify state that we don’t need to further examine. This state is generally referred to as being “clobbered”. We need to tell the compiler about this since it may need to save and restore this state around the inline assembly block.</p>
+<pre><code class="language-rust">let ebx: u32;
+let ecx: u32;
+
+unsafe {
+    asm!(
+        "cpuid",
+        // EAX 4 selects the "Deterministic Cache Parameters" CPUID leaf
+        inout("eax") 4 =&gt; _,
+        // ECX 0 selects the L0 cache information.
+        inout("ecx") 0 =&gt; ecx,
+        lateout("ebx") ebx,
+        lateout("edx") _,
+    );
+}
+
+println!(
+    "L1 Cache: {}",
+    ((ebx &gt;&gt; 22) + 1) * (((ebx &gt;&gt; 12) &amp; 0x3ff) + 1) * ((ebx &amp; 0xfff) + 1) * (ecx + 1)
+);</code></pre>
+<p>In the example above we use the <code>cpuid</code> instruction to get the L1 cache size. This instruction writes to <code>eax</code>, <code>ebx</code>, <code>ecx</code>, and <code>edx</code>, but for the cache size we only care about the contents of <code>ebx</code> and <code>ecx</code>.</p>
+<p>However we still need to tell the compiler that <code>eax</code> and <code>edx</code> have been modified so that it can save any values that were in these registers before the asm. This is done by declaring these as outputs but with <code>_</code> instead of a variable name, which indicates that the output value is to be discarded.</p>
+<p>This can also be used with a general register class (e.g. <code>reg</code>) to obtain a scratch register for use inside the asm code:</p>
+<pre><code class="language-rust">// Multiply x by 6 using shifts and adds
+let mut x: u64 = 4;
+unsafe {
+    asm!(
+        "mov {tmp}, {x}",
+        "shl {tmp}, 1",
+        "shl {x}, 2",
+        "add {x}, {tmp}",
+        x = inout(reg) x,
+        tmp = out(reg) _,
+    );
+}
+assert_eq!(x, 4 * 6);</code></pre>
+<h3 id="symbol-operands"><a class="header" href="#symbol-operands">Symbol operands</a></h3>
+<p>A special operand type, <code>sym</code>, allows you to use the symbol name of a <code>fn</code> or <code>static</code> in inline assembly code. This allows you to call a function or access a global variable without needing to keep its address in a register.</p>
+<pre><code class="language-rust">extern "C" fn foo(arg: i32) {
+    println!("arg = {}", arg);
+}
+
+fn call_foo(arg: i32) {
+    unsafe {
+        asm!(
+            "call {}",
+            sym foo,
+            // 1st argument in rdi, which is caller-saved
+            inout("rdi") arg =&gt; _,
+            // All caller-saved registers must be marked as clobberred
+            out("rax") _, out("rcx") _, out("rdx") _, out("rsi") _,
+            out("r8") _, out("r9") _, out("r10") _, out("r11") _,
+            out("xmm0") _, out("xmm1") _, out("xmm2") _, out("xmm3") _,
+            out("xmm4") _, out("xmm5") _, out("xmm6") _, out("xmm7") _,
+            out("xmm8") _, out("xmm9") _, out("xmm10") _, out("xmm11") _,
+            out("xmm12") _, out("xmm13") _, out("xmm14") _, out("xmm15") _,
+        )
+    }
+}</code></pre>
+<p>Note that the <code>fn</code> or <code>static</code> item does not need to be public or <code>#[no_mangle]</code>: the compiler will automatically insert the appropriate mangled symbol name into the assembly code.</p>
+<h3 id="register-template-modifiers"><a class="header" href="#register-template-modifiers">Register template modifiers</a></h3>
+<p>In some cases, fine control is needed over the way a register name is formatted when inserted into the template string. This is needed when an architecture’s assembly language has several names for the same register, each typically being a “view” over a subset of the register (e.g. the low 32 bits of a 64-bit register).</p>
+<p>By default the compiler will always choose the name that refers to the full register size (e.g. <code>rax</code> on x86-64, <code>eax</code> on x86, etc).</p>
+<p>This default can be overridden by using modifiers on the template string operands, just like you would with format strings:</p>
+<pre><code class="language-rust">let mut x: u16 = 0xab;
+
+unsafe {
+    asm!("mov {0:h}, {0:l}", inout(reg_abcd) x);
+}
+
+assert_eq!(x, 0xabab);</code></pre>
+<p>In this example, we use the <code>reg_abcd</code> register class to restrict the register allocator to the 4 legacy x86 register (<code>ax</code>, <code>bx</code>, <code>cx</code>, <code>dx</code>) of which the first two bytes can be addressed independently.</p>
+<p>Let us assume that the register allocator has chosen to allocate <code>x</code> in the <code>ax</code> register. The <code>h</code> modifier will emit the register name for the high byte of that register and the <code>l</code> modifier will emit the register name for the low byte. The asm code will therefore be expanded as <code>mov ah, al</code> which copies the low byte of the value into the high byte.</p>
+<p>If you use a smaller data type (e.g. <code>u16</code>) with an operand and forget the use template modifiers, the compiler will emit a warning and suggest the correct modifier to use.</p>
+<h3 id="options"><a class="header" href="#options">Options</a></h3>
+<p>By default, an inline assembly block is treated the same way as an external FFI function call with a custom calling convention: it may read/write memory, have observable side effects, etc. However in many cases, it is desirable to give the compiler more information about what the assembly code is actually doing so that it can optimize better.</p>
+<p>Let’s take our previous example of an <code>add</code> instruction:</p>
+<pre><code class="language-rust">let mut a: u64 = 4;
+let b: u64 = 4;
+unsafe {
+    asm!(
+        "add {0}, {1}",
+        inlateout(reg) a, in(reg) b,
+        options(pure, nomem, nostack)
+    );
+}
+assert_eq!(a, 8);</code></pre>
+<p>Options can be provided as an optional final argument to the <code>asm!</code> macro. We specified three options here:</p>
+<ul>
+<li><code>pure</code> means that the asm code has no observable side effects and that its output depends only on its inputs. This allows the compiler optimizer to call the inline asm fewer times or even eliminate it entirely.</li>
+<li><code>nomem</code> means that the asm code does not read or write to memory. By default the compiler will assume that inline assembly can read or write any memory address that is accessible to it (e.g. through a pointer passed as an operand, or a global).</li>
+<li><code>nostack</code> means that the asm code does not push any data onto the stack. This allows the compiler to use optimizations such as the stack red zone on x86-64 to avoid stack pointer adjustments.</li>
+</ul>
+<p>These allow the compiler to better optimize code using <code>asm!</code>, for example by eliminating pure <code>asm!</code> blocks whose outputs are not needed.</p>
+<p>See the reference for the full list of available options and their effects.</p>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<p>Inline assembler is implemented as an unsafe macro <code>asm!()</code>. The first argument to this macro is a template string literal used to build the final assembly. Additional template string literal arguments may be provided; all of the template string arguments are interpreted as if concatenated into a single template string with <code>\n</code> between them. The following arguments specify input and output operands. When required, options are specified as the final argument.</p>
+<p>The following ABNF specifies the general syntax:</p>
+<pre><code>dir_spec := "in" / "out" / "lateout" / "inout" / "inlateout"
+reg_spec := &lt;register class&gt; / "&lt;explicit register&gt;"
+operand_expr := expr / "_" / expr "=&gt;" expr / expr "=&gt;" "_"
+reg_operand := dir_spec "(" reg_spec ")" operand_expr
+operand := reg_operand / "const" const_expr / "sym" path
+option := "pure" / "nomem" / "readonly" / "preserves_flags" / "noreturn" / "nostack" / "att_syntax"
+options := "options(" option *["," option] [","] ")"
+asm := "asm!(" format_string *("," format_string) *("," [ident "="] operand) ["," options] [","] ")"
+</code></pre>
+<p>The macro will initially be supported only on ARM, AArch64, x86, x86-64 and RISC-V targets. Support for more targets may be added in the future. The compiler will emit an error if <code>asm!</code> is used on an unsupported target.</p>
+<h3 id="template-string-arguments"><a class="header" href="#template-string-arguments">Template string arguments</a></h3>
+<p>The assembler template uses the same syntax as <a href="https://doc.rust-lang.org/std/fmt/#syntax">format strings</a> (i.e. placeholders are specified by curly braces). The corresponding arguments are accessed in order, by index, or by name. However, implicit named arguments (introduced by <a href="https://github.com/rust-lang/rfcs/pull/2795">RFC #2795</a>) are not supported.</p>
+<p>An <code>asm!</code> invocation may have one or more template string arguments; an <code>asm!</code> with multiple template string arguments is treated as if all the strings were concatenated with a <code>\n</code> between them. The expected usage is for each template string argument to correspond to a line of assembly code. All template string arguments must appear before any other arguments.</p>
+<p>As with format strings, named arguments must appear after positional arguments. Explicit register operands must appear at the end of the operand list, after named arguments if any.</p>
+<p>Explicit register operands cannot be used by placeholders in the template string. All other named and positional operands must appear at least once in the template string, otherwise a compiler error is generated.</p>
+<p>The exact assembly code syntax is target-specific and opaque to the compiler except for the way operands are substituted into the template string to form the code passed to the assembler.</p>
+<p>The 4 targets specified in this RFC (x86, ARM, AArch64, RISC-V) all use the assembly code syntax of the GNU assembler (GAS). On x86, the <code>.intel_syntax noprefix</code> mode of GAS is used by default. On ARM, the <code>.syntax unified</code> mode is used. These targets impose an additional restriction on the assembly code: any assembler state (e.g. the current section which can be changed with <code>.section</code>) must be restored to its original value at the end of the asm string. Assembly code that does not conform to the GAS syntax will result in assembler-specific behavior.</p>
+<h3 id="operand-type"><a class="header" href="#operand-type">Operand type</a></h3>
+<p>Several types of operands are supported:</p>
+<ul>
+<li><code>in(&lt;reg&gt;) &lt;expr&gt;</code>
+<ul>
+<li><code>&lt;reg&gt;</code> can refer to a register class or an explicit register. The allocated register name is substituted into the asm template string.</li>
+<li>The allocated register will contain the value of <code>&lt;expr&gt;</code> at the start of the asm code.</li>
+<li>The allocated register must contain the same value at the end of the asm code (except if a <code>lateout</code> is allocated to the same register).</li>
+</ul>
+</li>
+<li><code>out(&lt;reg&gt;) &lt;expr&gt;</code>
+<ul>
+<li><code>&lt;reg&gt;</code> can refer to a register class or an explicit register. The allocated register name is substituted into the asm template string.</li>
+<li>The allocated register will contain an undefined value at the start of the asm code.</li>
+<li><code>&lt;expr&gt;</code> must be a (possibly uninitialized) place expression, to which the contents of the allocated register is written to at the end of the asm code.</li>
+<li>An underscore (<code>_</code>) may be specified instead of an expression, which will cause the contents of the register to be discarded at the end of the asm code (effectively acting as a clobber).</li>
+</ul>
+</li>
+<li><code>lateout(&lt;reg&gt;) &lt;expr&gt;</code>
+<ul>
+<li>Identical to <code>out</code> except that the register allocator can reuse a register allocated to an <code>in</code>.</li>
+<li>You should only write to the register after all inputs are read, otherwise you may clobber an input.</li>
+</ul>
+</li>
+<li><code>inout(&lt;reg&gt;) &lt;expr&gt;</code>
+<ul>
+<li><code>&lt;reg&gt;</code> can refer to a register class or an explicit register. The allocated register name is substituted into the asm template string.</li>
+<li>The allocated register will contain the value of <code>&lt;expr&gt;</code> at the start of the asm code.</li>
+<li><code>&lt;expr&gt;</code> must be a mutable initialized place expression, to which the contents of the allocated register is written to at the end of the asm code.</li>
+</ul>
+</li>
+<li><code>inout(&lt;reg&gt;) &lt;in expr&gt; =&gt; &lt;out expr&gt;</code>
+<ul>
+<li>Same as <code>inout</code> except that the initial value of the register is taken from the value of <code>&lt;in expr&gt;</code>.</li>
+<li><code>&lt;out expr&gt;</code> must be a (possibly uninitialized) place expression, to which the contents of the allocated register is written to at the end of the asm code.</li>
+<li>An underscore (<code>_</code>) may be specified instead of an expression for <code>&lt;out expr&gt;</code>, which will cause the contents of the register to be discarded at the end of the asm code (effectively acting as a clobber).</li>
+<li><code>&lt;in expr&gt;</code> and <code>&lt;out expr&gt;</code> may have different types.</li>
+</ul>
+</li>
+<li><code>inlateout(&lt;reg&gt;) &lt;expr&gt;</code> / <code>inlateout(&lt;reg&gt;) &lt;in expr&gt; =&gt; &lt;out expr&gt;</code>
+<ul>
+<li>Identical to <code>inout</code> except that the register allocator can reuse a register allocated to an <code>in</code> (this can happen if the compiler knows the <code>in</code> has the same initial value as the <code>inlateout</code>).</li>
+<li>You should only write to the register after all inputs are read, otherwise you may clobber an input.</li>
+<li>As with <code>inout</code>, <code>&lt;out expr&gt;</code> is allowed to be an underscore (<code>_</code>) which discards the contents of the register at the end of the asm code.</li>
+</ul>
+</li>
+<li><code>const &lt;expr&gt;</code>
+<ul>
+<li><code>&lt;expr&gt;</code> must be an integer or floating-point constant expression.</li>
+<li>The value of the expression is formatted as a string and substituted directly into the asm template string.</li>
+</ul>
+</li>
+<li><code>sym &lt;path&gt;</code>
+<ul>
+<li><code>&lt;path&gt;</code> must refer to a <code>fn</code> or <code>static</code>.</li>
+<li>A mangled symbol name referring to the item is substituted into the asm template string.</li>
+<li>The substituted string does not include any modifiers (e.g. GOT, PLT, relocations, etc).</li>
+<li><code>&lt;path&gt;</code> is allowed to point to a <code>#[thread_local]</code> static, in which case the asm code can combine the symbol with relocations (e.g. <code>@plt</code>, <code>@TPOFF</code>) to read from thread-local data.</li>
+</ul>
+</li>
+</ul>
+<p>Operand expressions are evaluated from left to right, just like function call arguments. After the <code>asm!</code> has executed, outputs are written to in left to right order. This is significant if two outputs point to the same place: that place will contain the value of the rightmost output.</p>
+<h3 id="register-operands"><a class="header" href="#register-operands">Register operands</a></h3>
+<p>Input and output operands can be specified either as an explicit register or as a register class from which the register allocator can select a register. Explicit registers are specified as string literals (e.g. <code>"eax"</code>) while register classes are specified as identifiers (e.g. <code>reg</code>). Using string literals for register names enables support for architectures that use special characters in register names, such as MIPS (<code>$0</code>, <code>$1</code>, etc).</p>
+<p>Note that explicit registers treat register aliases (e.g. <code>r14</code> vs <code>lr</code> on ARM) and smaller views of a register (e.g. <code>eax</code> vs <code>rax</code>) as equivalent to the base register. It is a compile-time error to use the same explicit register for two input operands or two output operands. Additionally, it is also a compile-time error to use overlapping registers (e.g. ARM VFP) in input operands or in output operands.</p>
+<p>Only the following types are allowed as operands for inline assembly:</p>
+<ul>
+<li>Integers (signed and unsigned)</li>
+<li>Floating-point numbers</li>
+<li>Pointers (thin only)</li>
+<li>Function pointers</li>
+<li>SIMD vectors (structs defined with <code>#[repr(simd)]</code> and which implement <code>Copy</code>). This includes architecture-specific vector types defined in <code>std::arch</code> such as <code>__m128</code> (x86) or <code>int8x16_t</code> (ARM).</li>
+</ul>
+<p>Here is the list of currently supported register classes:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Architecture</th><th>Register class</th><th>Registers</th><th>LLVM constraint code</th></tr>
+</thead>
+<tbody>
+<tr><td>x86</td><td><code>reg</code></td><td><code>ax</code>, <code>bx</code>, <code>cx</code>, <code>dx</code>, <code>si</code>, <code>di</code>, <code>r[8-15]</code> (x86-64 only)</td><td><code>r</code></td></tr>
+<tr><td>x86</td><td><code>reg_abcd</code></td><td><code>ax</code>, <code>bx</code>, <code>cx</code>, <code>dx</code></td><td><code>Q</code></td></tr>
+<tr><td>x86-32</td><td><code>reg_byte</code></td><td><code>al</code>, <code>bl</code>, <code>cl</code>, <code>dl</code>, <code>ah</code>, <code>bh</code>, <code>ch</code>, <code>dh</code></td><td><code>q</code></td></tr>
+<tr><td>x86-64</td><td><code>reg_byte</code></td><td><code>al</code>, <code>bl</code>, <code>cl</code>, <code>dl</code>, <code>sil</code>, <code>dil</code>, <code>r[8-15]b</code>, <code>ah</code>*, <code>bh</code>*, <code>ch</code>*, <code>dh</code>*</td><td><code>q</code></td></tr>
+<tr><td>x86</td><td><code>xmm_reg</code></td><td><code>xmm[0-7]</code> (x86) <code>xmm[0-15]</code> (x86-64)</td><td><code>x</code></td></tr>
+<tr><td>x86</td><td><code>ymm_reg</code></td><td><code>ymm[0-7]</code> (x86) <code>ymm[0-15]</code> (x86-64)</td><td><code>x</code></td></tr>
+<tr><td>x86</td><td><code>zmm_reg</code></td><td><code>zmm[0-7]</code> (x86) <code>zmm[0-31]</code> (x86-64)</td><td><code>v</code></td></tr>
+<tr><td>x86</td><td><code>kreg</code></td><td><code>k[1-7]</code></td><td><code>Yk</code></td></tr>
+<tr><td>AArch64</td><td><code>reg</code></td><td><code>x[0-28]</code>, <code>x30</code></td><td><code>r</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>v[0-31]</code></td><td><code>w</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg_low16</code></td><td><code>v[0-15]</code></td><td><code>x</code></td></tr>
+<tr><td>ARM</td><td><code>reg</code></td><td><code>r[0-r10]</code>, <code>r12</code>, <code>r14</code></td><td><code>r</code></td></tr>
+<tr><td>ARM (Thumb)</td><td><code>reg_thumb</code></td><td><code>r[0-r7]</code></td><td><code>l</code></td></tr>
+<tr><td>ARM (ARM)</td><td><code>reg_thumb</code></td><td><code>r[0-r10]</code>, <code>r12</code>, <code>r14</code></td><td><code>l</code></td></tr>
+<tr><td>ARM</td><td><code>sreg</code></td><td><code>s[0-31]</code></td><td><code>t</code></td></tr>
+<tr><td>ARM</td><td><code>sreg_low16</code></td><td><code>s[0-15]</code></td><td><code>x</code></td></tr>
+<tr><td>ARM</td><td><code>dreg</code></td><td><code>d[0-31]</code></td><td><code>w</code></td></tr>
+<tr><td>ARM</td><td><code>dreg_low16</code></td><td><code>d[0-15]</code></td><td><code>t</code></td></tr>
+<tr><td>ARM</td><td><code>dreg_low8</code></td><td><code>d[0-8]</code></td><td><code>x</code></td></tr>
+<tr><td>ARM</td><td><code>qreg</code></td><td><code>q[0-15]</code></td><td><code>w</code></td></tr>
+<tr><td>ARM</td><td><code>qreg_low8</code></td><td><code>q[0-7]</code></td><td><code>t</code></td></tr>
+<tr><td>ARM</td><td><code>qreg_low4</code></td><td><code>q[0-3]</code></td><td><code>x</code></td></tr>
+<tr><td>RISC-V</td><td><code>reg</code></td><td><code>x1</code>, <code>x[5-7]</code>, <code>x[9-15]</code>, <code>x[16-31]</code> (non-RV32E)</td><td><code>r</code></td></tr>
+<tr><td>RISC-V</td><td><code>freg</code></td><td><code>f[0-31]</code></td><td><code>f</code></td></tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>Note</strong>: On x86 we treat <code>reg_byte</code> differently from <code>reg</code> (and <code>reg_abcd</code>) because the compiler can allocate <code>al</code> and <code>ah</code> separately whereas <code>reg</code> reserves the whole register.</p>
+<p><strong>Note #2</strong>: On x86-64 the high byte registers (e.g. <code>ah</code>) are only available when used as an explicit register. Specifying the <code>reg_byte</code> register class for an operand will always allocate a low byte register.</p>
+</blockquote>
+<p>Additional register classes may be added in the future based on demand (e.g. MMX, x87, etc).</p>
+<p>Each register class has constraints on which value types they can be used with. This is necessary because the way a value is loaded into a register depends on its type. For example, on big-endian systems, loading a <code>i32x4</code> and a <code>i8x16</code> into a SIMD register may result in different register contents even if the byte-wise memory representation of both values is identical. The availability of supported types for a particular register class may depend on what target features are currently enabled.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Architecture</th><th>Register class</th><th>Target feature</th><th>Allowed types</th></tr>
+</thead>
+<tbody>
+<tr><td>x86-32</td><td><code>reg</code></td><td>None</td><td><code>i16</code>, <code>i32</code>, <code>f32</code></td></tr>
+<tr><td>x86-64</td><td><code>reg</code></td><td>None</td><td><code>i16</code>, <code>i32</code>, <code>f32</code>, <code>i64</code>, <code>f64</code></td></tr>
+<tr><td>x86</td><td><code>reg_byte</code></td><td>None</td><td><code>i8</code></td></tr>
+<tr><td>x86</td><td><code>xmm_reg</code></td><td><code>sse</code></td><td><code>i32</code>, <code>f32</code>, <code>i64</code>, <code>f64</code>, <br> <code>i8x16</code>, <code>i16x8</code>, <code>i32x4</code>, <code>i64x2</code>, <code>f32x4</code>, <code>f64x2</code></td></tr>
+<tr><td>x86</td><td><code>ymm_reg</code></td><td><code>avx</code></td><td><code>i32</code>, <code>f32</code>, <code>i64</code>, <code>f64</code>, <br> <code>i8x16</code>, <code>i16x8</code>, <code>i32x4</code>, <code>i64x2</code>, <code>f32x4</code>, <code>f64x2</code> <br> <code>i8x32</code>, <code>i16x16</code>, <code>i32x8</code>, <code>i64x4</code>, <code>f32x8</code>, <code>f64x4</code></td></tr>
+<tr><td>x86</td><td><code>zmm_reg</code></td><td><code>avx512f</code></td><td><code>i32</code>, <code>f32</code>, <code>i64</code>, <code>f64</code>, <br> <code>i8x16</code>, <code>i16x8</code>, <code>i32x4</code>, <code>i64x2</code>, <code>f32x4</code>, <code>f64x2</code> <br> <code>i8x32</code>, <code>i16x16</code>, <code>i32x8</code>, <code>i64x4</code>, <code>f32x8</code>, <code>f64x4</code> <br> <code>i8x64</code>, <code>i16x32</code>, <code>i32x16</code>, <code>i64x8</code>, <code>f32x16</code>, <code>f64x8</code></td></tr>
+<tr><td>x86</td><td><code>kreg</code></td><td><code>axv512f</code></td><td><code>i8</code>, <code>i16</code></td></tr>
+<tr><td>x86</td><td><code>kreg</code></td><td><code>axv512bw</code></td><td><code>i32</code>, <code>i64</code></td></tr>
+<tr><td>AArch64</td><td><code>reg</code></td><td>None</td><td><code>i8</code>, <code>i16</code>, <code>i32</code>, <code>f32</code>, <code>i64</code>, <code>f64</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>fp</code></td><td><code>i8</code>, <code>i16</code>, <code>i32</code>, <code>f32</code>, <code>i64</code>, <code>f64</code>, <br> <code>i8x8</code>, <code>i16x4</code>, <code>i32x2</code>, <code>i64x1</code>, <code>f32x2</code>, <code>f64x1</code>, <br> <code>i8x16</code>, <code>i16x8</code>, <code>i32x4</code>, <code>i64x2</code>, <code>f32x4</code>, <code>f64x2</code></td></tr>
+<tr><td>ARM</td><td><code>reg</code></td><td>None</td><td><code>i8</code>, <code>i16</code>, <code>i32</code>, <code>f32</code></td></tr>
+<tr><td>ARM</td><td><code>sreg</code></td><td><code>vfp2</code></td><td><code>i32</code>, <code>f32</code></td></tr>
+<tr><td>ARM</td><td><code>dreg</code></td><td><code>vfp2</code></td><td><code>i64</code>, <code>f64</code>, <code>i8x8</code>, <code>i16x4</code>, <code>i32x2</code>, <code>i64x1</code>, <code>f32x2</code></td></tr>
+<tr><td>ARM</td><td><code>qreg</code></td><td><code>neon</code></td><td><code>i8x16</code>, <code>i16x8</code>, <code>i32x4</code>, <code>i64x2</code>, <code>f32x4</code></td></tr>
+<tr><td>RISC-V32</td><td><code>reg</code></td><td>None</td><td><code>i8</code>, <code>i16</code>, <code>i32</code>, <code>f32</code></td></tr>
+<tr><td>RISC-V64</td><td><code>reg</code></td><td>None</td><td><code>i8</code>, <code>i16</code>, <code>i32</code>, <code>f32</code>, <code>i64</code>, <code>f64</code></td></tr>
+<tr><td>RISC-V</td><td><code>freg</code></td><td><code>f</code></td><td><code>f32</code></td></tr>
+<tr><td>RISC-V</td><td><code>freg</code></td><td><code>d</code></td><td><code>f64</code></td></tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>Note</strong>: For the purposes of the above table, unsigned types <code>uN</code>, <code>isize</code>, pointers and function pointers are treated as the equivalent integer type (<code>i16</code>/<code>i32</code>/<code>i64</code> depending on the target).</p>
+<p><strong>Note #2</strong>: Registers not listed in the table above cannot be used as operands for inline assembly.</p>
+</blockquote>
+<p>If a value is of a smaller size than the register it is allocated in then the upper bits of that register will have an undefined value for inputs and will be ignored for outputs. The only exception is the <code>freg</code> register class on RISC-V where <code>f32</code> values are NaN-boxed in a <code>f64</code> as required by the RISC-V architecture.</p>
+<p>When separate input and output expressions are specified for an <code>inout</code> operand, both expressions must have the same type. The only exception is if both operands are pointers or integers, in which case they are only required to have the same size. This restriction exists because the register allocators in LLVM and GCC sometimes cannot handle tied operands with different types.</p>
+<h3 id="register-names"><a class="header" href="#register-names">Register names</a></h3>
+<p>Some registers have multiple names. These are all treated by the compiler as identical to the base register name. Here is the list of all supported register aliases:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Architecture</th><th>Base register</th><th>Aliases</th></tr>
+</thead>
+<tbody>
+<tr><td>x86</td><td><code>ax</code></td><td><code>eax</code>, <code>rax</code></td></tr>
+<tr><td>x86</td><td><code>bx</code></td><td><code>ebx</code>, <code>rbx</code></td></tr>
+<tr><td>x86</td><td><code>cx</code></td><td><code>ecx</code>, <code>rcx</code></td></tr>
+<tr><td>x86</td><td><code>dx</code></td><td><code>edx</code>, <code>rdx</code></td></tr>
+<tr><td>x86</td><td><code>si</code></td><td><code>esi</code>, <code>rsi</code></td></tr>
+<tr><td>x86</td><td><code>di</code></td><td><code>edi</code>, <code>rdi</code></td></tr>
+<tr><td>x86</td><td><code>bp</code></td><td><code>bpl</code>, <code>ebp</code>, <code>rbp</code></td></tr>
+<tr><td>x86</td><td><code>sp</code></td><td><code>spl</code>, <code>esp</code>, <code>rsp</code></td></tr>
+<tr><td>x86</td><td><code>ip</code></td><td><code>eip</code>, <code>rip</code></td></tr>
+<tr><td>x86</td><td><code>st(0)</code></td><td><code>st</code></td></tr>
+<tr><td>x86</td><td><code>r[8-15]</code></td><td><code>r[8-15]b</code>, <code>r[8-15]w</code>, <code>r[8-15]d</code></td></tr>
+<tr><td>x86</td><td><code>xmm[0-31]</code></td><td><code>ymm[0-31]</code>, <code>zmm[0-31]</code></td></tr>
+<tr><td>AArch64</td><td><code>x[0-30]</code></td><td><code>w[0-30]</code></td></tr>
+<tr><td>AArch64</td><td><code>x29</code></td><td><code>fp</code></td></tr>
+<tr><td>AArch64</td><td><code>x30</code></td><td><code>lr</code></td></tr>
+<tr><td>AArch64</td><td><code>sp</code></td><td><code>wsp</code></td></tr>
+<tr><td>AArch64</td><td><code>xzr</code></td><td><code>wzr</code></td></tr>
+<tr><td>AArch64</td><td><code>v[0-31]</code></td><td><code>b[0-31]</code>, <code>h[0-31]</code>, <code>s[0-31]</code>, <code>d[0-31]</code>, <code>q[0-31]</code></td></tr>
+<tr><td>ARM</td><td><code>r[0-3]</code></td><td><code>a[1-4]</code></td></tr>
+<tr><td>ARM</td><td><code>r[4-9]</code></td><td><code>v[1-6]</code></td></tr>
+<tr><td>ARM</td><td><code>r9</code></td><td><code>rfp</code></td></tr>
+<tr><td>ARM</td><td><code>r10</code></td><td><code>sl</code></td></tr>
+<tr><td>ARM</td><td><code>r11</code></td><td><code>fp</code></td></tr>
+<tr><td>ARM</td><td><code>r12</code></td><td><code>ip</code></td></tr>
+<tr><td>ARM</td><td><code>r13</code></td><td><code>sp</code></td></tr>
+<tr><td>ARM</td><td><code>r14</code></td><td><code>lr</code></td></tr>
+<tr><td>ARM</td><td><code>r15</code></td><td><code>pc</code></td></tr>
+<tr><td>RISC-V</td><td><code>x0</code></td><td><code>zero</code></td></tr>
+<tr><td>RISC-V</td><td><code>x1</code></td><td><code>ra</code></td></tr>
+<tr><td>RISC-V</td><td><code>x2</code></td><td><code>sp</code></td></tr>
+<tr><td>RISC-V</td><td><code>x3</code></td><td><code>gp</code></td></tr>
+<tr><td>RISC-V</td><td><code>x4</code></td><td><code>tp</code></td></tr>
+<tr><td>RISC-V</td><td><code>x[5-7]</code></td><td><code>t[0-2]</code></td></tr>
+<tr><td>RISC-V</td><td><code>x8</code></td><td><code>fp</code>, <code>s0</code></td></tr>
+<tr><td>RISC-V</td><td><code>x9</code></td><td><code>s1</code></td></tr>
+<tr><td>RISC-V</td><td><code>x[10-17]</code></td><td><code>a[0-7]</code></td></tr>
+<tr><td>RISC-V</td><td><code>x[18-27]</code></td><td><code>s[2-11]</code></td></tr>
+<tr><td>RISC-V</td><td><code>x[28-31]</code></td><td><code>t[3-6]</code></td></tr>
+<tr><td>RISC-V</td><td><code>f[0-7]</code></td><td><code>ft[0-7]</code></td></tr>
+<tr><td>RISC-V</td><td><code>f[8-9]</code></td><td><code>fs[0-1]</code></td></tr>
+<tr><td>RISC-V</td><td><code>f[10-17]</code></td><td><code>fa[0-7]</code></td></tr>
+<tr><td>RISC-V</td><td><code>f[18-27]</code></td><td><code>fs[2-11]</code></td></tr>
+<tr><td>RISC-V</td><td><code>f[28-31]</code></td><td><code>ft[8-11]</code></td></tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>Note</strong>: This table includes registers which are not usable as operands. They are listed here purely for the purposes of compiler diagnostics.</p>
+</blockquote>
+<p>Registers not listed in the table of register classes cannot be used as operands for inline assembly. This includes the following registers:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Architecture</th><th>Unsupported register</th><th>Reason</th></tr>
+</thead>
+<tbody>
+<tr><td>All</td><td><code>sp</code></td><td>The stack pointer must be restored to its original value at the end of an asm code block.</td></tr>
+<tr><td>All</td><td><code>bp</code> (x86), <code>r11</code> (ARM), <code>x29</code> (AArch64), <code>x8</code> (RISC-V)</td><td>The frame pointer cannot be used as an input or output.</td></tr>
+<tr><td>x86</td><td><code>k0</code></td><td>This is a constant zero register which can’t be modified.</td></tr>
+<tr><td>x86</td><td><code>ip</code></td><td>This is the program counter, not a real register.</td></tr>
+<tr><td>x86</td><td><code>mm[0-7]</code></td><td>MMX registers are not currently supported (but may be in the future).</td></tr>
+<tr><td>x86</td><td><code>st([0-7])</code></td><td>x87 registers are not currently supported (but may be in the future).</td></tr>
+<tr><td>AArch64</td><td><code>xzr</code></td><td>This is a constant zero register which can’t be modified.</td></tr>
+<tr><td>ARM</td><td><code>pc</code></td><td>This is the program counter, not a real register.</td></tr>
+<tr><td>RISC-V</td><td><code>x0</code></td><td>This is a constant zero register which can’t be modified.</td></tr>
+<tr><td>RISC-V</td><td><code>gp</code>, <code>tp</code></td><td>These registers are reserved and cannot be used as inputs or outputs.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="template-modifiers"><a class="header" href="#template-modifiers">Template modifiers</a></h3>
+<p>The placeholders can be augmented by modifiers which are specified after the <code>:</code> in the curly braces. These modifiers do not affect register allocation, but change the way operands are formatted when inserted into the template string. Only one modifier is allowed per template placeholder.</p>
+<p>The supported modifiers are a subset of LLVM’s (and GCC’s) <a href="http://llvm.org/docs/LangRef.html#asm-template-argument-modifiers">asm template argument modifiers</a>, but do not use the same letter codes.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Architecture</th><th>Register class</th><th>Modifier</th><th>Example output</th><th>LLVM modifier</th></tr>
+</thead>
+<tbody>
+<tr><td>x86-32</td><td><code>reg</code></td><td>None</td><td><code>eax</code></td><td><code>k</code></td></tr>
+<tr><td>x86-64</td><td><code>reg</code></td><td>None</td><td><code>rax</code></td><td><code>q</code></td></tr>
+<tr><td>x86-64</td><td><code>reg</code></td><td><code>l</code></td><td><code>al</code></td><td><code>b</code></td></tr>
+<tr><td>x86</td><td><code>reg</code></td><td><code>x</code></td><td><code>ax</code></td><td><code>w</code></td></tr>
+<tr><td>x86</td><td><code>reg</code></td><td><code>e</code></td><td><code>eax</code></td><td><code>k</code></td></tr>
+<tr><td>x86-64</td><td><code>reg</code></td><td><code>r</code></td><td><code>rax</code></td><td><code>q</code></td></tr>
+<tr><td>x86-32</td><td><code>reg_abcd</code></td><td>None</td><td><code>eax</code></td><td><code>k</code></td></tr>
+<tr><td>x86-64</td><td><code>reg_abcd</code></td><td>None</td><td><code>rax</code></td><td><code>q</code></td></tr>
+<tr><td>x86</td><td><code>reg_abcd</code></td><td><code>l</code></td><td><code>al</code></td><td><code>b</code></td></tr>
+<tr><td>x86</td><td><code>reg_abcd</code></td><td><code>h</code></td><td><code>ah</code></td><td><code>h</code></td></tr>
+<tr><td>x86</td><td><code>reg_abcd</code></td><td><code>x</code></td><td><code>ax</code></td><td><code>w</code></td></tr>
+<tr><td>x86</td><td><code>reg_abcd</code></td><td><code>e</code></td><td><code>eax</code></td><td><code>k</code></td></tr>
+<tr><td>x86-64</td><td><code>reg_abcd</code></td><td><code>r</code></td><td><code>rax</code></td><td><code>q</code></td></tr>
+<tr><td>x86</td><td><code>reg_byte</code></td><td>None</td><td><code>al</code> / <code>ah</code></td><td>None</td></tr>
+<tr><td>x86</td><td><code>xmm_reg</code></td><td>None</td><td><code>xmm0</code></td><td><code>x</code></td></tr>
+<tr><td>x86</td><td><code>ymm_reg</code></td><td>None</td><td><code>ymm0</code></td><td><code>t</code></td></tr>
+<tr><td>x86</td><td><code>zmm_reg</code></td><td>None</td><td><code>zmm0</code></td><td><code>g</code></td></tr>
+<tr><td>x86</td><td><code>*mm_reg</code></td><td><code>x</code></td><td><code>xmm0</code></td><td><code>x</code></td></tr>
+<tr><td>x86</td><td><code>*mm_reg</code></td><td><code>y</code></td><td><code>ymm0</code></td><td><code>t</code></td></tr>
+<tr><td>x86</td><td><code>*mm_reg</code></td><td><code>z</code></td><td><code>zmm0</code></td><td><code>g</code></td></tr>
+<tr><td>x86</td><td><code>kreg</code></td><td>None</td><td><code>k1</code></td><td>None</td></tr>
+<tr><td>AArch64</td><td><code>reg</code></td><td>None</td><td><code>x0</code></td><td><code>x</code></td></tr>
+<tr><td>AArch64</td><td><code>reg</code></td><td><code>w</code></td><td><code>w0</code></td><td><code>w</code></td></tr>
+<tr><td>AArch64</td><td><code>reg</code></td><td><code>x</code></td><td><code>x0</code></td><td><code>x</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td>None</td><td><code>v0</code></td><td>None</td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>v</code></td><td><code>v0</code></td><td>None</td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>b</code></td><td><code>b0</code></td><td><code>b</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>h</code></td><td><code>h0</code></td><td><code>h</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>s</code></td><td><code>s0</code></td><td><code>s</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>d</code></td><td><code>d0</code></td><td><code>d</code></td></tr>
+<tr><td>AArch64</td><td><code>vreg</code></td><td><code>q</code></td><td><code>q0</code></td><td><code>q</code></td></tr>
+<tr><td>ARM</td><td><code>reg</code></td><td>None</td><td><code>r0</code></td><td>None</td></tr>
+<tr><td>ARM</td><td><code>sreg</code></td><td>None</td><td><code>s0</code></td><td>None</td></tr>
+<tr><td>ARM</td><td><code>dreg</code></td><td>None</td><td><code>d0</code></td><td><code>P</code></td></tr>
+<tr><td>ARM</td><td><code>qreg</code></td><td>None</td><td><code>q0</code></td><td><code>q</code></td></tr>
+<tr><td>ARM</td><td><code>qreg</code></td><td><code>e</code> / <code>f</code></td><td><code>d0</code> / <code>d1</code></td><td><code>e</code> / <code>f</code></td></tr>
+<tr><td>RISC-V</td><td><code>reg</code></td><td>None</td><td><code>x1</code></td><td>None</td></tr>
+<tr><td>RISC-V</td><td><code>freg</code></td><td>None</td><td><code>f0</code></td><td>None</td></tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>Notes</strong>:</p>
+<ul>
+<li>on ARM and AArch64, the <code>*_low</code> register classes have the same modifiers as their base register class.</li>
+<li>on ARM <code>e</code> / <code>f</code>: this prints the low or high doubleword register name of a NEON quad (128-bit) register.</li>
+<li>on x86: our behavior for <code>reg</code> with no modifiers differs from what GCC does. GCC will infer the modifier based on the operand value type, while we default to the full register size.</li>
+<li>on x86 <code>xmm_reg</code>: the <code>x</code>, <code>t</code> and <code>g</code> LLVM modifiers are not yet implemented in LLVM (they are supported by GCC only), but this should be a simple change.</li>
+</ul>
+</blockquote>
+<p>As stated in the previous section, passing an input value smaller than the register width will result in the upper bits of the register containing undefined values. This is not a problem if the inline asm only accesses the lower bits of the register, which can be done by using a template modifier to use a subregister name in the asm code (e.g. <code>ax</code> instead of <code>rax</code>). Since this an easy pitfall, the compiler will suggest a template modifier to use where appropriate given the input type. If all references to an operand already have modifiers then the warning is suppressed for that operand.</p>
+<h3 id="options-1"><a class="header" href="#options-1">Options</a></h3>
+<p>Flags are used to further influence the behavior of the inline assembly block. Currently the following options are defined:</p>
+<ul>
+<li><code>pure</code>: The <code>asm</code> block has no side effects, and its outputs depend only on its direct inputs (i.e. the values themselves, not what they point to) or values read from memory (unless the <code>nomem</code> options is also set). This allows the compiler to execute the <code>asm</code> block fewer times than specified in the program (e.g. by hoisting it out of a loop) or even eliminate it entirely if the outputs are not used.</li>
+<li><code>nomem</code>: The <code>asm</code> blocks does not read or write to any memory. This allows the compiler to cache the values of modified global variables in registers across the <code>asm</code> block since it knows that they are not read or written to by the <code>asm</code>.</li>
+<li><code>readonly</code>: The <code>asm</code> block does not write to any memory. This allows the compiler to cache the values of unmodified global variables in registers across the <code>asm</code> block since it knows that they are not written to by the <code>asm</code>.</li>
+<li><code>preserves_flags</code>: The <code>asm</code> block does not modify the flags register (defined in the <a href="#rules-for-inline-assembly">rules</a> below). This allows the compiler to avoid recomputing the condition flags after the <code>asm</code> block.</li>
+<li><code>noreturn</code>: The <code>asm</code> block never returns, and its return type is defined as <code>!</code> (never). Behavior is undefined if execution falls through past the end of the asm code. A <code>noreturn</code> asm block behaves just like a function which doesn’t return; notably, local variables in scope are not dropped before it is invoked.</li>
+<li><code>nostack</code>: The <code>asm</code> block does not push data to the stack, or write to the stack red-zone (if supported by the target). If this option is <em>not</em> used then the stack pointer is guaranteed to be suitably aligned (according to the target ABI) for a function call.</li>
+<li><code>att_syntax</code>: This option is only valid on x86, and causes the assembler to use the <code>.att_syntax prefix</code> mode of the GNU assembler. Register operands are substituted in with a leading <code>%</code>.</li>
+</ul>
+<p>The compiler performs some additional checks on options:</p>
+<ul>
+<li>The <code>nomem</code> and <code>readonly</code> options are mutually exclusive: it is a compile-time error to specify both.</li>
+<li>The <code>pure</code> option must be combined with either the <code>nomem</code> or <code>readonly</code> options, otherwise a compile-time error is emitted.</li>
+<li>It is a compile-time error to specify <code>pure</code> on an asm block with no outputs or only discarded outputs (<code>_</code>).</li>
+<li>It is a compile-time error to specify <code>noreturn</code> on an asm block with outputs.</li>
+</ul>
+<h3 id="mapping-to-llvm-ir"><a class="header" href="#mapping-to-llvm-ir">Mapping to LLVM IR</a></h3>
+<p>The direction specification maps to a LLVM constraint specification as follows (using a <code>reg</code> operand as an example):</p>
+<ul>
+<li><code>in(reg)</code> =&gt; <code>r</code></li>
+<li><code>out(reg)</code> =&gt; <code>=&amp;r</code> (Rust’s outputs are early-clobber outputs in LLVM/GCC terminology)</li>
+<li><code>inout(reg)</code> =&gt; <code>=&amp;r,0</code> (an early-clobber output with an input tied to it, <code>0</code> here is a placeholder for the position of the output)</li>
+<li><code>lateout(reg)</code> =&gt; <code>=r</code> (Rust’s late outputs are regular outputs in LLVM/GCC terminology)</li>
+<li><code>inlateout(reg)</code> =&gt; <code>=r,0</code> (cf. <code>inout</code> and <code>lateout</code>)</li>
+</ul>
+<p>If an <code>inout</code> is used where the output type is smaller than the input type then some special handling is needed to avoid LLVM issues. See <a href="https://github.com/rust-lang/rust/issues/65452">this bug</a>.</p>
+<p>As written this RFC requires architectures to map from Rust constraint specifications to LLVM <a href="http://llvm.org/docs/LangRef.html#supported-constraint-code-list">constraint codes</a>. This is in part for better readability on Rust’s side and in part for independence of the backend:</p>
+<ul>
+<li>Register classes are mapped to the appropriate constraint code as per the table above.</li>
+<li><code>const</code> operands are formatted and injected directly into the asm string.</li>
+<li><code>sym</code> is mapped to the <code>s</code> constraint code. We automatically insert the <code>c</code> modifier which removes target-specific modifiers from the value (e.g. <code>#</code> on ARM).</li>
+<li>a register name <code>r1</code> is mapped to <code>{r1}</code></li>
+<li>If the <code>nomem</code> option is not set then <code>~{memory}</code> is added to the clobber list. (Although this is currently ignored by LLVM)</li>
+<li>If the <code>preserves_flags</code> option is not set then the following are added to the clobber list:
+<ul>
+<li>(x86) <code>~{dirflag},~{flags},~{fpsr}</code></li>
+<li>(ARM/AArch64) <code>~{cc}</code></li>
+</ul>
+</li>
+</ul>
+<p>Additionally, the following attributes are added to the LLVM <code>asm</code> statement:</p>
+<ul>
+<li>The <code>nounwind</code> attribute is always added: unwinding from an inline asm block is not allowed (and not supported by LLVM anyways).</li>
+<li>If the <code>nomem</code> and <code>pure</code> options are both set then the <code>readnone</code> attribute is added to the LLVM <code>asm</code> statement.</li>
+<li>If the <code>readonly</code> and <code>pure</code> options are both set then the <code>readonly</code> attribute is added to the LLVM <code>asm</code> statement.</li>
+<li>If the <code>nomem</code> option is set without the <code>pure</code> option then the <code>inaccessiblememonly</code> attribute is added to the LLVM <code>asm</code> statement.</li>
+<li>If the <code>pure</code> option is not set then the <code>sideeffect</code> flag is added the LLVM <code>asm</code> statement.</li>
+<li>If the <code>nostack</code> option is not set then the <code>alignstack</code> flag is added the LLVM <code>asm</code> statement.</li>
+<li>On x86, if the <code>att_syntax</code> option is not set then the <code>inteldialect</code> flag is added to the LLVM <code>asm</code> statement.</li>
+</ul>
+<p>If the <code>noreturn</code> option is set then an <code>unreachable</code> LLVM instruction is inserted after the asm invocation.</p>
+<blockquote>
+<p>Note that <code>alignstack</code> is not currently supported by GCC, so we will need to implement support in GCC if Rust ever gets a GCC back-end.</p>
+</blockquote>
+<h3 id="supporting-back-ends-without-inline-assembly"><a class="header" href="#supporting-back-ends-without-inline-assembly">Supporting back-ends without inline assembly</a></h3>
+<p>While LLVM supports inline assembly, rustc may gain alternative backends such as Cranelift or GCC. If a back-end does not support inline assembly natively then we can fall back to invoking an external assembler. The intent is that support for <code>asm!</code> should be independent of the rustc back-end used: it should always work, but with lower performance if the backend does not support inline assembly.</p>
+<p>Take the following (AArch64) asm block as an example:</p>
+<pre><code class="language-rust">unsafe fn foo(mut a: i32, b: i32) -&gt; (i32, i32)
+{
+    let c;
+    asm!("&lt;some asm code&gt;", inout(reg) a, in("x0") b, out("x20") c);
+    (a, c)
+}</code></pre>
+<p>This could be expanded to an external asm file with the following contents:</p>
+<pre><code># Function prefix directives
+.section ".text.foo_inline_asm"
+.globl foo_inline_asm
+.p2align 2
+.type foo_inline_asm, @function
+foo_inline_asm:
+
+// If necessary, save callee-saved registers to the stack here.
+str x20, [sp, #-16]!
+
+// Move the pointer to the argument out of the way since x0 is used.
+mov x1, x0
+
+// Load inputs values
+ldr w2, [x1, #0]
+ldr w0, [x1, #4]
+
+&lt;some asm code&gt;
+
+// Store output values
+str w2, [x1, #0]
+str w20, [x1, #8]
+
+// If necessary, restore callee-saved registers here.
+ldr x20, [sp], #16
+
+ret
+
+# Function suffix directives
+.size foo_inline_asm, . - foo_inline_asm
+</code></pre>
+<p>And the following Rust code:</p>
+<pre><code class="language-rust">unsafe fn foo(mut a: i32, b: i32) -&gt; (i32, i32)
+{
+    let c;
+    {
+        #[repr(C)]
+        struct foo_inline_asm_args {
+            a: i32,
+            b: i32,
+            c: i32,
+        }
+        extern "C" {
+            fn foo_inline_asm(args: *mut foo_inline_asm_args);
+        }
+        let mut args = foo_inline_asm_args {
+            a: a,
+            b: b,
+            c: mem::uninitialized(),
+        };
+        foo_inline_asm(&amp;mut args);
+        a = args.a;
+        c = args.c;
+    }
+    (a, c)
+}</code></pre>
+<h3 id="rules-for-inline-assembly"><a class="header" href="#rules-for-inline-assembly">Rules for inline assembly</a></h3>
+<ul>
+<li>Any registers not specified as inputs will contain an undefined value on entry to the asm block.
+<ul>
+<li>An “undefined value” in the context of this RFC means that the register can (non-deterministically) have any one of the possible values allowed by the architecture. Notably it is not the same as an LLVM <code>undef</code> which can have a different value every time you read it (since such a concept does not exist in assembly code).</li>
+</ul>
+</li>
+<li>Any registers not specified as outputs must have the same value upon exiting the asm block as they had on entry, otherwise behavior is undefined.
+<ul>
+<li>This only applies to registers which can be specified as an input or output. Other registers follow target-specific rules and are outside the scope of this RFC.</li>
+<li>Note that a <code>lateout</code> may be allocated to the same register as an <code>in</code>, in which case this rule does not apply. Code should not rely on this however since it depends on the results of register allocation.</li>
+</ul>
+</li>
+<li>Behavior is undefined if execution unwinds out of an asm block.
+<ul>
+<li>This also applies if the assembly code calls a function which then unwinds.</li>
+</ul>
+</li>
+<li>The set of memory locations that assembly code is allowed the read and write are the same as those allowed for an FFI function.
+<ul>
+<li>Refer to the unsafe code guidelines for the exact rules.</li>
+<li>If the <code>readonly</code> option is set, then only memory reads are allowed.</li>
+<li>If the <code>nomem</code> option is set then no reads or writes to memory are allowed.</li>
+<li>These rules do not apply to memory which is private to the asm code, such as stack space allocated within the asm block.</li>
+</ul>
+</li>
+<li>The compiler cannot assume that the instructions in the asm are the ones that will actually end up executed.
+<ul>
+<li>This effectively means that the compiler must treat the <code>asm!</code> as a black box and only take the interface specification into account, not the instructions themselves.</li>
+<li>Runtime code patching is allowed, via target-specific mechanisms (outside the scope of this RFC).</li>
+</ul>
+</li>
+<li>Unless the <code>nostack</code> option is set, asm code is allowed to use stack space below the stack pointer.
+<ul>
+<li>On entry to the asm block the stack pointer is guaranteed to be suitably aligned (according to the target ABI) for a function call.</li>
+<li>You are responsible for making sure you don’t overflow the stack (e.g. use stack probing to ensure you hit a guard page).</li>
+<li>You should adjust the stack pointer when allocating stack memory as required by the target ABI.</li>
+<li>The stack pointer must be restored to its original value before leaving the asm block.</li>
+</ul>
+</li>
+<li>If the <code>noreturn</code> option is set then behavior is undefined if execution falls through to the end of the asm block.</li>
+<li>If the <code>pure</code> option is set then behavior is undefined if the <code>asm</code> has side-effects other than its direct outputs. Behavior is also undefined if two executions of the <code>asm</code> code with the same inputs result in different outputs.
+<ul>
+<li>When used with the <code>nomem</code> option, “inputs” are just the direct inputs of the <code>asm!</code>.</li>
+<li>When used with the <code>readonly</code> option, “inputs” comprise the direct inputs of the <code>asm!</code> and any memory that the <code>asm!</code> block is allowed to read.</li>
+</ul>
+</li>
+<li>These flags registers must be restored upon exiting the asm block if the <code>preserves_flags</code> option is set:
+<ul>
+<li>x86
+<ul>
+<li>Status flags in <code>EFLAGS</code> (CF, PF, AF, ZF, SF, OF).</li>
+<li>Floating-point status word (all).</li>
+<li>Floating-point exception flags in <code>MXCSR</code> (PE, UE, OE, ZE, DE, IE).</li>
+</ul>
+</li>
+<li>ARM
+<ul>
+<li>Condition flags in <code>CPSR</code> (N, Z, C, V)</li>
+<li>Saturation flag in <code>CPSR</code> (Q)</li>
+<li>Greater than or equal flags in <code>CPSR</code> (GE).</li>
+<li>Condition flags in <code>FPSCR</code> (N, Z, C, V)</li>
+<li>Saturation flag in <code>FPSCR</code> (QC)</li>
+<li>Floating-point exception flags in <code>FPSCR</code> (IDC, IXC, UFC, OFC, DZC, IOC).</li>
+</ul>
+</li>
+<li>AArch64
+<ul>
+<li>Condition flags (<code>NZCV</code> register).</li>
+<li>Floating-point status (<code>FPSR</code> register).</li>
+</ul>
+</li>
+<li>RISC-V
+<ul>
+<li>Floating-point exception flags in <code>fcsr</code> (<code>fflags</code>).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>On x86, the direction flag (DF in <code>EFLAGS</code>) is clear on entry to an asm block and must be clear on exit.
+<ul>
+<li>Behavior is undefined if the direction flag is set on exiting an asm block.</li>
+</ul>
+</li>
+<li>The requirement of restoring the stack pointer and non-output registers to their original value only applies when exiting an <code>asm!</code> block.
+<ul>
+<li>This means that <code>asm!</code> blocks that never return (even if not marked <code>noreturn</code>) don’t need to preserve these registers.</li>
+<li>When returning to a different <code>asm!</code> block than you entered (e.g. for context switching), these registers must contain the value they had upon entering the <code>asm!</code> block that you are <em>exiting</em>.
+<ul>
+<li>You cannot exit an <code>asm!</code> block that has not been entered. Neither can you exit an <code>asm!</code> block that has already been exited.</li>
+<li>You are responsible for switching any target-specific state (e.g. thread-local storage, stack bounds).</li>
+<li>The set of memory locations that you may access is the intersection of those allowed by the <code>asm!</code> blocks you entered and exited.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>You cannot assume that an <code>asm!</code> block will appear exactly once in the output binary. The compiler is allowed to instantiate multiple copies of the <code>asm!</code> block, for example when the function containing it is inlined in multiple places.
+<ul>
+<li>As a consequence, you should only use <a href="https://sourceware.org/binutils/docs/as/Symbol-Names.html#Local-Labels">local labels</a> inside inline assembly code. Defining symbols in assembly code may lead to assembler and/or linker errors due to duplicate symbol definitions.</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>: As a general rule, the flags covered by <code>preserves_flags</code> are those which are <em>not</em> preserved when performing a function call.</p>
+</blockquote>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<h3 id="unfamiliarity"><a class="header" href="#unfamiliarity">Unfamiliarity</a></h3>
+<p>This RFC proposes a completely new inline assembly format. It is not possible to just copy examples of GCC-style inline assembly and re-use them. There is however a fairly trivial mapping between the GCC-style and this format that could be documented to alleviate this.</p>
+<p>Additionally, this RFC proposes using the Intel asm syntax by default on x86 instead of the AT&amp;T syntax. We believe this syntax will be more familiar to most users, but may be surprising for users used to GCC-style asm.</p>
+<p>The <code>cpuid</code> example above would look like this in GCC-style inline assembly:</p>
+<pre><code class="language-C">// GCC doesn't allow directly clobbering an input, we need
+// to use a dummy output instead.
+int ebx, ecx, discard;
+asm (
+    "cpuid"
+    : "=a"(discard), "=b"(ebx), "=c"(ecx) // outputs
+    : "a"(4), "c"(0) // inputs
+    : "edx" // clobbers
+);
+printf("L1 Cache: %i\n", ((ebx &gt;&gt; 22) + 1)
+    * (((ebx &gt;&gt; 12) &amp; 0x3ff) + 1)
+    * ((ebx &amp; 0xfff) + 1)
+    * (ecx + 1));
+</code></pre>
+<h3 id="limited-set-of-operand-types"><a class="header" href="#limited-set-of-operand-types">Limited set of operand types</a></h3>
+<p>The proposed set of operand types is much smaller than that which is available through GCC-style inline assembly. In particular, the proposed syntax does not include any form of memory operands and is missing many register classes.</p>
+<p>We chose to keep operand constraints as simple as possible, and in particular memory operands introduce a lot of complexity since different instruction support different addressing modes. At the same time, the exact rules for memory operands are not very well known (you are only allowed to access the data directly pointed to by the constraint) and are often gotten wrong.</p>
+<p>If we discover that there is a demand for a new register class or special operand type, we can always add it later.</p>
+<h3 id="difficulty-of-support"><a class="header" href="#difficulty-of-support">Difficulty of support</a></h3>
+<p>Inline assembly is a difficult feature to implement in a compiler backend. While LLVM does support it, this may not be the case for alternative backends such as <a href="https://cranelift.readthedocs.io/">Cranelift</a> (see <a href="https://github.com/bytecodealliance/cranelift/issues/444">this issue</a>). We provide a fallback implementation using an external assembler for such backends.</p>
+<h3 id="use-of-double-braces-in-the-template-string"><a class="header" href="#use-of-double-braces-in-the-template-string">Use of double braces in the template string</a></h3>
+<p>Because <code>{}</code> are used to denote operand placeholders in the template string, actual uses of braces in the assembly code need to be escaped with <code>{{</code> and <code>}}</code>. This is needed for AVX-512 mask registers and ARM register lists.</p>
+<h3 id="post-monomorphization-errors"><a class="header" href="#post-monomorphization-errors">Post-monomorphization errors</a></h3>
+<p>Since the code generated by <code>asm!</code> is only evaluated late in the compiler back-end, errors in the assembly code (e.g. invalid syntax, unrecognized instruction, etc) are reported during code generation unlike every other error generated by rustc. In particular this means that:</p>
+<ul>
+<li>Since <code>cargo check</code> skips code generation, assembly code is not checked for errors.</li>
+<li><code>asm!</code> blocks that are determined to be unreachable are not checked for errors. This can even vary depending on the optimization level since inlining provides more opportunities for constant propagation.</li>
+</ul>
+<p>However there is a precedent in Rust for post-monomorphization errors: linker errors. Code which references a non-existent <code>extern</code> symbol will only cause an error at link-time, and this can also vary with optimization levels as dead code elimination may removed the reference to the symbol before it reaches the linker.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h2>
+<h3 id="implement-an-embedded-dsl"><a class="header" href="#implement-an-embedded-dsl">Implement an embedded DSL</a></h3>
+<p>Both MSVC and D provide what is best described as an embedded DSL for inline assembly. It is generally close to the system assembler’s syntax, but augmented with the ability to directly access variables that are in scope.</p>
+<pre><code class="language-D">// This is D code
+int ebx, ecx;
+asm {
+    mov EAX, 4;
+    xor ECX, ECX;
+    cpuid;
+    mov ebx, EBX;
+    mov ecx, ECX;
+}
+writefln("L1 Cache: %s",
+    ((ebx &gt;&gt; 22) + 1) * (((ebx &gt;&gt; 12) &amp; 0x3ff) + 1)
+    * ((ebx &amp; 0xfff) + 1) * (ecx + 1));
+</code></pre>
+<pre><code class="language-C++">// This is MSVC C++
+int ebx_v, ecx_v;
+__asm {
+    mov eax, 4
+    xor ecx, ecx
+    cpuid
+    mov ebx_v, ebx
+    mov ecx_v, ecx
+}
+std::cout &lt;&lt; "L1 Cache: "
+    &lt;&lt; ((ebx_v &gt;&gt; 22) + 1) * (((ebx_v &gt;&gt; 12) &amp; 0x3ff) + 1)
+        * ((ebx_v &amp; 0xfff) + 1) * (ecx_v + 1))
+    &lt;&lt; '\n';
+</code></pre>
+<p>While this is very convenient on the user side in that it requires no specification of inputs, outputs, or clobbers, it puts a major burden on the implementation. The DSL needs to be implemented for each supported architecture, and full knowledge of the side-effect of every instruction is required.</p>
+<p>This huge implementation overhead is likely one of the reasons MSVC only provides this capability for x86, while D at least provides it for x86 and x86-64. It should also be noted that the D reference implementation falls slightly short of supporting arbitrary assembly. E.g. the lack of access to the <code>RIP</code> register makes certain techniques for writing position independent code impossible.</p>
+<p>As a stop-gap the LDC implementation of D provides a <code>llvmasm</code> feature that binds it closely to LLVM IR’s inline assembly.</p>
+<p>We believe it would be unfortunate to put Rust into a similar situation, making certain architectures a second-class citizen with respect to inline assembly.</p>
+<h3 id="provide-intrinsics-for-each-instruction"><a class="header" href="#provide-intrinsics-for-each-instruction">Provide intrinsics for each instruction</a></h3>
+<p>In discussions it is often postulated that providing intrinsics is a better solution to the problems at hand. However, particularly where precise timing, and full control over the number of generated instructions is required intrinsics fall short.</p>
+<p>Intrinsics are of course still useful and have their place for inserting specific instructions. E.g. making sure a loop uses vector instructions, rather than relying on auto-vectorization.</p>
+<p>However, inline assembly is specifically designed for cases where more control is required. Also providing an intrinsic for every (potentially obscure) instruction that is needed e.g. during early system boot in kernel code is unlikely to scale.</p>
+<h3 id="make-the-asm-macro-return-outputs"><a class="header" href="#make-the-asm-macro-return-outputs">Make the <code>asm!</code> macro return outputs</a></h3>
+<p>It has been suggested that the <code>asm!</code> macro could return its outputs like the LLVM statement does. The benefit is that it is clearer to see that variables are being modified. Particular in the case of initialization it becomes more obvious what is happening. On the other hand by necessity this splits the direction and constraint specification from the variable name, which makes this syntax overall harder to read.</p>
+<pre><code class="language-rust">fn mul(a: u64, b: u64) -&gt; u128 {
+    let (lo, hi): (u64, u64) = unsafe {
+        asm!("mul {}", in(reg) a, in("rax") b, lateout("rax"), lateout("rdx"))
+    };
+
+    hi as u128 &lt;&lt; 64 + lo as u128
+}</code></pre>
+<h3 id="use-att-syntax-by-default-on-x86"><a class="header" href="#use-att-syntax-by-default-on-x86">Use AT&amp;T syntax by default on x86</a></h3>
+<p>x86 is particular in that there are <a href="https://sourceware.org/binutils/docs/as/i386_002dVariations.html">two widely used dialects</a> for its assembly code: Intel syntax, which is the official syntax for x86 assembly, and AT&amp;T syntax which is used by GCC (via GAS). There is no functional difference between those two dialects, they both support the same functionality but with a different syntax. This RFC chooses to use Intel syntax by default since it is more widely used and users generally find it easier to read and write.</p>
+<h3 id="validate-the-assembly-code-in-rustc"><a class="header" href="#validate-the-assembly-code-in-rustc">Validate the assembly code in rustc</a></h3>
+<p>There may be some slight differences in the set of assembly code that is accepted by different compiler back-ends (e.g. LLVM’s integrated assembler vs using GAS as an external assembler). Examples of such differences are:</p>
+<ul>
+<li>LLVM’s <a href="https://llvm.org/docs/Extensions.html#machine-specific-assembly-syntax">assembly extensions</a></li>
+<li>Linking against the system LLVM instead of rustc’s, which may/may not support some newer instructions.</li>
+<li>GAS or LLVM introducing new assembler directives.</li>
+</ul>
+<p>While it might be possible for rustc to verify that inline assembly code conforms to a minimal stable subset of the assembly syntax supported by LLVM and GAS, doing so would effectively require rustc to parse the assembly code itself. Implementing a full assembler for all target architectures supported by this RFC is a huge amount of work, most of which is redundant with the work that LLVM has already done in implementing an assembler. As such, this RFC does not propose that rustc perform any validation of the generated assembly code.</p>
+<h3 id="include-the-target-architecture-name-in-asm"><a class="header" href="#include-the-target-architecture-name-in-asm">Include the target architecture name in <code>asm!</code></a></h3>
+<p>Including the name of the target architecture as part of the <code>asm!</code> invocation could allow IDEs to perform syntax highlighting on the assembly code. However this has several downsides:</p>
+<ul>
+<li>It would add a significant amount of complexity to the <code>asm!</code> macro which already has many options.</li>
+<li>Since assembly code is inherently target-specific, <code>asm!</code> is already going to be behind a <code>#[cfg]</code>. Repeating the architecture name would be redundant.</li>
+<li>Most inline asm is small and wouldn’t really benefit from syntax highlighting.</li>
+<li>The <code>asm!</code> template isn’t real assembly code (<code>{}</code> placeholders, <code>{</code> escaped to <code>{{</code>), which may confuse syntax highlighters.</li>
+</ul>
+<h3 id="operands-before-template-string"><a class="header" href="#operands-before-template-string">Operands before template string</a></h3>
+<p>The operands could be placed before the template string, which could make the asm easier to read in some cases. However we decided against it because the benefits are small and the syntax would no longer mirror that of Rust format string.</p>
+<h3 id="operands-interleaved-with-template-string-arguments"><a class="header" href="#operands-interleaved-with-template-string-arguments">Operands interleaved with template string arguments</a></h3>
+<p>An asm directive could contain a series of template string arguments, each followed by the operands referenced in that template string argument. This could potentially simplify long blocks of assembly. However, this could introduce significant complexity and difficulty of reading, due to the numbering of positional arguments, and the possibility of referencing named or numbered arguments other than those that appear grouped with a given template string argument.</p>
+<p>Experimentation with such mechanisms could take place in wrapper macros around <code>asm!</code>, rather than in <code>asm!</code> itself.</p>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<h3 id="gcc-inline-assembly"><a class="header" href="#gcc-inline-assembly">GCC inline assembly</a></h3>
+<p>The proposed syntax is very similar to GCC’s inline assembly in that it is based on string substitution while leaving actual interpretation of the final string to the assembler. However GCC uses poorly documented single-letter constraint codes and template modifiers. Clang tries to emulate GCC’s behavior, but there are still several cases where its behavior differs from GCC’s.</p>
+<p>The main reason why this is so complicated is that GCC’s inline assembly basically exports the raw internals of GCC’s register allocator. This has resulted in many internal constraint codes and modifiers being widely used, despite them being completely undocumented.</p>
+<h3 id="d--msvc-inline-assembly"><a class="header" href="#d--msvc-inline-assembly">D &amp; MSVC inline assembly</a></h3>
+<p>See the section <a href="#dsl">above</a>.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<h3 id="namespacing-the-asm-macro"><a class="header" href="#namespacing-the-asm-macro">Namespacing the <code>asm!</code> macro</a></h3>
+<p>Should the <code>asm!</code> macro be available directly from the prelude as it is now, or should it have to be imported from <code>std::arch::$ARCH::asm</code>? The advantage of the latter is that it would make it explicit that the <code>asm!</code> macro is target-specific, but it would make cross-platform code slightly longer to write.</p>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<h3 id="flag-outputs"><a class="header" href="#flag-outputs">Flag outputs</a></h3>
+<p>GCC supports a special type of output which allows an asm block to return a <code>bool</code> encoded in the condition flags register. This allows the compiler to branch directly on the condition flag instead of materializing the condition as a <code>bool</code>.</p>
+<p>We can support this in the future with a special output operand type.</p>
+<h3 id="asm-goto"><a class="header" href="#asm-goto"><code>asm goto</code></a></h3>
+<p>GCC supports passing C labels (the ones used with <code>goto</code>) to an inline asm block, with an indication that the asm code may jump directly to one of these labels instead of leaving the asm block normally.</p>
+<p>This could be supported by allowing code blocks to be specified as operand types. The following code will print <code>a</code> if the input value is <code>42</code>, or print <code>b</code> otherwise.</p>
+<pre><code class="language-rust">asm!(
+    "cmp {}, 42",
+    "jeq {}",
+    in(reg) val,
+    label { println!("a"); },
+    fallthrough { println!("b"); }
+);</code></pre>
+<h3 id="unique-id-per-asm"><a class="header" href="#unique-id-per-asm">Unique ID per <code>asm</code></a></h3>
+<p>GCC supports <code>%=</code> which generates a unique identifier per instance of an asm block. This is guaranteed to be unique even if the asm block is duplicated (e.g. because of inlining).</p>
+<p>We can support this in the future with a special operand type.</p>
+<h3 id="const-and-sym-for-global_asm"><a class="header" href="#const-and-sym-for-global_asm"><code>const</code> and <code>sym</code> for <code>global_asm!</code></a></h3>
+<p>The <code>global_asm!</code> macro could be extended to support <code>const</code> and <code>sym</code> operands since those can be resolved by simple string substitution. Symbols used in <code>global_asm!</code> will be marked as <code>#[used]</code> to ensure that they are not optimized away by the compiler.</p>
+<h3 id="memory-operands"><a class="header" href="#memory-operands">Memory operands</a></h3>
+<p>We could support <code>mem</code> as an alternative to specifying a register class which would leave the operand in memory and instead produce a memory address when inserted into the asm string. This would allow generating more efficient code by taking advantage of addressing modes instead of using an intermediate register to hold the computed address.</p>
+<h3 id="shorthand-notation-for-operand-names"><a class="header" href="#shorthand-notation-for-operand-names">Shorthand notation for operand names</a></h3>
+<p>We should support some sort of shorthand notation for operand names to avoid needing to write <code>blah = out(reg) blah</code>? For example, if the expression is just a single identifier, we could implicitly allow that operand to be referred to using that identifier.</p>
+<h3 id="clobbers-for-function-calls"><a class="header" href="#clobbers-for-function-calls">Clobbers for function calls</a></h3>
+<p>Sometimes it can be difficult to specify the necessary clobbers for an asm block which performs a function call. In particular, it is difficult for such code to be forward-compatible if the architecture adds new registers in a future revision, which the compiler may use but will be missing from the <code>asm!</code> clobber list.</p>
+<p>One possible solution to this would be to add a <code>clobber(&lt;abi&gt;)</code> operand where <code>&lt;abi&gt;</code> is a calling convention such as <code>"C"</code> or <code>"stdcall"</code>. The compiler would then automatically insert the necessary clobbers for a function call to that ABI. Also <code>clobber(all)</code>, could be used to indicate all registers are clobbered by the <code>asm!</code>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="2872-github-access-policy.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="2904-compiler-major-change-process.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="2872-github-access-policy.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="2904-compiler-major-change-process.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

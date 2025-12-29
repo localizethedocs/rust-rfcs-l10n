@@ -1,0 +1,557 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>0213-defaulted-type-params - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Start Date: 2015-02-04</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/213">rust-lang/rfcs#213</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/27336">rust-lang/rust#27336</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Rust currently includes feature-gated support for type parameters that specify a default value. This feature is not well-specified. The aim of this RFC is to fully specify the behavior of defaulted type parameters:</p>
+<ol>
+<li>Type parameters in any position can specify a default.</li>
+<li>Within fn bodies, defaulted type parameters are used to drive inference.</li>
+<li>Outside of fn bodies, defaulted type parameters supply fixed defaults.</li>
+<li><code>_</code> can be used to omit the values of type parameters and apply a suitable default:
+<ul>
+<li>In a fn body, any type parameter can be omitted in this way, and a suitable type variable will be used.</li>
+<li>Outside of a fn body, only defaulted type parameters can be omitted, and the specified default is then used.</li>
+</ul>
+</li>
+</ol>
+<p>Points 2 and 4 extend the current behavior of type parameter defaults, aiming to address some shortcomings of the current implementation.</p>
+<p>This RFC would remove the feature gate on defaulted type parameters.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<h3 id="why-defaulted-type-parameters"><a class="header" href="#why-defaulted-type-parameters">Why defaulted type parameters</a></h3>
+<p>Defaulted type parameters are very useful in two main scenarios:</p>
+<ol>
+<li>Extended a type without breaking existing clients.</li>
+<li>Allowing customization in ways that many or most users do not care about.</li>
+</ol>
+<p>Often, these two scenarios occur at the same time. A classic historical example is the <code>HashMap</code> type from Rust’s standard library. This type now supports the ability to specify custom hashers. For most clients, this is not particularly important and this initial versions of the <code>HashMap</code> type were not customizable in this regard. But there are some cases where having the ability to use a custom hasher can make a huge difference. Having the ability to specify defaults for type parameters allowed the <code>HashMap</code> type to add a new type parameter <code>H</code> representing the hasher type without breaking any existing clients and also without forcing all clients to specify what hasher to use.</p>
+<p>However, customization occurs in places other than types. Consider the function <code>range()</code>. In early versions of Rust, there was a distinct range function for each integral type (e.g. <code>uint::range</code>, <code>int::range</code>, etc). These functions were eventually consolidated into a single <code>range()</code> function that is defined generically over all “enumerable” types:</p>
+<pre><code>trait Enumerable : Add&lt;Self,Self&gt; + PartialOrd + Clone + One;
+pub fn range&lt;A:Enumerable&gt;(start: A, stop: A) -&gt; Range&lt;A&gt; {
+    Range{state: start, stop: stop, one: One::one()}
+}
+</code></pre>
+<p>This version is often more convenient to use, particularly in a generic context.</p>
+<p>However, the generic version does have the downside that when the bounds of the range are integral, inference sometimes lacks enough information to select a proper type:</p>
+<pre><code>// ERROR -- Type argument unconstrained, what integral type did you want?
+for x in range(0, 10) { ... }
+</code></pre>
+<p>Thus users are forced to write:</p>
+<pre><code>for x in range(0u, 10u) { ... }
+</code></pre>
+<p>This RFC describes how to integrate default type parameters with inference such that the type parameter on <code>range</code> can specify a default (<code>uint</code>, for example):</p>
+<pre><code>pub fn range&lt;A:Enumerable=uint&gt;(start: A, stop: A) -&gt; Range&lt;A&gt; {
+    Range{state: start, stop: stop, one: One::one()}
+}
+</code></pre>
+<p>Using this definition, a call like <code>range(0, 10)</code> is perfectly legal. If it turns out that the type argument is not other constraint, <code>uint</code> will be used instead.</p>
+<h3 id="extending-types-without-breaking-clients"><a class="header" href="#extending-types-without-breaking-clients">Extending types without breaking clients.</a></h3>
+<p>Without defaults, once a library is released to “the wild”, it is not possible to add type parameters to a type without breaking all existing clients. However, it frequently happens that one wants to take an existing type and make it more flexible that it used to be. This often entails adding a new type parameter so that some type which was hard-coded before can now be customized. Defaults provide a means to do this while having older clients transparently fallback to the older behavior.</p>
+<p><em>Historical example:</em> Extending HashMap to support various hash algorithms.</p>
+<h2 id="detailed-design"><a class="header" href="#detailed-design">Detailed Design</a></h2>
+<h3 id="remove-feature-gate"><a class="header" href="#remove-feature-gate">Remove feature gate</a></h3>
+<p>This RFC would remove the feature gate on defaulted type parameters.</p>
+<h3 id="type-parameters-with-defaults"><a class="header" href="#type-parameters-with-defaults">Type parameters with defaults</a></h3>
+<p>Defaults can be placed on any type parameter, whether it is declared on a type definition (<code>struct</code>, <code>enum</code>), type alias (<code>type</code>), trait definition (<code>trait</code>), trait implementation (<code>impl</code>), or a function or method (<code>fn</code>).</p>
+<p>Once a given type parameter declares a default value, all subsequent type parameters in the list must declare default values as well:</p>
+<pre><code>// OK. All defaulted type parameters come at the end.
+fn foo&lt;A,B=uint,C=uint&gt;() { .. }
+
+// ERROR. B has a default, but C does not.
+fn foo&lt;A,B=uint,C&gt;() { .. }
+</code></pre>
+<p>The default value of a type parameter <code>X</code> may refer to other type parameters declared on the same item. However, it may only refer to type parameters declared <em>before</em> <code>X</code> in the list of type parameters:</p>
+<pre><code>// OK. Default value of `B` refers to `A`, which is not defaulted.
+fn foo&lt;A,B=A&gt;() { .. }
+
+// OK. Default value of `C` refers to `B`, which comes before
+// `C` in the list of parameters.
+fn foo&lt;A,B=uint,C=B&gt;() { .. }
+
+// ERROR. Default value of `B` refers to `C`, which comes AFTER
+// `B` in the list of parameters.
+fn foo&lt;A,B=C,C=uint&gt;() { .. }
+</code></pre>
+<h3 id="instantiating-defaults"><a class="header" href="#instantiating-defaults">Instantiating defaults</a></h3>
+<p>This section specifies how to interpret a reference to a generic type. Rather than writing out a rather tedious (and hard to understand) description of the algorithm, the rules are instead specified by a series of examples. The high-level idea of the rules is as follows:</p>
+<ul>
+<li>Users must always provide <em>some</em> value for non-defaulted type parameters. Defaulted type parameters may be omitted.</li>
+<li>The <code>_</code> notation can always be used to <em>explicitly omit</em> the value of a type parameter:
+<ul>
+<li>Inside a fn body, any type parameter may be omitted. Inference is used.</li>
+<li>Outside a fn body, only defaulted type parameters may be omitted. The default value is used.</li>
+<li><em>Motivation:</em> This is consistent with Rust tradition, which generally requires explicit types or a mechanical defaulting process outside of <code>fn</code> bodies.</li>
+</ul>
+</li>
+</ul>
+<h4 id="references-to-generic-types"><a class="header" href="#references-to-generic-types">References to generic types</a></h4>
+<p>We begin with examples of references to the generic type <code>Foo</code>:</p>
+<pre><code>struct Foo&lt;A,B,C=DefaultHasher,D=C&gt; { ... }
+</code></pre>
+<p><code>Foo</code> defines four type parameters, the final two of which are defaulted. First, let us consider what happens outside of a fn body. It is mandatory to supply explicit values for all non-defaulted type parameters:</p>
+<pre><code>// ERROR: 2 parameters required, 0 provided.
+fn f(_: &amp;Foo) { ... }
+</code></pre>
+<p>Defaulted type parameters are filled in based on the defaults given:</p>
+<pre><code>// Legal: Equivalent to `Foo&lt;int,uint,DefaultHasher,DefaultHasher&gt;`
+fn f(_: &amp;Foo&lt;int,uint&gt;) { ... }
+</code></pre>
+<p>Naturally it is legal to specify explicit values for the defaulted type parameters if desired:</p>
+<pre><code>// Legal: Equivalent to `Foo&lt;int,uint,uint,char,u8&gt;`
+fn f(_: &amp;Foo&lt;int,uint,char,u8&gt;) { ... }
+</code></pre>
+<p>It is also legal to provide just one of the defaulted type parameters and not the other:</p>
+<pre><code>// Legal: Equivalent to `Foo&lt;int,uint,char,char&gt;`
+fn f(_: &amp;Foo&lt;int,uint,char&gt;) { ... }
+</code></pre>
+<p>If the user wishes to supply the value of the type parameter <code>D</code> explicitly, but not <code>C</code>, then <code>_</code> can be used to request the default:</p>
+<pre><code>// Legal: Equivalent to `Foo&lt;int,uint,DefaultHasher,uint&gt;`
+fn f(_: &amp;Foo&lt;int,uint,_,uint&gt;) { ... }
+</code></pre>
+<p>Note that, outside of a fn body, <code>_</code> can <em>only</em> be used with defaulted type parameters:</p>
+<pre><code>// ERROR: outside of a fn body, `_` cannot be
+// used for a non-defaulted type parameter
+fn f(_: &amp;Foo&lt;int,_&gt;) { ... }
+</code></pre>
+<p>Inside a fn body, the rules are much the same, except that <code>_</code> is legal everywhere. Every reference to <code>_</code> creates a fresh type variable <code>$n</code>. If the type parameter whose value is omitted has an associate default, that default is used as the <em>fallback</em> for <code>$n</code> (see the section “Type variables with fallbacks” for more information). Here are some examples:</p>
+<pre><code>fn f() {
+    // Error: `Foo` requires at least 2 type parameters, 0 supplied.
+    let x: Foo = ...;
+
+    // All of these 4 examples are OK and equivalent. Each
+    // results in a type `Foo&lt;$0,$1,$2,$3&gt;` and `$0`-`$4` are type
+    // variables. `$2` has a fallback of `DefaultHasher` and `$3`
+    // has a fallback of `$2`.
+    let x: Foo&lt;_,_&gt; = ...;
+    let x: Foo&lt;_,_,_&gt; = ...;
+    let x: Foo&lt;_,_,_,_&gt; = ...;
+
+    // Results in a type `Foo&lt;int,uint,$0,char&gt;` where `$0`
+    // has a fallback of `DefaultHasher`.
+    let x: Foo&lt;int,uint,_,char&gt; = ...;
+}
+</code></pre>
+<h4 id="references-to-generic-traits"><a class="header" href="#references-to-generic-traits">References to generic traits</a></h4>
+<p>The rules for traits are the same as the rules for types.  Consider a trait <code>Foo</code>:</p>
+<pre><code>trait Foo&lt;A,B,C=uint,D=C&gt; { ... }
+</code></pre>
+<p>References to this trait can omit values for <code>C</code> and <code>D</code> in precisely the same way as was shown for types:</p>
+<pre><code>// All equivalent to Foo&lt;i8,u8,uint,uint&gt;:
+fn foo&lt;T:Foo&lt;i8,u8&gt;&gt;() { ... }
+fn foo&lt;T:Foo&lt;i8,u8,_&gt;&gt;() { ... }
+fn foo&lt;T:Foo&lt;i8,u8,_,_&gt;&gt;() { ... }
+
+// Equivalent to Foo&lt;i8,u8,char,char&gt;:
+fn foo&lt;T:Foo&lt;i8,u8,char,_&gt;&gt;() { ... }
+</code></pre>
+<h4 id="references-to-generic-functions"><a class="header" href="#references-to-generic-functions">References to generic functions</a></h4>
+<p>The rules for referencing generic functions are the same as for types, except that it is legal to omit values for all type parameters if desired. In that case, the behavior is the same as it would be if <code>_</code> were used as the value for every type parameter. Note that functions can only be referenced from within a fn body.</p>
+<h4 id="references-to-generic-impls"><a class="header" href="#references-to-generic-impls">References to generic impls</a></h4>
+<p>Users never explicitly “reference” an impl. Rather, the trait matching system implicitly instantiates impls as part of trait matching. This implies that all type parameters are always instantiated with type variables. These type variables are assigned fallbacks according to the defaults given.</p>
+<h3 id="type-variables-with-fallbacks"><a class="header" href="#type-variables-with-fallbacks">Type variables with fallbacks</a></h3>
+<p>We extend the inference system so that when a type variable is created, it can optionally have a <em>fallback value</em>, which is another type.</p>
+<p>In the type checker, whenever we create a fresh type variable to represent a type parameter with an associated default, we will use that default as the fallback value for this type variable.</p>
+<p>Example:</p>
+<pre><code>fn foo&lt;A,B=A&gt;(a: A, b: B) { ... }
+
+fn bar() {
+    // Here, the values of the type parameters are given explicitly.
+    let f: fn(uint, uint) = foo::&lt;uint, uint&gt;;
+
+    // Here the value of the first type parameter is given explicitly,
+    // but not the second. Because the second specifies a default, this
+    // is permitted. The type checker will create a fresh variable `$0`
+    // and attempt to infer the value of this defaulted type parameter.
+    let g: fn(uint, $0) = foo::&lt;uint&gt;;
+
+    // Here, the values of the type parameters are not given explicitly,
+    // and hence the type checker will create fresh variables
+    // `$1` and `$2` for both of them.
+    let h: fn($1, $2) = foo;
+}
+</code></pre>
+<p>In this snippet, there are three references to the generic function <code>foo</code>, each of which specifies progressively fewer types. As a result, the type checker winds up creating three type variables, which are referred to in the example as <code>$0</code>, <code>$1</code>, and <code>$2</code> (not that this <code>$</code> notation is just for explanatory purposes and is not actual Rust syntax).</p>
+<p>The fallback values of <code>$0</code>, <code>$1</code>, and <code>$2</code> are as follows:</p>
+<ul>
+<li><code>$0</code> was created to represent the type parameter <code>B</code> defined on <code>foo</code>.  This means that <code>$0</code> will have a fallback value of <code>uint</code>, since the type variable <code>A</code> was specified to be <code>uint</code> in the expression that created <code>$0</code>.</li>
+<li><code>$1</code> was created to represent the type parameter <code>A</code>, which has no default. Therefore <code>$1</code> has no fallback.</li>
+<li><code>$2</code> was created to represent the type parameter <code>B</code>. It will have the fallback value of <code>$1</code>, which was the value of <code>A</code> within the expression where <code>$2</code> was created.</li>
+</ul>
+<h3 id="trait-resolution-fallbacking-and-inference"><a class="header" href="#trait-resolution-fallbacking-and-inference">Trait resolution, fallbacking, and inference</a></h3>
+<p>Prior to this RFC, type-checking a function body proceeds roughly as follows:</p>
+<ol>
+<li>The function body is analyzed. This results in an accumulated set of type variables, constraints, and trait obligations.</li>
+<li>Those trait obligations are then resolved until a fixed point is reached.</li>
+<li>If any trait obligations remain unresolved, an error is reported.</li>
+<li>If any type variables were never bound to a concrete value, an error is reported.</li>
+</ol>
+<p>To accommodate fallback, the new procedure is somewhat different:</p>
+<ol>
+<li>The function body is analyzed. This results in an accumulated set of type variables, constraints, and trait obligations.</li>
+<li>Execute in a loop:</li>
+<li>Run trait resolution until a fixed point is reached.</li>
+<li>Create a (initially empty) set <code>UB</code> of unbound type and integral/float variables.  This set represents the set of variables for which fallbacks should be applied.</li>
+<li>Add all unbound integral and float variables to the set <code>UB</code></li>
+<li>For each type variable <code>X</code>:
+<ul>
+<li>If <code>X</code> has no fallback defined, skip.</li>
+<li>If <code>X</code> is not bound, add <code>X</code> to <code>UB</code></li>
+<li>If <code>X</code> is bound to an unbound integral variable <code>I</code>, add <code>X</code> to <code>UB</code> and remove <code>I</code> from <code>UB</code> (if present).</li>
+<li>If <code>X</code> is bound to an unbound float variable <code>F</code>, add <code>X</code> to <code>UB</code> and remove <code>F</code> from <code>UB</code> (if present).</li>
+</ul>
+</li>
+<li>If <code>UB</code> is the empty set, break out of the loop.</li>
+<li>For each member of <code>UB</code>:
+<ul>
+<li>If the member is an integral type variable <code>I</code>, set <code>I</code> to <code>int</code>.</li>
+<li>If the member is a float variable <code>F</code>, set <code>I</code> to <code>f64</code>.</li>
+<li>Otherwise, the member must be a variable <code>X</code> with a defined fallback. Set <code>X</code> to its fallback.
+<ul>
+<li>Note that this “set” operations can fail, which indicates conflicting defaults. A suitable error message should be given.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>If any type parameters still have no value assigned to them, report an error.</li>
+<li>If any trait obligations could not be resolved, report an error.</li>
+</ol>
+<p>There are some subtle points to this algorithm:</p>
+<p><strong>When defaults are to be applied, we first gather up the set of variables that have applicable defaults (step 2.2) and then later unconditionally apply those defaults (step 2.4).</strong> In particular, we do not loop over each type variable, check whether it is unbound, and apply the default only if it is unbound. The reason for this is that it can happen that there are contradictory defaults and we want to ensure that this results in an error:</p>
+<pre><code>fn foo&lt;F:Default=uint&gt;() -&gt; F { }
+fn bar&lt;B=int&gt;(b: B) { }
+fn baz() {
+    // Here, F is instantiated with $0=uint
+    let x: $0 = foo();
+
+    // Here, B is instantiated with $1=uint, and constraint $0 &lt;: $1 is added.
+    bar(x);
+}
+</code></pre>
+<p>In this example, two type variables are created. <code>$0</code> is the value of <code>F</code> in the call to <code>foo()</code> and <code>$1</code> is the value of <code>B</code> in the call to <code>bar()</code>. The fact that <code>x</code>, which has type <code>$0</code>, is passed as an argument to <code>bar()</code> will add the constraint that <code>$0 &lt;: $1</code>, but at no point are any concrete types given. Therefore, once type checking is complete, we will apply defaults. Using the algorithm given above, we will determine that both <code>$0</code> and <code>$1</code> are unbound and have suitable defaults. We will then unify <code>$0</code> with <code>uint</code>. This will succeed and, because <code>$0 &lt;: $1</code>, cause <code>$1</code> to be unified with <code>uint</code>. Next, we will try to unify <code>$1</code> with its default, <code>int</code>. This will lead to an error. If we combined the checking of whether <code>$1</code> was unbound with the unification with the default, we would have first unified <code>$0</code> and then decided that <code>$1</code> did not require unification.</p>
+<p><strong>In the general case, a loop is required to continue resolving traits and applying defaults in sequence.</strong> Resolving traits can lead to unifications, so it is clear that we must resolve all traits that we can before we apply any defaults. However, it is also true that adding defaults can create new trait obligations that must be resolved.</p>
+<p>Here is an example where processing trait obligations creates defaults, and processing defaults created trait obligations:</p>
+<pre><code>trait Foo { }
+trait Bar { }
+
+impl&lt;T:Bar=uint&gt; Foo for Vec&lt;T&gt; { } // Impl 1
+impl Bar for uint { } // Impl 2
+
+fn takes_foo&lt;F:Foo&gt;(f: F) { }
+
+fn main() {
+    let x = Vec::new(); // x: Vec&lt;$0&gt;
+    takes_foo(x); // adds oblig Vec&lt;$0&gt; : Foo
+}
+</code></pre>
+<p>When we finish type checking <code>main</code>, we are left with a variable <code>$0</code> and a trait obligation <code>Vec&lt;$0&gt; : Foo</code>. Processing the trait obligation selects the impl 1 as the way to fulfill this trait obligation. This results in:</p>
+<ol>
+<li>a new type variable <code>$1</code>, which represents the parameter <code>T</code> on the impl. <code>$1</code> has a default, <code>uint</code>.</li>
+<li>the constraint that <code>$0=$1</code>.</li>
+<li>a new trait obligation <code>$1 : Bar</code>.</li>
+</ol>
+<p>We cannot process the new trait obligation yet because the type variable <code>$1</code> is still unbound. (We know that it is equated with <code>$0</code>, but we do not have any concrete types yet, just variables.) After trait resolution reaches a fixed point, defaults are applied.  <code>$1</code> is equated with <code>uint</code> which in turn propagates to <code>$0</code>. At this point, there is still an outstanding trait obligation <code>uint : Bar</code>.  This trait obligation can be resolved to impl 2.</p>
+<p>The previous example consisted of “1.5” iterations of the loop. That is, although trait resolution runs twice, defaults are only needed one time:</p>
+<ol>
+<li>Trait resolution executed to resolve <code>Vec&lt;$0&gt; : Foo</code>.</li>
+<li>Defaults were applied to unify <code>$1 = $0 = uint</code>.</li>
+<li>Trait resolution executed to resolve <code>uint : Bar</code></li>
+<li>No more defaults to apply, done.</li>
+</ol>
+<p>The next example does 2 full iterations of the loop.</p>
+<pre><code>trait Foo { }
+trait Bar&lt;U&gt; { }
+trait Baz { }
+
+impl&lt;U,T:Bar&lt;U&gt;=Vec&lt;U&gt;&gt; Foo for Vec&lt;T&gt; { } // Impl 1
+impl&lt;V=uint&gt; Bar for Vec&lt;V&gt; { } // Impl 2
+
+fn takes_foo&lt;F:Foo&gt;(f: F) { }
+
+fn main() {
+    let x = Vec::new(); // x: Vec&lt;$0&gt;
+    takes_foo(x); // adds oblig Vec&lt;$0&gt; : Foo
+}
+</code></pre>
+<p>Here the process is as follows:</p>
+<ol>
+<li>Trait resolution executed to resolve <code>Vec&lt;$0&gt; : Foo</code>. The result is two fresh variables, <code>$1</code> (for <code>U</code>) and <code>$2=Vec&lt;$1&gt;</code> (for <code>$T</code>), the constraint that <code>$0=$2</code>, and the obligation <code>$2 : Bar&lt;$1&gt;</code>.</li>
+<li>Defaults are applied to unify <code>$2 = $0 = Vec&lt;$1&gt;</code>.</li>
+<li>Trait resolution executed to resolve <code>$2 : Bar&lt;$1&gt;</code>. The result is a fresh variable <code>$3=uint</code> (for <code>$V</code>) and the constraint that <code>$1=$3</code>.</li>
+<li>Defaults are applied to unify <code>$3 = $1 = uint</code>.</li>
+</ol>
+<p>It should be clear that one can create examples in this vein so as to require any number of loops.</p>
+<p><strong>Interaction with integer/float literal fallback.</strong> This RFC gives defaulted type parameters precedence over integer/float literal fallback. This seems preferable because such types can be more specific. Below are some examples. See also the <em>alternatives</em> section.</p>
+<pre><code>// Here the type of the integer literal 22 is inferred
+// to `int` using literal fallback.
+fn foo&lt;T&gt;(t: T) { ... }
+foo(22)
+</code></pre>
+<pre><code>// Here the type of the integer literal 22 is inferred
+// to `uint` because the default on `T` overrides the
+// standard integer literal fallback.
+fn foo&lt;T=uint&gt;(t: T) { ... }
+foo(22)
+</code></pre>
+<pre><code>// Here the type of the integer literal 22 is inferred
+// to `char`, leading to an error. This can be resolved
+// by using an explicit suffix like `22i`.
+fn foo&lt;T=char&gt;(t: T) { ... }
+foo(22)
+</code></pre>
+<p><strong>Termination.</strong> Any time that there is a loop, one must inquire after termination. In principle, the loop above could execute indefinitely. This is because trait resolution is not guaranteed to terminate – basically there might be a cycle between impls such that we continue creating new type variables and new obligations forever. The trait matching system already defends against this with a recursion counter. That same recursion counter is sufficient to guarantee termination even when the default mechanism is added to the mix. This is because the default mechanism can never itself create new trait obligations: it can only cause previous ambiguous trait obligations to now be matchable (because unbound variables become bound). But the actual need to iteration through the loop is still caused by trait matching generating recursive obligations, which have an associated depth limit.</p>
+<h3 id="compatibility-analysis"><a class="header" href="#compatibility-analysis">Compatibility analysis</a></h3>
+<p>One of the major design goals of defaulted type parameters is to permit new parameters to be added to existing types or methods in a backwards compatible way. This remains possible under the current design.</p>
+<p>Note though that adding a default to an <em>existing</em> type parameter can lead to type errors in clients. This can occur if clients were already relying on an inference fallback from some other source and there is now an ambiguity. Naturally clients can always fix this error by specifying the value of the type parameter in question manually.</p>
+<h2 id="downsides-and-alternatives"><a class="header" href="#downsides-and-alternatives">Downsides and alternatives</a></h2>
+<h3 id="avoid-inference"><a class="header" href="#avoid-inference">Avoid inference</a></h3>
+<p>Rather than adding the notion of <em>fallbacks</em> to type variables, defaults could be mechanically added, even within fn bodies, as they are today. But this is disappointing because it means that examples like <code>range(0,10)</code>, where defaults could inform inference, still require explicit annotation. Without the notion of fallbacks, it is also difficult to say what defaulted type parameters in methods or impls should mean.</p>
+<h3 id="more-advanced-interaction-between-integer-literal-inference"><a class="header" href="#more-advanced-interaction-between-integer-literal-inference">More advanced interaction between integer literal inference</a></h3>
+<p>There were some other proposals to have a more advanced interaction between custom fallbacks and literal inference. For example, it is possible to imagine that we allow literal inference to take precedence over type default fallbacks, unless the fallback is itself integral. The problem is that this is both complicated and possibly not forwards compatible if we opt to allow a more general notion of literal inference in the future (in other words, if integer literals may be mapped to more than just the built-in integral types). Furthermore, these rules would create strictly fewer errors, and hence can be added in the future if desired.</p>
+<h3 id="notation"><a class="header" href="#notation">Notation</a></h3>
+<p>Allowing <code>_</code> notation outside of fn body means that it’s meaning changes somewhat depending on context. However, this is consistent with the meaning of omitted lifetimes, which also change in the same way (mechanical default outside of fn body, inference within).</p>
+<p>An alternative design is to use the <code>K=V</code> notation proposed in the associated items RFC for specify the values of default type parameters. However, this is somewhat odd, because default type parameters appear in a positional list, and thus it is surprising that values for the non-defaulted parameters are given positionally, but values for the defaulted type parameters are given with labels.</p>
+<p>Another alternative would to simply prohibit users from specifying the value of a defaulted type parameter unless values are given for all previous defaulted typed parameters. But this is clearly annoying in those cases where defaulted type parameters represent distinct axes of customization.</p>
+<h2 id="hat-tip"><a class="header" href="#hat-tip">Hat Tip</a></h2>
+<p>eddyb introduced defaulted type parameters and also opened the first pull request that used them to inform inference.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="0212-restore-int-fallback.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="0214-while-let.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="0212-restore-int-fallback.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="0214-while-let.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

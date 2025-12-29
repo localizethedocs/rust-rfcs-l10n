@@ -1,0 +1,665 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3621-derive-smart-pointer - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>derive_smart_pointer</code></li>
+<li>Start Date: 2024-05-01</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3621">rust-lang/rfcs#3621</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/123430">rust-lang/rust#123430</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Make it possible to define custom smart pointers that work with trait objects. For now, it will only be possible to do this using a derive macro, as we do not stabilize the underlying traits.</p>
+<p>This RFC builds on top of the <a href="https://github.com/rust-lang/rfcs/pull/3519">arbitrary self types v2 RFC</a>. All references to the <code>Receiver</code> trait are references to the version defined by that RFC, which is different from the <code>Receiver</code> trait in nightly at the time of writing.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>Currently, the standard library types <code>Rc</code> and <code>Arc</code> are special. It’s not possible for third-party libraries to define custom smart pointers that work with trait objects.</p>
+<p>It is generally desireable to make std less special, but this particular RFC is motived by use-cases in the Linux Kernel. In the Linux Kernel, we need reference counted objects often, but we are not able to use the standard library <code>Arc</code>. There are several reasons for this:</p>
+<ol>
+<li>The standard Rust <code>Arc</code> will call <code>abort</code> on overflow. This is not acceptable in the kernel; instead we want to saturate the count when it hits <code>isize::MAX</code>. This effectively leaks the <code>Arc</code>.</li>
+<li>Using Rust atomics raises various issues with the memory model. We are using the LKMM (Linux Kernel Memory Model) rather than the usual C++ model. This means that all atomic operations should be implemented with an <code>asm!</code> block or similar that matches what kernel C does, rather than an LLVM intrinsic like we do today.</li>
+</ol>
+<p>The Linux Kernel also needs another custom smart pointer called <code>ListArc</code>, which is needed to provide a safe API for the linked list that the kernel uses. The kernel needs these linked lists to avoid allocating memory during critical regions on spinlocks.</p>
+<p>For more detailed explanations of these use-cases, please refer to:</p>
+<ul>
+<li><a href="https://rust-for-linux.com/arc-in-the-linux-kernel">Arc in the Linux Kernel</a>.
+<ul>
+<li>This document was discussed during <a href="https://hackmd.io/OCz8EfzrRXeogXEDcOrL2w">the 2024-03-06 meeting with t-lang</a>.</li>
+</ul>
+</li>
+<li>The kernel’s custom linked list: <a href="https://lore.kernel.org/all/20240402-linked-list-v1-0-b1c59ba7ae3b@google.com/">Mailing list</a>, <a href="https://github.com/Darksonn/linux/commits/b4/linked-list/">GitHub</a>.</li>
+<li><a href="https://rust-lang.zulipchat.com/#narrow/stream/136281-t-opsem/topic/.E2.9C.94.20Rust.20and.20the.20Linux.20Kernel.20Memory.20Model/near/422047516">Discussion on the memory model issue with t-opsem</a></li>
+</ul>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>The derive macro <code>SmartPointer</code> allows you to use custom smart pointers with trait objects. This means that you will be able to coerce from <code>SmartPointer&lt;MyStruct&gt;</code> to <code>SmartPointer&lt;dyn MyTrait&gt;</code> when <code>MyStruct</code> implements <code>MyTrait</code>. Additionally, the derive macro allows you to use <code>self: SmartPointer&lt;Self&gt;</code> in traits without making them non-object-safe.</p>
+<p>It is not possible to use this feature without the derive macro, as we are not stabilizing its expansion.</p>
+<h3 id="coercions-to-trait-objects"><a class="header" href="#coercions-to-trait-objects">Coercions to trait objects</a></h3>
+<p>By using the macro, the following example will compile:</p>
+<pre><code class="language-rust">#[derive(SmartPointer)]
+#[repr(transparent)]
+struct MySmartPointer&lt;T: ?Sized&gt;(Box&lt;T&gt;);
+
+impl&lt;T: ?Sized&gt; Deref for MySmartPointer&lt;T&gt; {
+    type Target = T;
+    fn deref(&amp;self) -&gt; &amp;T {
+        &amp;self.0
+    }
+}
+
+trait MyTrait {}
+
+impl MyTrait for i32 {}
+
+fn main() {
+    let ptr: MySmartPointer&lt;i32&gt; = MySmartPointer(Box::new(4));
+
+    // This coercion would be an error without the derive.
+    let ptr: MySmartPointer&lt;dyn MyTrait&gt; = ptr;
+}</code></pre>
+<p>Without the <code>#[derive(SmartPointer)]</code> macro, this example would fail with the following error:</p>
+<pre><code>error[E0308]: mismatched types
+  --&gt; src/main.rs:11:44
+   |
+11 |     let ptr: MySmartPointer&lt;dyn MyTrait&gt; = ptr;
+   |              ---------------------------   ^^^ expected `MySmartPointer&lt;dyn MyTrait&gt;`, found `MySmartPointer&lt;i32&gt;`
+   |              |
+   |              expected due to this
+   |
+   = note: expected struct `MySmartPointer&lt;dyn MyTrait&gt;`
+              found struct `MySmartPointer&lt;i32&gt;`
+   = help: `i32` implements `MyTrait` so you could box the found value and coerce it to the trait object `Box&lt;dyn MyTrait&gt;`, you will have to change the expected type as well
+</code></pre>
+<h3 id="object-safety"><a class="header" href="#object-safety">Object safety</a></h3>
+<p>Consider the following trait:</p>
+<pre><code class="language-rust">trait MyTrait {
+    // Arbitrary self types is enough for this.
+    fn func(self: MySmartPointer&lt;Self&gt;);
+}
+
+// But this requires #[derive(SmartPointer)].
+fn call_func(value: MySmartPointer&lt;dyn MyTrait&gt;) {
+    value.func();
+}</code></pre>
+<p>You do not need <code>#[derive(SmartPointer)]</code> to declare this trait (<a href="https://github.com/rust-lang/rfcs/pull/3519">arbitrary self types</a> is enough), but the trait will not be object safe unless you annotate <code>MySmartPointer</code> with <code>#[derive(SmartPointer)]</code>. If you don’t, then the use of <code>dyn MyTrait</code> triggers the following error:</p>
+<pre><code>error[E0038]: the trait `MyTrait` cannot be made into an object
+  --&gt; src/lib.rs:11:36
+   |
+8  |     fn func(self: MySmartPointer&lt;Self&gt;);
+   |                   -------------------- help: consider changing method `func`'s `self` parameter to be `&amp;self`: `&amp;Self`
+...
+11 | fn call_func(value: MySmartPointer&lt;dyn MyTrait&gt;) {
+   |                                    ^^^^^^^^^^^ `MyTrait` cannot be made into an object
+   |
+note: for a trait to be "object safe" it needs to allow building a vtable to allow the call to be resolvable dynamically; for more information visit &lt;https://doc.rust-lang.org/reference/items/traits.html#object-safety&gt;
+  --&gt; src/lib.rs:8:19
+   |
+7  | trait MyTrait {
+   |       ------- this trait cannot be made into an object...
+8  |     fn func(self: MySmartPointer&lt;Self&gt;);
+   |                   ^^^^^^^^^^^^^^^^^^^^ ...because method `func`'s `self` parameter cannot be dispatched on
+</code></pre>
+<p>Note that using the <code>self: MySmartPointer&lt;Self&gt;</code> syntax requires that you implement <code>Receiver</code> (or <code>Deref</code>), as the derive macro does not emit an implementation of <code>Receiver</code>.</p>
+<h3 id="requirements-for-using-the-macro"><a class="header" href="#requirements-for-using-the-macro">Requirements for using the macro</a></h3>
+<p>Whenever a <code>self: MySmartPointer&lt;Self&gt;</code> method is called on a trait object, the compiler will convert from <code>MySmartPointer&lt;dyn MyTrait&gt;</code> to <code>MySmartPointer&lt;MyStruct&gt;</code> using something similar to a transmute. Because of this, there are strict requirements on the layout of <code>MySmartPointer</code>. It is required that <code>MySmartPointer</code> is a <code>#[repr(transparent)]</code> struct, and the type of its non-zero-sized field must either be a standard library pointer type (reference, raw pointer, NonNull, Box, Arc, etc.) or another user-defined type also using this derive macro.</p>
+<pre><code class="language-rust">#[derive(SmartPointer)]
+#[repr(transparent)]
+struct MySmartPointer&lt;T: ?Sized&gt; {
+    ptr: Box&lt;T&gt;,
+    _phantom: PhantomData&lt;T&gt;,
+}</code></pre>
+<h4 id="multiple-type-parameters"><a class="header" href="#multiple-type-parameters">Multiple type parameters</a></h4>
+<p>If the type has multiple type parameters, then you must explicitly specify which one should be used for dynamic dispatch. For example:</p>
+<pre><code class="language-rust">#[derive(SmartPointer)]
+#[repr(transparent)]
+struct MySmartPointer&lt;#[pointee] T: ?Sized, U&gt; {
+    ptr: Box&lt;T&gt;,
+    _phantom: PhantomData&lt;U&gt;,
+}</code></pre>
+<p>Specifying <code>#[pointee]</code> when the struct has only one type parameter is allowed, but not required.</p>
+<h3 id="pinned-pointers"><a class="header" href="#pinned-pointers">Pinned pointers</a></h3>
+<p>The <code>#[derive(SmartPointer)]</code> macro is not sufficient to coerce the smart pointer when it is wrapped in <code>Pin</code>. That is, even if <code>MySmartPointer&lt;MyStruct&gt;</code> coerces to <code>MySmartPointer&lt;dyn MyTrait&gt;</code>, you will not be able to coerce <code>Pin&lt;MySmartPointer&lt;MyStruct&gt;&gt;</code> to <code>Pin&lt;MySmartPointer&lt;dyn MyTrait&gt;&gt;</code>. Similarly, traits with self types of <code>Pin&lt;MySmartPointer&lt;Self&gt;&gt;</code> are not object safe.</p>
+<p>If you implement the unstable unsafe trait called <code>PinCoerceUnsized</code> for <code>MySmartPointer</code>, then the smart pointer will gain the ability to be coerced when wrapped in <code>Pin</code>. The trait is not being stabilized by this RFC.</p>
+<h3 id="example-of-a-custom-rc"><a class="header" href="#example-of-a-custom-rc">Example of a custom Rc</a></h3>
+<p>The macro makes it possible to implement custom smart pointers. For example, you could implement your own <code>Rc</code> type like this:</p>
+<pre><code class="language-rust">#[derive(SmartPointer)]
+#[repr(transparent)]
+pub struct Rc&lt;T: ?Sized&gt; {
+    inner: NonNull&lt;RcInner&lt;T&gt;&gt;,
+}
+
+struct RcInner&lt;T: ?Sized&gt; {
+    refcount: usize,
+    value: T,
+}
+
+impl&lt;T: ?Sized&gt; Deref for Rc&lt;T&gt; {
+    type Target = T;
+    fn deref(&amp;self) -&gt; &amp;T {
+        let ptr = self.inner.as_ptr();
+        unsafe { &amp;*ptr.value }
+    }
+}
+
+impl&lt;T&gt; Rc&lt;T&gt; {
+    pub fn new(value: T) -&gt; Self {
+        let inner = Box::new(RcInner {
+            refcount: 1,
+            value,
+        });
+        Self {
+            inner: NonNull::from(Box::leak(inner)),
+        }
+    }
+}
+
+impl&lt;T: ?Sized&gt; Clone for Rc&lt;T&gt; {
+    fn clone(&amp;self) -&gt; Self {
+        unsafe { (*self.inner.as_ptr()).refcount += 1 };
+        Self { inner: self.inner }
+    }
+}
+
+impl&lt;T: ?Sized&gt; Drop for Rc&lt;T&gt; {
+    fn drop(&amp;mut self) {
+        let ptr = self.inner.as_ptr();
+        unsafe { (*ptr).refcount -= 1 };
+        if unsafe { (*ptr).refcount } == 0 {
+            drop(unsafe { Box::from_raw(ptr) });
+        }
+    }
+}</code></pre>
+<p>In this example, <code>#[derive(SmartPointer)]</code> makes it possible to use <code>Rc&lt;dyn MyTrait&gt;</code>.</p>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<p>The derive macro will expand into two trait implementations, <a href="https://doc.rust-lang.org/stable/core/ops/trait.CoerceUnsized.html"><code>core::ops::CoerceUnsized</code></a> to enable unsizing coercions and <a href="https://doc.rust-lang.org/stable/core/ops/trait.DispatchFromDyn.html"><code>core::ops::DispatchFromDyn</code></a> for dynamic dispatch. This expansion will be adapted in the future if the underlying mechanisms for unsizing coercions and dynamically dispatched receivers changes.</p>
+<p>As mentioned in the <a href="#why-only-stabilize-a-macro">rationale</a> section, this RFC only proposes to stabilize the derive macro. The underlying traits used by its expansion will remain unstable for now.</p>
+<h3 id="input-requirements"><a class="header" href="#input-requirements">Input Requirements</a></h3>
+<p>The macro sets the following requirements on its input:</p>
+<ol>
+<li>The definition must be a struct.</li>
+<li>The struct must have at least one type parameter. If multiple type parameters are present, exactly one of them has to be annotated with the <code>#[pointee]</code> derive helper attribute.</li>
+<li>The struct must be <code>#[repr(transparent)]</code>.</li>
+<li>The struct must have at least one field.</li>
+<li>Assume that <code>T</code> is a type that can be unsized to <code>U</code>, and let <code>FT</code> and <code>FU</code> be the type of the struct’s field when the pointee is equal to <code>T</code> and <code>U</code> respectively. If the struct’s trait bounds are satisfied for both <code>T</code> and <code>U</code>, then it must be possible to convert <code>FT</code> to <code>FU</code> using an unsizing coercion.</li>
+</ol>
+<p>(Adapted from the docs for <a href="https://doc.rust-lang.org/stable/core/ops/trait.DispatchFromDyn.html"><code>DispatchFromDyn</code></a>.)</p>
+<p>Points 1, 2 and 3 are verified syntactically by the derive macro. Points 4 and 5 are verified semantically by the compiler when checking the generated <a href="https://doc.rust-lang.org/stable/core/ops/trait.DispatchFromDyn.html"><code>DispatchFromDyn</code></a> implementation as it does today.</p>
+<p>The <code>#[pointee]</code> attribute may also be written as <code>#[smart_pointer::pointee]</code>.</p>
+<h3 id="expansion"><a class="header" href="#expansion">Expansion</a></h3>
+<p>The macro will expand to two implementations, one for <a href="https://doc.rust-lang.org/stable/core/ops/trait.CoerceUnsized.html"><code>core::ops::CoerceUnsized</code></a> and one for <a href="https://doc.rust-lang.org/stable/core/ops/trait.DispatchFromDyn.html"><code>core::ops::DispatchFromDyn</code></a>. This is enough for a type to participate in unsizing coercions and dynamic dispatch.</p>
+<p>The derive macro will implement both traits for the type according to the following procedure:</p>
+<ul>
+<li>Copy all generic parameters from the struct definition into the impl.</li>
+<li>Add an additional type parameter <code>U</code>.</li>
+<li>For every trait bound declared on the trait, add it twice to the trait implementation. Once exactly as written, and once with every instance of the <code>#[pointee]</code> parameter replaced with <code>U</code>.</li>
+<li>Add an additional <code>Unsize&lt;U&gt;</code> bound to the <code>#[pointee]</code> type parameter.</li>
+<li>The generic parameter of the trait being implemented will be <code>Self</code>, except that the <code>#[pointee]</code> type parameter is replaced with <code>U</code>.</li>
+</ul>
+<p>Given the following example code:</p>
+<pre><code class="language-rust">#[derive(SmartPointer)]
+#[repr(transparent)]
+struct MySmartPointer&lt;'a, #[pointee] T, A&gt;
+where
+    T: ?Sized + SomeTrait&lt;T&gt;,
+{
+    ptr: &amp;'a T,
+    phantom: PhantomData&lt;A&gt;,
+}</code></pre>
+<p>we’ll get the following expansion:</p>
+<pre><code class="language-rust">#[automatically_derived]
+impl&lt;'a, T, A, U&gt; ::core::ops::CoerceUnsized&lt;MySmartPointer&lt;'a, U, A&gt;&gt; for MySmartPointer&lt;'a, T, A&gt;
+where
+    T: ?Sized + SomeTrait&lt;T&gt;,
+    U: ?Sized + SomeTrait&lt;U&gt;,
+    T: ::core::marker::Unsize&lt;U&gt;,
+{}
+
+#[automatically_derived]
+impl&lt;'a, T, A, U&gt; ::core::ops::DispatchFromDyn&lt;MySmartPointer&lt;'a, U, A&gt;&gt; for MySmartPointer&lt;'a, T, A&gt;
+where
+    T: ?Sized + SomeTrait&lt;T&gt;,
+    U: ?Sized + SomeTrait&lt;U&gt;,
+    T: ::core::marker::Unsize&lt;U&gt;,
+{}</code></pre>
+<h3 id="receiver-and-deref-implementations"><a class="header" href="#receiver-and-deref-implementations"><code>Receiver</code> and <code>Deref</code> implementations</a></h3>
+<p>The macro does not emit a <a href="https://github.com/rust-lang/rfcs/pull/3519"><code>Receiver</code></a> implementation. Types that do not implement <code>Receiver</code> can still use <code>#[derive(SmartPointer)]</code>, but they can’t be used with dynamic dispatch directly.</p>
+<p>The raw pointer type would be an example of a type that (behaves like it) is annotated with <code>#[derive(SmartPointer)]</code> without an implementation of <code>Receiver</code>. In the case of raw pointers, you can coerce from <code>*const MyStruct</code> to <code>*const dyn MyTrait</code>, but you must first convert them to a reference before you can use them for dynamic dispatch.</p>
+<h3 id="vtable-requirements"><a class="header" href="#vtable-requirements">Vtable requirements</a></h3>
+<p>As seen in the <code>Rc</code> example, the macro needs to be usable even if the pointer is <code>NonNull&lt;RcInner&lt;T&gt;&gt;</code> (as opposed to <code>NonNull&lt;T&gt;</code>).</p>
+<h3 id="pincoerceunsized"><a class="header" href="#pincoerceunsized"><code>PinCoerceUnsized</code></a></h3>
+<p>The standard library defines the following unstable trait:</p>
+<pre><code class="language-rust">/// Trait that indicates that this is a pointer or a wrapper for one, where
+/// unsizing can be performed on the pointee when it is pinned.
+///
+/// # Safety
+///
+/// If this type implements `Deref`, then the concrete type returned by `deref`
+/// and `deref_mut` must not change without a modification. The following
+/// operations are not considered modifications:
+///
+/// * Moving the pointer.
+/// * Performing unsizing coercions on the pointer.
+/// * Performing dynamic dispatch with the pointer.
+/// * Calling `deref` or `deref_mut` on the pointer.
+///
+/// The concrete type of a trait object is the type that the vtable corresponds
+/// to. The concrete type of a slice is an array of the same element type and
+/// the length specified in the metadata. The concrete type of a sized type
+/// is the type itself.
+pub unsafe trait PinCoerceUnsized&lt;U&gt;: CoerceUnsized&lt;U&gt; {}
+
+impl&lt;T, U&gt; CoerceUnsized&lt;Pin&lt;U&gt;&gt; for Pin&lt;T&gt;
+where
+    T: PinCoerceUnsized&lt;U&gt;,
+{}
+
+impl&lt;T, U&gt; DispatchFromDyn&lt;Pin&lt;U&gt;&gt; for Pin&lt;T&gt;
+where
+    T: PinCoerceUnsized&lt;U&gt; + DispatchFromDyn&lt;U&gt;,
+{}</code></pre>
+<p>The trait is implemented for all standard library types that implement <code>CoerceUnsized</code>.</p>
+<p>Although this RFC proposes to add the <code>PinCoerceUnsized</code> trait to ensure that unsizing coercions of pinned pointers cannot be used to cause unsoundness, the RFC does not propose to stabilize the trait.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<ul>
+<li>
+<p>Stabilizing this macro limits how the underlying traits can be changed in the future, since we cannot change them in ways that make it impossible to implement the macro as-is.</p>
+</li>
+<li>
+<p>Stabilizing this macro reduces the incentive to stabilize the underlying traits, meaning that it may take significantly longer before we do so. This RFC does not include support for coercing transparent containers like <a href="https://doc.rust-lang.org/stable/core/cell/struct.Cell.html"><code>Cell</code></a>, so hopefully that will be enough incentive to continue work on the underlying traits.</p>
+</li>
+<li>
+<p>This would be the first example in the standard library of a derive macro that does not implement a trait of the same name as the macro. (However, there are examples of macros that implement multiple traits: <code>#[derive(PartialEq)]</code> also implements <code>StructuralPartialEq</code>.)</p>
+</li>
+</ul>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h2>
+<h3 id="why-only-stabilize-a-macro"><a class="header" href="#why-only-stabilize-a-macro">Why only stabilize a macro?</a></h3>
+<p>This RFC proposes to stabilize the <code>#[derive(SmartPointer)]</code> macro without stabilizing what it expands to. This effectively means that the macro is the only way to use these features for custom types. The rationale for this is that we currently don’t know how to stabilize the traits, and that this is a serious blocker for making progress on this issue. Stabilizing the macro will unblock projects that wish to define custom smart pointers, and does not prevent evolution of the underlying traits.</p>
+<p>See also <a href="#prior-art">the section on prior art</a>, which discusses a previous attempt to stabilize the underlying traits.</p>
+<h3 id="receiver-and-deref-traits"><a class="header" href="#receiver-and-deref-traits">Receiver and Deref traits</a></h3>
+<p>The vast majority of custom smart pointers will implement <code>Receiver</code> (often via <code>Deref</code>, which results in a <code>Receiver</code> impl due to the blanket impl). So why not also emit a <code>Receiver</code>/<code>Deref</code> impl in the output of the macro. One advantage of doing so is that this may sufficiently limit the macro so that we do not need to solve the pin soundness issue discussed in <a href="#unresolved-questions">the unresolved questions section</a>.</p>
+<p>However, it turns out that there are quite a few different ways we might implement <code>Deref</code>. For example, consider <a href="#example-of-a-custom-rc">the custom <code>Rc</code> example</a>:</p>
+<pre><code class="language-rust">#[derive(SmartPointer)]
+#[repr(transparent)]
+pub struct Rc&lt;T: ?Sized&gt; {
+    inner: NonNull&lt;RcInner&lt;T&gt;&gt;,
+}
+
+struct RcInner&lt;T: ?Sized&gt; {
+    refcount: usize,
+    value: T,
+}
+
+impl&lt;T: ?Sized&gt; Deref for Rc&lt;T&gt; {
+    type Target = T;
+    fn deref(&amp;self) -&gt; &amp;T {
+        let ptr = self.inner.as_ptr();
+        unsafe { &amp;*ptr.value }
+    }
+}</code></pre>
+<p>Making the macro general enough to generate <code>Deref</code> impls that are <em>that</em> complex would not be feasible. And it doesn’t make sense to stabilize the macro without support for the custom <code>Rc</code> case, as implementing a custom <code>Arc</code> in the Linux Kernel is the primary motivation for this RFC.</p>
+<p>Note that having the macro generate a <code>Receiver</code> impl instead doesn’t work either, because that prevents the user from implementing <code>Deref</code> at all. (There is a blanket impl of <code>Receiver</code> for all <code>Deref</code> types.)</p>
+<h3 id="transparent-containers"><a class="header" href="#transparent-containers">Transparent containers</a></h3>
+<p>Smart pointers are not the only use case for implementing the <a href="https://doc.rust-lang.org/stable/core/ops/trait.CoerceUnsized.html"><code>CoerceUnsized</code></a> and <a href="https://doc.rust-lang.org/stable/core/ops/trait.DispatchFromDyn.html"><code>DispatchFromDyn</code></a> traits. They are also used for “transparent containers” such as <a href="https://doc.rust-lang.org/stable/core/cell/struct.Cell.html"><code>Cell</code></a>. That use-case allows coercions such as <code>Cell&lt;Box&lt;MyStruct&gt;&gt;</code> to <code>Cell&lt;Box&lt;dyn MyTrait&gt;&gt;</code>. (Coercions where the <code>Cell</code> is inside the <code>Box</code> are already supported on stable Rust.)</p>
+<p>It is not possible to use the derive macro proposed by this RFC for transparent containers because they require a different set of where bounds when implementing the traits. To compare:</p>
+<pre><code class="language-rust">// smart pointer example
+impl&lt;T, U&gt; DispatchFromDyn&lt;Box&lt;U&gt;&gt; for Box&lt;T&gt;
+where
+    T: Unsize&lt;U&gt; + ?Sized,
+    U: ?Sized,
+{}
+
+// transparent container example
+impl&lt;T, U&gt; DispatchFromDyn&lt;Cell&lt;U&gt;&gt; for Cell&lt;T&gt;
+where
+    T: DispatchFromDyn&lt;U&gt;,
+{}</code></pre>
+<p>Attempting to annotate <code>#[derive(SmartPointer)]</code> onto a transparent container will fail to compile because <a href="https://play.rust-lang.org/?version=nightly&amp;mode=debug&amp;edition=2021&amp;gist=c3fe2a11822e4c5e2dae5bfec9d77b9e">it violates the rules for implementing <code>DispatchFromDyn</code></a>. Supporting custom transparent containers is out of scope for this RFC.</p>
+<h3 id="why-not-two-derive-macros"><a class="header" href="#why-not-two-derive-macros">Why not two derive macros?</a></h3>
+<p>The derive macro generates two different trait implementations:</p>
+<ul>
+<li><a href="https://doc.rust-lang.org/stable/core/ops/trait.CoerceUnsized.html"><code>CoerceUnsized</code></a> that allows conversions from <code>SmartPtr&lt;MyStruct&gt;</code> to <code>SmartPtr&lt;dyn MyTrait&gt;</code>.</li>
+<li><a href="https://doc.rust-lang.org/stable/core/ops/trait.DispatchFromDyn.html"><code>DispatchFromDyn</code></a> that allows conversions from <code>SmartPtr&lt;dyn MyTrait&gt;</code> to <code>SmartPtr&lt;MyStruct&gt;</code>.</li>
+</ul>
+<p>It could be argued that these should be split into two separate derive macros. We are not proposing this for a few reasons:</p>
+<ul>
+<li>
+<p>If there are two derive macros, then we have to support the case where you only use one of them. There isn’t much reason to do that, and the authors are not aware of any examples where you would prefer to implement one of the traits without implementing both.</p>
+</li>
+<li>
+<p>Having two different macros means that we lock ourselves into solutions that involve two traits that split the feature in the way that we split it today. However, it is easy to imagine situations where we would want to split the traits in a different way. For example, we might instead want one trait for smart pointers, and another trait for transparent containers. Or maybe we just want one trait that does both things.</p>
+</li>
+<li>
+<p>The authors believe that a convenience <code>#[derive(SmartPointer)]</code> macro will continue to make sense, even once the underlying traits are stabilized. It is significantly easier to use than the expansion.</p>
+</li>
+<li>
+<p>If we want the macro to correspond one-to-one to the underlying traits, then we would want to use the same names as the underlying traits. However, we don’t know what the traits will be called when we finally figure out how to stabilize them. (One of the traits have already been renamed once!)</p>
+</li>
+</ul>
+<p>Even raw-pointer-like types that do not implement <code>Receiver</code> still want to implement <code>DispatchFromDyn</code>, since this allows you to use them as the field type in other structs that use <code>#[derive(SmartPointer)]</code>. For example, the custom <code>Rc</code> has a field of type <code>NonNull</code>, and this works since <code>NonNull</code> is <code>DispatchFromDyn</code>.</p>
+<h3 id="what-about-pointee"><a class="header" href="#what-about-pointee">What about <code>#[pointee]</code>?</a></h3>
+<p>This RFC currently proposes to mark the generic parameter used for dynamic dispatch with <code>#[pointee]</code>. For convenience, the RFC proposes that this is only needed when there are multiple generic parameters.</p>
+<p>There are potential use-cases for smart pointers with additional generic parameters. Specifically, the <code>ListArc</code> type used by the linked lists currently has an additional const generic parameter to allow you to use the same refcounted value with multiple lists. People have argued that it would be better to change this to a generic type instead of a const generic, so it would be useful to keep the option of having multiple generic types on the struct.</p>
+<h4 id="conflicts-with-third-party-derive-macros"><a class="header" href="#conflicts-with-third-party-derive-macros">Conflicts with third-party derive macros</a></h4>
+<p>The <code>#[pointee]</code> attribute could in principle conflict with other derive macros that also wish to annotate one of the parameters with an attribute called <code>#[pointee]</code>. To disambiguate such cases, we also allow the attribute to be spelled <code>#[smart_pointer::pointee]</code>.</p>
+<p>It is an error to specify both <code>#[pointee]</code> and <code>#[smart_pointer::pointee]</code>, so both macros must support this kind of disambiguation.</p>
+<p>Another way to avoid conflicts between <code>#[derive(SmartPointer)]</code> and third-party macros is to always assume that the first generic parameter is the pointee. This RFC does not propose that solution because:</p>
+<ul>
+<li>It prevents the pointee from having a default unless it is the only parameter, because parameters with a default must come last.</li>
+<li>If logic such as “the first parameter” becomes commonplace in macro design, then it does not really solve the issue with conflicts: you could have two macros that both assume that the first parameter is special. And this kind of conflict will be more common than attribute conflicts, because the attribute will only conflict if both macros use an attribute of the same name.</li>
+</ul>
+<p>The authors are not aware of any macros using a <code>#[pointee]</code> attribute today.</p>
+<h3 id="derive-macro-or-not"><a class="header" href="#derive-macro-or-not">Derive macro or not?</a></h3>
+<p>Stabilizing this as a derive macro more or less locks us in with the decision that the compiler will use traits to specify which types are compatible with trait objects. However, one could imagine other mechanisms. For example, stable Rust currently has logic saying that any struct where the last field is <code>?Sized</code> will work with unsizing operations. (E.g., if <code>Wrapper</code> is such a struct, then you can convert from <code>Box&lt;Wrapper&lt;[u8; 10]&gt;&gt;</code> to <code>Box&lt;Wrapper&lt;[u8]&gt;&gt;</code>.) That mechanism is not specified using a trait.</p>
+<p>However, using traits for this functionality seems to be the most flexible. To solve the unresolved questions, we most likely need to constrain the implementations of these traits for <code>Pin</code> with stricter trait bounds than what is specified on the struct. That will get much more complicated if we use a mechanism other than traits to specify this logic.</p>
+<h3 id="pincoerceunsized-1"><a class="header" href="#pincoerceunsized-1"><code>PinCoerceUnsized</code></a></h3>
+<p>Beyond the addition of the <code>#[derive(SmartPointer)]</code> macro, this RFC also proposes to add a new unstable trait called <code>PinCoerceUnsized</code>. This trait is necessary because the API proposed by this RFC would otherwise by unsound:</p>
+<blockquote>
+<p>You could use <code>Pin::new</code> to create a <code>Pin&lt;SmartPtr&lt;MyUnpinFuture&gt;&gt;</code> and coerce that to <code>Pin&lt;SmartPtr&lt;dyn Future&gt;&gt;</code>. Then, if <code>SmartPtr</code> has a malicious implementation of the <code>Deref</code> trait, then <code>deref</code> could return a <code>&amp;mut dyn Future</code> whose concrete type is not <code>MyUnpinFuture</code>, but instead some other future type that <em>does</em> need to be pinned. Since no unsafe code is involved in any of these steps, this means that we are able to safely create a pinned pointer to a value that has not been pinned.</p>
+</blockquote>
+<p>Adding the unsafe <code>PinCoerceUnsized</code> trait ensures that the user cannot coerce <code>Pin&lt;SmartPtr&lt;MyUnpinFuture&gt;&gt;</code> to <code>Pin&lt;SmartPtr&lt;dyn Future&gt;&gt;</code> without using unsafe to promise that the concrete type returned when calling <code>deref</code> on the resulting <code>Pin&lt;SmartPtr&lt;dyn Future&gt;&gt;</code> is <code>MyUnpinFuture</code>.</p>
+<p>This RFC does not propose to stabilize <code>PinCoerceUnsized</code> because of naming issues. If we do not know whether <code>CoerceUnsized</code> will still use that name when we stabilize it, then we can’t stabilize a trait called <code>PinCoerceUnsized</code>. Furthermore, the Linux kernel (which forms the motivation for this RFC) does not currently need it to be stabilized.</p>
+<p>There are some alternatives to <code>PinCoerceUnsized</code>. The primary contender for an alternative solution is <code>DerefPure</code>. However, that solution involves a minor breaking change, and we can always decide to switch to <code>DerefPure</code> later even if we adopt <code>PinCoerceUnsized</code> now.</p>
+<h4 id="stablederef"><a class="header" href="#stablederef"><code>StableDeref</code></a></h4>
+<p>A previous version of this RFC proposed to instead add a trait called <code>StableDeref</code> that pretty much had the same requirements as <code>PinCoerceUnsized</code>, except that it also required the address returned by <code>deref</code> to be stable.</p>
+<p>The motivation behind adding a <code>StableDeref</code> trait instead of <code>PinCoerceUnsized</code> is that <code>StableDeref</code> would also be useful for other things, and that both traits essentially just say that the <code>Deref</code> implementation doesn’t do anything unreasonable. The requirement that the address is stable is not strictly required to keep the API sound, but semantically it is incoherent to have a pinned pointer whose address can change, so it is not overly burdensome to require it.</p>
+<p>However, this suggestion was abandoned due to an inconsistency with the <code>StableDeref</code> trait defined by the ecosystem. That trait requires that raw pointers to the contents of the pointer stay valid even if the smart pointer is moved, but this is not satisfied by <code>Box</code> or <code>&amp;mut T</code> because moving these pointers asserts that they are unique. This is a problem because whichever trait we use for pinned unsizing coercions, it <em>must</em> be implemented by <code>Box</code> and <code>&amp;mut T</code>.</p>
+<h4 id="derefpure"><a class="header" href="#derefpure"><code>DerefPure</code></a></h4>
+<p>In a similar manner to the <code>StableDeref</code> option, we can use the existing <code>DerefPure</code> trait. This option is a reasonable way forward, but this RFC does not propose it because it would be a breaking change. (Note that <code>StableDeref</code> is also a breaking change for the same reason.)</p>
+<p>Basically, the problem is that <code>Deref</code> is a supertrait of <code>DerefPure</code>, but there are a few types that can be coerced when pinned that do not implement <code>Deref</code>. For example, this code compiles today:</p>
+<pre><code class="language-rust">trait MyTrait {}
+impl MyTrait for String {}
+
+fn pin_cell_map(p: Pin&lt;Cell&lt;Box&lt;String&gt;&gt;&gt;) -&gt; Pin&lt;Cell&lt;Box&lt;dyn MyTrait&gt;&gt;&gt; {
+    p
+}</code></pre>
+<p>The <code>Cell</code> type does not implement <code>Deref</code>, but the above code still compiles. Note that since all methods on <code>Pin</code> <em>do</em> require <code>Deref</code>, such pinned pointers are useless and impossible to construct. But it is a breaking change nonetheless.</p>
+<p>If this breakage is considered acceptable, then using <code>DerefPure</code> instead of a new <code>PinCoerceUnsized</code> would be a reasonable way forward.</p>
+<h4 id="make-the-derive-macro-unsafe"><a class="header" href="#make-the-derive-macro-unsafe">Make the derive macro unsafe</a></h4>
+<p>We could just make the macro unsafe in a similar vein to <a href="https://github.com/rust-lang/rfcs/pull/3325">the unsafe attributes RFC</a>.</p>
+<pre><code class="language-rust">// SAFETY: The Deref impl is not malicious.
+#[unsafe(derive(SmartPointer))]
+#[repr(transparent)]
+pub struct Rc&lt;T: ?Sized&gt; {
+    inner: NonNull&lt;RcInner&lt;T&gt;&gt;,
+}</code></pre>
+<p>This would solve the unsoundness, but this RFC does not propose it because it raises forwards compatibility hazards. We might start out with an unsafe derive macro, and then in the future we might decide to instead use the <code>PinCoerceUnsized</code> solution. Then, <code>#[unsafe(derive(SmartPointer))]</code> would have to generate an implementation of <code>PinCoerceUnsized</code> trait too, because otherwise <code>#[unsafe(derive(SmartPointer))] Pin&lt;Rc&lt;MyStruct&gt;&gt;</code> would lose the ability to be unsize coerced, which would be a breaking change. This means that <code>#[unsafe(derive(SmartPointer))]</code> and <code>#[derive(SmartPointer)]</code> could end up expanding to <em>different</em> things.</p>
+<h4 id="negative-trait-bounds"><a class="header" href="#negative-trait-bounds">Negative trait bounds</a></h4>
+<p>There are also various solutions that involve negative trait bounds. For example, you might instead modify <code>CoerceUnsized</code> like this:</p>
+<pre><code class="language-rust">// Permit going from `Pin&lt;impl Unpin&gt;` to` Pin&lt;impl Unpin&gt;`
+impl&lt;P, U&gt; CoerceUnsized&lt;Pin&lt;U&gt;&gt; for Pin&lt;P&gt;
+where
+    P: CoerceUnsized&lt;U&gt;,
+    P: Deref&lt;Target: Unpin&gt;,
+    U: Deref&lt;Target: Unpin&gt;,
+{ }
+
+// Permit going from `Pin&lt;impl !Unpin&gt;` to `Pin&lt;impl !Unpin&gt;`
+impl&lt;P, U&gt; CoerceUnsized&lt;Pin&lt;U&gt;&gt; for Pin&lt;P&gt;
+where
+    P: CoerceUnsized&lt;U&gt;,
+    P: core::ops::Deref&lt;Target: !Unpin&gt;,
+    U: core::ops::Deref&lt;Target: !Unpin&gt;,
+{ }</code></pre>
+<p>This RFC does not propose it because it is a breaking change and the <code>PinCoerceUnsized</code> or <code>DerefPure</code> solutions are simpler. This solution is discussed in more details in <a href="https://internals.rust-lang.org/t/pre-rfc-flexible-unsize-and-coerceunsize-traits/18789">the pre-RFC for stabilizing the underlying traits</a>.</p>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<h3 id="stabilizing-subsets-of-features"><a class="header" href="#stabilizing-subsets-of-features">Stabilizing subsets of features</a></h3>
+<p>There are several prior examples of unstable features that have been blocked from stabilization for various reasons, where we have been able to make progress by reducing the scope and stabilizing a subset.</p>
+<ul>
+<li>The most recent example of this is <a href="https://github.com/rust-lang/rfcs/pull/3519">the arbitrary self types RFC</a>, where <a href="https://github.com/rust-lang/rfcs/pull/3519#discussion_r1492385549">it was proposed to reduce the scope</a> so that we do not block progress on the feature.</li>
+<li>Another example of this is <a href="https://blog.rust-lang.org/2023/12/21/async-fn-rpit-in-traits.html">the async fn in traits feature</a>. This was stabilized even though it is not yet advisable to use it for traits in the public API of crates, due to missing parts of the feature.</li>
+</ul>
+<p>There have already been <a href="https://internals.rust-lang.org/t/pre-rfc-flexible-unsize-and-coerceunsize-traits/18789">previous attempts to stabilize the underlying traits</a>, and they did not make much progress. Therefore, this RFC proposes to reduce the scope and instead stabilize a derive macro.</p>
+<h3 id="macros-whose-output-is-unstable"><a class="header" href="#macros-whose-output-is-unstable">Macros whose output is unstable</a></h3>
+<p>The Rust testing framework is considered unstable, and the only stable way to interact with it is via the <code>#[test]</code> attribute macro. The macro’s output uses the unstable internals of the testing framework. This allows the testing framework to be changed in the future.</p>
+<p>Note also that the <code>pin!</code> macro expands to something that uses an unstable feature, though it does so for a different reason than <code>#[derive(SmartPointer)]</code> and <code>#[test]</code>.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p>Bikeshedding over the name remains.</p>
+<p>The name <code>#[derive(SmartPointer)]</code> leaves some things to be desired, as smart pointers would generally want to implement some traits that this macro does <em>not</em> expand to. Most prominently, any smart pointer should implement <code>Deref</code> or <code>Receiver</code>. Really, the macro just says that this pointer works with unsizing and dynamic dispatch.</p>
+<p>We will settle on the final name prior to stabilization.</p>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<p>One of the design goals of this RFC is that it should make this feature available to crates without significantly limiting how the underlying traits can evolve. The authors hope that we will find a way to stabilize the underlying traits in the future.</p>
+<p>One of the things that is left out of scope of this RFC is coercions involving custom transparent containers similar to <a href="https://doc.rust-lang.org/stable/core/cell/struct.Cell.html"><code>Cell</code></a>. They require you to implement the traits with different where bounds. Adding support for custom transparent containers makes sense as a future expansion of the feature.</p>
+<p>There is a reasonable change that we may be able to lift some of <a href="#input-requirements">the restrictions</a> on the shape of the struct as well. The current restrictions are just whatever <a href="https://doc.rust-lang.org/stable/core/ops/trait.DispatchFromDyn.html"><code>DispatchFromDyn</code></a> requires today, and proposals for relaxing them have been seen before (e.g., in the <a href="https://internals.rust-lang.org/t/pre-rfc-flexible-unsize-and-coerceunsize-traits/18789">pre-RFC</a>.)</p>
+<p>One example of a restriction that we could lift is the restriction that there is only one non-zero-sized field (i.e., that it must be <code>#[repr(transparent)]</code>). This would allow smart pointers to use custom allocators. (Today, types like <code>Box</code> and <code>Rc</code> only work with trait objects when using the default zero-sized allocator.)</p>
+<p>This could also allow implementations of <code>Rc</code> and <code>Arc</code> that store the value and refcount in two different allocations, like how the C++ <code>shared_ptr</code> works.</p>
+<pre><code class="language-rust">#[derive(SmartPointer)]
+pub struct Rc&lt;T: ?Sized&gt; {
+    refcount: NonNull&lt;Refcount&gt;,
+    value: NonNull&lt;T&gt;,
+}</code></pre>
+<p>Implementing this probably requires the <code>#[derive(SmartPointer)]</code> macro to know syntactically which field holds the vtable. One simple way to do that could be to say that it must be the last field, analogous to the unsized field in structs that must also be the last field. Another option is to add another attribute like <code>#[pointee]</code> that must be annotated on the field in question.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3617-precise-capturing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3624-supertrait-item-shadowing-v2.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3617-precise-capturing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3624-supertrait-item-shadowing-v2.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

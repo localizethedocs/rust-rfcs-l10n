@@ -1,0 +1,905 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3617-precise-capturing - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>precise_capturing</code></li>
+<li>Start Date: 2024-04-03</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3617">rust-lang/rfcs#3617</a></li>
+<li>Tracking Issue: <a href="https://github.com/rust-lang/rust/issues/123432">rust-lang/rust#123432</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>This RFC adds <code>use&lt;..&gt;</code> syntax for specifying which generic parameters should be captured in an opaque RPIT-like <code>impl Trait</code> type, e.g. <code>impl use&lt;'t, T&gt; Trait</code>.  This solves the problem of overcapturing and will allow the Lifetime Capture Rules 2024 to be fully stabilized for RPIT in Rust 2024.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<h3 id="background"><a class="header" href="#background">Background</a></h3>
+<p>RPIT-like opaque <code>impl Trait</code> types in Rust <em>capture</em> certain generic parameters.</p>
+<p><em>Capturing</em> a generic parameter means that parameter can be used in the hidden type later registered for that opaque type.  Any generic parameters not captured cannot be used.</p>
+<p>However, captured generic parameters that are <em>not</em> used by the hidden type still affect borrow checking.  This leads to the phenomenon of <em>overcapturing</em>.  Consider:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(_: T) -&gt; impl Sized {}
+//                 ^^^^^^^^^^
+//                 ^ The returned opaque type captures `T`
+//                   but the hidden type does not.
+
+fn bar(x: ()) -&gt; impl Sized + 'static {
+    foo(&amp;x)
+//~^ ERROR returns a value referencing data owned by the
+//~|       current function
+}</code></pre>
+<p>In this example, we would say that <code>foo</code> <em>overcaptures</em> the type parameter <code>T</code>.  The hidden type returned by <code>foo</code> does not <em>use</em> <code>T</code>, however it (and any lifetime components it contains) are part of the returned opaque type.  This leads to the error we see above.</p>
+<p>Overcapturing limits how callers can use returned opaque types in ways that are often surprising and frustrating.  There’s no good way to work around this in Rust today.</p>
+<h3 id="lifetime-capture-rules-2024"><a class="header" href="#lifetime-capture-rules-2024">Lifetime Capture Rules 2024</a></h3>
+<p>All type parameters in scope are implicitly captured in RPIT-like <code>impl Trait</code> opaque types.  In Rust 2021 and earlier editions, for RPIT on bare functions and on inherent functions and methods, lifetime parameters are not implicitly captured unless named in the bounds of the opaque.  This resulted, among other things, in the use of “the <code>Captures</code> trick”.  See <a href="https://github.com/rust-lang/rfcs/blob/master/text/3498-lifetime-capture-rules-2024.md">RFC 3498</a> for more details about this.</p>
+<p>In RFC 3498, we decided to capture all in-scope generic parameters in RPIT-like <code>impl Trait</code> opaque types, across all editions, for new features we were stabilizing such as return position <code>impl Trait</code> in Trait (RPITIT) and associated type position <code>impl Trait</code> (ATPIT), and to capture all in-scope generic parameters for RPIT on bare functions and on inherent functions and methods starting in the Rust 2024 edition.  Doing this made the language more predictable and consistent, eliminated weird “tricks”, and, by solving key problems, allowed for the stabilization of RPITIT.</p>
+<p>However, the expansion of the RPIT capture rules in Rust 2024 means that some existing uses of RPIT, when migrated to Rust 2024, will now capture lifetime parameters that were not previously captured, and this may result in code failing to compile.  For example, consider:</p>
+<pre><code class="language-rust">//@ edition: 2021
+fn foo&lt;'t&gt;(_: &amp;'t ()) -&gt; impl Sized {}
+
+fn bar(x: ()) -&gt; impl Sized + 'static {
+    foo(&amp;x)
+}</code></pre>
+<p>Under the Rust 2021 rules, this code is accepted because <code>'t</code> is not implicitly captured in the returned opaque type.  When migrated to Rust 2024, the <code>'t</code> lifetime will be captured, and so this will fail to compile just as with the similar earlier example that had overcaptured a type parameter.</p>
+<p>We need some way to migrate this kind of code.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>In all editions, RPIT-like <code>impl Trait</code> opaque types may include <code>use&lt;..&gt;</code> before any bounds to specify which in-scope generic parameters are captured or that no in-scope generic parameters are captured (with <code>use&lt;&gt;</code>).  If <code>use&lt;..&gt;</code> is provided, it entirely overrides the implicit rules for which generic parameters are captured.</p>
+<p>One way to think about <code>use&lt;..&gt;</code> is that, in Rust, <code>use</code> brings things <em>into scope</em>, and here we are bringing certain generic parameters into scope for the hidden type.</p>
+<p>For example, we can solve the overcapturing in the original motivating example by writing:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(_: T) -&gt; impl use&lt;&gt; Sized {}
+//                 ^^^^^^^^^^^^^^^^
+//                 ^ Captures nothing.</code></pre>
+<p>Similarly, we can use this to avoid overcapturing a lifetime parameter so as to migrate code to Rust 2024:;</p>
+<pre><code class="language-rust">fn foo&lt;'t&gt;(_: &amp;'t ()) -&gt; impl use&lt;&gt; Sized {}
+//                       ^^^^^^^^^^^^^^^^
+//                       ^ Captures nothing.</code></pre>
+<p>We can use this to capture some generic parameters but not others:</p>
+<pre><code class="language-rust">fn foo&lt;'t, T, U&gt;(_: &amp;'t (), _: T, y: U) -&gt; impl use&lt;U&gt; Sized { y }
+//                                         ^^^^^^^^^^^^^^^^^
+//                                         ^ Captures `U` only.</code></pre>
+<h3 id="generic-const-parameters"><a class="header" href="#generic-const-parameters">Generic const parameters</a></h3>
+<p>In addition to type and lifetime parameters, we can use this to capture generic const parameters:</p>
+<pre><code class="language-rust">fn foo&lt;'t, const C: u8&gt;(_: &amp;'t ()) -&gt; impl use&lt;C&gt; Sized { C }
+//                                    ^^^^^^^^^^^^^^^^^
+//                                    ^ Captures `C` only.</code></pre>
+<h3 id="capturing-from-outer-inherent-impl"><a class="header" href="#capturing-from-outer-inherent-impl">Capturing from outer inherent impl</a></h3>
+<p>We can capture generic parameters from an outer inherent impl:</p>
+<pre><code class="language-rust">struct Ty&lt;'a, 'b&gt;(&amp;'a (), &amp;'b ());
+
+impl&lt;'a, 'b&gt; Ty&lt;'a, 'b&gt; {
+    fn foo(x: &amp;'a (), _: &amp;'b ()) -&gt; impl use&lt;'a&gt; Sized { x }
+    //                              ^^^^^^^^^^^^^^^^^^
+    //                              ^ Captures `'a` only.
+}</code></pre>
+<h3 id="capturing-from-outer-trait-impl"><a class="header" href="#capturing-from-outer-trait-impl">Capturing from outer trait impl</a></h3>
+<p>We can capture generic parameters from an outer trait impl:</p>
+<pre><code class="language-rust">trait Trait&lt;'a, 'b&gt; {
+    type Foo;
+    fn foo(_: &amp;'a (), _: &amp;'b ()) -&gt; Self::Foo;
+}
+
+impl&lt;'a, 'b&gt; Trait&lt;'a, 'b&gt; for () {
+    type Foo = impl use&lt;'a&gt; Sized;
+    //         ^^^^^^^^^^^^^^^^^^
+    //         ^ Captures `'a` only.
+    fn foo(x: &amp;'a (), _: &amp;'b ()) -&gt; Self::Foo { x }
+}</code></pre>
+<h3 id="capturing-in-trait-definition"><a class="header" href="#capturing-in-trait-definition">Capturing in trait definition</a></h3>
+<p>We can capture generic parameters from the trait definition:</p>
+<pre><code class="language-rust">trait Trait&lt;'a, 'b&gt; {
+    fn foo(_: &amp;'a (), _: &amp;'b ()) -&gt; impl use&lt;'a, Self&gt; Sized;
+    //                              ^^^^^^^^^^^^^^^^^^^^^^^^
+    //                              ^ Captures `'a` and `Self` only.
+}</code></pre>
+<h3 id="capturing-elided-lifetimes"><a class="header" href="#capturing-elided-lifetimes">Capturing elided lifetimes</a></h3>
+<p>We can capture elided lifetimes:</p>
+<pre><code class="language-rust">fn foo(x: &amp;()) -&gt; impl use&lt;'_&gt; Sized { x }
+//                ^^^^^^^^^^^^^^^^^^
+//                ^ Captures `'_` only.</code></pre>
+<h3 id="combining-with-for"><a class="header" href="#combining-with-for">Combining with <code>for&lt;..&gt;</code></a></h3>
+<p>The <code>use&lt;..&gt;</code> specifier applies to the entire <code>impl Trait</code> opaque type.  In contrast, a <code>for&lt;..&gt;</code> binder applies to an individual <em>bound</em> within an opaque type.  Therefore, when both are used within the same type, <code>use&lt;..&gt;</code> always appears first.  E.g.:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(_: T) -&gt; impl use&lt;T&gt; for&lt;'a&gt; FnOnce(&amp;'a ()) { |&amp;()| () }</code></pre>
+<h3 id="optional-trailing-comma"><a class="header" href="#optional-trailing-comma">Optional trailing comma</a></h3>
+<p>As with other lists of generic arguments in Rust, a trailing comma is optional in <code>use&lt;..&gt;</code> specifiers:</p>
+<pre><code class="language-rust">fn foo1&lt;T&gt;(_: T) -&gt; impl use&lt;T&gt; Sized {} //~ OK.
+fn foo2&lt;T&gt;(_: T) -&gt; impl use&lt;T,&gt; Sized {} //~ Also OK.</code></pre>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<h3 id="syntax"><a class="header" href="#syntax">Syntax</a></h3>
+<p>The <a href="https://doc.rust-lang.org/nightly/reference/types/impl-trait.html">syntax for <code>impl Trait</code></a> is revised and extended as follows:</p>
+<blockquote>
+<p><em>ImplTraitType</em> :    <code>impl</code> <em>UseCaptures</em><sup>?</sup> <a href="https://doc.rust-lang.org/nightly/reference/trait-bounds.html"><em>TypeParamBounds</em></a></p>
+<p><em>ImplTraitTypeOneBound</em> :    <code>impl</code> <em>UseCaptures</em><sup>?</sup> <a href="https://doc.rust-lang.org/nightly/reference/trait-bounds.html"><em>TraitBound</em></a></p>
+<p><em>UseCaptures</em> :<br>   <code>use</code> <em>UseCapturesGenericArgs</em></p>
+<p><em>UseCapturesGenericArgs</em> :<br>      <code>&lt;</code> <code>&gt;</code><br>   | <code>&lt;</code><br>      ( <em>UseCapturesGenericArg</em> <code>,</code>)<sup>*</sup><br>      <em>UseCapturesGenericArg</em> <code>,</code><sup>?</sup><br>      <code>&gt;</code></p>
+<p><em>UseCapturesGenericArg</em> :<br>      <a href="https://doc.rust-lang.org/nightly/reference/tokens.html#lifetimes-and-loop-labels">LIFETIME_OR_LABEL</a><br>   | <a href="https://doc.rust-lang.org/nightly/reference/identifiers.html">IDENTIFIER</a></p>
+</blockquote>
+<h3 id="reference-desugarings"><a class="header" href="#reference-desugarings">Reference desugarings</a></h3>
+<p>The desugarings that follow can be used to answer questions about how <code>use&lt;..&gt;</code> is expected to work with respect to the capturing of generic parameters.</p>
+<h4 id="reference-desugaring-for-use-in-rpit"><a class="header" href="#reference-desugaring-for-use-in-rpit">Reference desugaring for <code>use&lt;..&gt;</code> in RPIT</a></h4>
+<p>Associated type position <code>impl Trait</code> (ATPIT) can be used, more verbosely, to control capturing of generic parameters in opaque types.  We can use this to describe the semantics of <code>use&lt;..&gt;</code>.  If we consider the following code:</p>
+<pre><code class="language-rust">use core::marker::PhantomData;
+
+struct C&lt;'s, 't, S, T, const CS: u8, const CT: u8&gt; {
+    _p: PhantomData&lt;(&amp;'s (), &amp;'t (), S, T)&gt;,
+}
+
+struct Ty&lt;'s, S, const CS: u8&gt;(&amp;'s (), S);
+impl&lt;'s, S, const CS: u8&gt; Ty&lt;'s, S, CS&gt; {
+    pub fn f&lt;'t, T, const CT: u8&gt;(
+    ) -&gt; impl use&lt;'s, 't, S, T, CS, CT&gt; Sized {
+        //    ^^^^^^^^^^^^^^^^^^^^^^^^^
+        // This is the `use&lt;..&gt;` specifier to desugar.
+        C::&lt;'s, 't, S, T, CS, CT&gt; { _p: PhantomData }
+    }
+}</code></pre>
+<p>Then we can desugar this as follows, without the use of a <code>use&lt;..&gt;</code> specifier, while preserving equivalent semantics with respect to the capturing of generic parameters:</p>
+<pre><code class="language-rust">use core::marker::PhantomData;
+
+struct C&lt;'s, 't, S, T, const CS: u8, const CT: u8&gt; {
+    _p: PhantomData&lt;(&amp;'s (), &amp;'t (), S, T)&gt;,
+}
+
+struct Ty&lt;'s, S, const CS: u8&gt;(&amp;'s (), S);
+impl&lt;'s, S, const CS: u8&gt; Ty&lt;'s, S, CS&gt; {
+    pub fn f&lt;'t, T, const CT: u8&gt;(
+    ) -&gt; &lt;() as _0::H&gt;::Opaque&lt;'s, 't, S, T, CS, CT&gt; {
+        //                     ^^^^^^^^^^^^^^^^^^^^
+        // These are the arguments given to the `use&lt;..&gt;` specifier.
+        //
+        // Reducing what is captured by removing arguments from
+        // `use&lt;..&gt;` is equivalent to removing arguments from this
+        // list and as needed below.
+        &lt;() as _0::H&gt;::f::&lt;'s, 't, S, T, CS, CT&gt;()
+    }
+}
+
+mod _0 {
+    use super::*;
+    pub trait H {
+        type Opaque&lt;'s, 't, S, T, const CS: u8, const CT: u8&gt;;
+        fn f&lt;'s, 't, S, T, const CS: u8, const CT: u8&gt;(
+        ) -&gt; Self::Opaque&lt;'s, 't, S, T, CS, CT&gt;;
+    }
+    impl H for () {
+        type Opaque&lt;'s, 't, S, T, const CS: u8, const CT: u8&gt;
+            = impl Sized;
+        #[inline(always)]
+        fn f&lt;'s, 't, S, T, const CS: u8, const CT: u8&gt;(
+        ) -&gt; Self::Opaque&lt;'s, 't, S, T, CS, CT&gt; {
+            C::&lt;'s, 't, S, T, CS, CT&gt; { _p: PhantomData }
+        }
+    }
+}</code></pre>
+<h4 id="reference-desugaring-for-use-in-rpitit"><a class="header" href="#reference-desugaring-for-use-in-rpitit">Reference desugaring for <code>use&lt;..&gt;</code> in RPITIT</a></h4>
+<p>Similarly, we can describe the semantics of <code>use&lt;..&gt;</code> in return position <code>impl Trait</code> in trait (RPITIT) using anonymous associated types.  If we consider the following code:</p>
+<pre><code class="language-rust">trait Trait&lt;'r, R, const CR: u8&gt; {
+    fn f&lt;'t, T, const CT: u8&gt;(
+    ) -&gt; impl use&lt;'r, 't, R, T, CR, CT, Self&gt; Sized;
+    //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // This is the `use&lt;..&gt;` specifier to desugar.
+}</code></pre>
+<p>Then we can desugar this as follows, without the use of a <code>use&lt;..&gt;</code> specifier, while preserving equivalent semantics with respect to the capturing of generic parameters:</p>
+<pre><code class="language-rust">trait Trait&lt;'r, R, const CR: u8&gt; {
+    type _0&lt;'t, T, const CT: u8&gt;: Sized;
+    fn f&lt;'t, T, const CT: u8&gt;(
+    ) -&gt; &lt;Self as Trait&lt;'r, R, CR&gt;&gt;::_0&lt;'t, T, CT&gt;;
+    //    ^^^^          ^^^^^^^^^       ^^^^^^^^^
+    // These are the arguments given to the `use&lt;..&gt;` specifier.
+}</code></pre>
+<p>Note that this desugaring does not allow for removing from the <code>use&lt;..&gt;</code> specifier <code>Self</code> or any generics that are input parameters to the trait.  This is, in fact, an implementation restriction that is likely to be part of initial rounds of stabilization.</p>
+<h3 id="avoiding-capture-of-higher-ranked-lifetimes-in-nested-opaques"><a class="header" href="#avoiding-capture-of-higher-ranked-lifetimes-in-nested-opaques">Avoiding capture of higher ranked lifetimes in nested opaques</a></h3>
+<p>According to the Lifetime Capture Rules 2024, a nested <code>impl Trait</code> opaque type <em>must</em> capture all generic parameters in scope, including higher ranked ones.  However, for implementation reasons, Rust does not yet support higher ranked lifetime bounds on nested opaque types (see <a href="https://github.com/rust-lang/rust/issues/104288">#104288</a>).  Therefore, in Rust 2024, this code, which is valid in Rust 2021, fails to compile:</p>
+<pre><code class="language-rust">//@ edition: 2024
+trait Trait&lt;'a&gt; { type Ty; }
+impl&lt;F&gt; Trait&lt;'_&gt; for F { type Ty = (); }
+
+fn foo() -&gt; impl for&lt;'a&gt; Trait&lt;'a, Ty = impl Sized&gt; {
+    //~^ ERROR `impl Trait` cannot capture higher-ranked lifetime
+    //~|        from outer `impl Trait`
+    fn f(_: &amp;()) -&gt; &amp;'static () { &amp;() }
+    f
+}</code></pre>
+<p>With <code>use&lt;..&gt;</code>, we can avoid capturing this higher ranked lifetime, allowing compilation:</p>
+<pre><code class="language-rust">fn foo() -&gt; impl for&lt;'a&gt; Trait&lt;'a, Ty = impl use&lt;&gt; Sized&gt; {
+    //                                  ^^^^^^^^^^^^^^^^
+    //                                  ^ Captures nothing.
+    fn f(_: &amp;()) -&gt; &amp;'static () { &amp;() }
+    f
+}</code></pre>
+<h3 id="capturing-higher-ranked-lifetimes-in-nested-opaques"><a class="header" href="#capturing-higher-ranked-lifetimes-in-nested-opaques">Capturing higher ranked lifetimes in nested opaques</a></h3>
+<p>Once higher ranked lifetime bounds on nested opaque types are supported in Rust (see <a href="https://github.com/rust-lang/rust/issues/104288">#104288</a>), we’ll be able to use <code>use&lt;..&gt;</code> specifiers to capture lifetime parameters from higher ranked <code>for&lt;..&gt;</code> binders on outer opaque types:</p>
+<pre><code class="language-rust">trait Trait&lt;'a&gt; { type Ty; }
+impl&lt;'a, F: Fn(&amp;'a ()) -&gt; &amp;'a ()&gt; Trait&lt;'a&gt; for F { type Ty = &amp;'a (); }
+
+fn foo() -&gt; impl for&lt;'a&gt; Trait&lt;'a, Ty = impl use&lt;'a&gt; Sized&gt; {
+    //                                  ^^^^^^^^^^^^^^^^^^
+    //                                  ^ Captures `'a`.
+    fn f(x: &amp;()) -&gt; &amp;() { x }
+    f
+}</code></pre>
+<h3 id="refinement"><a class="header" href="#refinement">Refinement</a></h3>
+<p>If we write a trait such as:</p>
+<pre><code class="language-rust">trait Trait {
+    type Foo&lt;'a&gt;: Sized where Self: 'a;
+    fn foo(&amp;self) -&gt; Self::Foo&lt;'_&gt;;
+}</code></pre>
+<p>…then an impl of this trait can provide a type for the associated type <code>Foo</code> that uses the <code>&amp;'_ self</code> lifetime:</p>
+<pre><code class="language-rust">struct A;
+impl Trait for A {
+    type Foo&lt;'a&gt; = &amp;'a Self; // Or, e.g.: `impl use&lt;'a&gt; Sized`
+    fn foo(&amp;self) -&gt; Self::Foo&lt;'_&gt; { self }
+}</code></pre>
+<p>However, such an impl may also provide a type that does <em>not</em> use the lifetime:</p>
+<pre><code class="language-rust">struct B;
+impl Trait for B {
+    type Foo&lt;'a&gt; = (); // Or, e.g.: `impl use&lt;&gt; Sized`
+    fn foo(&amp;self) -&gt; Self::Foo&lt;'_&gt; {}
+}</code></pre>
+<p>If we only know that the value is of some type that implements the trait, then we must assume that the type returned by <code>foo</code> <em>might</em> use the lifetime:</p>
+<pre><code class="language-rust">fn test_trait&lt;T: Trait + 'static&gt;(x: T) -&gt; impl Sized + 'static {
+    x.foo()
+//~^ ERROR cannot return value referencing function parameter `x`
+}</code></pre>
+<p>However, if we know we have a value of type <code>B</code>, we can <em>rely</em> on the fact that the lifetime is not used:</p>
+<pre><code class="language-rust">fn test_b(x: B) -&gt; impl Sized + 'static {
+    x.foo() //~ OK.
+}</code></pre>
+<p>We would say that the impl for <code>B</code> is <em>refining</em> in that it offers more to or demands less of callers than the minimum the trait could offer or the maximum it could demand.  Associated type definitions are always refining in this way.</p>
+<p>RPITIT desugars into associated types similar to those above, but here we’ve currently decided to lint against this refinement, e.g.:</p>
+<pre><code class="language-rust">trait Trait {
+    fn foo(&amp;self) -&gt; impl Sized;
+}
+
+impl Trait for () {
+    fn foo(&amp;self) -&gt; () {}
+//~^ WARN impl trait in impl method signature does not match
+//~|      trait method signature
+//~| NOTE add `#[allow(refining_impl_trait)]` if it is intended
+//~|      for this to be part of the public API of this crate
+//~| NOTE we are soliciting feedback, see issue #121718
+//~|      &lt;https://github.com/rust-lang/rust/issues/121718&gt;
+//~|      for more information
+}</code></pre>
+<p>Similarly, for consistency, we’ll lint against RPITIT cases where less is captured by RPIT in the impl as compared with the trait definition when using <code>use&lt;..&gt;</code>.</p>
+<h4 id="examples-of-refinement"><a class="header" href="#examples-of-refinement">Examples of refinement</a></h4>
+<p>In keeping with the rule above, we consider it refining if we don’t capture in the impl all of the generic parameters from the function signature that are captured in the trait definition:</p>
+<pre><code class="language-rust">trait Trait {
+    fn foo(&amp;self) -&gt; impl Sized; // Or: `impl use&lt;'_, Self&gt; Sized`
+}
+
+impl Trait for () {
+    fn foo(&amp;self) -&gt; impl use&lt;&gt; Sized {}
+//~^ WARN impl trait in impl method signature does not match
+//~|      trait method signature
+//~| NOTE add `#[allow(refining_impl_trait)]` if it is intended
+//~|      for this to be part of the public API of this crate
+//~| NOTE we are soliciting feedback, see issue #121718
+//~|      &lt;https://github.com/rust-lang/rust/issues/121718&gt;
+//~|      for more information
+}</code></pre>
+<p>Similarly, if we don’t capture, in the impl, any generic parameter applied as an argument to the trait in the impl header when the corresponding generic parameter is captured in the trait definition, that is refining.  E.g.:</p>
+<pre><code class="language-rust">trait Trait&lt;'x&gt; {
+    fn f() -&gt; impl Sized; // Or: `impl use&lt;'x, Self&gt; Sized`
+}
+
+impl&lt;'a&gt; Trait&lt;'a&gt; for () {
+    fn f() -&gt; impl use&lt;&gt; Sized {}
+//~^ WARN impl trait in impl method signature does not match
+//~|      trait method signature
+//~| NOTE add `#[allow(refining_impl_trait)]` if it is intended
+//~|      for this to be part of the public API of this crate
+//~| NOTE we are soliciting feedback, see issue #121718
+//~|      &lt;https://github.com/rust-lang/rust/issues/121718&gt;
+//~|      for more information
+}</code></pre>
+<p>This remains true even if the trait impl is <em>reparameterized</em>.  In that case, it is refining unless <em>all</em> generic parameters applied in the impl header as generic arguments for the corresponding trait parameter are captured in the impl when that parameter is captured in the trait definition, e.g.:</p>
+<pre><code class="language-rust">trait Trait&lt;T&gt; {
+    fn f() -&gt; impl Sized; // Or: `impl use&lt;T, Self&gt; Sized`
+}
+
+impl&lt;'a, 'b&gt; Trait&lt;(&amp;'a (), &amp;'b ())&gt; for () {
+    fn f() -&gt; impl use&lt;'b&gt; Sized {}
+//~^ WARN impl trait in impl method signature does not match
+//~|      trait method signature
+//~| NOTE add `#[allow(refining_impl_trait)]` if it is intended
+//~|      for this to be part of the public API of this crate
+//~| NOTE we are soliciting feedback, see issue #121718
+//~|      &lt;https://github.com/rust-lang/rust/issues/121718&gt;
+//~|      for more information
+}</code></pre>
+<p>Similarly, it’s refining if <code>Self</code> is captured in the trait definition and, in the impl, we don’t capture all of the generic parameters that are applied in the impl header as generic arguments to the <code>Self</code> type, e.g.:</p>
+<pre><code class="language-rust">trait Trait {
+    fn f() -&gt; impl Sized; // Or: `impl use&lt;Self&gt; Sized`
+}
+
+struct S&lt;T&gt;(T);
+impl&lt;'a, 'b&gt; Trait for S&lt;(&amp;'a (), &amp;'b ())&gt; {
+    fn f() -&gt; impl use&lt;'b&gt; Sized {}
+//~^ WARN impl trait in impl method signature does not match
+//~|      trait method signature
+//~| NOTE add `#[allow(refining_impl_trait)]` if it is intended
+//~|      for this to be part of the public API of this crate
+//~| NOTE we are soliciting feedback, see issue #121718
+//~|      &lt;https://github.com/rust-lang/rust/issues/121718&gt;
+//~|      for more information
+}</code></pre>
+<h3 id="lifetime-equality"><a class="header" href="#lifetime-equality">Lifetime equality</a></h3>
+<p>While the capturing of generic parameters is generally syntactic, this is currently allowed in Rust 2021:</p>
+<pre><code class="language-rust">//@ edition: 2021
+fn foo&lt;'a: 'b, 'b: 'a&gt;() -&gt; impl Sized + 'b {
+    core::marker::PhantomData::&lt;&amp;'a ()&gt;
+}</code></pre>
+<p>Rust 2021 does not adhere to the Lifetime Capture Rules 2024 for bare RPITs such as this.  Correspondingly, lifetimes are only captured when they appear in the bounds.  Here, <code>'b</code> but not <code>'a</code> appears in the bounds, yet we’re still able to capture <code>'a</code> due to the fact that it must be equal to <code>'b</code>.</p>
+<p>To preserve consistency with this, the following is also valid:</p>
+<pre><code class="language-rust">fn foo&lt;'a: 'b, 'b: 'a&gt;() -&gt; impl use&lt;'b&gt; Sized {
+    core::marker::PhantomData::&lt;&amp;'a ()&gt;
+}</code></pre>
+<p>A more difficult case is where, in the trait definition, only a subset of the generic parameters on the trait are captured, and in the impl we capture a lifetime <em>not</em> applied syntactically as an argument for one of those captured parameters but which is equal to a lifetime that is applied as an argument for one of the captured parameters, e.g.:</p>
+<pre><code class="language-rust">trait Trait&lt;'x, 'y&gt; {
+    fn f() -&gt; impl use&lt;'y, Self&gt; Sized;
+}
+
+impl&lt;'a: 'b, 'b: 'a&gt; Trait&lt;'a, 'b&gt; for () {
+    fn f() -&gt; impl use&lt;'b&gt; Sized {
+        core::marker::PhantomData::&lt;&amp;'a ()&gt;
+    }
+}</code></pre>
+<p>For the purposes of this RFC, in the interest of consistency with the above cases, we’re going to say that this is valid.  However, as mentioned elsewhere, partial capturing of generics that are input parameters to the trait (including <code>Self</code>) is unlikely to be part of initial rounds of stabilization, and it’s possible that implementation experience may lead us to a different answer for this case.</p>
+<h3 id="reparameterization"><a class="header" href="#reparameterization">Reparameterization</a></h3>
+<p>In Rust, trait impls may be parameterized over a different set of generics than the trait itself.  E.g.:</p>
+<pre><code class="language-rust">trait Trait&lt;X, Y&gt; {
+    fn f() -&gt; impl use&lt;X, Y, Self&gt; Sized;
+}
+
+impl&lt;'a, B, const C: usize&gt; Trait&lt;(), (&amp;'a (), B, [(); C])&gt; for () {
+    fn f() -&gt; impl use&lt;'a, B, C&gt; Sized {
+        core::marker::PhantomData::&lt;(&amp;'a (), B, [(); C])&gt;
+    }
+}</code></pre>
+<p>In these cases, what we look at is how these generics are applied as arguments to the trait in the impl header.  In this example, all of <code>'a</code>, <code>B</code>, and <code>C</code> are applied in place of the <code>Y</code> input parameter to the trait.  Since <code>Y</code> is captured in the trait definition, we’re correspondingly allowed to capture <code>'a</code>, <code>B</code>, and <code>C</code> in the impl.</p>
+<h3 id="the-self-type"><a class="header" href="#the-self-type">The <code>Self</code> type</a></h3>
+<p>In trait definitions (but not elsewhere), <code>use&lt;..&gt;</code> may capture <code>Self</code>.  Doing so means that in the impl, the opaque type may capture any generic parameters that are applied as generic arguments to the <code>Self</code> type.  E.g.:</p>
+<pre><code class="language-rust">trait Trait {
+    fn f() -&gt; impl use&lt;Self&gt; Sized;
+}
+
+struct S&lt;T&gt;(T);
+impl&lt;'a, B, const C: usize&gt; Trait for S&lt;(&amp;'a (), B, [(); C])&gt; {
+    fn f() -&gt; impl use&lt;'a, B, C&gt; Sized {
+        core::marker::PhantomData::&lt;(&amp;'a (), B, [(); C])&gt;
+    }
+}</code></pre>
+<h3 id="handling-of-projection-types"><a class="header" href="#handling-of-projection-types">Handling of projection types</a></h3>
+<p>If we apply, in a trait impl header, a projection type to a trait in place of a parameter that is captured in the trait definition, that does not allow us to capture in the impl the generic parameter from which the type is projected.  E.g.:</p>
+<pre><code class="language-rust">trait Trait&lt;X, Y&gt; {
+    fn f() -&gt; impl use&lt;Y, Self&gt; Sized;
+}
+
+impl&lt;A: Iterator&gt; Trait&lt;A, A::Item&gt; for () {
+    fn f() -&gt; impl use&lt;A&gt; Sized {}
+    //~^ ERROR cannot capture `A`
+}</code></pre>
+<p>The reason this is an error is related to the fact that, in Rust, a generic parameter used as an associated type does not constrain that generic parameter in the impl.  E.g.:</p>
+<pre><code class="language-rust">trait Trait {
+    type Ty;
+}
+
+impl&lt;A&gt; Trait for () {
+//~^ ERROR the type parameter `A` is not constrained
+    type Ty = A;
+}</code></pre>
+<h3 id="meaning-of-capturing-a-const-generic-parameter"><a class="header" href="#meaning-of-capturing-a-const-generic-parameter">Meaning of capturing a const generic parameter</a></h3>
+<p>As with other generic parameters, a const generic parameter must be captured in the opaque type for it to be used in the hidden <em>type</em>.  E.g., we must capture <code>C</code> here:</p>
+<pre><code class="language-rust">fn f&lt;const C: usize&gt;() -&gt; impl use&lt;C&gt; Sized {
+    [(); C]
+}</code></pre>
+<p>However, note that we do not need to capture <code>C</code> just to use it as a <em>value</em>, e.g.:</p>
+<pre><code class="language-rust">fn f&lt;const C: usize&gt;() -&gt; impl use&lt;&gt; Sized {
+    C + 1
+}</code></pre>
+<h3 id="argument-position-impl-trait"><a class="header" href="#argument-position-impl-trait">Argument position impl Trait</a></h3>
+<p>Note that for a generic type parameter to be captured with <code>use&lt;..&gt;</code> it must have a name.  Anonymous generic type parameters introduced with argument position <code>impl Trait</code> (APIT) syntax don’t have names, and so cannot be captured with <code>use&lt;..&gt;</code>.  E.g.:</p>
+<pre><code class="language-rust">fn foo(x: impl Sized) -&gt; impl use&lt;&gt; Sized { x }
+//                       ^^^^^^^^^^^^^^^^
+//                       ^ Captures nothing.</code></pre>
+<h3 id="migration-strategy-for-lifetime-capture-rules-2024"><a class="header" href="#migration-strategy-for-lifetime-capture-rules-2024">Migration strategy for Lifetime Capture Rules 2024</a></h3>
+<p>The migration lints for Rust 2024 will insert <code>use&lt;..&gt;</code> as needed so as to preserve the set of generic parameters captured by each RPIT opaque type.  That is, we will convert, e.g., this:</p>
+<pre><code class="language-rust">//@ edition: 2021
+fn foo&lt;'t, T&gt;(_: &amp;'t (), x: T) -&gt; impl Sized { x }</code></pre>
+<p>…into this:</p>
+<pre><code class="language-rust">//@ edition: 2024
+fn foo&lt;'t, T&gt;(_: &amp;'t (), x: T) -&gt; impl use&lt;T&gt; Sized { x }</code></pre>
+<p>Note that since generic type parameters must have names to be captured with <code>use&lt;..&gt;</code>, some uses of APIT will need to be converted to named generic parameters.  E.g., we will convert this:</p>
+<pre><code class="language-rust">//@ edition: 2021
+fn foo&lt;'t&gt;(_: &amp;'t (), x: impl Sized) -&gt; impl Sized { x }</code></pre>
+<p>…into this:</p>
+<pre><code class="language-rust">//@ edition: 2024
+fn foo&lt;'t, T: Sized&gt;(_: &amp;'t (), x: T) -&gt; impl use&lt;T&gt; Sized { x }</code></pre>
+<p>As we’re always cognizant of adding noise during migrations, it’s worth mentioning that this will also allow noise to be <em>removed</em>.  E.g., this code:</p>
+<pre><code class="language-rust">#[doc(hidden)]
+pub trait Captures&lt;'t&gt; {}
+impl&lt;T: ?Sized&gt; Captures&lt;'_&gt; for T {}
+
+pub fn foo&lt;'a, 'b, 'c&gt;(
+    x: &amp;'a (), y: &amp;'b (), _: &amp;'c (),
+) -&gt; impl Sized + Captures&lt;'a&gt; + Captures&lt;'b&gt; {
+    (x, y)
+}</code></pre>
+<p>…can be replaced with this:</p>
+<pre><code class="language-rust">pub fn foo&lt;'a, 'b, 'c&gt;(
+    x: &amp;'a (), y: &amp;'b (), _: &amp;'c (),
+) -&gt; impl use&lt;'a, 'b&gt; Sized {
+    (x, y)
+}</code></pre>
+<p>As an example of what migrating to explicit <code>use&lt;..&gt;</code> captures looks like within <code>rustc</code> itself (without yet migrating to the Lifetime Capture Rules 2024 which would simplify many cases further), see <a href="https://github.com/rust-lang/rust/compare/efd136e5cd57789834c7555eed36c490b7be6fe7...0d15c5c62d2a6f46269e5812653900e0945738bf?expand=1">this diff</a>.</p>
+<h3 id="stabilization-strategy"><a class="header" href="#stabilization-strategy">Stabilization strategy</a></h3>
+<p>Due to implementation considerations, it’s likely that the initial stabilization of this feature will be partial.  We anticipate that partial stabilization will have these restrictions:</p>
+<ul>
+<li><code>use&lt;..&gt;</code>, if provided, must include all in-scope type and const generic parameters.</li>
+<li>In RPIT within trait definitions, <code>use&lt;..&gt;</code>, if provided, must include all in-scope generic parameters.</li>
+</ul>
+<p>We anticipate lifting these restrictions over time.</p>
+<p>Since all in-scope type and const generic parameters were already captured in Rust 2021 and earlier editions, and since RPITIT already adheres to the Lifetime Capture Rules 2024, these restrictions do not interfere with the use of this feature to migrate code to Rust 2024.</p>
+<h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
+<h3 id="atpit--tait"><a class="header" href="#atpit--tait">ATPIT / TAIT</a></h3>
+<p>As we saw in the reference desugaring above, associated type position <code>impl Trait</code> (ATPIT), once stabilized, can be used to effect precise capturing.  Originally, we had hoped that this (particularly once expanded to full type alias <code>impl Trait</code> (TAIT)) might be sufficient and that syntax such as that in this RFC might not be necessary.</p>
+<p>As it turned out, there are four problems with this:</p>
+<ol>
+<li>These features are too indirect a solution.</li>
+<li>They might not be stabilized in time.</li>
+<li>They would lead to a worse migration story.</li>
+<li>We would want this syntax anyway.</li>
+</ol>
+<p>Taking these in turn:</p>
+<p>One, as can be seen in the reference desugaring, using ATPIT/TAIT in this way can be rather indirect, and this was confirmed in our practical experience when migrating code.  ATPIT and TAIT are good tools, but they weren’t designed to solve this particular problem.  This problem calls for a more direct solution.</p>
+<p>Two, while ATPIT is nearing stabilization, there are yet some type systems details being resolved.  For TAIT, there is much work yet to do.  Putting these features in the critical path would add risk to the edition, to the Lifetime Capture Rules 2024, and to these features.</p>
+<p>Three, as a practical matter, an explicit <code>impl use&lt;..&gt; Trait</code> syntax lets us write much better automatic migration lints and offers a much more straightforward migration story for our users.</p>
+<p>Four, the set of generic parameters that are captured by an opaque type is a fundamental and practical property of that opaque type.  In a language like Rust, it <em>feels</em> like there ought to be an explicit syntax for it.  We probably want this in any world.</p>
+<h3 id="inferred-precise-capturing"><a class="header" href="#inferred-precise-capturing">Inferred precise capturing</a></h3>
+<p>We had hoped that we might be able to achieve something with a similar effect to precise capturing at the cost of an extra generic lifetime parameter in each signature with improvements to the type system.  The goal would be to allow, e.g., this code to work rather than error:</p>
+<pre><code class="language-rust">fn foo&lt;'o, T&gt;(_: T) -&gt; impl Sized + 'o {}
+
+fn bar(x: ()) -&gt; impl Sized + 'static {
+    foo(&amp;x)
+//~^ ERROR returns a value referencing data owned by the
+//~|       current function
+}</code></pre>
+<p>The idea is that, even though the opaque type returned by <code>foo</code> does capture the generic type parameter <code>T</code>, since the opaque type is explicitly bounded by <code>'o</code> and the signature does not assert <code>T: 'o</code>, we know that the hidden type cannot actually use <code>T</code>.</p>
+<p>As it turns out, making full use of this observation is challenging (see <a href="https://github.com/rust-lang/rust/pull/116040">#116040</a> and <a href="https://github.com/rust-lang/rust/pull/116733">#116733</a>).  While we did make improvements to the type system here, and while more might be possible, this does not solve the problem today in all important cases (including, e.g., avoiding the capture of higher ranked lifetimes in nested opaque types) and will not for the foreseeable future.</p>
+<p>Moreover, even with the fullest possible version of these improvements, whether or not a generic parameter is captured by an opaque type would remain observable.  Having an explicit syntax to control what is captured is more direct, more expressive, and leads to a better migration story.</p>
+<p>See <a href="https://github.com/rust-lang/rfcs/blob/master/text/3498-lifetime-capture-rules-2024.md#appendix-g-future-possibility-inferred-precise-capturing">Appendix G</a> in <a href="https://github.com/rust-lang/rfcs/blob/master/text/3498-lifetime-capture-rules-2024.md">RFC 3498</a> for more details.</p>
+<h3 id="syntax-1"><a class="header" href="#syntax-1">Syntax</a></h3>
+<p>We considered a number of different possible syntaxes before landing on <code>impl use&lt;..&gt; Trait</code>.  We’ll discuss each considered.</p>
+<h4 id="impl-use-trait"><a class="header" href="#impl-use-trait"><code>impl use&lt;..&gt; Trait</code></a></h4>
+<p>This is the syntax used throughout this RFC (but see the <a href="#unresolved-questions">unresolved questions</a>).</p>
+<p>Using a separate keyword makes this syntax more scalable in the sense that we can apply <code>use&lt;..&gt;</code> in other places.</p>
+<p>Conveniently, the word “use” is quite appropriate here, since we are <em>using</em> the generic parameters in the opaque type and allowing the generic parameters to be <em>used</em> in the hidden type.  That is, with <code>use</code>, we are bringing the generic parameters <em>into scope</em> for the hidden type, and <code>use</code> is the keyword in Rust for bringing things into scope.</p>
+<p>Picking an existing keyword allows for this syntax, including extensions to other positions, to be allowed in older editions.  Because <code>use</code> is a full keyword, we’re not limited in where it can be placed.</p>
+<p>By not putting the generic parameters on <code>impl&lt;..&gt;</code>, we reduce the risk of confusion that we are somehow introducing generic parameters here rather than using them.</p>
+<p>We put <code>impl</code> before <code>use&lt;..&gt;</code> because <code>use&lt;..&gt;</code> is a property of the opaque type and we’re <em>applying</em> the generic <em>parameters</em> as generic <em>arguments</em> to this opaque type.  In <code>impl Trait</code> syntax, the <code>impl</code> keyword is the stand-in for the opaque type itself.  Viewed this way, <code>impl use&lt;..&gt; Trait</code> maintains the following order, which is seen throughout Rust: <em>type</em>, <em>generic arguments</em>, <em>bounds</em>.</p>
+<p>Using angle brackets, rather than parentheses or square brackets, is consistent with other places in the language where type parameters are applied to a type.</p>
+<p>At three letters, the <code>use</code> keyword is short enough that it doesn’t feel too noisy or too much like a burden to use this, and it’s parsimonious with other short keywords in Rust.</p>
+<p>Overall, naming is hard, but on average, people seemed to dislike this choice the least.</p>
+<h4 id="impl-trait"><a class="header" href="#impl-trait"><code>impl&lt;..&gt; Trait</code></a></h4>
+<p>The original syntax proposal was <code>impl&lt;..&gt; Trait</code>.  This has the benefit of being somewhat more concise than <code>impl use&lt;..&gt; Trait</code> but has the drawback of perhaps suggesting that it’s introducing generic parameters as other uses of <code>impl&lt;..&gt;</code> do.  Many preferred to use a different keyword for this reason.</p>
+<p>Decisive to some was that we may want this syntax to <em>scale</em> to other uses, most particularly to controlling the set of generic parameters and values that are captured by closure-like blocks.  As we discuss in the future possibilities, it’s easy to see how <code>use&lt;..&gt;</code> can scale to address this in a way that <code>impl&lt;..&gt; Trait</code> cannot.</p>
+<h4 id="use-impl-trait"><a class="header" href="#use-impl-trait"><code>use&lt;..&gt; impl Trait</code></a></h4>
+<p>Putting the <code>use&lt;..&gt;</code> specifier <em>before</em> the <code>impl</code> keyword is potentially appealing as <code>use&lt;..&gt;</code> applies to the entire <code>impl Trait</code> opaque type rather than to just one of the bounds, and this ordering might better suggest that.</p>
+<p>Let’s discuss some arguments for this, some arguments against it, and then discuss the fundamental tension here.</p>
+<h5 id="the-case-for-use-before-impl"><a class="header" href="#the-case-for-use-before-impl">The case for <code>use&lt;..&gt;</code> before <code>impl</code></a></h5>
+<p>We’ve been referring to the syntax for RPIT-like opaque types as <code>impl Trait</code>, as is commonly done.  But this is a bit imprecise.  The syntax is really <code>impl $bounds</code>.  We might say, e.g.:</p>
+<pre><code class="language-rust">fn foo() -&gt; impl 'static + Unpin + for&lt;'a&gt; FnMut(&amp;'a ()) {
+    |_| ()
+}</code></pre>
+<p>Each <em>bound</em>, separated by <code>+</code>, may be a <em>lifetime</em> or a <em>trait bound</em>.  Each trait bound may include a higher ranked <code>for&lt;..&gt;</code> <em>binder</em>.  The lifetimes introduced in such a binder are in scope only for the bound in which that binder appears.</p>
+<p>This could create confusion with <code>use&lt;..&gt;</code> after <code>impl</code>.  If we say, e.g.:</p>
+<pre><code class="language-rust">fn foo&lt;'a&gt;(
+    _: &amp;'a (),
+) -&gt; impl use&lt;'a&gt; for&lt;'b&gt; FnMut(&amp;'b ()) + for&lt;'c&gt; Trait&lt;'c&gt; {
+    //    ^^^^^^^ ^^^^^^^                 ^^^^^^^
+    //    |       |                       ^ Applies to one bound.
+    //    |       ^ Applies to one bound.
+    //    ^ Applies to the whole type.
+    |_| ()
+}</code></pre>
+<p>…then it may feel like <code>use&lt;..&gt;</code> should apply to only the first bound, just as the <code>for&lt;..&gt;</code> binder right next to it does.  Putting <code>use&lt;..&gt;</code> <em>before</em> <code>impl</code> might avoid this issue.  E.g.:</p>
+<pre><code class="language-rust">fn foo&lt;'a&gt;(
+    _: &amp;'a (),
+) -&gt; use&lt;'a&gt; impl for&lt;'b&gt; FnMut(&amp;'b ()) + for&lt;'c&gt; Trait&lt;'c&gt; {
+    |_| ()
+}</code></pre>
+<p>This would make it clear that <code>use&lt;..&gt;</code> applies to the entire type.  This seems the strongest argument for putting <code>use&lt;..&gt;</code> before <code>impl</code>, and it’s a <em>good</em> one.</p>
+<h5 id="the-case-for-and-against-use-before-impl"><a class="header" href="#the-case-for-and-against-use-before-impl">The case for and against <code>use&lt;..&gt;</code> before <code>impl</code></a></h5>
+<p>There are some other known arguments for this ordering that may or may not resonate with the reader; we’ll present these, along with the standard arguments that might be made in response, as an imagined conversation between Alice and Bob:</p>
+<blockquote>
+<p><strong>Bob</strong>: We call the base feature here “<code>impl Trait</code>”.  Anything that we put between the <code>impl</code> and the <code>Trait</code> could make this less recognizable to people.</p>
+<p><strong>Alice</strong>: Maybe, but users don’t literally write the words <code>impl Trait</code>; they write <code>impl</code> and then a set of bounds.  They could even write <code>impl 'static + Fn()</code>, e.g.  The fact that there can be multiple traits and that a lifetime or a <code>for&lt;..&gt;</code> binder could come between the <code>impl</code> and the first trait doesn’t seem to be a problem here, so maybe adding <code>use&lt;..&gt;</code> won’t be either.</p>
+<p><strong>Bob</strong>: But what about the orthography?  In English, we might say “using ’x, we implement the trait”.  We’d probably try to avoid saying “we implement, using ’x, the trait”.  Putting <code>use&lt;..&gt;</code> first better lines up with this.</p>
+<p><strong>Alice</strong>: Is that true?  Would we always prefer the first version?  To my ears, “using ’x, we implement the trait” sounds a bit like something Yoda would say.  I’d probably say the second version, if I had to choose.  Really, of course, I’d mostly try to say instead that “we implement the trait using ’x”, but there are probably good reasons to not use that ordering here in Rust.</p>
+<p><strong>Bob</strong>: The RFC talks about maybe later extending the <code>use&lt;..&gt;</code> syntax to closure-like blocks, e.g. <code>use&lt;&gt; |x| x</code>.  If it makes sense to put the <code>use&lt;..&gt;</code> first here, shouldn’t we put it first in <code>use&lt;..&gt; impl Trait</code>?</p>
+<p><strong>Alice</strong>: That’s interesting to think about.  In the case of closure-like blocks, we’d probably want to put the <code>use&lt;..&gt;</code> in the same position as <code>move</code> as it could be extended to serve a similar purpose.  For closures, that would mean putting it before the arguments, e.g. <code>use&lt;&gt; |x| x</code>, just as we do with <code>move</code>.  But this would also imply that <code>use&lt;..&gt;</code> should appear <em>after</em> certain keywords, e.g. for <code>async</code> blocks we currently write <code>async move {}</code>, so maybe here we would write <code>async use&lt;&gt; {}</code>.</p>
+<p><strong>Alice</strong>: There is a key difference to keep in mind here.  Closure-like blocks are <em>expressions</em> but <code>impl Trait</code> is syntax for a <em>type</em>.  We often have different conventions between type position and expression position in Rust.  Maybe (or maybe not) this is a place where that distinction could matter.</p>
+</blockquote>
+<h5 id="the-case-against-use-before-impl"><a class="header" href="#the-case-against-use-before-impl">The case against <code>use&lt;..&gt;</code> before <code>impl</code></a></h5>
+<p>The <code>use&lt;..&gt;</code> specifier syntax <em>applies</em> the listed generic <em>parameters</em> as generic <em>arguments</em> to the opaque type.  It’s analogous, e.g., with the generic arguments here:</p>
+<pre><code class="language-rust">impl Trait for () {
+    type Opaque&lt;'t, T&gt; = Concrete&lt;'t, T&gt;
+    //                   ^^^^^^^^ ^^^^^
+    //                   ^ Type   ^ Generic arguments
+    where Self: 'static;
+    //    ^^^^^^^^^^^^^
+    //    ^ Bounds
+}</code></pre>
+<p>Just as the above <em>applies</em> <code>&lt;'t, T&gt;</code> to <code>Concrete</code>, <code>use&lt;..&gt;</code> applies its arguments to the opaque type.</p>
+<p>In the above example and throughout Rust, we observe the following order: <em>type</em>, <em>generic arguments</em> (applied to the type), <em>bounds</em>.  In <code>impl Trait</code> syntax, the <code>impl</code> keyword is the stand-in for the opaque type itself.  The <code>use&lt;..&gt;</code> specifier lists the generic arguments to be applied to that type.  Then the bounds follow.  Putting <code>use&lt;..&gt;</code> after <code>impl</code> is consistent with this rule, but the other way would be inconsistent.</p>
+<p>This observation, that we’re applying generic <em>arguments</em> to the opaque type and that the <code>impl</code> keyword is the stand-in for that type, is also a strong argument in favor of <code>impl&lt;..&gt; Trait</code> syntax.  It’s conceivable that we’ll later, with more experience and consistently with <a href="https://www.thefeedbackloop.xyz/stroustrups-rule-and-layering-over-time/">Stroustrup’s Rule</a>, decide that we want to be more concise and adopt the <code>impl&lt;..&gt; Trait</code> syntax after all.  One of the advantages of placing <code>use&lt;..&gt;</code> after <code>impl</code> is that there would be less visual and conceptual churn in later making that change.</p>
+<p>Finally, there’s one other practical advantage to placing <code>impl</code> before <code>use&lt;..&gt;</code>.  If we were to do it the other way and place <code>use&lt;..&gt;</code> before <code>impl</code>, we would need to make a backward incompatible change to the <code>ty</code> macro matcher fragment specifier.  This would require us to migrate this specifier according to our policy in <a href="https://github.com/rust-lang/rfcs/blob/master/text/3531-macro-fragment-policy.md">RFC 3531</a>.  This is something we could do, but it is a cost on us and on our users, even if only a modest one.</p>
+<h5 id="the-fundamental-tension-on-impl-use-vs-use-impl"><a class="header" href="#the-fundamental-tension-on-impl-use-vs-use-impl">The fundamental tension on <code>impl use&lt;..&gt;</code> vs. <code>use&lt;..&gt; impl</code></a></h5>
+<p>Throughout this RFC, we’ve given two intuitions for the semantics of <code>use&lt;..&gt;</code>:</p>
+<ul>
+<li><strong>Intuition #1</strong>: <code>use&lt;..&gt;</code> <em>applies</em> generic arguments to the opaque type.</li>
+<li><strong>Intuition #2</strong>: <code>use&lt;..&gt;</code> brings generic parameters <em>into scope</em> for the hidden type.</li>
+</ul>
+<p>These are <em>both</em> true and are both valid <em>intuitions</em>, but there’s some tension between these for making this syntax choice.</p>
+<p>It’s often helpful to think of <code>impl Trait</code> in terms of generic associated types (GATs), and let’s make that analogy here.  Consider:</p>
+<pre><code class="language-rust">impl Trait for () {
+    type Opaque&lt;'t, T&gt; = Concrete&lt;'t, T&gt;;
+    //   ^^^^^^ ^^^^^    ^^^^^^^^ ^^^^^
+    //   |      |        |        ^ Generic arguments applied
+    //   |      |        ^ Concrete type
+    //   |      ^ Generic parameters introduced into scope
+    //   ^ Alias type (similar to an opaque type)
+    fn foo&lt;T&gt;(&amp;self) -&gt; Self::Opaque&lt;'_, T&gt; { todo!() }
+    //                  ^^^^^^^^^^^^ ^^^^^
+    //                  ^ Alias type ^ Generic arguments applied
+}</code></pre>
+<p>The question is, are the generics in <code>use&lt;..&gt;</code> more like the generic <em>parameters</em> or more like the generic <em>arguments</em> above?</p>
+<p>If these generics are more like the generic <em>arguments</em> above (<em>Intuition #1</em>), then <code>impl&lt;..&gt; Trait</code> and <code>impl use&lt;..&gt; Trait</code> make a lot of sense as we’re <em>applying</em> these arguments to the type.  In Rust, when we’re applying generic arguments to a type, the generic arguments appear <em>after</em> the type, and <code>impl</code> is the stand-in for the type here.</p>
+<p>However, if these generics are more like the generic <em>parameters</em> above (<em>Intuition #2</em>), then <code>use&lt;..&gt; impl Trait</code> makes more sense.  In Rust, when we’re putting generic parameters into scope, they appear before the type.</p>
+<p>Since both intuitions are valid, but each argues for a different syntax choice, picking one is tough.  The authors are sympathetic to both choices.  The key historical and tiebreaker factors leading to our use of the <code>impl use&lt;..&gt; Trait</code> syntax in this RFC are:</p>
+<ul>
+<li>The original longstanding and motivating semantic intuition for this feature was <em>Intuition #1</em>, and it argues for this syntax.  The second intuition, <em>Intuition #2</em>, was only developed in the process of writing this RFC and after most of this RFC had been written.</li>
+<li>The <code>use&lt;..&gt; impl Trait</code> syntax was never proposed before this RFC was written (it may have been inspired by the presentation in this RFC of the second intuition), and in discussion, no clear consensus has yet emerged in its favor.</li>
+<li>There are some practical costs that exist for <code>use&lt;..&gt; impl Trait</code> that don’t for <code>impl use&lt;..&gt; Trait</code>.</li>
+<li>The “obvious” syntax for this feature is <code>impl&lt;..&gt; Trait</code>.  We may yet someday want to switch to this, and migrating from <code>impl use&lt;..&gt; Trait</code> seems like a smaller step.</li>
+</ul>
+<p>Nonetheless, we leave this as an <a href="#unresolved-questions">unresolved question</a>.</p>
+<h4 id="impl-trait--"><a class="header" href="#impl-trait--"><code>impl Trait &amp; ..</code></a></h4>
+<p>In some conceptions, the difference between <code>impl Trait + 'a + 'b</code> and <code>impl use&lt;'a, 'b&gt; Trait</code> is the difference between capturing the union of those lifetimes and capturing the intersection of them.  This inspires syntax proposals such as <code>impl Trait &amp; 't &amp; T</code> or <code>impl Trait &amp; ['t, T]</code> to express this intersection.</p>
+<p>One problem with the former of these is that it gives no obvious way to express that the opaque type captures nothing.  Another is that it would give <code>AsRef &amp;T</code> a valid but distinct meaning to <code>AsRef&lt;&amp;T&gt;</code> which might be confusing.</p>
+<p>For either of these, appearing later in the type would put these after higher ranked <code>for&lt;..&gt;</code> lifetimes may have been introduced.  This could be confusing, since <code>use&lt;..&gt;</code> (with any syntax) captures generic parameters for the entire type where <code>for&lt;..&gt;</code> applies individually to each bound.</p>
+<p>Overall, nobody seemed to like this syntax.</p>
+<h4 id="impl-kcaptures-trait"><a class="header" href="#impl-kcaptures-trait"><code>impl k#captures&lt;..&gt; Trait</code></a></h4>
+<p>We could use a new and very literal keyword such as <code>captures</code> rather than <code>use</code>.  There are three main drawbacks to this:</p>
+<ol>
+<li>There are limits to how this could be used in older editions.</li>
+<li>There’s a cost to each new keyword, and <code>use</code> is probably good enough.</li>
+<li>It’s somewhat long.</li>
+</ol>
+<p>Taking these in turn:</p>
+<p>One, while <code>captures</code> could be reserved in Rust 2024 and used in any position in that edition, and in Rust 2021 could be used as <code>k#captures</code> in any position, on older editions, it would only be able to be used where it could be made contextual.  This could limit how we might be able to scale this syntax to handle other use cases such as controlling the capturing of generic parameters and values in closure-like blocks (as discussed in the future possibilities).</p>
+<p>Two, each keyword takes from the space of names that users have available to them, and it increases the number of keywords with which users must be familiar (e.g. so as to not inadvertently trip over when choosing a name).  That is, each keyword has a cost.  If an existing keyword can reasonably be used in more places, then we get more benefit for that cost.  In this case, <code>use</code> is probably a strong enough choice that paying the cost for a new keyword doesn’t seem worth it.</p>
+<p>Three, <code>captures</code> would be a somewhat long keyword, especially when we consider how we might scale the use of this syntax to other places such as closure-like blocks.  We don’t want people to feel punished for being explicit about the generics that they capture, and we don’t want them to do other worse things (such as overcapturing where they should not) just to avoid visual bloat in their code, so if we can be more concise here, that seems like a win.</p>
+<h4 id="impl-movet-t-trait"><a class="header" href="#impl-movet-t-trait"><code>impl move&lt;'t, T&gt; Trait</code></a></h4>
+<p>We could use the existing <code>move</code> keyword, however the word “move” is semantically worse.  In Rust, we already <em>use</em> generic parameters in types, but we don’t <em>move</em> any generic parameters.  We move only <em>values</em>, so this could be confusing.  The word “use” is better.</p>
+<h4 id="impl-kviat-t-trait"><a class="header" href="#impl-kviat-t-trait"><code>impl k#via&lt;'t, T&gt; Trait</code></a></h4>
+<p>We could use a new short keyword such as <code>via</code>.  This has the number 1 and 2 drawbacks of <code>k#captures</code> mentioned above.  As with <code>move</code>, it also seems a semantically worse word.  With <code>use&lt;..&gt;</code>, we can explain that it means the opaque type <em>uses</em> the listed generic parameters.  In contrast, it’s not clear how we could explain the word “via” in this context.</p>
+<h4 id="using-parentheses-or-square-brackets"><a class="header" href="#using-parentheses-or-square-brackets">Using parentheses or square brackets</a></h4>
+<p>We could say <code>use('t, T)</code> or <code>use['t, T]</code>.  However, in Rust today, generic parameters always fall within angle brackets, even when being applied to a type.  Doing something different here could feel inconsistent and doesn’t seem warranted.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<h3 id="syntax-question"><a class="header" href="#syntax-question">Syntax question</a></h3>
+<p>We leave as an open question which of these two syntaxes we should choose:</p>
+<ol>
+<li><code>impl use&lt;..&gt; Trait</code>
+<ul>
+<li>This syntax is used throughout this RFC.</li>
+</ul>
+</li>
+<li><code>use&lt;..&gt; impl Trait</code>
+<ul>
+<li>This syntax is the worthy challenger.</li>
+</ul>
+</li>
+</ol>
+<p>See the <a href="#alternatives">alternatives</a> section above for a detailed comparative analysis of these options.</p>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<h3 id="opting-out-of-captures"><a class="header" href="#opting-out-of-captures">Opting out of captures</a></h3>
+<p>There will plausibly be cases where we want to capture many generic parameters and not capture only smaller number.  It could be convenient if there were a way to express this without listing out all of the in-scope type parameters except the ones not being captured.</p>
+<p>The way we would approach this with the <code>use&lt;..&gt;</code> syntax is to add some syntax that means “fill in all in-scope generic parameters”, then add syntax to remove certain generic parameters from the list.  E.g.:</p>
+<pre><code class="language-rust">fn foo&lt;'a, A, B, C, D&gt;(
+    _: &amp;'a A, b: B, c: C, d: D,
+) -&gt; impl use&lt;.., !'a, !A&gt; Sized {}
+//   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//   ^ Captures `B`, `C`, and `D` but not `'a` or `A`.</code></pre>
+<p>Here, the <code>..</code> means to include all in-scope generic parameters and <code>!</code> means to exclude a particular generic parameter even if previously included.</p>
+<p>We leave this to future work.</p>
+<h3 id="explicit-capturing-for-closure-like-blocks"><a class="header" href="#explicit-capturing-for-closure-like-blocks">Explicit capturing for closure-like blocks</a></h3>
+<p>Closures and closure-like blocks (e.g. <code>async</code>, <code>gen</code>, <code>async gen</code>, <code>async</code> closures, <code>gen</code> closures, <code>async gen</code> closures, etc.) return opaque types that capture both <em>values</em> and <em>generic parameters</em> from the outer scope.</p>
+<h4 id="specifying-captured-generics-for-closures-like-blocks"><a class="header" href="#specifying-captured-generics-for-closures-like-blocks">Specifying captured generics for closures-like blocks</a></h4>
+<p>The capturing of outer generics in closure-like blocks can lead to overcapturing, as in <a href="https://github.com/rust-lang/rust/issues/65442">#65442</a>.  Consider:</p>
+<pre><code class="language-rust">trait Trait {
+    type Ty;
+    fn define&lt;T&gt;(_: T) -&gt; Self::Ty;
+}
+
+impl Trait for () {
+    type Ty = impl Fn();
+    fn define&lt;T&gt;(_: T) -&gt; Self::Ty {
+        || ()
+    //~^ ERROR type parameter `T` is part of concrete type but not
+    //~|       used in parameter list for the `impl Trait` type alias
+    }
+}</code></pre>
+<p>Here, the opaque type of the closure is capturing <code>T</code>.  We may want a way to specify which outer generic parameters are captured by closure-like blocks.  We could apply the <code>use&lt;..&gt;</code> syntax to closure-like blocks to solve this, e.g.:</p>
+<pre><code class="language-rust">trait Trait {
+    type Ty;
+    fn define&lt;T&gt;(_: T) -&gt; Self::Ty;
+}
+
+impl Trait for () {
+    type Ty = impl Fn();
+    fn define&lt;T&gt;(_: T) -&gt; Self::Ty {
+        use&lt;&gt; || ()
+    //  ^^^^^^^^^^^
+    //  ^ Captures no generic parameters.
+    }
+}</code></pre>
+<p>We leave this to future work, but this demonstrates how the <code>use&lt;..&gt;</code> syntax can scale to solve other problems.</p>
+<h4 id="specifying-captured-values-for-closure-like-blocks"><a class="header" href="#specifying-captured-values-for-closure-like-blocks">Specifying captured values for closure-like blocks</a></h4>
+<p>Closure-like blocks capture values either by <em>moving</em> them or by <em>referencing</em> them.  How Rust decides whether values should be captured by move or by reference is implicit and can be a bit subtle.  E.g., this works:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(x: T) -&gt; impl FnOnce() -&gt; T {
+    || x
+}</code></pre>
+<p>…but this does not:</p>
+<pre><code class="language-rust">fn foo&lt;T: Copy&gt;(x: T) -&gt; impl FnOnce() -&gt; T {
+    || x
+//~^ ERROR may outlive borrowed value `x`
+}</code></pre>
+<p>While in simple cases like this we can apply <code>move</code> to the entire closure-like block to get the result that we want, in other cases other techniques are needed.</p>
+<p>We might want a syntax for specifying which values are captured by the closure-like block and how each value is captured.  We could apply the <code>use</code> syntax to solve this.  E.g.:</p>
+<pre><code class="language-rust">fn foo&lt;A, B, C, D&gt;(a: A, b: B, mut c: C, _: D) {
+    let f = use(a, ref b, ref mut c) || {
+        //      ^  ^^^^^  ^^^^^^^^^
+        //      |  |      ^ Captures `c` by mutable reference.
+        //      |  ^ Captures `b` by immutable reference.
+        //      ^ Captures `a` by move.
+        todo!()
+    }
+    todo!()
+}</code></pre>
+<p>This could be combined with specifying which outer generic parameters to capture, e.g. with <code>use&lt;A, B, C&gt;(a, ref b, ref mut c)</code>.</p>
+<p>We leave this to future work, but this demonstrates how the <code>use&lt;..&gt;</code> syntax can scale to solve other problems.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3614-project-goals.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3621-derive-smart-pointer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3614-project-goals.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3621-derive-smart-pointer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

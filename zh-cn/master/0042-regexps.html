@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>0042-regexps - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Start Date: 2014-04-12</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/42">rust-lang/rfcs#42</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/13700">rust-lang/rust#13700</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Add a <code>regexp</code> crate to the Rust distribution in addition to a small <code>regexp_macros</code> crate that provides a syntax extension for compiling regular expressions during the compilation of a Rust program.</p>
+<p>The implementation that supports this RFC is ready to receive feedback: https://github.com/BurntSushi/regexp</p>
+<p>Documentation for the crate can be seen here: http://burntsushi.net/rustdoc/regexp/index.html</p>
+<p>regex-dna benchmark (vs. Go, Python): https://github.com/BurntSushi/regexp/tree/master/benchmark/regex-dna</p>
+<p>Other benchmarks (vs. Go): https://github.com/BurntSushi/regexp/tree/master/benchmark</p>
+<p>(Perhaps the links should be removed if the RFC is accepted, since I can’t guarantee they will always exist.)</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>Regular expressions provide a succinct method of matching patterns against search text and are frequently used. For example, many programming languages include some kind of support for regular expressions in its standard library.</p>
+<p>The outcome of this RFC is to include a regular expression library in the Rust distribution and resolve issue <a href="https://github.com/mozilla/rust/issues/3591">#3591</a>.</p>
+<h2 id="detailed-design"><a class="header" href="#detailed-design">Detailed design</a></h2>
+<p>(Note: This is describing an existing design that has been implemented. I have no idea how much of this is appropriate for an RFC.)</p>
+<p>The first choice that most regular expression libraries make is whether or not to include backreferences in the supported syntax, as this heavily influences the implementation and the performance characteristics of matching text.</p>
+<p>In this RFC, I am proposing a library that closely models Russ Cox’s RE2 (either its C++ or Go variants). This means that features like backreferences or generalized zero-width assertions are not supported. In return, we get <code>O(mn)</code> worst case performance (with <code>m</code> being the size of the search text and <code>n</code> being the number of instructions in the compiled expression).</p>
+<p>My implementation currently simulates an NFA using something resembling the Pike VM. Future work could possibly include adding a DFA. (N.B. RE2/C++ includes both an NFA and a DFA, but RE2/Go only implements an NFA.)</p>
+<p>The primary reason why I chose RE2 was that it seemed to be a popular choice in issue <a href="https://github.com/mozilla/rust/issues/3591">#3591</a>, and its worst case performance characteristics seemed appealing. I was also drawn to the limited set of syntax supported by RE2 in comparison to other regexp flavors.</p>
+<p>With that out of the way, there are other things that inform the design of a regexp library.</p>
+<h3 id="unicode"><a class="header" href="#unicode">Unicode</a></h3>
+<p>Given the already existing support for Unicode in Rust, this is a no-brainer. Unicode literals should be allowed in expressions and Unicode character classes should be included (e.g., general categories and scripts).</p>
+<p>Case folding is also important for case insensitive matching. Currently, this is implemented by converting characters to their uppercase forms and then comparing them. Future work includes applying at least a simple fold, since folding one Unicode character can produce multiple characters.</p>
+<p>Normalization is another thing to consider, but like most other regexp libraries, the one I’m proposing here does not do any normalization. (It seems the recommended practice is to do normalization before matching if it’s needed.)</p>
+<p>A nice implementation strategy to support Unicode is to implement a VM that matches characters instead of bytes. Indeed, my implementation does this. However, the public API of a regular expression library should expose <em>byte indices</em> corresponding to match locations (which ought to be guaranteed to be UTF8 codepoint boundaries by construction of the VM). My reason for this is that byte indices result in a lower cost abstraction. If character indices are desired, then a mapping can be maintained by the client at their discretion.</p>
+<p>Additionally, this makes it consistent with the <code>std::str</code> API, which also exposes byte indices.</p>
+<h3 id="word-boundaries-word-characters-and-unicode"><a class="header" href="#word-boundaries-word-characters-and-unicode">Word boundaries, word characters and Unicode</a></h3>
+<p>At least Python and D define word characters, word boundaries and space characters with Unicode character classes. My implementation does the same by augmenting the standard Perl character classes <code>\d</code>, <code>\s</code> and <code>\w</code> with corresponding Unicode categories.</p>
+<h3 id="leftmost-first"><a class="header" href="#leftmost-first">Leftmost-first</a></h3>
+<p>As of now, my implementation finds the leftmost-first match. This is consistent with PCRE style regular expressions.</p>
+<p>I’ve pretty much ignored POSIX, but I think it’s very possible to add leftmost-longest semantics to the existing VM. (RE2 supports this as a parameter, but I believe still does not fully comply with POSIX with respect to picking the correct submatches.)</p>
+<h3 id="public-api"><a class="header" href="#public-api">Public API</a></h3>
+<p>There are three main questions that can be asked when searching text:</p>
+<ol>
+<li>Does the string match this expression?</li>
+<li>If so, where?</li>
+<li>Where are its submatches?</li>
+</ol>
+<p>In principle, an API could provide a function to only answer (3). The answers to (1) and (2) would immediately follow. However, keeping track of submatches is expensive, so it is useful to implement an optimization that doesn’t keep track of them if it doesn’t have to. For example, submatches do not need to be tracked to answer questions (1) and (2).</p>
+<p>The rabbit hole continues: answering (1) can be more efficient than answering (2) because you don’t have to keep track of <em>any</em> capture groups ((2) requires tracking the position of the full match). More importantly, (1) enables early exit from the VM. As soon as a match is found, the VM can quit instead of continuing to search for greedy expressions.</p>
+<p>Therefore, it’s worth it to segregate these operations. The performance difference can get even bigger if a DFA were implemented (which can answer (1) and (2) quickly and even help with (3)). Moreover, most other regular expression libraries provide separate facilities for answering these questions separately.</p>
+<p>Some libraries (like Python’s <code>re</code> and RE2/C++) distinguish between matching an expression against an entire string and matching an expression against part of the string. My implementation favors simplicity: matching the entirety of a string requires using the <code>^</code> and/or <code>$</code> anchors. In all cases, an implicit <code>.*?</code> is added the beginning and end of each expression evaluated. (Which is optimized out in the presence of anchors.)</p>
+<p>Finally, most regexp libraries provide facilities for splitting and replacing text, usually making capture group names available with some sort of <code>$var</code> syntax. My implementation provides this too. (These are a perfect fit for Rust’s iterators.)</p>
+<p>This basically makes up the entirety of the public API, in addition to perhaps a <code>quote</code> function that escapes a string so that it may be used as a literal in an expression.</p>
+<h3 id="the-regexp-macro"><a class="header" href="#the-regexp-macro">The <code>regexp!</code> macro</a></h3>
+<p>With syntax extensions, it’s possible to write an <code>regexp!</code> macro that compiles an expression when a Rust program is compiled. This includes translating the matching algorithm to Rust code specific to the expression given. This “ahead of time” compiling results in a performance increase. Namely, it elides all heap allocation.</p>
+<p>I’ve called these “native” regexps, whereas expressions compiled at runtime are “dynamic” regexps. The public API need not impose this distinction on users, other than requiring the use of a syntax extension to construct a native regexp. For example:</p>
+<pre><code>let re = regexp!("a*");
+</code></pre>
+<p>After construction, <code>re</code> is indistinguishable from an expression created dynamically:</p>
+<pre><code>let re = Regexp::new("a*").unwrap();
+</code></pre>
+<p>In particular, both have the same type. This is accomplished with a representation resembling:</p>
+<pre><code>enum MaybeNative {
+    Dynamic(~[Inst]),
+    Native(fn(MatchKind, &amp;str, uint, uint) -&gt; ~[Option&lt;uint&gt;]),
+}
+</code></pre>
+<p>This syntax extension requires a second crate, <code>regexp_macros</code>, where the <code>regexp!</code> macro is defined. Technically, this could be provided in the <code>regexp</code> crate, but this would introduce a runtime dependency on <code>libsyntax</code> for any use of the <code>regexp</code> crate.</p>
+<p><a href="https://github.com/rust-lang/rfcs/pull/42#issuecomment-40320112">@alexcrichton remarks</a> that this state of affairs is a wart that will be corrected in the future.</p>
+<h3 id="untrusted-input"><a class="header" href="#untrusted-input">Untrusted input</a></h3>
+<p>Given worst case <code>O(mn)</code> time complexity, I don’t think it’s worth worrying about unsafe search text.</p>
+<p>Untrusted regular expressions are another matter. For example, it’s very easy to exhaust a system’s resources with nested counted repetitions. For example, <code>((a{100}){100}){100}</code> tries to create <code>100^3</code> instructions. My current implementation does nothing to mitigate against this, but I think a simple hard limit on the number of instructions allowed would work fine. (Should it be configurable?)</p>
+<h3 id="name"><a class="header" href="#name">Name</a></h3>
+<p>The name of the crate being proposed is <code>regexp</code> and the type describing a compiled regular expression is <code>Regexp</code>. I think an equally good name would be <code>regex</code> (and <code>Regex</code>). Either name seems to be frequently used, e.g., “regexes” or “regexps” in colloquial use. I chose <code>regexp</code> over <code>regex</code> because it matches the name used for the corresponding package in Go’s standard library.</p>
+<p>Other possible names are <code>regexpr</code> (and <code>Regexpr</code>) or something with underscores: <code>reg_exp</code> (and <code>RegExp</code>). However, I perceive these to be more ugly and less commonly used than either <code>regexp</code> or <code>regex</code>.</p>
+<p>Finally, we could use <code>re</code> (like Python), but I think the name could be ambiguous since it’s so short. <code>regexp</code> (or <code>regex</code>) unequivocally identifies the crate as providing regular expressions.</p>
+<p>For consistency’s sake, I propose that the syntax extension provided be named the same as the crate. So in this case, <code>regexp!</code>.</p>
+<h3 id="summary-1"><a class="header" href="#summary-1">Summary</a></h3>
+<p>My implementation is pretty much a port of most of RE2. The syntax should be identical or almost identical. I think matching an existing (and popular) library has benefits, since it will make it easier for people to pick it up and start using it. There will also be (hopefully) fewer surprises. There is also plenty of room for performance improvement by implementing a DFA.</p>
+<h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
+<p>I think the single biggest alternative is to provide a backtracking implementation that supports backreferences and generalized zero-width assertions. I don’t think my implementation precludes this possibility. For example, a backtracking approach could be implemented and used only when features like backreferences are invoked in the expression. However, this gives up the blanket guarantee of worst case <code>O(mn)</code> time. I don’t think I have the wisdom required to voice a strong opinion on whether this is a worthwhile endeavor.</p>
+<p>Another alternative is using a binding to an existing regexp library. I think this was discussed in issue <a href="https://github.com/mozilla/rust/issues/3591">#3591</a> and it seems like people favor a native Rust implementation if it’s to be included in the Rust distribution. (Does the <code>regexp!</code> macro require it? If so, that’s a huge advantage.) Also, a native implementation makes it maximally portable.</p>
+<p>Finally, it is always possible to persist without a regexp library.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p>The public API design is fairly simple and straight-forward with no surprises.  I think most of the unresolved stuff is how the backend is implemented, which should be changeable without changing the public API (sans adding features to the syntax).</p>
+<p>I can’t remember where I read it, but someone had mentioned defining a <em>trait</em> that declared the API of a regexp engine. That way, anyone could write their own backend and use the <code>regexp</code> interface. My initial thoughts are YAGNI—since requiring different backends seems like a super specialized case—but I’m just hazarding a guess here. (If we go this route, then we might want to expose the regexp parser and AST and possibly the compiler and instruction set to make writing your own backend easier. That sounds restrictive with respect to making performance improvements in the future.)</p>
+<p>I personally think there’s great value in keeping the standard regexp implementation small, simple and fast. People who have more specialized needs can always pick one of the existing C or C++ libraries.</p>
+<p>For now, we could mark the API as <code>#[unstable]</code> or <code>#[experimental]</code>.</p>
+<h2 id="future-work"><a class="header" href="#future-work">Future work</a></h2>
+<p>I think most of the future work for this crate is to increase the performance, either by implementing different matching algorithms (e.g., a DFA) or by improving the code generator that produces native regexps with <code>regexp!</code>.</p>
+<p>If and when a DFA is implemented, care must be taken when creating a code generator, as the size of the code required can grow rapidly.</p>
+<p>Other future work (that is probably more important) includes more Unicode support, specifically for simple case folding.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="0040-libstd-facade.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="0048-traits.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="0040-libstd-facade.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="0048-traits.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

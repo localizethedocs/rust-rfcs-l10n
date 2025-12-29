@@ -1,0 +1,871 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3848-asm-const-ptr - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>asm_const_ptr</code></li>
+<li>Start Date: 2025-07-09</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3848">rust-lang/rfcs#3848</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/128464">rust-lang/rust#128464</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>The <code>const</code> operand to <code>asm!</code> and <code>global_asm!</code> currently only accepts integers. Change it to also accept pointer values. The value must be computed during const evaluation. The operand expands to the name of the symbol that the pointer references, plus an integer offset when necessary.</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>Right now, the only way to reference a global symbol from inline asm is to use the <code>sym</code> operand type.</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+static MY_GLOBAL: i32 = 10;
+
+fn main() {
+    let mut addr: *const i32;
+    unsafe {
+        asm!(
+            "lea {1}(%rip), {0}",
+            out(reg) addr,
+            sym MY_GLOBAL,
+            options(att_syntax)
+        );
+    }
+    assert_eq!(addr, &amp;MY_GLOBAL as *const i32);
+}
+</code></pre>
+<p>However, the <code>sym</code> operand has several limitations:</p>
+<ul>
+<li>It can only be used with a hard-coded path to one specific global.</li>
+<li>It can only reference the global as a whole, not a field of the global.</li>
+</ul>
+<h3 id="generics-and-const-evaluation"><a class="header" href="#generics-and-const-evaluation">Generics and const-evaluation</a></h3>
+<p>The <code>sym</code> operand lets you use generic parameters:</p>
+<pre><code class="language-rs">#[unsafe(naked)]
+extern "C" fn asm_trampoline&lt;T&gt;() {
+    naked_asm!(
+        "
+            tail {}
+        ",
+        sym trampoline::&lt;T&gt;
+    )
+}
+
+extern "C" fn trampoline&lt;T&gt;() { ... }
+</code></pre>
+<p>And you can compute integers in const evaluation:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+const fn math() -&gt; i32 {
+    1 + 2 + 3
+}
+
+fn main() {
+    let mut six: i32;
+    unsafe {
+        asm!(
+            "mov ${1}, {0:e}",
+            out(reg) six,
+            const math(),
+            options(att_syntax)
+        );
+    }
+    println!("{}", six);
+}
+</code></pre>
+<p>However, asm is otherwise incompatible with const eval. Const evaluation is only usable to compute integer constants; it cannot access symbols. For example:</p>
+<pre><code class="language-rs">#[unsafe(naked)]
+extern "C" fn asm_trampoline&lt;const FAST: bool&gt;() {
+    naked_asm!(
+        "tail {}",
+        sym if FAST { fast_impl } else { slow_impl },
+    )
+}
+
+extern "C" fn slow_impl() { ... }
+extern "C" fn fast_impl() { ... }
+</code></pre>
+<pre><code class="language-text">error: expected a path for argument to `sym`
+ --&gt; src/lib.rs:8:13
+  |
+8 |         sym if FAST { fast_impl } else { slow_impl },
+  |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+</code></pre>
+<p>And pointers also do not work:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+trait HasGlobal {
+    const PTR: *const Self;
+}
+
+static MY_I32: i32 = 42;
+impl HasGlobal for i32 {
+    const PTR: *const i32 = &amp;MY_I32;
+}
+
+fn get_addr&lt;T: HasGlobal&gt;() -&gt; *const T {
+    let mut addr: *const T;
+    unsafe {
+        asm!(
+            "lea {1}(%rip), {0}",
+            out(reg) addr,
+            sym T::PTR,
+            options(att_syntax)
+        );
+    }
+    addr
+}
+</code></pre>
+<pre><code class="language-text">error: invalid `sym` operand
+  --&gt; src/lib.rs:18:13
+   |
+18 |             sym T::PTR,
+   |             ^^^^^^^^^^ is a `*const T`
+   |
+   = help: `sym` operands must refer to either a function or a static
+</code></pre>
+<p>Casting the pointer to <code>usize</code> does not help:</p>
+<pre><code class="language-text">error: pointers cannot be cast to integers during const eval
+  --&gt; src/lib.rs:18:19
+   |
+18 |             const T::PTR as usize,
+   |                   ^^^^^^^^^^^^^^^
+   |
+   = note: at compile-time, pointers do not have an integer value
+</code></pre>
+<p>The Linux kernel currently works around this limitation by using a macro:</p>
+<pre><code class="language-rs">macro_rules! get_addr {
+    ($out:ident, $global:path) =&gt; {
+        core::arch::asm!(
+            "lea {1}(%rip), {0}",
+            out(reg) $out,
+            sym $global,
+            options(att_syntax)
+        )
+    };
+}
+
+static MY_I32: i32 = 42;
+
+fn main() {
+    let x: *const i32;
+    unsafe { get_addr!(x, MY_I32) };
+    println!("{}", unsafe { *x });
+}
+</code></pre>
+<p>With the macro it is possible to use the <code>sym</code> operand to access a global specified by the caller. However, this has the disadvantage of being a macro rather than a function call, and you also cannot get around the fact that you must specify the name of the global directly in the macro invocation.</p>
+<h3 id="accessing-fields"><a class="header" href="#accessing-fields">Accessing fields</a></h3>
+<p>Let’s say you want to access the field of a static.</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+#[repr(C)]
+struct MyStruct {
+    a: i32,
+    b: i32,
+}
+
+static MY_GLOBAL: MyStruct = MyStruct {
+    a: 10,
+    b: 42,
+};
+
+fn main() {
+    let mut addr: *const i32;
+    unsafe {
+        asm!(
+            "lea {1}(%rip), {0}",
+            out(reg) addr,
+            sym MY_GLOBAL.b,
+            options(att_syntax)
+        );
+    }
+    assert_eq!(addr, &amp;MY_GLOBAL.b as *const i32);
+}
+</code></pre>
+<pre><code class="language-text">error: expected a path for argument to `sym`
+  --&gt; src/main.rs:20:17
+   |
+20 |             sym MY_GLOBAL.b,
+   |                 ^^^^^^^^^^^
+</code></pre>
+<p>The only way to fix this is to use <code>offset_of!</code>.</p>
+<pre><code class="language-rs">use std::arch::asm;
+use std::mem::offset_of;
+
+#[repr(C)]
+struct MyStruct {
+    a: i32,
+    b: i32,
+}
+
+static MY_GLOBAL: MyStruct = MyStruct { a: 10, b: 42 };
+
+fn main() {
+    let mut addr: *const i32;
+    unsafe {
+        asm!(
+            "lea ({1} + {2})(%rip), {0}",
+            out(reg) addr,
+            sym MY_GLOBAL,
+            const offset_of!(MyStruct, b),
+            options(att_syntax)
+        );
+    }
+    assert_eq!(addr, &amp;MY_GLOBAL.b as *const i32);
+}
+</code></pre>
+<p>Having to use <code>offset_of!</code> to access a field is inconvenient. If we could pass a pointer instead of being limited to a symbol name, then this would be no issue as we could pass <code>&amp;MY_GLOBAL.b</code>.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>When writing assembly, you may use the <code>const</code> operand to insert a value that was evaluated in const context. The following types are supported:</p>
+<ul>
+<li>Integers.</li>
+<li>Pointers. (To sized types.)</li>
+<li>Function pointers.</li>
+</ul>
+<p>The <code>const</code> operand inserts the value directly into the inline assembly verbatim. The value will be evaluated using const evaluation, which ensures that the inserted value is known at compile time.</p>
+<p>Note that when working with pointers in const evaluation, the pointers are evaluated “symbolically”. That is to say, in const eval, a pointer is a symbolic value represented as an allocation and an offset. It’s impossible to turn a symbolic pointer into an integer during const eval. It’s done this way because when const evaluation runs, we don’t yet know the address of globals.</p>
+<p>The same caveat actually applies to assembly. We might not yet know the address of a symbol or function when running the assembler or linker. For this reason, linkers use similar symbolic math when working with pointers. This has consequences for how you are allowed to use symbols in assembly.</p>
+<p>The rest of the guide-level explanation will discuss what happens in practice when you use the <code>const</code> operand in different scenarios. Note that all of these examples also apply to the <code>sym</code> operand.</p>
+<h3 id="use-in-the-text-section"><a class="header" href="#use-in-the-text-section">Use in the <code>.text</code> section</a></h3>
+<p>Most commonly, instructions written in an inline assembly block will be stored in the <code>.text</code> section. This is where your executable machine code is stored.</p>
+<p>You can use the <code>const</code> operand to write a compile-time integer into the machine code. For example:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+fn main() {
+    let a: i32;
+    unsafe {
+        asm!(
+            "mov ${}, {:e}",
+            const 42,
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    println!("{}", a);
+}
+</code></pre>
+<p>This will expand to a program where a <code>mov</code> instruction is used to write the value 42 into a register, and the value of that register is then printed. The value 42 is hard-coded into the mov instruction.</p>
+<h4 id="position-independent-code"><a class="header" href="#position-independent-code">Position-independent code</a></h4>
+<p>When you use <code>const</code> with pointers rather than integers, you must think about position-independent code.</p>
+<p>Position-independent code is a special way of compiling machine code so that it doesn’t rely on the absolute address in memory it is stored at, and it is the default on most Rust targets. This has various advantages:</p>
+<ul>
+<li>When loading shared libraries, you can store them at any unused address. There is no risk that two shared libraries need to be stored at the same location.</li>
+<li>It allows for address space layout randomization (ASLR), which is a mitigation that exploitation harder. The idea is that every time you run an executable, you store everything at a new address so that exploits cannot hardcode the address something is stored at.</li>
+</ul>
+<p>However this means that the actual address of global variables is not yet known at link-time. Since some instructions require the value to be known at link-time, this can lead to linker errors when the <code>const</code> operand is used incorrectly.</p>
+<p>As an example of this going wrong, consider this code:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+static FORTY_TWO: i32 = 42;
+
+fn main() {
+    let a: *const i32;
+    unsafe {
+        asm!(
+            "mov ${}, {}",
+            const &amp;FORTY_TWO,
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    println!("{:p}", a);
+}
+</code></pre>
+<p>This will fail a linker error on most targets.</p>
+<p>This error is because a <code>mov</code> instruction requires you to hard-code the actual integer value into the instruction, but the address that <code>FORTY_TWO</code> will have when you execute the code is not yet known when the assembly code is turned into machine code.</p>
+<p>Note that if you compiled this for a target such as <code>x86_64-unknown-none</code> which does <em>not</em> use position independent code by default, then you will not get an error because the absolute address of <code>FORTY_TWO</code> is known at compile-time, so hard-coding it in <code>mov</code> is not an issue.</p>
+<h4 id="relative-values"><a class="header" href="#relative-values">Relative values</a></h4>
+<p>Note that whether it fails doesn’t just depend on the instruction, but also the kind of expression the constant is used in. For example, consider this code:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+static FORTY_TWO: i32 = 42;
+
+fn main() {
+    let a: *const i32;
+    unsafe {
+        asm!(
+            "mov $({} - .), {}",
+            const &amp;FORTY_TWO,
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    println!("{:p}", a);
+}
+</code></pre>
+<pre><code class="language-text">0x3cfb8
+</code></pre>
+<p>Here, the argument to <code>mov</code> is going to be <code>$(FORTY_TWO - .)</code> where the period means “the address of this instruction”. In this case, since <code>FORTY_TWO</code> and the <code>mov</code> instruction are stored in the same object file, the linker is able to compute the <em>offset</em> between the two addresses, even though it doesn’t know the absolute value of either address.</p>
+<h4 id="rip-relative-instructions"><a class="header" href="#rip-relative-instructions">Rip-relative instructions</a></h4>
+<p>This comes up more often with rip-relative instructions, which are instructions where the hard-coded value is relative to the instruction pointer (rip register). For example, using the load-effective-address (lea) instruction:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+static FORTY_TWO: i32 = 42;
+
+fn main() {
+    let a: *const i32;
+    unsafe {
+        asm!(
+            "lea {}(%rip), {}",
+            const &amp;FORTY_TWO,
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    println!("{:p}", a);
+}
+</code></pre>
+<pre><code class="language-text">0x562b445610ac
+</code></pre>
+<p>The above code creates a <code>lea</code> instruction that computes the value of <code>%rip</code> plus some hard-coded offset. This allows the instruction to store the real address of <code>FORTY_TWO</code> into <code>a</code> by hard-coding the offset between <code>FORTY_TWO</code> and the lea instruction.</p>
+<p>This kind of rip-relative instruction exists on basically every architecture.</p>
+<h3 id="symbols-from-dynamically-loaded-libraries"><a class="header" href="#symbols-from-dynamically-loaded-libraries">Symbols from dynamically loaded libraries</a></h3>
+<p>When you pass a pointer value to a symbol from a dynamically loaded library, then it’s not possible to use either absolute or relative addresses to access it. The address is truly not known until runtime. This is for several reasons:</p>
+<ul>
+<li>The location at which the library is loaded is not known until runtime.</li>
+<li>Even if you knew the location of the library, the library could have been recompiled, so you don’t even know the offset of the symbol in the library until runtime.</li>
+</ul>
+<p>When you use the <code>const</code> operand with a pointer to a symbol from a dynamically loaded library, you must use the symbol in one of the few contexts where this is permitted. The simplest example of this is the <code>call</code> instruction:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+fn main() {
+    let exit_code: i32 = 42;
+
+    unsafe {
+        asm!(
+            "call {}",
+            const libc::exit,
+            in("rdi") exit_code,
+            options(att_syntax,noreturn),
+        );
+    }
+}
+</code></pre>
+<p>In this scenario, the linker will expand <code>call</code> to different things depending on where the symbol comes from and the platform. For example, on Linux, if you <code>call</code> a symbol from another library, it uses a mechanism called the procedure linkage table (PLT). Usually, the way this works is that instead of calling <code>libc::exit</code> directly, it will call a dummy function in the PLT (which has a constant offset from the <code>call</code> instruction). The dummy function will jump to the real <code>libc::exit</code> function with the help of the dl loader.</p>
+<p>Another scenario is global variables that are not functions. At least on Linux, a global offset table (GOT) is used. Basically, the idea is that you are going to store a big array of pointers called the GOT, and your executable or library will include instructions to the linker (called relocations) that tell the linker to replace each pointer with the address of a given symbol. Since the GOT has a known fixed offset from your machine code, you can look up the address of any symbol through the GOT.</p>
+<pre><code class="language-rs">use libc::FILE;
+use std::arch::asm;
+
+unsafe extern "C" {
+    static stdin: *const FILE;
+}
+
+fn main() {
+    // The GOT has a pointer of type `*const *const FILE` that points
+    // to the real stdin global. This asm code will load the address
+    // of that GOT entry into `a`.
+    let a: *const *const *const FILE;
+    unsafe {
+        asm!(
+            "leaq {}@GOTPCREL(%rip), {}",
+            const &amp;stdin,
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    // Check that dereferencing the GOT entry gives the address of
+    // stdin.
+    println!("offset: {}", unsafe { (&amp;raw const stdin).byte_offset_from(*a)});
+}
+</code></pre>
+<pre><code class="language-text">offset: 0
+</code></pre>
+<p>Here, the <code>@GOTPCREL</code> directive tells the linker to create an entry in the GOT containing the value before the @ sign, and the expression then evaluates to the address of the GOT entry.</p>
+<p>That said, you would usually not use the <code>@GOTPCREL</code> directive with the <code>const</code> operand in machine code. The <code>@GOTPCREL</code> directive is mainly useful for loading the address of the global into a register, and there is a significantly simpler alternative for that: use the <code>in(reg)</code> operand instead of <code>const</code>.</p>
+<pre><code class="language-rs">use libc::FILE;
+use std::arch::asm;
+
+unsafe extern "C" {
+    static stdin: *const FILE;
+}
+
+fn main() {
+    let a: *const *const FILE;
+    unsafe {
+        asm!(
+            "mov {}, {}",
+            in(reg) &amp;stdin,
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    println!("offset: {}", unsafe { (&amp;raw const stdin).byte_offset_from(a)});
+}
+</code></pre>
+<pre><code class="language-text">0
+</code></pre>
+<p>In this scenario, the compiler will compute the address of <code>stdin</code> before the assembly block using whichever mechanism is most efficient for the given symbol. In this case, that is a lookup using the GOT, but for a locally-defined symbol it would not need a GOT lookup.</p>
+<h3 id="use-in-other-sections"><a class="header" href="#use-in-other-sections">Use in other sections</a></h3>
+<p>The <code>.text</code> section of the binary contains the executable machine code, and this section is normally immutable. This ensures that if many programs load the same shared library, the parts that constitute the <code>.text</code> section will be identical across each copy, meaning that the same physical memory can be reused for each copy of the library.</p>
+<p>However, sections other than the <code>.text</code> section may not be immutable. For example, the section that contains <code>static mut</code> variables is mutable. In this case, we can make use of something called a <em>relocation</em>. This is a directive to the dl loader, which tells it to <em>replace</em> a given location with the address of a given symbol.</p>
+<p>When you use the <code>const</code> operand to place a value in a custom section, relocations are automatically used when necessary. This means that even though the address of <code>FORTY_TWO</code> and <code>stdin</code> are not known in the below example, it’s still possible to store the addresses in static data:</p>
+<pre><code class="language-rs">use libc::FILE;
+use std::arch::asm;
+
+static FORTY_TWO: i32 = 42;
+
+unsafe extern "C" {
+    static stdin: *const FILE;
+    static my_section_start: usize;
+}
+
+fn main() {
+    // This asm block no longer computes a value at runtime. Instead,
+    // it injects directives that instruct the assembler to create a
+    // new section in the compiled binary and write data to it.
+    #[allow(named_asm_labels)]
+    unsafe {
+        asm!(
+            ".pushsection .my_data_section, \"aw\"",
+            ".globl my_section_start",
+            ".balign 8",
+            "my_section_start:",
+            ".quad {} - .", // period = address of this .quad
+            ".quad {}",
+            ".quad {}",
+            ".popsection",
+            const &amp;FORTY_TWO,
+            const &amp;FORTY_TWO,
+            const &amp;stdin,
+            options(att_syntax),
+        );
+    }
+
+    let section: *const usize = unsafe { &amp;my_section_start };
+
+    let value1 = unsafe { *section.add(0).cast::&lt;isize&gt;() };
+    let value2 = unsafe { *section.add(1).cast::&lt;*const i32&gt;() };
+    let value3 = unsafe { *section.add(2).cast::&lt;*const *const FILE&gt;() };
+
+    println!("{},{}", value1, unsafe { (&amp;raw const FORTY_TWO).byte_offset_from(section) });
+    println!("{:p},{:p}", value2, &amp;raw const FORTY_TWO);
+    println!("{:p},{:p}", value3, &amp;raw const stdin);
+}
+</code></pre>
+<pre><code class="language-text">-75980,-75980
+0x5a1f461700ac,0x5a1f461700ac
+0x7da04bf026b0,0x7da04bf026b0
+</code></pre>
+<p>In this case, the asm block ends up creating a section containing three integers:</p>
+<ul>
+<li>The offset from the section to the <code>FORTY_TWO</code> global.</li>
+<li>The address of the <code>FORTY_TWO</code> global.</li>
+<li>The address of the <code>stdin</code> global.</li>
+</ul>
+<p>Only the first of these three values is actually a constant value, and if you inspect the binary, the actual values in the section are going to be <code>-75980, 0, 0</code>. The two zeros are filled in when loading the program into memory based on relocations emitted by the linker.</p>
+<p>Note that if you try to use <code>stdin</code> with <code>{} - .</code> to make it relative, then this will fail to compile because there is no relocation to insert a relative address when the symbol is from a dynamically loaded library.</p>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<p>The <code>const</code> operand has different behavior depending on the provided argument. It accepts the following types:</p>
+<ul>
+<li>Any integer type.</li>
+<li>Raw pointers and references to sized types.</li>
+<li>Function pointers.</li>
+</ul>
+<p>The argument is evaluated using const evaluation.</p>
+<h3 id="integer-values"><a class="header" href="#integer-values">Integer values</a></h3>
+<p>If the argument type is any integer type, then the value is inserted into the asm block as plain text. This behavior exists on stable Rust today.</p>
+<p>If the argument type is a raw pointer, but the value of the raw pointer is an integer, then the behavior is the same as when passing an integer type. This includes cases such as:</p>
+<ul>
+<li><code>core::ptr::null()</code></li>
+<li><code>0xA000_000 as *mut u8</code></li>
+<li><code>core::ptr::null().wrappind_add(1000)</code></li>
+<li><code>core::ptr::without_provenance(1000)</code></li>
+</ul>
+<h3 id="pointer-values-to-a-named-symbol"><a class="header" href="#pointer-values-to-a-named-symbol">Pointer values to a named symbol</a></h3>
+<p>When the argument type is a raw pointer, reference, or function pointer that points at a named symbol, then the compiler will insert <code>symbol_name</code> into the asm block as plain text. In this scenario, it is equivalent to using the <code>sym</code> operand.</p>
+<p>When the pointer was created from a named symbol, but is offset from the symbol itself (e.g. it points at a field of the symbol), then the compiler will insert <code>symbol_name+offset</code> (or <code>symbol_name-offset</code>) into the asm block as plain text. In this scenario, using <code>{}</code> with a const operand is equivalent to writing <code>{}+offset</code> (or <code>{}-offset</code>) with the <code>sym</code> operand.</p>
+<p>The compiler may choose to emit the symbol name by inserting it into the asm verbatim, or by using certain backend-specific operands (e.g. <code>'i'</code> or <code>'s'</code>), depending on what the backend supports.</p>
+<h3 id="pointer-values-to-an-unnamed-global"><a class="header" href="#pointer-values-to-an-unnamed-global">Pointer values to an unnamed global</a></h3>
+<p>Not all globals are named. For example, when using static promotion to create a variable stored statically, the location of the global has no name.</p>
+<p>In this scenario, the compiler will generate a name for the symbol and emit <code>symbol_name</code> or <code>symbol_name+offset</code> (or <code>symbol_name-offset</code>) using the newly generated symbol, under the same rules as named symbols.</p>
+<p>The compiler may choose any name for this symbol. The name may be chosen by rustc and emitted to the backend as <code>symbol_name</code> or <code>symbol_name+offset</code> (or <code>symbol_name-offset</code>), or rustc may pass the pointer to the backend using a backend-specific operand (e.g. <code>'i'</code>) and let the backend choose the name.</p>
+<h3 id="coercions"><a class="header" href="#coercions">Coercions</a></h3>
+<p>Const parameters will be a coercion site for function pointers. This means that when a function item is passed to a <code>const</code> argument, it will be coerced to a function pointer. The same applies to closures without captures.</p>
+<p>No other coercions will happen.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>The new operand supports every use-case that the <code>sym</code> operand supports (with the possible exception of thread-locals). It may or may not make sense to emit a warning if <code>const</code> is used in cases where <code>sym</code> could be used instead.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and alternatives</a></h2>
+<h3 id="why-extend-the-const-operand"><a class="header" href="#why-extend-the-const-operand">Why extend the <code>const</code> operand</a></h3>
+<p>This RFC proposes to add pointer support to the existing <code>const</code> operand rather than add a new operand or extend the <code>sym</code> operand. I think this makes sense, since there are many other contexts where const-evaluated pointers work together with the <code>const</code> keyword.</p>
+<p>Extending the <code>sym</code> operand is not a workable solution because of the kind of argument it takes. Currently, the <code>sym</code> operand takes a path, so if we extended it to also support pointers, then <code>sym MY_GLOBAL</code> and <code>sym &amp;MY_GLOBAL</code> would be equivalent. Or worse, if <code>MY_GLOBAL</code> has a raw pointer type, then <code>sym MY_GLOBAL</code> becomes ambiguous.</p>
+<p>Adding a new operand is an option, but I don’t think there is any reason to do so. Using the name <code>const</code> for anything that can be evaluated during const evaluation is entirely normal in Rust, even if the absolute address is not known until runtime.</p>
+<p>If we wish to choose a different name than <code>const</code> for the operand that takes a pointer value, then we should be careful to pick a name that can not be confused with the <code>memory</code> operand proposed in the future possibilities section at the end of this RFC. The name <code>const</code> does not have this issue.</p>
+<h3 id="what-about-wide-pointers"><a class="header" href="#what-about-wide-pointers">What about wide pointers</a></h3>
+<p>When passing a <code>&amp;str</code> or <code>&amp;[u8]</code> to an inline asm block, it could make sense to treat this as the address of the given string. However, there is potential for confusion with <em>interpolation</em>.</p>
+<p>Interpolation is when a string is inserted verbatim into assembly. For example, you could imagine having a string containing the name of a symbol and inserting the string verbatim:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+static FORTY_TWO: i32 = 42;
+
+fn main() {
+    let a: *const i32;
+    unsafe {
+        asm!(
+            "mov ${}, {}",
+            interpolate "FORTY_TWO",
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    println!("{:p}", a);
+}
+</code></pre>
+<p>Or even interpolating entire instructions:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+static FORTY_TWO: i32 = 42;
+
+fn main() {
+    let a: *const i32;
+    unsafe {
+        asm!(
+            "{}, {}",
+            interpolate "mov $FORTY_TWO",
+            out(reg) a,
+            options(att_syntax),
+        );
+    }
+    println!("{:p}", a);
+}
+</code></pre>
+<p>To avoid confusion with this hypothetical interpolate operand, this RFC proposes that wide pointers cannot be passed to the <code>const</code> operand. You must do e.g. this:</p>
+<pre><code class="language-rs">const "my_string".as_ptr()
+</code></pre>
+<p>to insert a pointer to the string.</p>
+<h3 id="ambiguity-in-the-expansion"><a class="header" href="#ambiguity-in-the-expansion">Ambiguity in the expansion</a></h3>
+<p>Const evaluation is very restrictive about what you can do to a pointer. This means that the pointer’s provenance always unambiguously determines which symbol should be used in the expansion.</p>
+<p>Any future language features that introduce ambiguity here must address how they affect the <code>const</code> operand. An example of such a feature would be casting pointers to integers during const eval.</p>
+<h3 id="what-about-codegen-units"><a class="header" href="#what-about-codegen-units">What about codegen units</a></h3>
+<p>Rust may choose to split a crate into multiple codegen units to enable parallel compilation. This is not an issue for this RFC because when the codegen units are statically linked, the offsets between symbols from different units become known constants. This allows the linker to resolve references between them correctly.</p>
+<h3 id="implementation-complexity"><a class="header" href="#implementation-complexity">Implementation complexity</a></h3>
+<p>The implementation of this feature in rustc is straightforward. The compiler’s only responsibility is to perform const evaluation on the pointer and then insert the resulting symbol and offset into the assembly string. All of the complex logic for handling relocations and symbol resolution is handled by the backend (LLVM) and the linker. Rustc does not need to implement any of this logic itself.</p>
+<h3 id="large-offsets-and-memory-operands"><a class="header" href="#large-offsets-and-memory-operands">Large offsets and memory operands</a></h3>
+<p>Sarah brings up a concern about large offsets <a href="https://github.com/rust-lang/rust/issues/128464#issuecomment-2859580807">on github</a>. In this concern, the assumption is that we are going to expand</p>
+<pre><code class="language-rs">asm!("lea rax, {P}", P = const &amp;3usize);
+</code></pre>
+<p>to</p>
+<pre><code class="language-rs">asm!("lea rax, [rip + three_symbol]");
+</code></pre>
+<p>However this expansion is what you get when you use the memory operand <code>'m'</code>. That is not the expansion used by this RFC. The <code>const</code> operand proposed by this RFC corresponds to the <code>'i'</code> operand in C and <em>not</em> to the <code>'m'</code> operand. The main difference here is that the <code>'m'</code> operand operates <em>on the place behind the pointer</em>, whereas the <code>'i'</code> operand operates on the pointer value itself.</p>
+<p>This means that the code shared by Sarah <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2024&amp;gist=c583db3a2aa7f007381eaec2029fd040">will fail with a linker error on most Rust targets</a> because it’s missing the <code>[rip + _]</code>. In assembly under Intel syntax, square brackets is how you dereference an address. If you want the expansion that Sarah used, you must instead write this:</p>
+<pre><code class="language-rs">asm!("lea rax, [rip + {P}]", P = const &amp;3usize);
+</code></pre>
+<p>(<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2024&amp;gist=684dc97aedb328b95c45b9725e1c0be5">playground</a>)</p>
+<p>which uses the relatively simple expansion of inserting the symbol name verbatim.</p>
+<p>To summarize, the concern that Sarah shares about the <code>lea</code> instruction getting mangled by LLVM is mostly relevant if we add a Rust equivalent to the <code>'m'</code> operand, because that operand uses a much more complex expansion where you need to understand the instruction that it is expanded into.</p>
+<h4 id="why-not-add-the-memory-operand-instead"><a class="header" href="#why-not-add-the-memory-operand-instead">Why not add the memory operand instead?</a></h4>
+<p>The actual use-case that motivated this RFC is tracepoints in the Linux Kernel. Here, we need to place a relative symbol into a section</p>
+<pre><code class="language-text">.pushsection .my_data_section, "aw"
+.balign 8
+.quad {} - .
+.popsection
+</code></pre>
+<p>with <code>{}</code> being the address of a <em>field</em> in a <code>static</code>. The memory operand cannot do this.</p>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<p>When compared to C inline assembly, this feature is most similar to the <code>'i'</code> operand. However, the <code>'i'</code> operand is less reliable to work with than what is proposed in this RFC. For example, this C code:</p>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+static const int FORTY_TWO = 42;
+
+int main(void) {
+    const int *a;
+
+    __asm__ (
+        "movabs %1 - ., %0"
+        : "=r" (a)
+	    : "i" (&amp;FORTY_TWO)
+    );
+
+    printf("%p\n", (void *)a);
+
+    return 0;
+}
+</code></pre>
+<p>will have identical behavior to the <code>const</code> operand when it compiles. However, in practice Clang will fail to compile this code on x86 targets using GOT relocation, whereas GCC compiles it just fine.</p>
+<p>Another difference is that C will accept runtime values to the <code>'i'</code> operand as long as the compiler is able to optimize them to a constant value. That is to say, whether the <code>'i'</code> operand compiles depends on compiler optimizations. This means that in C, you can have a function that takes a pointer argument, and pass it to the <code>'i'</code> operand. As long as the function is inlined and the caller provided a constant value, this will compile.</p>
+<p>To avoid having compiler optimizations (including inlining decisions!) affect whether code compiles or not, this RFC proposes that the <code>const</code> operand requires const evaluation even though this means that passing a pointer as a function argument requires tricks such as this one:</p>
+<pre><code class="language-rs">use std::arch::asm;
+
+trait HasGlobal {
+    const PTR: *const Self;
+}
+
+static MY_I32: i32 = 42;
+impl HasGlobal for i32 {
+    const PTR: *const i32 = &amp;MY_I32;
+}
+
+fn get_addr&lt;T: HasGlobal&gt;() -&gt; *const T {
+    let mut addr: *const T;
+    unsafe {
+        asm!(
+            "lea {1}(%rip), {0}",
+            out(reg) addr,
+            const T::PTR,
+            options(att_syntax)
+        );
+    }
+    addr
+}
+</code></pre>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<p>In the future, we may wish to consider adding other operands that Rust is missing.</p>
+<h3 id="memory-operand"><a class="header" href="#memory-operand">Memory operand</a></h3>
+<p>It would make sense to add a Rust equivalent to the <code>'m'</code> operand, also called the memory operand. The idea is that the operand takes a pointer argument, but it expands to the place behind the pointer instead of the pointer itself. That is to say, the operand contains an implicit dereference.</p>
+<p>The memory operand is useful because it leaves significantly more flexibility to the compiler / assembler. For example, if you use inline asm to read from a global variable, then the compiler can choose one of several expansions:</p>
+<ul>
+<li>If the address of the global is known verbatim at link time, then the verbatim address may be hard-coded into the instruction.</li>
+<li>If the rip-relative address of the global is known, then a rip-relative instruction may be used instead.</li>
+<li>If the global is in another dynamic library, the compiler may load the address into a register before the asm block and insert that register in place of the operand.</li>
+</ul>
+<p>That is, the operand is more limiting by not giving you access to the address as a value, but that also makes it much more flexible. You usually do not need to care about where the target symbol is defined with the memory operand.</p>
+<p>Note that with the memory operand, const evaluation is not needed. If the pointer is a runtime value, it will just be loaded into a register and the operand will expand to something using that register.</p>
+<h3 id="interpolation"><a class="header" href="#interpolation">Interpolation</a></h3>
+<p>We could add an operand for interpolating a string into the assembly verbatim. See <a href="#what-about-wide-pointers">the section on wide pointers</a> for more info.</p>
+<h3 id="formatting-specifiers"><a class="header" href="#formatting-specifiers">Formatting Specifiers</a></h3>
+<p>Similar to how <code>println!</code> uses format specifiers like <code>{:x}</code> or <code>{:?}</code> to change how a value is printed, the <code>asm!</code> format string could be extended to support specifiers for its operands. This would provide a more convenient way to request architecture-specific formatting without requiring the user to write it manually.</p>
+<p>For example, a <code>pcrel</code> specifier could be introduced for program-counter-relative addressing, used like <code>asm!("lea {0:pcrel}, rax", sym MY_GLOBAL)</code>. The specifier (<code>:pcrel</code>) modifies how the operand is rendered. On x86, the behavior would be:</p>
+<ul>
+<li>For an integer (<code>const 123</code>), <code>{0:pcrel}</code> would expand to the integer value with a dollar sign: <code>$123</code>.</li>
+<li>For a symbol operand (<code>sym my_symbol</code>), <code>{0:pcrel}</code> would expand to <code>my_symbol(%rip)</code>.</li>
+<li>For an offset symbol operand (<code>const &amp;MY_GLOBAL.field</code>), <code>{0:pcrel}</code> would expand to <code>(symbol+offset)(%rip)</code>.</li>
+</ul>
+<p>This syntax could apply to both <code>sym</code> and <code>const</code> operands. This kind of formatting can be quite useful due to assembly language quirks. For example, on x86:</p>
+<ul>
+<li>On one hand, <code>symbol(%rip)</code> means <code>%rip + (symbol - %rip)</code> (where the part in parentheses is calculated at link time), so it is equal to just writing <code>symbol</code> except that the instruction uses rip-relative addressing.</li>
+<li>On the other hand, <code>100(%rip)</code> means <code>%rip + 100</code>, so it is <em>not</em> equal to <code>100</code>. The thing that actually means 100 in this context is <code>$100</code>.</li>
+</ul>
+<p>Therefore, having a way to format into either <code>symbol(%rip)</code> or <code>$100</code> is quite useful.</p>
+<p>Note that <code>{:pcrel}</code> is an interesting middle ground between the bare <code>const</code>/<code>sym</code> operand and the memory operand. On one hand, the expansion is going to be architecture-specific, so it’s a bit more complex than the <code>symbol+offset</code> expansion. But unlike the memory operand, it does not need to understand the context in which it is used within the asm block.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3841-demote-x86_64-apple-darwin.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3849-Project-Goals-2025h2.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3841-demote-x86_64-apple-darwin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3849-Project-Goals-2025h2.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,559 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2116-alloc-me-maybe - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: fallible_collection_alloc</li>
+<li>Start Date: 2017-08-18</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/2116">rust-lang/rfcs#2116</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/48043">rust-lang/rust#48043</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>Add minimal support for fallible allocations to the standard collection APIs. This is done in two ways:</p>
+<ul>
+<li>For users with unwinding, an <code>oom=panic</code> configuration is added to make global allocators panic on oom.</li>
+<li>For users without unwinding, a <code>try_reserve() -&gt; Result&lt;(), CollectionAllocErr&gt;</code> method is added.</li>
+</ul>
+<p>The former is sufficient to unwinding users, but the latter is insufficient for the others (although it is a decent 80/20 solution). Completing the no-unwinding story is left for future work.</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>Many collection methods may decide to allocate (push, insert, extend, entry, reserve, with_capacity, …) and those allocations may fail. Early on in Rust’s history we made a policy decision not to expose this fact at the API level, preferring to abort. This is because most developers aren’t prepared to handle it, or interested. Handling allocation failure haphazardly is likely to lead to many never-tested code paths and therefore bugs. We call this approach <em>infallible</em> collection allocation, because the developer model is that allocations just don’t fail.</p>
+<p>Unfortunately, this stance is unsustainable in several of the contexts Rust is designed for. This RFC seeks to establish a basic <em>fallible</em> collection allocation API, which allows our users to handle allocation failures where desirable. This RFC does not attempt to perfectly address all use cases, but does intend to establish the goals and constraints of those use cases, and sketches a path forward for addressing them all.</p>
+<p>There are 4 user profiles we will be considering in this RFC:</p>
+<ul>
+<li>embedded: task-oriented, robust, pool-based, no unwinding</li>
+<li>gecko: semi-task-oriented, best-effort, global, no unwinding</li>
+<li>server: task-oriented, semi-robust, global, unwinding</li>
+<li>runtime: whole-system, robust, global, no unwinding</li>
+</ul>
+<h3 id="user-profile-embedded"><a class="header" href="#user-profile-embedded">User Profile: Embedded</a></h3>
+<p>Embedded devs are primarily well-aligned with Rust’s current strategy. First and foremost, embedded devs just try to <em>not</em> dynamically allocate. Memory should ideally all be allocated at startup. In cases where this isn’t practical, simply aborting the process is often the next-best choice. Robust embedded systems need to be able to recover from a crash anyway, and aborting is completely fool-proof.</p>
+<p>However, sometimes the embedded system needs to process some user-defined tasks with unpredictable allocations, and completely crashing on OOM would be inappropriate. In those cases handling allocation failure is the right solution. In the case of a failure, the entire task usually reports a failure and is torn down. To make this robust, all allocations for a task are usually isolated to a single pool that can easily be torn down. This ensures nothing leaks, and helps avoid fragmentation. The important thing to note is that the embedded developers are ready and willing to take control of all allocations to do this properly.</p>
+<p>Some embedded systems do use unwinding, but this is very rare, so it cannot be assumed.</p>
+<p>It seems they would be happy to have some system to prevent infallible allocations from ever being used.</p>
+<h3 id="user-profile-gecko"><a class="header" href="#user-profile-gecko">User Profile: Gecko</a></h3>
+<p>Gecko is also primarily well-aligned with Rust’s current strategy. For the most part, they liberally allocate and are happy to crash on OOM. This is especially palatable now that firefox is multiprocess. However as a <em>quality of implementation</em> matter, they occasionally make some subroutines fallible. For instance, it would be unfortunate if a single giant image prevented a page from loading. Similarly, running out of memory while processing a style sheet isn’t significantly different from failing to download it.</p>
+<p>However in contrast to the embedded case, this isn’t done in a particularly principled way. Some parts might be fallible, some might be infallible. Nothing is pooled to isolate tasks. It’s just a best-effort affair.</p>
+<p>Gecko is built without unwinding.</p>
+<p>It seems they would be happy to have some system to prevent infallible allocations from ever being used.</p>
+<p>Gecko’s need for this API as soon as possible will result in it temporarily forking several of the std collections, which is the primary impetus for this RFC.</p>
+<h3 id="user-profile-server"><a class="header" href="#user-profile-server">User Profile: Server</a></h3>
+<p>This represents a commodity server which handles tasks using threads or futures.</p>
+<p>Similar to the embedded case, handling allocation failure at the granularity of tasks is ideal for quality-of-implementation purposes. However, unlike embedded development, it isn’t considered practical (in terms of cost) to properly take control of everything and ensure allocation failure is handled robustly.</p>
+<p>Here unwinding is available, and seems to be the preferred solution, as it maximizes the chances of allocation failures bubbling out of whatever libraries are used. This is unlikely to be totally robust, but that’s ok.</p>
+<p>With unwinding there isn’t any apparent use for an infallible allocation checker.</p>
+<h3 id="user-profile-runtime"><a class="header" href="#user-profile-runtime">User Profile: Runtime</a></h3>
+<p>A garbage-collected runtime (such as SpiderMonkey or the Microsoft CLR), is generally expected to avoid crashing due to out-of-memory conditions. Different strategies and allocators are used for different situations here. Most notably, there are allocations on the GC heap for the running script, and allocations on the global heap for the actual runtime’s own processing (e.g. performing a JIT compilation).</p>
+<p>Allocations on the GC heap aren’t particularly interesting for our purposes, as these need to have a special format for tracing, and management by the runtime. A runtime probably wouldn’t ever want to build a native Vec backed by the GC heap, but a Vec <em>might</em> contain GC’d pointers that the runtime must trace. Thankfully, this is unrelated to the process of allocating the Vec itself.</p>
+<p>When performing a GC, allocating data structures may enable faster or more responsive strategies, but the system must be ready to fall back to less memory-intensive solution in the case of allocation failure. In the limit, very small allocations in critical sections may be infallible.</p>
+<p>When performing a JIT, running out of memory can generally be gracefully handled by failing the compilation and remaining in a less-optimized mode (such as the interpreter). For the most part fallible allocation is used here. However SpiderMonkey occasionally uses an interesting mix of fallible and infallible allocations to avoid threading errors through some particularly complex subroutines. Essentially, a chunk of memory is reserved that is supposed to be statically guaranteed to be sufficient for the subroutine to complete its task, and all allocations in the subroutine are subsequently treated as infallible. In debug builds, running out of memory will trigger an abort. In release builds they will first try to just get more memory and proceed, but abort if this fails.</p>
+<p>Although the language the runtime hosts may have an unwinding/exceptions for OOM conditions when the GC heap runs out of space, the runtime itself generally doesn’t use unwinding to handle its own allocation failures.</p>
+<p>Due to mixed fallible/infallible allocation use, tools which prevent the use of infallible allocation may not be appropriate.</p>
+<p>The Runtime dev profile seems to closely reflect that of Database dev (which wasn’t seriously researched for this RFC). A database is in some sense just a runtime for its query language (e.g. SQL), with similar reliability constraints.</p>
+<p>Aside: many devs in this space have a testing feature which can repeatedly run test cases with OOMs injected at the allocator level. This doesn’t really effect our constraints, but it’s something to keep in mind to address the “many untested paths” issue.</p>
+<h3 id="additional-background-how-collections-handle-allocation-now"><a class="header" href="#additional-background-how-collections-handle-allocation-now">Additional Background: How Collections Handle Allocation Now</a></h3>
+<p>All of our collections consider there to be two interesting cases:</p>
+<ul>
+<li>The capacity got too big (&gt;<code>isize::MAX</code>), which is handled by <code>panic!("capacity overflow")</code></li>
+<li>The allocator returned an err (even Unsupported), which is handled by calling <code>allocator.oom()</code></li>
+</ul>
+<p>To make matters more complex, on 64-bit platforms we don’t check the <code>isize::MAX</code> condition directly, instead relying on the allocator to deterministically fail on any request that far exceeds a quantity the page table can even support (no 64-bit system we support uses all 64 bits of the pointer, even with new-fangled 5-level page tables). This means that 64-bit platforms behave slightly different on catastrophically large allocations (abort instead of panic).</p>
+<p>These behaviours were purposefully designed, but probably not particularly well-motivated, <a href="https://github.com/rust-lang/rust/issues/42808">as discussed here</a>. Some of these details are documented, although not correctly or in sufficient detail. For instance <code>Vec::reserve</code> only mentions panicking when overflowing <code>usize</code>, which is accurate for 64-bit but not 32-bit or 16-bit. Oddly no mention of out-of-memory conditions or aborts can be found anywhere in Vec’s documentation.</p>
+<p>To make matters more complex, the (unstable) <code>heap::Alloc</code> trait currently documents that any oom impl can panic <em>or</em> abort, so collection users need to assume that can happen anyway. This is intended insofar as it was considered desirable for local allocators, but is considered an oversight in the global case. This is because Alloc is mostly designed around local allocators.</p>
+<p>This is enough of a mess (which to be clear can be significantly blamed on the author) that the author expects no one is relying on the specific behaviours here, and they could be changed pretty liberally. That said, the primary version of this proposal doesn’t attempt to change any of these behaviours. It’s certainly a plausible alternative, though.</p>
+<h3 id="additional-background-allocation-failure-in-c"><a class="header" href="#additional-background-allocation-failure-in-c">Additional Background: Allocation Failure in C(++)</a></h3>
+<p>There are two ways that collection allocation failure is handled in C(++): with error return values, and with unwinding (C++ only). The C++ standard library (STL) only provides fallible allocations through exceptions, but the broader ecosystem also uses return values. For example, mozilla’s own standard library (MFBT) only uses return values.</p>
+<p>Unfortunately, attempting to handle allocation failure in C(++) has been a historical source of critical vulnerabilities. For instance, if reallocating an array fails but isn’t noticed, the user of the array can end up thinking it has more space than it actually does and writing past the end of the allocation.</p>
+<p>The return-value-based approach is problematic because neither language has good facilities for mandating that a result is actually <em>checked</em>. There are two notable cases here: when the result of the allocation is some kind of error code (e.g. a bool), or the result is a pointer into the allocation (or a specific pointer indicating failure).</p>
+<p>In the error code case, neither language provides a native facility to mandate that error codes must be checked. However compiler-specific attributes like GCC’s warn_unused_result can be used here. Unfortunately nothing mandates that the error code is used <em>correctly</em>. In the pointer case, blindly dereferencing is considered a valid use, fooling basic lints.</p>
+<p>Unwinding is better than error codes in this regard, because completely ignoring an exception aborts the process. The author’s understanding is that problems arise from the complicated exception-safety rules C++ collections have.</p>
+<p>Both of these concerns are partially mitigated in Rust. For return values, Result and bool have proper on-by-default must-use checks. However again nothing mandates they are used properly. In the pointer case, we can however prevent you from ever getting the pointer if the Result is an <code>Err</code>. For unwinding, it’s much harder to run afoul of exception-safety in Rust, especially since copy/move can’t be overloaded. However unsafe code may have trouble.</p>
+<h3 id="additional-background-overcommit-and-killers"><a class="header" href="#additional-background-overcommit-and-killers">Additional Background: Overcommit and Killers</a></h3>
+<p>Some operating systems can be configured to pretend there’s more memory than there actually is. Generally this is the result of pretending to allocate physical pages of memory, but only actually doing so when the page is accessed. For instance, forking a process is supposed to create two separate copies of the process’s memory, but this can be avoided by simply marking all the pages as <em>copy on write</em> and having the processes share the same physical memory. The first process to mutate the shared page triggers a page fault, which the OS handles by properly allocating a new physical page for it. Similarly, to postpone zeroing fresh pages of memory, the OS may use a copy-on-write zero page.</p>
+<p>The result of this is that allocation failure may happen when memory is first <em>accessed</em> and not when it’s actually requested. If this happens, someone needs to give up their memory, which can mean the OS killing your process (or another random one!).</p>
+<p>This strategy is used on many *nix variants/descendants, including Android, iOS, MacOS, and Ubuntu.</p>
+<p>Some developers will try to use this as an argument for never <em>trying</em> to handle allocation failure. This RFC does not consider this to be a reasonable stance. First and foremost: Windows doesn’t do it. So anything that’s used a lot on windows (e.g. Firefox) can reasonably try to handle allocation failure there. Similarly, overcommit can be disabled completely or partially on many OSes. For instance the default for Linux is to actually fail on allocations that are “obviously” too large to handle.</p>
+<h3 id="additional-background-recovering-from-allocation-failure-without-data-loss"><a class="header" href="#additional-background-recovering-from-allocation-failure-without-data-loss">Additional Background: Recovering From Allocation Failure Without Data Loss</a></h3>
+<p>The most common collection interfaces in Rust expect you to move data into them, and may fail to allocate in the middle of processing this data. As a basic example, <code>push</code> consumes a T. To avoid data loss, this T should be returned, so a fallible <code>push</code> would need a signature like:</p>
+<pre><code class="language-rust">/// Inserts the given item at the end of the Vec.
+///
+/// If allocating space fails, the item is returned.
+fn push(&amp;mut self, item: T) -&gt; Result&lt;(), (T, Error)&gt;;</code></pre>
+<p>More difficult is an API like <code>extend</code>, which in general cannot predict allocation size and so must continually reallocate while processing. It also cannot know if it needs space for an element until its been yielded by the iterator. As such extend might have a signature like:</p>
+<pre><code class="language-rust">/// Inserts all the items in the given iterator at the end of the Vec.
+///
+/// If allocating space fails, the collection will contain all the elements
+/// that it managed to insert until the failure. The result will contain
+/// the iterator, having been run up until the failure point. If the iterator
+/// has been run at all, the last element yielded will also be returned.
+fn extend&lt;I: IntoIter&lt;Item=T&gt;&gt;(&amp;mut self, iter: I)
+    -&gt; Result&lt;(), (I::IntoIter, Option&lt;T&gt;, Err)&gt;</code></pre>
+<p>Note that this API only even works because Iterator’s signature currently guarantees that the yielded elements outlive the iterator. This would not be the case if we ever moved to support so-called “streaming iterators”, which yield elements that point into themselves.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>Due to the diversity of requirements between our user profiles, there isn’t any one-size fits all solution. This RFC proposes two solutions which will require minimal work for maximal impact:</p>
+<ul>
+<li>For the server users, an <code>oom=panic</code> configuration, in the same vein as the <code>panic=abort</code>.</li>
+<li>For everyone else, add <code>try_reserve</code> and <code>try_reserve_exact</code> as standard collection APIs.</li>
+</ul>
+<h3 id="oompanic"><a class="header" href="#oompanic">oom=panic</a></h3>
+<p>Applying this configuration in a Cargo.toml would change the behaviour of the global allocator’s <code>oom()</code> function, which currently aborts, to instead panic. As discussed in the Server user profile, this would allow OOM to be handled at task boundaries with minimal effort for server developers, and no effort from library maintainers.</p>
+<p>If using a thread-per-task model, OOMs will be naturally caught at the thread boundary. If using a different model, tasks can be isolated using the <code>thread::catch_unwind</code> or <code>Future::catch_unwind</code> APIs.</p>
+<p>We expose a flag, rather than changing the default, because we maintain that <em>by default</em> Rust programmers should not be trying to recover from allocation failures.</p>
+<p>For instance, a project which desires to work this way would add this to their Cargo.toml:</p>
+<pre><code class="language-toml">[profile]
+oom = "panic"
+</code></pre>
+<p>And then in their application, do something like this:</p>
+<pre><code class="language-rust">fn main() {
+    set_up_event_queue();
+    loop {
+        let event = get_next_event();
+        let result = ::std::panic::catch_unwind(|| {
+            process_event(&amp;mut event)
+        });
+
+        if let Err(err) = result {
+            if let Some(message) = err.downcast_ref::&lt;&amp;str&gt;() {
+                eprintln!("Task crashed: {}", message);
+            } else if let Some(message) = err.downcast_ref::&lt;String&gt;() {
+                eprintln!("Task crashed: {}", message);
+            } else {
+                eprintln!("Task crashed (unknown cause)");
+            }
+
+            // Handle failure...
+        }
+    }
+}</code></pre>
+<h3 id="try_reserve"><a class="header" href="#try_reserve">try_reserve</a></h3>
+<p><code>try_reserve</code> and <code>try_reserve_exact</code> would be added to <code>HashMap</code>, <code>Vec</code>, <code>String</code>, and <code>VecDeque</code>. These would have the exact same APIs as their infallible counterparts, except that OOM would be exposed as an error case, rather than a call to <code>Alloc::oom()</code>. They would have the following signatures:</p>
+<pre><code class="language-rust">/// Tries to reserve capacity for at least `additional` more elements to be inserted
+/// in the given `Vec&lt;T&gt;`. The collection may reserve more space to avoid
+/// frequent reallocations. After calling `reserve`, capacity will be
+/// greater than or equal to `self.len() + additional`. Does nothing if
+/// capacity is already sufficient.
+///
+/// # Errors
+///
+/// If the capacity overflows, or the allocator reports a failure, then an error
+/// is returned. The Vec is unmodified if this occurs.
+pub fn try_reserve(&amp;mut self, extra: usize) -&gt; Result&lt;(), CollectionAllocErr&gt;;
+
+/// Ditto, but has reserve_exact's behaviour
+pub fn try_reserve_exact(&amp;mut self, extra: usize) -&gt; Result&lt;(), CollectionAllocErr&gt;;
+
+/// Augments `AllocErr` with a CapacityOverflow variant.
+pub enum CollectionAllocErr {
+    /// Error due to the computed capacity exceeding the collection's maximum
+    /// (usually `isize::MAX` bytes).
+    CapacityOverflow,
+    /// Error due to the allocator (see the `AllocErr` type's docs).
+    AllocErr(AllocErr),
+}</code></pre>
+<p>We propose only these methods because they represent a minimal building block that third parties can develop fallible allocation APIs on top of. For instance, here are some basic implementations:</p>
+<pre><code class="language-rust">impl&lt;T&gt; FallibleVecExt&lt;T&gt; for Vec&lt;T&gt; {
+    fn try_push(&amp;mut self, val: T) -&gt; Result&lt;(), (T, Err)&gt; {
+        if let Err(err) = self.try_reserve(1) { return Err((val, err)) }
+        self.push(val);
+    }
+
+    fn try_extend_exact&lt;I&gt;(&amp;mut self, iter: T) -&gt; Result&lt;(), (I::IntoIter, Err)&gt;
+        where I: IntoIter,
+              I::IntoIter: ExactSizeIterator&lt;Item=T&gt;, // note this!
+    {
+        let iter = iter.into_iter();
+
+        if let Err(err) = self.try_reserve(iter.len()) { return Err((iter, err)) }
+
+        self.extend(iter);
+    }
+}</code></pre>
+<p>Note that iterator-consuming implementations are limited to ExactSizeIterator, as this lets us perfectly predict how much space we need. In practice this shouldn’t be much of a constraint, as most uses of these APIs just feed arrays into arrays or maps into maps. Only things like <code>filter</code> produce unpredictable iterator sizes.</p>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<h3 id="oompanic-1"><a class="header" href="#oompanic-1">oom=panic</a></h3>
+<p>Disclaimer: not super familiar with all the mechanics here, so this is a sketch that hopefully someone whose worked on these details can help flesh out.</p>
+<p>We add a <code>-C oom=abort|panic</code> flag to rustc, which changes the impl of <code>__rust_oom</code> that’s linked in to either panic or abort. It’s possible that this should just change the value of a <code>extern static bool</code> in libcore (liballoc?) that <code>__rust_oom</code> impls are expected to check?</p>
+<p>Unlike the <code>panic=abort</code> flag, this shouldn’t make your crate incompatible with crates with a different choice. Only a subset of target types should be able to set this, e.g. it’s a bin-level decision?</p>
+<p>Cargo would also add a <code>oom=abort=panic</code> profile configuration, to set the rustc flag. Its value should be ignored in dependencies?</p>
+<h3 id="try_reserve-1"><a class="header" href="#try_reserve-1">try_reserve</a></h3>
+<p><a href="https://github.com/rust-lang/rust/pull/43890">An implementation of try_reserve for Vec can be found for here</a></p>
+<p>The guide-level explanation otherwise covers all the interesting details.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>There doesn’t seem to be any drawback for adding support for <code>oom=panic</code>.</p>
+<p><code>try_reserve</code>’s only serious drawback is that it isn’t a complete solution, and it may not idiomatically match future “complete” solutions to the problem.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and Alternatives</a></h2>
+<h3 id="always-panic-on-oom"><a class="header" href="#always-panic-on-oom">Always panic on OOM</a></h3>
+<p>We probably shouldn’t mandate this in the actual Alloc trait, but certainly we could change how our global Alloc impls behave. This RFC doesn’t propose this for two reasons.</p>
+<p>The first is basically on the grounds of “not rocking the boat”. Notably unsafe code might be relying on global OOM not unwinding for exception safety reasons. The author expects such code could very easily be changed to be exception-safe if we decided to do this.</p>
+<p>The second is that the author still considers it legitimately correct to discourage handling OOM by default, for the reasons stated in earlier sections.</p>
+<h3 id="eliminate-the-capacityoverflow-distinction"><a class="header" href="#eliminate-the-capacityoverflow-distinction">Eliminate the CapacityOverflow distinction</a></h3>
+<p>Collections could potentially just create an <code>AllocErr::Unsupported("capacity overflow")</code> and feed it to their allocator. Presumably this wouldn’t do something bad to the allocator? Then the oom=abort flag could be used to completely control whether allocation failure is a panic or abort (for participating allocators).</p>
+<p>Again this is avoided simply to leave things “as they are”. In this case it would be a change to a legitimately documented API behaviour (panic on overflow of usize), but again that documentation isn’t even totally accurate.</p>
+<h3 id="eliminate-the-64-bit-difference"><a class="header" href="#eliminate-the-64-bit-difference">Eliminate the 64-bit difference</a></h3>
+<p>This difference literally exists to save a single perfectly-predictable compare-and-branch on 64-bit platforms when allocating collections, which is probably insignificant considering how expensive the success path is. Also the difference here would be a bit exacerbated by exposing the CapacityOverflow variant here.</p>
+<p>Again, not proposed to avoid rocking the boat.</p>
+<h3 id="collectionallocerr"><a class="header" href="#collectionallocerr">CollectionAllocErr</a></h3>
+<p>There were a few different possible designs for CollectionAllocErr:</p>
+<ul>
+<li>Just make it AllocErr</li>
+<li>Remove the payload from the AllocErr variant</li>
+<li>Just make it a <code>()</code> (so try_reserve basically returns a bool)</li>
+</ul>
+<p>AllocErr already has an <code>Unsupported(&amp;'static str)</code> variant to capture any miscellaneous allocation problems, so CapacityOverflow could plausibly just be stuffed in there. We opted to keep it separate to most accurately reflect the way collections think about these problems today – CapacityOverflow goes to panic and AllocErr goes to <code>oom()</code>. It’s possible end users simply don’t care, in much the same way that collections don’t actually care if an AllocErr is <code>Exhausted</code> or <code>Unsupported</code>.</p>
+<p>It’s also possible we should suppress the AllocErr details to “hide” how collections are interpreting the requests they receive. This just didn’t seem that important, and has the possibility to get in the way of someone using their own local allocator.</p>
+<p>The most extreme version of this would be to just say “there was an error” without any information. The only reason to really prefer this is for bloat reasons; the current Rust compiler really doesn’t handle Result payloads very efficiently. This should presumably be fixed <em>eventually</em>, since Results are pretty important?</p>
+<p>We simply opted for the version that had maximum information, on the off-chance this was useful.</p>
+<h3 id="future-work-infallible-allocation-effect-system-w-portability-lints"><a class="header" href="#future-work-infallible-allocation-effect-system-w-portability-lints">Future Work: Infallible Allocation Effect System (w/ Portability Lints)</a></h3>
+<p>Several of our users have expressed desire for some kind of system to prevent a function from ever infallibly allocating. This is ultimately an effect system.</p>
+<p>One possible way to implement this would be to use the <em>portability lint</em> system. In particular, the “subsetting” portability lints that were proposed as future work in <a href="https://github.com/rust-lang/rfcs/blob/master/text/1868-portability-lint.md#subsetting-std">RFC-1868</a>.</p>
+<p>This system is supposed to handle things like “I don’t have float support” or “I don’t have AtomicU64”. “I don’t have infallible allocation support” is much the same idea. This could be scoped to modules or functions.</p>
+<h3 id="future-work-complete-result-apis"><a class="header" href="#future-work-complete-result-apis">Future Work: Complete Result APIs</a></h3>
+<p>Although this RFC handles the “wants to unwind” case pretty cleanly and completely, it leaves no-unwind world with an imperfect one. In particular, it’s completely useless for collections which have unpredictable allocations like BTreeMap. This proposal punts on this problem because solving it will be a big change which will likely make a bunch of people mad no matter what.</p>
+<p>The author would prefer that we don’t spend much time focusing on these solutions, but will document them here just for informational purposes. Also for these purposes we will only be discussing the <code>push</code> method on Vec, since any solution for that generalizes cleanly to everything else.</p>
+<p>Broadly speaking, there’s two schools of thought here: fallible operations should just be methods, and fallible operations should be distinguished at the type-level. Basically, should you be able to do: <code>vec.push(x); vec.try_push(y)</code>, or will you somehow obtain a special kind of Vec and <code>vec.push(x)</code> will then return a <code>Result</code>.</p>
+<p>It should be noted that this appears to be a source of massive disagreement. Even within the gecko codebase, there are supporters of both approaches, and so it actually supports both. This is probably not a situation we should strive to emulate.</p>
+<p>There are a few motivations for a type-level distinction:</p>
+<ul>
+<li>If it’s done through a default generic parameter, then code can be written generically over doing something fallibly or infallibly</li>
+<li>If it’s done through a default generic parameter, it potentially enables code reuse in implementations</li>
+<li>It can allow you to enforce that all operations on a Vec are performed fallibly</li>
+<li>It can make usage more ergonomic (no need for <code>try_</code> in front of everything)</li>
+</ul>
+<p>The first doesn’t appear to actually do much semantically. Code that’s generic over fallibility is literally the exact same as code that only uses the fallible APIs, at which point you might as well just toss an <code>expect</code> at the end if you want to crash on OOM. The only difference seems to be the performance difference between propagating Results vs immediately unwinding/aborting. This can certainly be significant in code that’s doing a lot of allocations, but it’s not really clear how much this matters. Especially if Result-based codegen improves (which there’s a lot of room for).</p>
+<p>The second is interesting, but mostly effects collection implementors. Making users deal with additional generic parameters to make implementations easier doesn’t seem very compelling.</p>
+<p>Also these two benefits must be weighed against the cost of default generic parameters: they don’t work very well (and may never?), and most people won’t bother to support them so using a non-default just makes you incompatible with a bunch of the ecosystem.</p>
+<p>The third is a bit more compelling, but has a few issues. First, it doesn’t actually enforce that a function handles all allocation failures. One can create a fresh Vec, Box, or just call into a routine that allocates like <code>slice::sort()</code> and types won’t do anything to prevent this. Second, it’s a fairly common pattern to fallibly reserve space, and then infallibly insert data. For instance, code like the following can be found in many places in Gecko’s codebase:</p>
+<pre><code class="language-rust">fn process(&amp;mut self, data: &amp;[Item]) -&gt; Result&lt;Vec&lt;Processed&gt;, CollectionAllocErr&gt; {
+    let mut vec = FallibleVec::new();
+    vec.reserve(data.len())?
+
+    for x in data {
+        let p = process(x);
+        self.push(p).unwrap();  // Wait, is this fallible or not?
+    }
+}</code></pre>
+<p>Mandating all operations be fallible can be confusing in that case (and has similar inefficiencies to the ones discussed in the previous point). Although admittedly this is a lot better in Rust with must-be-unwrapped-Results. In Gecko, “unwrapping” is often just blindly dereferencing a pointer, which is Undefined Behaviour if the allocation actually fails.</p>
+<p>The fourth is certainly nice-to-have, but probably not a high enough priority to create an entire separate Vec type.</p>
+<p>All of the type-based solutions also suffer from a fairly serious problem: they can’t implement many core traits in the fallible state. For instance, Extend::extend and Display::to_string require allocation and don’t support fallibility.</p>
+<p>With all that said, these are the proposed solutions:</p>
+<h4 id="method-based"><a class="header" href="#method-based">Method-Based</a></h4>
+<p>Fairly straight-forward, but a bunch of duplicate code. Probably we would either end up implementing <code>push</code> in terms of <code>try_push</code> (which would be inefficient but easy), or with macros.</p>
+<pre><code class="language-rust">impl&lt;T&gt; Vec&lt;T&gt; {
+    fn try_push(&amp;mut self, elem: T) -&gt; Result&lt;(), (T, CollectionAllocErr)&gt; {
+        if self.len() == self.capacity() {
+            if let Err(e) = self.try_reserve(1) {
+                return Err((elem, e));
+            }
+        }
+
+        // ... do actual push normally ...
+    }
+}</code></pre>
+<h4 id="generic-on-vec"><a class="header" href="#generic-on-vec">Generic (on Vec)</a></h4>
+<p>This is a sketch, didn’t want to put enough effort in to crack this puzzle.</p>
+<p>The most notable thing is that it relies on generic associated types, which don’t actually exist yet, and probably won’t be stable until ~late 2018 (optimistically).</p>
+<pre><code class="language-rust">trait Fallibility {
+    type Result&lt;T, E&gt;;
+    fn ok&lt;T, E&gt;(val: T) -&gt; Self::Result&lt;T, E&gt;;
+    fn err&lt;T, E&gt;(val: E, details: CollectionAllocErr) -&gt; Self::Result&lt;T, E&gt;;
+    // ... probably some other stuff here...?
+}
+
+struct Fallible;
+struct Infallible;
+
+impl Fallibility for Fallible {
+    type Result&lt;T, E&gt; = Result&lt;T, (E, CollectionAllocErr)&gt;;
+    fn ok&lt;T, E&gt;(val: T) -&gt; Self::Result&lt;T, E&gt; {
+        Ok(val)
+    }
+    fn err&lt;T, E&gt;(val: E, details: CollectionAllocErr) -&gt; Self::Result&lt;T, E&gt; {
+        Err((val, details))
+    }
+}
+
+impl Fallibility for Infallible {
+    type Result&lt;T, E&gt; = T;
+    fn ok&lt;T, E&gt;(val: T) -&gt; Self::Result&lt;T, E&gt; {
+        val
+    }
+    fn err&lt;T, E&gt;(val: E, defaults: CollectionAllocErr) -&gt; Self::Result&lt;T, E&gt; {
+        unreachable!() // ??? maybe ???
+    }
+}
+
+struct Vec&lt;T, ..., F: Fallibility=Infallible&gt; { ... }
+
+impl&lt;T, ..., F&gt; Vec&lt;T, ..., F&gt; {
+    fn push(&amp;mut self) -&gt; F::Result&lt;(), T&gt; {
+        if self.len() == self.capacity() {
+            let result = self.reserve(1);
+            // ??? How do I match on this in generic code ???
+            // (can't use Carrier since we need to add `elem` payload?)
+            if result.is_err() {
+                // Have to move elem into closure,
+                // so can only map_err conditionally
+                return result.map_err(move |err| (elem, err));
+            }
+        }
+
+        // ... do actual push normally ...
+    }
+}</code></pre>
+<h4 id="generic-on-alloc"><a class="header" href="#generic-on-alloc">Generic (on Alloc)</a></h4>
+<p>Same basic idea as the previous design, but the Fallibility trait is folded into the Alloc trait. Then one would use <code>FallibleHeap</code> or <code>InfallibleHeap</code>, or maybe <code>Infallible&lt;Heap&gt;</code>? This forces anyone who wants to support generic allocators to support generic fallibility. It would require a complete redesign of the allocator API, blocking it on generic associated types.</p>
+<h4 id="falliblevec"><a class="header" href="#falliblevec">FallibleVec</a></h4>
+<p>Just make a completely separate type. Includes an <code>into_fallible(self)</code>/<code>into_infallible(self)</code> conversion which is free since there’s no actual representation change. Makes it possible to change “phases” between fallibility/infallibly for different parts of the program if that’s valuable. Implementation-wise, basically identical to the method approach, but we also need to duplicate non-allocating methods just to mirror the API.</p>
+<p>Alternatively we could make <code>FallibleVec&lt;'a, T&gt;</code> and <code>as_fallible(&amp;mut self)</code>, which is a temporary view like Iterator/Entry. This is probably a bit more consistent with how we do this sort of thing. This also makes “temporary” fallibility easier, but at the cost of being able to permanently become fallible:</p>
+<pre><code class="language-rust">vec.as_fallible().push(x)?
+
+// vs
+
+let vec = vec.into_fallible();
+vec.push(x)?
+let vec = vec.into_infallible();
+
+// but this actually works:
+
+return vec.into_fallible()</code></pre>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<ul>
+<li>How exactly should oom=panic be implemented in the compiler?</li>
+<li>How exactly should oom=panic behave for dependencies?</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="2115-argument-lifetimes.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="2124-option-filter.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="2115-argument-lifetimes.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="2124-option-filter.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

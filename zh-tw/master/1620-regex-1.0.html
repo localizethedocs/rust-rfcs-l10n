@@ -1,0 +1,763 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1620-regex-1.0 - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: regex-1.0</li>
+<li>Start Date: 2016-05-11</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/1620">rust-lang/rfcs#1620</a></li>
+<li>Rust 議題：N/A</li>
+</ul>
+<h2 id="目次表"><a class="header" href="#目次表">目次表</a></h2>
+<ul>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#detailed-design">Detailed design</a>
+<ul>
+<li><a href="#syntax">Syntax</a>
+<ul>
+<li><a href="#evolution">Evolution</a></li>
+<li><a href="#concrete-syntax">Concrete syntax</a></li>
+<li><a href="#expansion-concerns">Expansion concerns</a></li>
+</ul>
+</li>
+<li><a href="#core-api">Core API</a></li>
+<li><a href="#regexbuilder">RegexBuilder</a></li>
+<li><a href="#replacer">Replacer</a></li>
+<li><a href="#quote">quote</a></li>
+<li><a href="#regexset">RegexSet</a></li>
+<li><a href="#the-bytes-submodule">The <code>bytes</code> submodule</a></li>
+</ul>
+</li>
+<li><a href="#drawbacks">Drawbacks</a>
+<ul>
+<li><a href="#guaranteed-linear-time-matching">Guaranteed linear time matching</a></li>
+<li><a href="#allocation">Allocation</a></li>
+<li><a href="#synchronization-is-implicit">Synchronization is implicit</a></li>
+<li><a href="#the-implementation-is-complex">The implementation is complex</a></li>
+</ul>
+</li>
+<li><a href="#alternatives">Alternatives</a>
+<ul>
+<li><a href="#big-picture">Big picture</a></li>
+<li><a href="#bytesregex"><code>bytes::Regex</code></a>
+<ul>
+<li><a href="#a-regex-trait">A regex trait</a></li>
+<li><a href="#reuse-some-types">Reuse some types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#unresolved-questions">Unresolved questions</a>
+<ul>
+<li><a href="#regex-syntax"><code>regex-syntax</code></a></li>
+<li><a href="#regex-capi"><code>regex-capi</code></a></li>
+<li><a href="#regex_macros"><code>regex_macros</code></a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#exposing-more-internals">Exposing more internals</a></li>
+</ul>
+</li>
+<li><a href="#breaking-changes">Breaking changes</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>This RFC proposes a 1.0 API for the <code>regex</code> crate and therefore a move out of the <code>rust-lang-nursery</code> organization and into the <code>rust-lang</code> organization. Since the API of <code>regex</code> has largely remained unchanged since its inception <a href="https://github.com/rust-lang/rfcs/blob/master/text/0042-regexps.md">2 years ago</a>, significant emphasis is placed on retaining the existing API. Some minor breaking changes are proposed.</p>
+<h2 id="動機"><a class="header" href="#動機">動機</a></h2>
+<p>Regular expressions are a widely used tool and most popular programming languages either have an implementation of regexes in their standard library, or there exists at least one widely used third party implementation. It therefore seems reasonable for Rust to do something similar.</p>
+<p>The <code>regex</code> crate specifically serves many use cases, most of which are somehow related to searching strings for patterns. Describing regular expressions in detail is beyond the scope of this RFC, but briefly, these core use cases are supported in the main API:</p>
+<ol>
+<li>Testing whether a pattern matches some text.</li>
+<li>Finding the location of a match of a pattern in some text.</li>
+<li>Finding the location of a match of a pattern—and locations of all its capturing groups—in some text.</li>
+<li>Iterating over successive non-overlapping matches of (2) and (3).</li>
+</ol>
+<p>The expected outcome is that the <code>regex</code> crate should be the preferred default choice for matching regular expressions when writing Rust code. This is already true today; this RFC formalizes it.</p>
+<h2 id="詳細設計"><a class="header" href="#詳細設計">詳細設計</a></h2>
+<h3 id="syntax"><a class="header" href="#syntax">Syntax</a></h3>
+<h4 id="evolution"><a class="header" href="#evolution">Evolution</a></h4>
+<p>The public API of a <code>regex</code> library <em>includes</em> the syntax of a regular expression. A change in the semantics of the syntax can cause otherwise working programs to break, yet, we’d still like the option to expand the syntax if necessary. Thus, this RFC proposes:</p>
+<ol>
+<li>Any change that causes a previously invalid regex pattern to become valid is <em>not</em> a breaking change. For example, the escape sequence <code>\y</code> is not a valid pattern, but could become one in a future release without a major version bump.</li>
+<li>Any change that causes a previously valid regex pattern to become invalid <em>is</em> a breaking change.</li>
+<li>Any change that causes a valid regex pattern to change its matching semantics <em>is</em> a breaking change. (For example, changing <code>\b</code> from “word boundary assertion” to “backspace character.”)</li>
+</ol>
+<p>Bug fixes and Unicode upgrades are exceptions to both (2) and (3).</p>
+<p>Another interesting exception to (2) is that compiling a regex can fail if the entire compiled object would exceed some pre-defined user configurable size. In particular, future changes to the compiler could cause certain instructions to use more memory, or indeed, the representation of the compiled regex could change completely. This could cause a regex that fit under the size limit to no longer fit, and therefore fail to compile. These cases are expected to be extremely rare in practice. Notably, the default size limit is <code>10MB</code>.</p>
+<h4 id="concrete-syntax"><a class="header" href="#concrete-syntax">Concrete syntax</a></h4>
+<p>The syntax is exhaustively documented in the current public API documentation: http://doc.rust-lang.org/regex/regex/index.html#syntax</p>
+<p>To my knowledge, the evolution as proposed in this RFC has been followed since <code>regex</code> was created. The syntax has largely remained unchanged with few additions.</p>
+<h4 id="expansion-concerns"><a class="header" href="#expansion-concerns">Expansion concerns</a></h4>
+<p>There are a few possible avenues for expansion, and we take measures to make sure they are possible with respect to API evolution.</p>
+<ul>
+<li>Escape sequences are often blessed with special semantics. For example, <code>\d</code> is a Unicode character class that matches any digit and <code>\b</code> is a word boundary assertion. We may one day like to add more escape sequences with special semantics. For this reason, any unrecognized escape sequence makes a pattern invalid.</li>
+<li>If we wanted to expand the syntax with various look-around operators, then it would be possible since most common syntax is considered an invalid pattern today. In particular, all of the <a href="http://www.regular-expressions.info/refadv.html">syntactic forms listed here</a> are invalid patterns in <code>regex</code>.</li>
+<li>Character class sets are another potentially useful feature that may be worth adding. Currently, <a href="http://www.regular-expressions.info/refcharclass.html">various forms of set notation</a> are treated as valid patterns, but this RFC proposes making them invalid patterns before <code>1.0</code>.</li>
+<li>Additional named Unicode classes or codepoints may be desirable to add. Today, any pattern of the form <code>\p{NAME}</code> where <code>NAME</code> is unrecognized is considered invalid, which leaves room for expansion.</li>
+<li>If all else fails, we can introduce new flags that enable new features that conflict with stable syntax. This is possible because using an unrecognized flag results in an invalid pattern.</li>
+</ul>
+<h3 id="core-api"><a class="header" href="#core-api">Core API</a></h3>
+<p>The core API of the <code>regex</code> crate is the <code>Regex</code> type:</p>
+<pre><code class="language-rust">pub struct Regex(_);</code></pre>
+<p>It has one primary constructor:</p>
+<pre><code class="language-rust">impl Regex {
+  /// Creates a new regular expression. If the pattern is invalid or otherwise
+  /// fails to compile, this returns an error.
+  pub fn new(pattern: &amp;str) -&gt; Result&lt;Regex, Error&gt;;
+}</code></pre>
+<p>And five core search methods. All searching completes in worst case linear time with respect to the search text (the size of the regex is taken as a constant).</p>
+<pre><code class="language-rust">impl Regex {
+  /// Returns true if and only if the text matches this regex.
+  pub fn is_match(&amp;self, text: &amp;str) -&gt; bool;
+
+  /// Returns the leftmost-first match of this regex in the text given. If no
+  /// match exists, then None is returned.
+  ///
+  /// The leftmost-first match is defined as the first match that is found
+  /// by a backtracking search.
+  pub fn find&lt;'t&gt;(&amp;self, text: &amp;'t str) -&gt; Option&lt;Match&lt;'t&gt;&gt;;
+
+  /// Returns an iterator of successive non-overlapping matches of this regex
+  /// in the text given.
+  pub fn find_iter&lt;'r, 't&gt;(&amp;'r self, text: &amp;'t str) -&gt; Matches&lt;'r, 't&gt;;
+
+  /// Returns the leftmost-first match of this regex in the text given with
+  /// locations for all capturing groups that participated in the match.
+  pub fn captures(&amp;self, text: &amp;str) -&gt; Option&lt;Captures&gt;;
+
+  /// Returns an iterator of successive non-overlapping matches with capturing
+  /// group information in the text given.
+  pub fn captures_iter&lt;'r, 't&gt;(&amp;'r self, text: &amp;'t str) -&gt; CaptureMatches&lt;'r, 't&gt;;
+}</code></pre>
+<p>(N.B. The <code>captures</code> method can technically replace all uses of <code>find</code> and <code>is_match</code>, but is potentially slower. Namely, the API reflects a performance trade off: the more you ask for, the harder the regex engine has to work.)</p>
+<p>There is one additional, but idiosyncratic, search method:</p>
+<pre><code class="language-rust">impl Regex {
+  /// Returns the end location of a match if one exists in text.
+  ///
+  /// This may return a location preceding the end of a proper leftmost-first
+  /// match. In particular, it may return the location at which a match is
+  /// determined to exist. For example, matching `a+` against `aaaaa` will
+  /// return `1` while the end of the leftmost-first match is actually `5`.
+  ///
+  /// This has the same performance characteristics as `is_match`.
+  pub fn shortest_match(&amp;self, text: &amp;str) -&gt; Option&lt;usize&gt;;
+}</code></pre>
+<p>And two methods for splitting:</p>
+<pre><code class="language-rust">impl Regex {
+  /// Returns an iterator of substrings of `text` delimited by a match of
+  /// this regular expression. Each element yielded by the iterator corresponds
+  /// to text that *isn't* matched by this regex.
+  pub fn split&lt;'r, 't&gt;(&amp;'r self, text: &amp;'t str) -&gt; Split&lt;'r, 't&gt;;
+
+  /// Returns an iterator of at most `limit` substrings of `text` delimited by
+  /// a match of this regular expression. Each element yielded by the iterator
+  /// corresponds to text that *isn't* matched by this regex. The remainder of
+  /// `text` that is not split will be the last element yielded by the
+  /// iterator.
+  pub fn splitn&lt;'r, 't&gt;(&amp;'r self, text: &amp;'t str, limit: usize) -&gt; SplitN&lt;'r, 't&gt;;
+}</code></pre>
+<p>And three methods for replacement. Replacement is discussed in more detail in a subsequent section.</p>
+<pre><code class="language-rust">impl Regex {
+  /// Replaces matches of this regex in `text` with `rep`. If no matches were
+  /// found, then the given string is returned unchanged, otherwise a new
+  /// string is allocated.
+  ///
+  /// `replace` replaces the first match only. `replace_all` replaces all
+  /// matches. `replacen` replaces at most `limit` matches.
+  fn replace&lt;'t, R: Replacer&gt;(&amp;self, text: &amp;'t str, rep: R) -&gt; Cow&lt;'t, str&gt;;
+  fn replace_all&lt;'t, R: Replacer&gt;(&amp;self, text: &amp;'t str, rep: R) -&gt; Cow&lt;'t, str&gt;;
+  fn replacen&lt;'t, R: Replacer&gt;(&amp;self, text: &amp;'t str, limit: usize, rep: R) -&gt; Cow&lt;'t, str&gt;;
+}</code></pre>
+<p>And lastly, three simple accessors:</p>
+<pre><code class="language-rust">impl Regex {
+  /// Returns the original pattern string.
+  pub fn as_str(&amp;self) -&gt; &amp;str;
+
+  /// Returns an iterator over all capturing group in the pattern in the order
+  /// they were defined (by position of the leftmost parenthesis). The name of
+  /// the group is yielded if it has a name, otherwise None is yielded.
+  pub fn capture_names(&amp;self) -&gt; CaptureNames;
+
+  /// Returns the total number of capturing groups in the pattern. This
+  /// includes the implicit capturing group corresponding to the entire
+  /// pattern.
+  pub fn captures_len(&amp;self) -&gt; usize;
+}</code></pre>
+<p>Finally, <code>Regex</code> impls the <code>Send</code>, <code>Sync</code>, <code>Display</code>, <code>Debug</code>, <code>Clone</code> and <code>FromStr</code> traits from the standard library.</p>
+<h3 id="error"><a class="header" href="#error">Error</a></h3>
+<p>The <code>Error</code> enum is an <em>extensible</em> enum, similar to <code>std::io::Error</code>, corresponding to the different ways that regex compilation can fail. In particular, this means that adding a new variant to this enum is not a breaking change. (Removing or changing an existing variant is still a breaking change.)</p>
+<pre><code class="language-rust">pub enum Error {
+  /// A syntax error.
+  Syntax(SyntaxError),
+  /// The compiled program exceeded the set size limit.
+  /// The argument is the size limit imposed.
+  CompiledTooBig(usize),
+  /// Hints that destructuring should not be exhaustive.
+  ///
+  /// This enum may grow additional variants, so this makes sure clients
+  /// don't count on exhaustive matching. (Otherwise, adding a new variant
+  /// could break existing code.)
+  #[doc(hidden)]
+  __Nonexhaustive,
+}</code></pre>
+<p>Note that the <code>Syntax</code> variant could contain the <code>Error</code> type from the <code>regex-syntax</code> crate, but this couples <code>regex-syntax</code> to the public API of <code>regex</code>. We sidestep this hazard by defining a newtype in <code>regex</code> that internally wraps <code>regex_syntax::Error</code>. This also enables us to selectively expose more information in the future.</p>
+<h3 id="regexbuilder"><a class="header" href="#regexbuilder">RegexBuilder</a></h3>
+<p>In most cases, the construction of a regex is done with <code>Regex::new</code>. There are however some options one might want to tweak. This can be done with a <code>RegexBuilder</code>:</p>
+<pre><code class="language-rust">impl RegexBuilder {
+  /// Creates a new builder from the given pattern.
+  pub fn new(pattern: &amp;str) -&gt; RegexBuilder;
+
+  /// Compiles the pattern and all set options. If successful, a Regex is
+  /// returned. Otherwise, if compilation failed, an Error is returned.
+  ///
+  /// N.B. `RegexBuilder::new("...").compile()` is equivalent to
+  /// `Regex::new("...")`.
+  pub fn build(&amp;self) -&gt; Result&lt;Regex, Error&gt;;
+
+  /// Set the case insensitive flag (i).
+  pub fn case_insensitive(&amp;mut self, yes: bool) -&gt; &amp;mut RegexBuilder;
+
+  /// Set the multi line flag (m).
+  pub fn multi_line(&amp;mut self, yes: bool) -&gt; &amp;mut RegexBuilder;
+
+  /// Set the dot-matches-any-character flag (s).
+  pub fn dot_matches_new_line(&amp;mut self, yes: bool) -&gt; &amp;mut RegexBuilder;
+
+  /// Set the swap-greedy flag (U).
+  pub fn swap_greed(&amp;mut self, yes: bool) -&gt; &amp;mut RegexBuilder;
+
+  /// Set the ignore whitespace flag (x).
+  pub fn ignore_whitespace(&amp;mut self, yes: bool) -&gt; &amp;mut RegexBuilder;
+
+  /// Set the Unicode flag (u).
+  pub fn unicode(&amp;mut self, yes: bool) -&gt; &amp;mut RegexBuilder;
+
+  /// Set the approximate size limit (in bytes) of the compiled regular
+  /// expression.
+  ///
+  /// If compiling a pattern would approximately exceed this size, then
+  /// compilation will fail.
+  pub fn size_limit(&amp;mut self, limit: usize) -&gt; &amp;mut RegexBuilder;
+
+  /// Set the approximate size limit (in bytes) of the cache used by the DFA.
+  ///
+  /// This is a per thread limit. Once the DFA fills the cache, it will be
+  /// wiped and refilled again. If the cache is wiped too frequently, the
+  /// DFA will quit and fall back to another matching engine.
+  pub fn dfa_size_limit(&amp;mut self, limit: usize) -&gt; &amp;mut RegexBuilder;
+}</code></pre>
+<h3 id="captures"><a class="header" href="#captures">Captures</a></h3>
+<p>A <code>Captures</code> value stores the locations of all matching capturing groups for a single match. It provides convenient access to those locations indexed by either number, or, if available, name.</p>
+<p>The first capturing group (index <code>0</code>) is always unnamed and always corresponds to the entire match. Other capturing groups correspond to groups in the pattern. Capturing groups are indexed by the position of their leftmost parenthesis in the pattern.</p>
+<p>Note that <code>Captures</code> is a type constructor with a single parameter: the lifetime of the text searched by the corresponding regex. In particular, the lifetime of <code>Captures</code> is not tied to the lifetime of a <code>Regex</code>.</p>
+<pre><code class="language-rust">impl&lt;'t&gt; Captures&lt;'t&gt; {
+  /// Returns the match associated with the capture group at index `i`. If
+  /// `i` does not correspond to a capture group, or if the capture group
+  /// did not participate in the match, then `None` is returned.
+  pub fn get(&amp;self, i: usize) -&gt; Option&lt;Match&lt;'t&gt;&gt;;
+
+  /// Returns the match for the capture group named `name`. If `name` isn't a
+  /// valid capture group or didn't match anything, then `None` is returned.
+  pub fn name(&amp;self, name: &amp;str) -&gt; Option&lt;Match&lt;'t&gt;&gt;;
+
+  /// Returns the number of captured groups. This is always at least 1, since
+  /// the first unnamed capturing group corresponding to the entire match
+  /// always exists.
+  pub fn len(&amp;self) -&gt; usize;
+
+  /// Expands all instances of $name in the text given to the value of the
+  /// corresponding named capture group. The expanded string is written to
+  /// dst.
+  ///
+  /// The name in $name may be integer corresponding to the index of a capture
+  /// group or it can be the name of a capture group. If the name isn't a valid
+  /// capture group, then it is replaced with an empty string.
+  ///
+  /// The longest possible name is used. e.g., $1a looks up the capture group
+  /// named 1a and not the capture group at index 1. To exert more precise
+  /// control over the name, use braces, e.g., ${1}a.
+  ///
+  /// To write a literal $, use $$.
+  pub fn expand(&amp;self, replacement: &amp;str, dst: &amp;mut String);
+}</code></pre>
+<p>The <code>Captures</code> type impls <code>Debug</code>, <code>Index&lt;usize&gt;</code> (for numbered capture groups) and <code>Index&lt;str&gt;</code> (for named capture groups). A downside of the <code>Index</code> impls is that the return value is bounded to the lifetime of <code>Captures</code> instead of the lifetime of the actual text searched because of how the <code>Index</code> trait is defined. Callers can work around that limitation if necessary by using an explicit method such as <code>get</code> or <code>name</code>.</p>
+<h3 id="replacer"><a class="header" href="#replacer">Replacer</a></h3>
+<p>The <code>Replacer</code> trait is a helper trait to make the various <code>replace</code> methods on <code>Regex</code> more ergonomic. In particular, it makes it possible to use either a standard string as a replacement, or a closure with more explicit access to a <code>Captures</code> value.</p>
+<pre><code class="language-rust">pub trait Replacer {
+  /// Appends text to dst to replace the current match.
+  ///
+  /// The current match is represents by caps, which is guaranteed to have a
+  /// match at capture group 0.
+  ///
+  /// For example, a no-op replacement would be
+  /// dst.extend(caps.at(0).unwrap()).
+  fn replace_append(&amp;mut self, caps: &amp;Captures, dst: &amp;mut String);
+
+  /// Return a fixed unchanging replacement string.
+  ///
+  /// When doing replacements, if access to Captures is not needed, then
+  /// it can be beneficial from a performance perspective to avoid finding
+  /// sub-captures. In general, this is called once for every call to replacen.
+  fn no_expansion&lt;'r&gt;(&amp;'r mut self) -&gt; Option&lt;Cow&lt;'r, str&gt;&gt; {
+    None
+  }
+}</code></pre>
+<p>Along with this trait, there is also a helper type, <code>NoExpand</code> that implements <code>Replacer</code> like so:</p>
+<pre><code class="language-rust">pub struct NoExpand&lt;'t&gt;(pub &amp;'t str);
+
+impl&lt;'t&gt; Replacer for NoExpand&lt;'t&gt; {
+    fn replace_append(&amp;mut self, _: &amp;Captures, dst: &amp;mut String) {
+        dst.push_str(self.0);
+    }
+
+    fn no_expansion&lt;'r&gt;(&amp;'r mut self) -&gt; Option&lt;Cow&lt;'r, str&gt;&gt; {
+        Some(Cow::Borrowed(self.0))
+    }
+}</code></pre>
+<p>This permits callers to use <code>NoExpand</code> with the <code>replace</code> methods to guarantee that the replacement string is never searched for <code>$group</code> replacement syntax.</p>
+<p>We also provide two more implementations of the <code>Replacer</code> trait: <code>&amp;str</code> and <code>FnMut(&amp;Captures) -&gt; String</code>.</p>
+<h3 id="quote"><a class="header" href="#quote">quote</a></h3>
+<p>There is one free function in <code>regex</code>:</p>
+<pre><code class="language-rust">/// Escapes all regular expression meta characters in `text`.
+///
+/// The string returned may be safely used as a literal in a regex.
+pub fn quote(text: &amp;str) -&gt; String;</code></pre>
+<h3 id="regexset"><a class="header" href="#regexset">RegexSet</a></h3>
+<p>A <code>RegexSet</code> represents the union of zero or more regular expressions. It is a specialized machine that can match multiple regular expressions simultaneously. Conceptually, it is similar to joining multiple regexes as alternates, e.g., <code>re1|re2|...|reN</code>, with one crucial difference: in a <code>RegexSet</code>, multiple expressions can match. This means that each pattern can be reasoned about independently. A <code>RegexSet</code> is ideal for building simpler lexers or an HTTP router.</p>
+<p>Because of their specialized nature, they can only report which regexes match. They do not report match locations. In theory, this could be added in the future, but is difficult.</p>
+<pre><code class="language-rust">pub struct RegexSet(_);
+
+impl RegexSet {
+  /// Constructs a new RegexSet from the given sequence of patterns.
+  ///
+  /// The order of the patterns given is used to assign increasing integer
+  /// ids starting from 0. Namely, matches are reported in terms of these ids.
+  pub fn new&lt;I, S&gt;(patterns: I) -&gt; Result&lt;RegexSet, Error&gt;
+      where S: AsRef&lt;str&gt;, I: IntoIterator&lt;Item=S&gt;;
+
+  /// Returns the total number of regexes in this set.
+  pub fn len(&amp;self) -&gt; usize;
+
+  /// Returns true if and only if one or more regexes in this set match
+  /// somewhere in the given text.
+  pub fn is_match(&amp;self, text: &amp;str) -&gt; bool;
+
+  /// Returns the set of regular expressions that match somewhere in the given
+  /// text.
+  pub fn matches(&amp;self, text: &amp;str) -&gt; SetMatches;
+}</code></pre>
+<p><code>RegexSet</code> impls the <code>Debug</code> and <code>Clone</code> traits.</p>
+<p>The <code>SetMatches</code> type is queryable and implements <code>IntoIterator</code>.</p>
+<pre><code class="language-rust">pub struct SetMatches(_);
+
+impl SetMatches {
+  /// Returns true if this set contains 1 or more matches.
+  pub fn matched_any(&amp;self) -&gt; bool;
+
+  /// Returns true if and only if the regex identified by the given id is in
+  /// this set of matches.
+  ///
+  /// This panics if the id given is &gt;= the number of regexes in the set that
+  /// these matches came from.
+  pub fn matched(&amp;self, id: usize) -&gt; bool;
+
+  /// Returns the total number of regexes in the set that created these
+  /// matches.
+  pub fn len(&amp;self) -&gt; usize;
+
+  /// Returns an iterator over the ids in the set that correspond to a match.
+  pub fn iter(&amp;self) -&gt; SetMatchesIter;
+}</code></pre>
+<p><code>SetMatches</code> impls the <code>Debug</code> and <code>Clone</code> traits.</p>
+<p>Note that a builder is not proposed for <code>RegexSet</code> in this RFC; however, it is likely one will be added at some point in a backwards compatible way.</p>
+<h3 id="the-bytes-submodule"><a class="header" href="#the-bytes-submodule">The <code>bytes</code> submodule</a></h3>
+<p>All of the above APIs have thus far been explicitly for searching <code>text</code> where <code>text</code> has type <code>&amp;str</code>. While this author believes that suits most use cases, it should also be possible to search a regex on <em>arbitrary</em> bytes, i.e., <code>&amp;[u8]</code>. One particular use case is quickly searching a file via a memory map. If regexes could only search <code>&amp;str</code>, then one would have to verify it was UTF-8 first, which could be costly. Moreover, if the file isn’t valid UTF-8, then you either can’t search it, or you have to allocate a new string and lossily copy the contents. Neither case is particularly ideal. It would instead be nice to just search the <code>&amp;[u8]</code> directly.</p>
+<p>This RFC including a <code>bytes</code> submodule in the crate. The API of this submodule is a clone of the API described so far, except with <code>&amp;str</code> replaced by <code>&amp;[u8]</code> for the search text (patterns are still <code>&amp;str</code>). The clone includes <code>Regex</code> itself, along with all supporting types and traits such as <code>Captures</code>, <code>Replacer</code>, <code>FindIter</code>, <code>RegexSet</code>, <code>RegexBuilder</code> and so on. (This RFC describes some alternative designs in a subsequent section.)</p>
+<p>Since the API is a clone of what has been seen so far, it is not written out again. Instead, we’ll discuss the key differences.</p>
+<p>Again, the first difference is that a <code>bytes::Regex</code> can search <code>&amp;[u8]</code> while a <code>Regex</code> can search <code>&amp;str</code>.</p>
+<p>The second difference is that a <code>bytes::Regex</code> can completely disable Unicode support and explicitly match arbitrary bytes. The details:</p>
+<ol>
+<li>The <code>u</code> flag can be disabled even when disabling it might cause the regex to match invalid UTF-8. When the <code>u</code> flag is disabled, the regex is said to be in “ASCII compatible” mode.</li>
+<li>In ASCII compatible mode, neither Unicode codepoints nor Unicode character classes are allowed.</li>
+<li>In ASCII compatible mode, Perl character classes (<code>\w</code>, <code>\d</code> and <code>\s</code>) revert to their typical ASCII definition. <code>\w</code> maps to <code>[[:word:]]</code>, <code>\d</code> maps to <code>[[:digit:]]</code> and <code>\s</code> maps to <code>[[:space:]]</code>.</li>
+<li>In ASCII compatible mode, word boundaries use the ASCII compatible <code>\w</code> to determine whether a byte is a word byte or not.</li>
+<li>Hexadecimal notation can be used to specify arbitrary bytes instead of Unicode codepoints. For example, in ASCII compatible mode, <code>\xFF</code> matches the literal byte <code>\xFF</code>, while in Unicode mode, <code>\xFF</code> is a Unicode codepoint that matches its UTF-8 encoding of <code>\xC3\xBF</code>. Similarly for octal notation.</li>
+<li><code>.</code> matches any byte except for <code>\n</code> instead of any Unicode codepoint. When the <code>s</code> flag is enabled, <code>.</code> matches any byte.</li>
+</ol>
+<p>An interesting property of the above is that while the Unicode flag is enabled, a <code>bytes::Regex</code> is <em>guaranteed</em> to match only valid UTF-8 in a <code>&amp;[u8]</code>. Like <code>Regex</code>, the Unicode flag is enabled by default.</p>
+<p>N.B. The Unicode flag can also be selectively disabled in a <code>Regex</code>, but not in a way that permits matching invalid UTF-8.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<h3 id="guaranteed-linear-time-matching"><a class="header" href="#guaranteed-linear-time-matching">Guaranteed linear time matching</a></h3>
+<p>A significant contract in the API of the <code>regex</code> crate is that all searching has worst case <code>O(n)</code> complexity, where <code>n ~ length(text)</code>. (The size of the regular expression is taken as a constant.) This contract imposes significant restrictions on both the implementation and the set of features exposed in the pattern language. A full analysis is beyond the scope of this RFC, but here are the highlights:</p>
+<ol>
+<li>Unbounded backtracking can’t be used to implement matching. Backtracking can be quite fast in practice (indeed, the current implementation uses bounded backtracking in some cases), but has worst case exponential time.</li>
+<li>Permitting backreferences in the pattern language can cause matching to become NP-complete, which (probably) can’t be solved in linear time.</li>
+<li>Arbitrary look around is probably difficult to fit into a linear time guarantee <em>in practice</em>.</li>
+</ol>
+<p>The benefit to the linear time guarantee is just that: no matter what, all searching completes in linear time with respect to the search text. This is a valuable guarantee to make, because it means that one can execute arbitrary regular expressions over arbitrary input and be absolutely sure that it will finish in some “reasonable” time.</p>
+<p>Of course, in practice, constants that are omitted from complexity analysis <em>actually matter</em>. For this reason, the <code>regex</code> crate takes a number of steps to keep constants low. For example, by placing a limit on the size of the regular expression or choosing an appropriate matching engine when another might result in higher constant factors.</p>
+<p>This particular drawback segregates Rust’s regular expression library from most other regular expression libraries that programmers may be familiar with. Languages such as Java, Python, Perl, Ruby, PHP and C++ support more flavorful regexes by default. Go is the only language this author knows of whose standard regex implementation guarantees linear time matching. Of course, RE2 is also worth mentioning, which is a C++ regex library that guarantees linear time matching. There are other implementations of regexes that guarantee linear time matching (TRE, for example), but none of them are particularly popular.</p>
+<p>It is also worth noting that since Rust’s FFI is zero cost, one can bind to existing regex implementations that provide more features (bindings for both PCRE1 and Oniguruma exist today).</p>
+<h3 id="allocation"><a class="header" href="#allocation">Allocation</a></h3>
+<p>The <code>regex</code> API assumes that the implementation can dynamically allocate memory. Indeed, the current implementation takes advantage of this. A <code>regex</code> library that has no requirement on dynamic memory allocation would look significantly different than the one that exists today. Dynamic memory allocation is utilized pervasively in the parser, compiler and even during search.</p>
+<p>The benefit of permitting dynamic memory allocation is that it makes the implementation <em>and</em> API simpler. This does make use of the <code>regex</code> crate in environments that don’t have dynamic memory allocation impossible.</p>
+<p>This author isn’t aware of any <code>regex</code> library that can work without dynamic memory allocation.</p>
+<p>With that said, <code>regex</code> may want to grow custom allocator support when the corresponding traits stabilize.</p>
+<h3 id="synchronization-is-implicit"><a class="header" href="#synchronization-is-implicit">Synchronization is implicit</a></h3>
+<p>Every <code>Regex</code> value can be safely used from multiple threads simultaneously. Since a <code>Regex</code> has interior mutable state, this implies that it must do some kind of synchronization in order to be safe.</p>
+<p>There are some reasons why we might want to do synchronization automatically:</p>
+<ol>
+<li><code>Regex</code> exposes an <em>immutable API</em>. That is, from looking at its set of methods, none of them borrow the <code>Regex</code> mutably (or otherwise claim to mutate the <code>Regex</code>). This author claims that since there is no <em>observable mutation</em> of a <code>Regex</code>, it <em>not</em> being thread safe would violate the principle of least surprise.</li>
+<li>Often, a <code>Regex</code> should be compiled once and reused repeatedly in multiple searches. To facilitate this, <code>lazy_static!</code> can be used to guarantee that compilation happens exactly once. <code>lazy_static!</code> requires its types to be <code>Sync</code>. A user of <code>Regex</code> could work around this by wrapping a <code>Regex</code> in a <code>Mutex</code>, but this would make misuse too easy. For example, locking a <code>Regex</code> in one thread would prevent simultaneous searching in another thread.</li>
+</ol>
+<p>Synchronization has overhead, although it is extremely small (and dwarfed by general matching overhead). The author has <em>ad hoc</em> benchmarked the <code>regex</code> implementation with GNU Grep, and per match overhead is comparable in single threaded use. It is this author’s opinion, that it is good enough. If synchronization overhead across multiple threads is too much, callers may elect to clone the <code>Regex</code> so that each thread gets its own copy. Cloning a <code>Regex</code> is no more expensive than what would be done internally automatically, but it does eliminate contention.</p>
+<p>An alternative is to increase the API surface and have types that are synchronized by default and types that aren’t synchronized. This was discussed at length in <a href="https://users.rust-lang.org/t/help-me-reduce-overhead-of-regex-matching/5220/1">this thread</a>. My conclusion from this thread is that we either expand the surface of the API, or we break the current API or we keep implicit synchronization as-is. In this author’s opinion, neither expanding the API or breaking the API is worth avoiding negligible synchronization overhead.</p>
+<h3 id="the-implementation-is-complex"><a class="header" href="#the-implementation-is-complex">The implementation is complex</a></h3>
+<p>Regular expression engines have a lot of moving parts and it often requires quite a bit of context on how the whole library is organized in order to make significant contributions. Therefore, moving <code>regex</code> into <code>rust-lang</code> is a <em>maintenance hazard</em>. This author has tried to mitigate this hazard somewhat by doing the following:</p>
+<ol>
+<li>Offering to mentor contributions. Significant contributions have thus far fizzled, but minor contributions—even to complex code like the DFA—have been successful.</li>
+<li>Documenting not just the API, but the <em>internals</em>. The DFA is, for example, heavily documented.</li>
+<li>Wrote a <code>HACKING.md</code> guide that gives a sweeping overview of the design.</li>
+<li>Significant test and benchmark suites.</li>
+</ol>
+<p>With that said, there is still a lot more that could be done to mitigate the maintenance hazard. In this author’s opinion, the interaction between the three parts of the implementation (parsing, compilation, searching) is not documented clearly enough.</p>
+<h2 id="替代方案"><a class="header" href="#替代方案">替代方案</a></h2>
+<h3 id="big-picture"><a class="header" href="#big-picture">Big picture</a></h3>
+<p>The most important alternative is to decide <em>not</em> to bless a particular implementation of regular expressions. We might want to go this route for any number of reasons (see: Drawbacks). However, the <code>regex</code> crate is already widely used, which provides at least some evidence that some set of programmers find it good enough for general purpose regex searching.</p>
+<p>The impact of not moving <code>regex</code> into <code>rust-lang</code> is, plainly, that Rust won’t have an “officially blessed” regex implementation. Many programmers may appreciate the complexity of a regex implementation, and therefore might insist that one be officially maintained. However, to be honest, it isn’t quite clear what would happen in practice. This author is speculating.</p>
+<h3 id="bytesregex"><a class="header" href="#bytesregex"><code>bytes::Regex</code></a></h3>
+<p>This RFC proposes stabilizing the <code>bytes</code> sub-module of the <code>regex</code> crate in its entirety. The <code>bytes</code> sub-module is a near clone of the API at the crate level with one important difference: it searches <code>&amp;[u8]</code> instead of <code>&amp;str</code>. This design was motivated by a similar split in <code>std</code>, but there are alternatives.</p>
+<h4 id="a-regex-trait"><a class="header" href="#a-regex-trait">A regex trait</a></h4>
+<p>One alternative is designing a trait that looks something like this:</p>
+<pre><code class="language-rust">trait Regex {
+  type Text: ?Sized;
+
+  fn is_match(&amp;self, text: &amp;Self::Text) -&gt; bool;
+  fn find(&amp;self, text: &amp;Self::Text) -&gt; Option&lt;Match&gt;;
+  fn find_iter&lt;'r, 't&gt;(&amp;'r self, text: &amp;'t Self::Text) -&gt; Matches&lt;'r, 't, Self::Text&gt;;
+  // and so on
+}</code></pre>
+<p>However, there are a couple problems with this approach. First and foremost, the use cases of such a trait aren’t exactly clear. It does make writing generic code that searches either a <code>&amp;str</code> or a <code>&amp;[u8]</code> possible, but the semantics of searching <code>&amp;str</code> (always valid UTF-8) or <code>&amp;[u8]</code> are quite a bit different with respect to the original <code>Regex</code>. Secondly, the trait isn’t obviously implementable by others. For example, some of the methods return iterator types such as <code>Matches</code> that are typically implemented with a lower level API that isn’t exposed. This suggests that a straight-forward traitification of the current API probably isn’t appropriate, and perhaps, a better trait needs to be more fundamental to regex searching.</p>
+<p>Perhaps the strongest reason to not adopt this design for regex <code>1.0</code> is that we don’t have any experience with it and there hasn’t been any demand for it. In particular, it could be prototyped in another crate.</p>
+<h4 id="reuse-some-types"><a class="header" href="#reuse-some-types">Reuse some types</a></h4>
+<p>In the current proposal, the <code>bytes</code> submodule completely duplicates the top-level API, including all iterator types, <code>Captures</code> and even the <code>Replacer</code> trait. We could parameterize many of those types over the type of the text searched. For example, the proposed <code>Replacer</code> trait looks like this:</p>
+<pre><code class="language-rust">trait Replacer {
+    fn replace_append(&amp;mut self, caps: &amp;Captures, dst: &amp;mut String);
+
+    fn no_expansion&lt;'r&gt;(&amp;'r mut self) -&gt; Option&lt;Cow&lt;'r, str&gt;&gt; {
+        None
+    }
+}</code></pre>
+<p>We might add an associated type like so:</p>
+<pre><code class="language-rust">trait Replacer {
+    type Text: ToOwned + ?Sized;
+
+    fn replace_append(
+        &amp;mut self,
+        caps: &amp;Captures&lt;Self::Text&gt;,
+        dst: &amp;mut &lt;Self::Text as ToOwned&gt;::Owned,
+    );
+
+    fn no_expansion&lt;'r&gt;(&amp;'r mut self) -&gt; Option&lt;Cow&lt;'r, Self::Text&gt;&gt; {
+        None
+    }
+}</code></pre>
+<p>But parameterizing the <code>Captures</code> type is a little bit tricky. Namely, methods like <code>get</code> want to slice the text at match offsets, but this can’t be done safely in generic code without introducing another public trait.</p>
+<p>The final death knell in this idea is that these two implementations cannot co-exist:</p>
+<pre><code class="language-rust">impl&lt;F&gt; Replacer for F where F: FnMut(&amp;Captures) -&gt; String {
+    type Text = str;
+
+    fn replace_append(&amp;mut self, caps: &amp;Captures, dst: &amp;mut String) {
+        dst.push_str(&amp;(*self)(caps));
+    }
+}
+
+impl&lt;F&gt; Replacer for F where F: FnMut(&amp;Captures) -&gt; Vec&lt;u8&gt; {
+    type Text = [u8];
+
+    fn replace_append(&amp;mut self, caps: &amp;Captures, dst: &amp;mut Vec&lt;u8&gt;) {
+        dst.extend(&amp;(*self)(caps));
+    }
+}</code></pre>
+<p>Perhaps there is a path through this using yet more types or more traits, but without a really strong motivating reason to find it, I’m not convinced it’s worth it. Duplicating all of the types is unfortunate, but it’s <em>simple</em>.</p>
+<h2 id="未解決的問題"><a class="header" href="#未解決的問題">未解決的問題</a></h2>
+<p>The <code>regex</code> repository has more than just the <code>regex</code> crate.</p>
+<h3 id="regex-syntax"><a class="header" href="#regex-syntax"><code>regex-syntax</code></a></h3>
+<p>This crate exposes a regular expression parser and abstract syntax that is completely divorced from compilation or searching. It is not part of <code>regex</code> proper since it may experience more frequent breaking changes and is far less frequently used. It is not clear whether this crate will ever see <code>1.0</code>, and if it does, what criteria would be used to judge it suitable for <code>1.0</code>. Nevertheless, it is a useful public API, but it is not part of this RFC.</p>
+<h3 id="regex-capi"><a class="header" href="#regex-capi"><code>regex-capi</code></a></h3>
+<p>Recently, <code>regex-capi</code> was built to provide a C API to this regex library. It has been used to build <a href="https://github.com/BurntSushi/rure-go">cgo bindings to this library for Go</a>. Given its young age, it is not part of this proposal but will be maintained as a pre-1.0 crate in the same repository.</p>
+<h3 id="regex_macros"><a class="header" href="#regex_macros"><code>regex_macros</code></a></h3>
+<p>The <code>regex!</code> compiler plugin is a macro that can compile regular expressions when your Rust program compiles. Stated differently, <code>regex!("...")</code> is transformed into Rust code that executes a search of the given pattern directly. It was written two years ago and largely hasn’t changed since. When it was first written, it had two major benefits:</p>
+<ol>
+<li>If there was a syntax error in your regex, your Rust program would not compile.</li>
+<li>It was faster.</li>
+</ol>
+<p>Today, (1) can be simulated in practice with the use of a Clippy lint and (2) is no longer true. In fact, <code>regex!</code> is at least one order of magnitude slower than the standard <code>Regex</code> implementation.</p>
+<p>The future of <code>regex_macros</code> is not clear. In one sense, since it is a compiler plugin, there hasn’t been much interest in developing it further since its audience is necessarily limited. In another sense, it’s not entirely clear what its implementation path is. It would take considerable work for it to beat the current <code>Regex</code> implementation (if it’s even possible). More discussion on this is out of scope.</p>
+<h3 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h3>
+<p>As of now, <code>regex</code> has several dependencies:</p>
+<ul>
+<li><code>aho-corasick</code></li>
+<li><code>memchr</code></li>
+<li><code>thread_local</code></li>
+<li><code>regex-syntax</code></li>
+<li><code>utf8-ranges</code></li>
+</ul>
+<p>All of them except for <code>thread_local</code> were written by this author, and were primarily motivated for use in the <code>regex</code> crate. They were split out because they seem generally useful.</p>
+<p>There may be other things in <code>regex</code> (today or in the future) that may also be helpful to others outside the strict context of <code>regex</code>. Is it beneficial to split such things out and create a longer list of dependencies? Or should we keep <code>regex</code> as tight as possible?</p>
+<h3 id="exposing-more-internals"><a class="header" href="#exposing-more-internals">Exposing more internals</a></h3>
+<p>It is conceivable that others might find interest in the regex compiler or more lower level access to the matching engines. We could do something similar to <code>regex-syntax</code> and expose some internals in a separate crate. However, there isn’t a pressing desire to do this at the moment, and would probably require a good deal of work.</p>
+<h2 id="breaking-changes"><a class="header" href="#breaking-changes">Breaking changes</a></h2>
+<p>This section of the RFC lists all breaking changes between <code>regex 0.1</code> and the API proposed in this RFC.</p>
+<ul>
+<li><code>find</code> and <code>find_iter</code> now return values of type <code>Match</code> instead of <code>(usize, usize)</code>. The <code>Match</code> type has <code>start</code> and <code>end</code> methods which can be used to recover the original offsets, as well as an <code>as_str</code> method to get the matched text.</li>
+<li>The <code>Captures</code> type no longer has any iterators defined. Instead, callers should use the <code>Regex::capture_names</code> method.</li>
+<li><code>bytes::Regex</code> enables the Unicode flag by default. Previously, it disabled it by default. The flag can be disabled in the pattern with <code>(?-u)</code>.</li>
+<li>The definition of the <code>Replacer</code> trait was completely re-worked. Namely, its API inverts control of allocation so that the caller must provide a <code>String</code> to write to. Previous implementors will need to examine the new API. Moving to the new API should be straight-forward.</li>
+<li>The <code>is_empty</code> method on <code>Captures</code> was removed since it always returns <code>false</code> (because every <code>Captures</code> has at least one capture group corresponding to the entire match).</li>
+<li>The <code>PartialEq</code> and <code>Eq</code> impls on <code>Regex</code> were removed. If you need this functionality, add a newtype around <code>Regex</code> and write the corresponding <code>PartialEq</code> and <code>Eq</code> impls.</li>
+<li>The lifetime parameters for the <code>iter</code> and <code>iter_named</code> methods on <code>Captures</code> were fixed. The corresponding iterator types, <code>SubCaptures</code> and <code>SubCapturesNamed</code>, grew an additional lifetime parameter.</li>
+<li>The constructor, <code>Regex::with_size_limit</code>, was removed. It can be replaced with use of <code>RegexBuilder</code>.</li>
+<li>The <code>is_match</code> free function was removed. Instead, compile a <code>Regex</code> explicitly and call the <code>is_match</code> method.</li>
+<li>Many iterator types were renamed. (e.g., <code>RegexSplits</code> to <code>SplitsIter</code>.)</li>
+<li>Replacements now return a <code>Cow&lt;str&gt;</code> instead of a <code>String</code>. Namely, the subject text doesn’t need to be copied if there are no replacements. Callers may need to add <code>into_owned()</code> calls to convert the <code>Cow&lt;str&gt;</code> to a proper <code>String</code>.</li>
+<li>The <code>Error</code> type no longer has the <code>InvalidSet</code> variant, since the error is no longer possible. Its <code>Syntax</code> variant was also modified to wrap a <code>String</code> instead of a <code>regex_syntax::Error</code>. If you need access to specific parse error information, use the <code>regex-syntax</code> crate directly.</li>
+<li>To allow future growth, some character classes may no longer compile to make room for possibly adding class set notation in the future.</li>
+<li>Various iterator types have been renamed.</li>
+<li>The <code>RegexBuilder</code> type now takes an <code>&amp;mut self</code> on most methods instead of <code>self</code>. Additionally, the final build step now uses <code>build()</code> instead of <code>compile()</code>.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="1618-ergonomic-format-args.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="1623-static.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="1618-ergonomic-format-args.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="1623-static.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

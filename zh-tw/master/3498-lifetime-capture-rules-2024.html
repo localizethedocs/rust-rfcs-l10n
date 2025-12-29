@@ -1,0 +1,789 @@
+<!DOCTYPE HTML>
+<html lang="zh_TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3498-lifetime-capture-rules-2024 - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-c5bb60c5.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>lifetime_capture_rules_2024</code></li>
+<li>Start Date: 2023-07-26</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3498">rust-lang/rfcs#3498</a></li>
+<li>Tracking Issue: <a href="https://github.com/rust-lang/rust/issues/117587">rust-lang/rust#117587</a></li>
+<li>Initiative: <a href="https://github.com/rust-lang/impl-trait-initiative"><code>impl Trait</code> Initiative</a></li>
+</ul>
+<h2 id="摘要"><a class="header" href="#摘要">摘要</a></h2>
+<p>In Rust 2024 and later editions, return position <code>impl Trait</code> (RPIT) opaque types will automatically capture all in-scope type <em>and</em> lifetime parameters.  In preparation for this, new RPIT-like <code>impl Trait</code> features introduced into earlier editions will also automatically capture all in-scope type and lifetime parameters.</p>
+<h2 id="background"><a class="header" href="#background">Background</a></h2>
+<p>Rust’s rules in the 2021 and earlier editions around capturing lifetimes in return position <code>impl Trait</code> (RPIT) opaque types are inconsistent, unergonomic, and not helpful to users.  In common scenarios, doing the correct thing requires a <em>trick</em> that is not well known and whose purpose is commonly not well understood.</p>
+<p>As we look forward to the 2024 edition and move toward stabilizing features such as type alias <code>impl Trait</code> (TAIT), associated type position <code>impl Trait</code> (ATPIT), return position <code>impl Trait</code> in trait (RPITIT), and <code>async fn</code> in trait (AFIT), we must decide on a clear vision of how lifetimes should be captured in Rust.</p>
+<p>We want the upcoming features in the stabilization pipeline to capture lifetimes in a way that’s consistent with each other and with the way we want Rust to work and develop going forward.</p>
+<p>This RFC specifies a <a href="#solution">solution</a> that achieves this.  But first, we’ll describe the problem in further detail.  The descriptions and examples in this section use the semantics of Rust 2021.</p>
+<h3 id="capturing-lifetimes"><a class="header" href="#capturing-lifetimes">Capturing lifetimes</a></h3>
+<p>In return position <code>impl Trait</code> (RPIT) and <code>async fn</code>, an <strong>opaque type</strong> is a type that can only be used for its specified trait bounds (and for the “leaked” auto trait bounds of its hidden type).  A <strong>hidden type</strong> is the actual concrete type of the values hidden behind the opaque type.</p>
+<p>A hidden type is only allowed to name lifetime parameters when those lifetime parameters have been <em>“captured”</em> by the corresponding opaque type. For example:<sup class="footnote-reference" id="fr-ref-captures-trait-ltps-1"><a href="#footnote-ref-captures-trait-ltps">1</a></sup></p>
+<pre><code class="language-rust">// Returns: `impl Future&lt;Output = ()&gt; + Captures&lt;&amp;'a ()&gt;`
+async fn foo&lt;'a&gt;(x: &amp;'a ()) { _ = (x,); }</code></pre>
+<p>In the above, we would say that the lifetime parameter <code>'a</code> has been captured in the returned opaque type.</p>
+<p>For an opaque type that <em>does not</em> specify an outlives bound (e.g. <code>+ 'other</code>), when a caller receives a value of that opaque type and wants to prove that it outlives some lifetime, the caller must prove that all of the captured lifetime components of the opaque type outlive that lifetime.  The captured lifetime components are the set of lifetimes contained within captured type parameters and the lifetimes represented by captured lifetime parameters.</p>
+<p>For an opaque type that <em>does</em> specify an outlives bound (e.g. <code>+ 'other</code>), when a caller receives a value of that opaque type and wants to prove that it outlives some lifetime, it’s enough to prove that the lifetime substituted for the specified lifetime parameter in the bounds of the opaque outlives that other lifetime after transitively taking into account all known lifetime bounds.  For such an opaque type, the <em>callee</em> must prove that all lifetime and type parameters that are used in the hidden type outlive the specified bound.</p>
+<p>See <a href="#appendix-h-examples-of-outlives-rules-on-opaque-types">Appendix H</a> for examples and further exposition of these rules.</p>
+<h3 id="capturing-lifetimes-in-type-parameters"><a class="header" href="#capturing-lifetimes-in-type-parameters">Capturing lifetimes in type parameters</a></h3>
+<p>In return position <code>impl Trait</code> (RPIT) and <code>async fn</code>, lifetimes contained within all in-scope type parameters are captured in the opaque type.  For example:<sup class="footnote-reference" id="fr-ref-captures-trait-tps-1"><a href="#footnote-ref-captures-trait-tps">2</a></sup></p>
+<pre><code class="language-rust">// Returns: `impl Future&lt;Output = ()&gt; + Captures&lt;T&gt;`
+async fn foo&lt;T&gt;(x: T) { _ = (x,); }
+
+fn bar&lt;'a&gt;(x: &amp;'a ()) {
+    let y = foo(x);
+    //  ^^^^^^^^^^^
+    //  ^ Captures 'a.
+}</code></pre>
+<p>In the above, we would say that <code>foo</code> captures the type parameter <code>T</code> or that it “captures all lifetime components contained in the type parameter <code>T</code>”.  Consequently, the call to <code>foo</code> captures the lifetime <code>'a</code> in its returned opaque type.</p>
+<h4 id="behavior-of-async-fn"><a class="header" href="#behavior-of-async-fn">Behavior of <code>async fn</code></a></h4>
+<p>As we saw in the examples above, <code>async</code> functions automatically capture in their returned opaque types all type and lifetime parameters in scope.</p>
+<p>This is different than the rule for return position <code>impl Trait</code> (RPIT) in Rust 2021 and earlier editions which requires that lifetime parameters (but not type parameters) be captured by writing them in the bound.  As we’ll see below, RPIT requires users to use the <code>Captures</code> trick to get the correct behavior.</p>
+<p>The inconsistency is visible to users when desugaring from <code>async fn</code> to RPIT.  As that’s something users commonly do, users have to be aware of this complexity in Rust 2021.</p>
+<p>For example, given this <code>async fn</code>:</p>
+<pre><code class="language-rust">async fn foo&lt;'a, T&gt;(x: &amp;'a (), y: T) {
+    _ = (x, y);
+}</code></pre>
+<p>To correctly desugar this to RPIT, we must write:</p>
+<pre><code class="language-rust">use core::future::Future;
+
+trait Captures&lt;U&gt; {}
+impl&lt;T: ?Sized, U&gt; Captures&lt;U&gt; for T {}
+
+fn foo&lt;'a, T&gt;(x: &amp;'a (), y: T)
+-&gt; impl Future&lt;Output = ()&gt; + Captures&lt;&amp;'a ()&gt; {
+//                            ^^^^^^^^^^^^^^^^
+//                            ^ Capture of lifetime.
+    async move { _ = (x, y); }
+}</code></pre>
+<p>(As we’ll discuss below, other seemingly simpler desugarings are incorrect.)</p>
+<p>Given how <code>async fn</code> captures all type and lifetime parameters in scope in its returned opaque type, we could imagine that if it had happened first, the original lifetime capture rules for RPIT might have done that as well.</p>
+<h4 id="behavior-of-async-fn-with-lifetimes-in-outer-impl"><a class="header" href="#behavior-of-async-fn-with-lifetimes-in-outer-impl">Behavior of <code>async fn</code> with lifetimes in outer impl</a></h4>
+<p>Lifetimes in scope from an outer impl are also captured automatically by an <code>async fn</code>.  For example:</p>
+<pre><code class="language-rust">struct Foo&lt;'a&gt;(&amp;'a ());
+impl&lt;'a&gt; Foo&lt;'a&gt; {
+    async fn foo(x: &amp;'a ()) { _ = (x,); }
+    //       ^^^^^^^^^^^^^^
+    //       ^ The lifetime `'a` is automatically
+    //       captured in the opaque return type.
+}</code></pre>
+<p>Note that the lifetime is captured in the returned opaque type whether or not the lifetime appears in the <code>async fn</code> return type and whether or not the lifetime is actually used in the hidden type at all.</p>
+<h3 id="working-with-the-lifetime-capture-rules-in-rpit"><a class="header" href="#working-with-the-lifetime-capture-rules-in-rpit">Working with the lifetime capture rules in RPIT</a></h3>
+<p>For the borrow checker to function with an opaque type it must know what lifetimes it captures (and consequently what lifetimes may be used by the hidden type), so it’s important that this information can be deduced from the signature, either by writing it out or by an automatic rule.</p>
+<p>As we saw in the previous examples, for RPIT (but not for <code>async fn</code>), the rule in Rust 2021 is that opaque types automatically capture lifetimes within the type parameters but only capture lifetime parameters when those lifetime parameters are mentioned in their bounds.</p>
+<p>When someone wants to capture a lifetime parameter not already in the bounds, that person must use one of the tricks we’ll describe next.</p>
+<h4 id="the-outlives-trick"><a class="header" href="#the-outlives-trick">The outlives trick</a></h4>
+<p>Consider this example:</p>
+<pre><code class="language-rust">// error[E0700]: hidden type captures lifetime
+//               that does not appear in bounds
+fn foo&lt;'a&gt;(x: &amp;'a ()) -&gt; impl Sized { x }</code></pre>
+<p>This does not compile in Rust 2021 because the <code>'a</code> lifetime is not mentioned in the bounds of the opaque type.  We can make this work by writing:</p>
+<pre><code class="language-rust">fn foo&lt;'a&gt;(x: &amp;'a ()) -&gt; impl Sized + 'a { x }</code></pre>
+<p>This is called the “outlives trick”.  But this is actually a non-solution in the general case.  Consider what <code>impl Sized + 'a</code> means.  We’re returning an opaque type and promising that it outlives any lifetime <code>'a</code>.</p>
+<p>This isn’t actually what we want to promise.  We want to promise that the opaque type <em>captures</em> some lifetime <code>'a</code>, and consequently, that for the opaque type to outlive some other lifetime, <code>'a</code> must outlive that other lifetime.  If we could say in Rust that a lifetime must outlive a type, we would say that the <code>'a</code> lifetime must outlive the returned opaque type.</p>
+<p>That is, the promise we’re making is the wrong way around.</p>
+<p>It works anyway in this specific case only because the lifetime of the returned opaque type is <em>exactly</em> equal to the lifetime <code>'a</code>.  Because equality is symmetric, the fact that our promise is the wrong way around doesn’t matter.</p>
+<p>This trick fails when there are multiple independent lifetimes that are captured, including lifetimes contained within type parameters (see <a href="#appendix-d-the-outlives-trick-fails-with-only-one-lifetime-parameter">Appendix D</a> for an example of this).  Further, it confuses users and makes it more difficult for those users to build a consistent mental model of Rust lifetime bounds.</p>
+<h4 id="the-captures-trick"><a class="header" href="#the-captures-trick">The <code>Captures</code> trick</a></h4>
+<p>The correct way to express the capture of lifetime parameters in Rust 2021 is with the <code>Captures</code> trick.  It’s the only option when multiple independent lifetimes must be captured (including lifetimes from captured type parameters).  Consider again our example:</p>
+<pre><code class="language-rust">// error[E0700]: hidden type captures lifetime
+//               that does not appear in bounds
+fn foo&lt;'a&gt;(x: &amp;'a ()) -&gt; impl Sized { x }</code></pre>
+<p>We could solve the problem in this way using the <code>Captures</code> trick:<sup class="footnote-reference" id="fr-captures-trait-1"><a href="#footnote-captures-trait">3</a></sup></p>
+<pre><code class="language-rust">trait Captures&lt;U&gt; {}
+impl&lt;T: ?Sized, U&gt; Captures&lt;U&gt; for T {}
+
+fn foo&lt;'a&gt;(x: &amp;'a ()) -&gt; impl Sized + Captures&lt;&amp;'a ()&gt; { x }</code></pre>
+<p>Because the <code>'a</code> lifetime parameter appears in the bounds of the opaque type, Rust 2021 captures that lifetime parameter in the opaque type and accepts this code.</p>
+<p>We can extend this trick to multiple lifetimes.  For example:</p>
+<pre><code class="language-rust">fn foo&lt;'a, 'b&gt;(x: &amp;'a (), y: &amp;'b ()) -&gt; impl Sized + Captures&lt;(&amp;'a (), &amp;'b ())&gt; {
+    (x, y)
+}</code></pre>
+<p>While this does work, the <code>Captures</code> trick is ungainly, it’s not widely known, and its purpose is not commonly well understood.</p>
+<h3 id="behavior-of-rpit-in-rust-2021-with-type-parameters"><a class="header" href="#behavior-of-rpit-in-rust-2021-with-type-parameters">Behavior of RPIT in Rust 2021 with type parameters</a></h3>
+<p>The Rust 2021 rules for capturing lifetime parameters in opaque types are also inconsistent with the rules for capturing lifetime components within type parameters.  Consider:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(x: T) -&gt; impl Sized { x }
+//                 ^^^^^^^^^^
+//                 ^ Captures any lifetimes within `T`.
+
+fn bar&lt;'a&gt;(x: &amp;'a ()) -&gt; impl Sized + 'a {
+    foo(x) // Captures `'a`.
+}</code></pre>
+<p>Rust captures all type parameters automatically in the opaque type.  This results in all lifetime components within those type parameters being captured automatically.  It can be surprising for lifetime parameters to not work in the same way as lifetime components contained within captured type parameters.</p>
+<h3 id="overcapturing"><a class="header" href="#overcapturing">Overcapturing</a></h3>
+<p>The rules that cause us to capture all generic parameters in the opaque type might cause us to capture too much.  This is already a problem in Rust 2021.  E.g.:</p>
+<pre><code class="language-rust">fn foo&lt;T&gt;(_: T) -&gt; impl Sized {}
+//                 ^^^^^^^^^^
+//                 The returned opaque type captures `T`
+//                 but the hidden type does not.
+
+// error[E0515]: cannot return value referencing function parameter `x`.
+fn bar(x: ()) -&gt; impl Sized + 'static {
+    foo(&amp;x) // Captures local lifetime.
+}</code></pre>
+<p>In Rust 2021, lifetimes within type parameters are automatically captured in RPIT opaque types, and both lifetime parameters and lifetimes within type parameters are automatically captured in <code>async fn</code> opaque types.  Additionally capturing lifetime parameters in RPIT opaque types may make this problem somewhat worse.</p>
+<p>There are a number of possible solutions to this problem.  One appealing partial solution is to more fully implement the rules specified in <a href="https://github.com/rust-lang/rfcs/blob/master/text/1214-projections-lifetimes-and-wf.md">RFC 1214</a>.  This would allow type and lifetime parameters that do not outlive a specified bound to mostly act as if they were not captured.  See <a href="#appendix-g-future-possibility-inferred-precise-capturing">Appendix G</a> for a full discussion of this.</p>
+<p>Another solution would be to add syntax for precisely specifying which type and lifetime parameters to capture.  One proposal for this syntax is described in <a href="#appendix-f-future-possibility-precise-capturing-syntax">Appendix F</a>.</p>
+<p>Type alias <code>impl Trait</code> (TAIT) is another solution.  It has accepted RFCs (see <a href="https://github.com/rust-lang/rfcs/blob/master/text/2515-type_alias_impl_trait.md">RFC 2515</a>, <a href="https://github.com/rust-lang/rfcs/blob/master/text/2071-impl-trait-existential-types.md">RFC 2071</a>), it’s implemented and actively maintained in nightly Rust, and there is a consensus to stabilize it in some form.  The stabilization of TAIT would allow all currently accepted code to continue to be expressed with precisely the same semantics.  See <a href="#appendix-i-precise-capturing-with-tait">Appendix I</a> for further details on how TAIT can be used to precisely control the capturing of type and lifetime parameters.</p>
+<p>The stabilization of the 2024 lifetime capture rules in this RFC is contingent on the stabilization of some solution for precise capturing that will allow all code that is allowed under Rust 2021 to be expressed, in some cases with syntactic changes, in Rust 2024.</p>
+<h3 id="summary-of-problems"><a class="header" href="#summary-of-problems">Summary of problems</a></h3>
+<p>In summary, in Rust 2021, the lifetime capture rules for RPIT opaque types are unergonomic and require unobvious tricks.  The rules for capturing lifetime parameters are inconsistent with the rules for capturing lifetimes within type parameters.  The rules for RPIT are inconsistent with the rules for <code>async fn</code>, and this is exposed to users because of the common need to switch between these two equivalent forms.</p>
+<h2 id="solution"><a class="header" href="#solution">Solution</a></h2>
+<p>This section is normative.</p>
+<p>In Rust 2024 and later editions, return position <code>impl Trait</code> (RPIT) opaque types will automatically capture all in-scope type <em>and</em> lifetime parameters.  In preparation for this, new RPIT-like <code>impl Trait</code> features introduced into earlier editions will also automatically capture all in-scope type and lifetime parameters.</p>
+<h3 id="apply-async-fn-rule-to-rpit-in-2024-edition"><a class="header" href="#apply-async-fn-rule-to-rpit-in-2024-edition">Apply <code>async fn</code> rule to RPIT in 2024 edition</a></h3>
+<p>Under this RFC, in the Rust 2024 edition, RPIT opaque types will automatically capture all lifetime parameters in scope, just as <code>async fn</code> does in Rust 2021, and just as RPIT does in Rust 2021 when capturing type parameters.</p>
+<p>This updates and supersedes the behavior specified in <a href="https://github.com/rust-lang/rfcs/blob/master/text/1522-conservative-impl-trait.md">RFC 1522</a> and <a href="https://github.com/rust-lang/rfcs/blob/master/text/1951-expand-impl-trait.md">RFC 1951</a>.</p>
+<p>Consequently, the following examples will become legal in Rust 2024:</p>
+<h4 id="capturing-lifetimes-from-a-free-function-signature"><a class="header" href="#capturing-lifetimes-from-a-free-function-signature">Capturing lifetimes from a free function signature</a></h4>
+<pre><code class="language-rust">fn foo&lt;'a, T&gt;(x: &amp;'a T) -&gt; impl Sized { x }
+//                         ^^^^^^^^^^
+//                         ^ Captures `'a` and `T`.</code></pre>
+<h4 id="capturing-lifetimes-from-outer-inherent-impl"><a class="header" href="#capturing-lifetimes-from-outer-inherent-impl">Capturing lifetimes from outer inherent impl</a></h4>
+<pre><code class="language-rust">struct Foo&lt;'a, T&gt;(&amp;'a T);
+impl&lt;'a, T&gt; Foo&lt;'a, T&gt; {
+    fn foo(self) -&gt; impl Sized { self }
+    //              ^^^^^^^^^^
+    //              ^ Captures `'a` and `T`.
+}</code></pre>
+<h4 id="capturing-lifetimes-from-an-inherent-associated-function-signature"><a class="header" href="#capturing-lifetimes-from-an-inherent-associated-function-signature">Capturing lifetimes from an inherent associated function signature</a></h4>
+<pre><code class="language-rust">struct Foo&lt;T&gt;(T);
+impl&lt;T&gt; Foo&lt;T&gt; {
+    fn foo&lt;'a&gt;(x: &amp;'a T) -&gt; impl Sized { x }
+    //                      ^^^^^^^^^^
+    //                      ^ Captures `'a` and `T`.
+}</code></pre>
+<h4 id="capturing-lifetimes-from-an-inherent-method-signature"><a class="header" href="#capturing-lifetimes-from-an-inherent-method-signature">Capturing lifetimes from an inherent method signature</a></h4>
+<pre><code class="language-rust">struct Foo&lt;T&gt;(T);
+impl&lt;T&gt; Foo&lt;T&gt; {
+    fn foo&lt;'a&gt;(&amp;self, x: &amp;'a ()) -&gt; impl Sized { (self, x) }
+    //                              ^^^^^^^^^^
+    // Captures `'_`, `'a`, and `T`.^
+}</code></pre>
+<h4 id="capturing-lifetimes-from-for-binders"><a class="header" href="#capturing-lifetimes-from-for-binders">Capturing lifetimes from <code>for&lt;..&gt;</code> binders</a></h4>
+<p>Once higher ranked lifetime bounds on nested opaque types are supported in Rust (see <a href="https://github.com/rust-lang/rust/issues/104288">#104288</a>), the following code will become legal:</p>
+<pre><code class="language-rust">trait Trait&lt;'a&gt; {
+    type Assoc;
+}
+
+impl&lt;'a, F: Fn(&amp;'a ()) -&gt; &amp;'a ()&gt; Trait&lt;'a&gt; for F {
+    type Assoc = &amp;'a ();
+}
+
+fn foo() -&gt; impl for&lt;'a&gt; Trait&lt;'a, Assoc = impl Sized&gt; {
+    //                                     ^^^^^^^^^^
+    //                      Captures `'a`. ^
+    fn f(x: &amp;()) -&gt; &amp;() { x }
+    f
+}</code></pre>
+<p>That is, the <code>'a</code> lifetime parameter from the higher ranked trait bounds (HRTBs) <code>for&lt;..&gt;</code> binder is in scope for the <code>impl Sized</code> opaque type, so it is captured under the rules of this RFC.</p>
+<p>Note that support for higher ranked lifetime bounds is not required by this RFC and is not a blocker to stabilizing the rules specified in this RFC.</p>
+<h3 id="overcapturing-1"><a class="header" href="#overcapturing-1">Overcapturing</a></h3>
+<p>Sometimes the capture rules result in unwanted type and lifetime parameters being captured.  This happens in Rust 2021 due to the RPIT rules for capturing lifetimes from all in-scope type parameters and the <code>async fn</code> rules for capturing all in-scope type and lifetime parameters.  Under this RFC, in Rust 2024, lifetime parameters could also be overcaptured by RPIT.</p>
+<p>The stabilization of the 2024 lifetime capture rules in this RFC is contingent on the stabilization of some solution for precise capturing that will allow all code that is allowed under Rust 2021 to be expressed, in some cases with syntactic changes, in Rust 2024.</p>
+<h3 id="type-alias-impl-trait-tait"><a class="header" href="#type-alias-impl-trait-tait">Type alias <code>impl Trait</code> (TAIT)</a></h3>
+<p>Under this RFC, the opaque type in type alias <code>impl Trait</code> (TAIT) in all editions will automatically capture all type and lifetime parameters present in the type alias.  For example:</p>
+<pre><code class="language-rust">#![feature(type_alias_impl_trait)]
+
+type Foo&lt;'a, T&gt; = impl Sized;
+//                ^^^^^^^^^^
+//                ^ Captures `'a` and `T`.
+
+fn foo&lt;'a, T&gt;() -&gt; Foo&lt;'a, T&gt; {}</code></pre>
+<p>This updates and supersedes the behavior specified in <a href="https://github.com/rust-lang/rfcs/blob/master/text/2071-impl-trait-existential-types.md">RFC 2071</a> and <a href="https://github.com/rust-lang/rfcs/blob/master/text/2515-type_alias_impl_trait.md">RFC 2515</a>.</p>
+<h3 id="associated-type-position-impl-trait-atpit"><a class="header" href="#associated-type-position-impl-trait-atpit">Associated type position <code>impl Trait</code> (ATPIT)</a></h3>
+<p>Under this RFC, the opaque type in associated type position <code>impl Trait</code> (ATPIT) in all editions will automatically capture all type and lifetime parameters present in the GAT and in the outer impl.  For example:</p>
+<pre><code class="language-rust">#![feature(impl_trait_in_assoc_type)]
+
+trait Trait&lt;'t&gt; {
+    type Gat&lt;'g&gt; where 'g: 't; // Bound required by existing GAT rules.
+    fn foo&lt;'f&gt;(self, x: &amp;'t (), y: &amp;'f ()) -&gt; Self::Gat&lt;'f&gt;;
+}
+
+struct Foo&lt;'s&gt;(&amp;'s ());
+impl&lt;'t, 's&gt; Trait&lt;'t&gt; for Foo&lt;'s&gt; {
+    type Gat&lt;'g&gt; = impl Sized where 'g: 't;
+    //             ^^^^^^^^^^
+    //             ^ Captures:
+    //
+    //                 - `'g` from the GAT.
+    //                 - `'f` from the method signature (via the GAT).
+    //                 - `'t` from the outer impl and a trait input.
+    //                 - `'s` from the outer impl and Self type.
+    fn foo&lt;'f&gt;(self, x: &amp;'t (), y: &amp;'f ()) -&gt; Self::Gat&lt;'f&gt; {
+        (self, x, y)
+    }
+}</code></pre>
+<p>This updates and supersedes the behavior specified in <a href="https://github.com/rust-lang/rfcs/blob/master/text/2071-impl-trait-existential-types.md">RFC 2071</a> and <a href="https://github.com/rust-lang/rfcs/blob/master/text/2515-type_alias_impl_trait.md">RFC 2515</a>.</p>
+<h3 id="return-position-impl-trait-in-trait-rpitit"><a class="header" href="#return-position-impl-trait-in-trait-rpitit">Return position <code>impl Trait</code> in Trait (RPITIT)</a></h3>
+<p>Under this RFC, when an associated function or method in a trait definition contains in its return type a return position <code>impl Trait</code> in trait (RPITIT), the impl of that item may capture in the returned opaque type, in all editions, all trait input type and lifetime parameters, all type and lifetime parameters present in the <code>Self</code> type, and all type and lifetime parameters in the associated function or method signature.</p>
+<p>When such an associated function or method in a trait definition provides a default implementation, the opaque return type will automatically capture all trait input type and lifetime parameters, all type and lifetime parameters present in the <code>Self</code> type, and all type and lifetime parameters in the associated function or method signature.</p>
+<p>In trait impls, return position <code>impl Trait</code> (RPIT), in all editions, will automatically capture all type and lifetime parameters from the outer impl and from the associated function or method signature.  This ensures that signatures are copyable from trait definitions to impls.</p>
+<p>For example:</p>
+<pre><code class="language-rust">#![feature(return_position_impl_trait_in_trait)]
+
+trait Trait&lt;'t&gt; {
+    fn foo&lt;'f&gt;(self, x: &amp;'t (), y: &amp;'f ()) -&gt; impl Sized;
+    //                                        ^^^^^^^^^^
+    // Method signature lifetimes, trait input lifetimes, and
+    // lifetimes in the Self type may all be captured in this opaque
+    // type in the impl.
+}
+
+struct Foo&lt;'s&gt;(&amp;'s ());
+impl&lt;'t, 's&gt; Trait&lt;'t&gt; for Foo&lt;'s&gt; {
+    fn foo&lt;'f&gt;(self, x: &amp;'t (), y: &amp;'f ()) -&gt; impl Sized {
+        //                                    ^^^^^^^^^^
+        // The opaque type captures:
+        //
+        //   - `'f` from the method signature.
+        //   - `'t` from the outer impl and a trait input lifetime.
+        //   - `'s` from the outer impl and the Self type.
+        (self, x, y)
+    }
+}</code></pre>
+<p>This updates and supersedes the behavior specified in <a href="https://github.com/rust-lang/rfcs/blob/master/text/3425-return-position-impl-trait-in-traits.md">RFC 3425</a>.</p>
+<h3 id="async-fn-in-trait-afit"><a class="header" href="#async-fn-in-trait-afit"><code>async fn</code> in trait (AFIT)</a></h3>
+<p>Under this RFC, when an associated function or method in a trait definition is an <code>async fn</code> in trait (AFIT), the impl of that item may capture in the returned opaque type, in all editions, all trait input type and lifetime parameters, all type and lifetime parameters present in the <code>Self</code> type, and all type and lifetime parameters in the associated function or method signature.</p>
+<p>When such an associated function or method in a trait definition provides a default implementation, the opaque return type will automatically capture all trait input type and lifetime parameters, all type and lifetime parameters present in the <code>Self</code> type, and all type and lifetime parameters in the associated function or method signature.</p>
+<p>In the trait impls, AFIT will automatically capture all type and lifetime parameters from the outer impl and from the associated function or method signature.  This ensures that signatures are copyable from trait definitions to impls.</p>
+<p>This behavior of AFIT will be parsimonious with the current stable capture behavior of <code>async fn</code> in inherent impls.</p>
+<p>For example:</p>
+<pre><code class="language-rust">#![feature(async_fn_in_trait)]
+
+trait Trait&lt;'t&gt;: Sized {
+    async fn foo&lt;'f&gt;(self, x: &amp;'t (), y: &amp;'f ()) -&gt; (Self, &amp;'t (), &amp;'f ());
+    //                                              ^^^^^^^^^^^^^^^^^^^^^^
+    // Method signature lifetimes, trait input lifetimes, and
+    // lifetimes in the Self type may all be captured in this opaque
+    // type in the impl.
+}
+
+struct Foo&lt;'s&gt;(&amp;'s ());
+impl&lt;'t, 's&gt; Trait&lt;'t&gt; for Foo&lt;'s&gt; {
+    async fn foo&lt;'f&gt;(self, x: &amp;'t (), y: &amp;'f ()) -&gt; (Foo&lt;'s&gt;, &amp;'t (), &amp;'f ()) {
+        //                                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+        // The opaque type captures:
+        //
+        //   - `'f` from the method signature.
+        //   - `'t` from the outer impl and a trait input lifetime.
+        //   - `'s` from the outer impl and the Self type.
+        (self, x, y)
+    }
+}</code></pre>
+<p>This updates and supersedes the behavior specified in <a href="https://github.com/rust-lang/rfcs/blob/master/text/3425-return-position-impl-trait-in-traits.md">RFC 3425</a>.</p>
+<h2 id="acknowledgments"><a class="header" href="#acknowledgments">Acknowledgments</a></h2>
+<p>Thanks to Tyler Mandry (@tmandry) for his collaboration on the earlier design document for the 2024 lifetime capture rules, and thanks to Michael Goulet (@compiler-errors) for helpful discussions and insights on this topic.</p>
+<p>All errors and omissions remain those of the author alone.</p>
+<h2 id="appendix-a-other-resources"><a class="header" href="#appendix-a-other-resources">Appendix A: Other resources</a></h2>
+<p>Other resources:</p>
+<ul>
+<li><a href="https://hackmd.io/sFaSIMJOQcuwCdnUvCxtuQ">Lifetime capture rules 2024 T-lang design meeting</a></li>
+<li><a href="https://hackmd.io/zgairrYRSACgTeZHP1x0Zg">Capturing lifetimes in RPITIT</a></li>
+</ul>
+<h2 id="appendix-b-matrix-of-capturing-effects"><a class="header" href="#appendix-b-matrix-of-capturing-effects">Appendix B: Matrix of capturing effects</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>2021: <em>Outer LP</em></th><th>2021: <em>Item LP</em></th><th>2024: <em>Outer LP</em></th><th>2024: <em>Item LP</em></th></tr>
+</thead>
+<tbody>
+<tr><td>RPIT</td><td>N</td><td>N</td><td>Y</td><td>Y</td></tr>
+<tr><td><code>async fn</code></td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+<tr><td>GATs</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+<tr><td>TAIT</td><td>N/A</td><td>Y</td><td>N/A</td><td>Y</td></tr>
+<tr><td>ATPIT</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+<tr><td>RPITIT: trait</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+<tr><td>RPITIT: impl</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+</tbody>
+</table>
+</div>
+<p>In the table above, “LP” refers to “lifetime parameters”.</p>
+<p>The 2024 behavior described for all items is the behavior under this RFC.</p>
+<p>The 2021 behavior described for RPIT and <code>async fn</code> is the stable behavior in Rust 2021.  The other 2021 behaviors described are the behaviors that will be implemented for the features ahead of stabilization.</p>
+<p><em>All</em> of the features above automatically capture all lifetimes from all type parameters in scope in both the 2021 and the 2024 editions.</p>
+<h2 id="appendix-c-the-2021-edition-rules-fail-for-rpitit"><a class="header" href="#appendix-c-the-2021-edition-rules-fail-for-rpitit">Appendix C: The 2021 edition rules fail for RPITIT</a></h2>
+<p>Under the 2021 edition RPIT semantics, RPITs on inherent associated functions and methods do not capture any lifetime parameters automatically.  E.g.:</p>
+<pre><code class="language-rust">struct Foo&lt;'a&gt;(&amp;'a ());
+impl&lt;'a&gt; Foo&lt;'a&gt; {
+    fn into_sized(self) -&gt; impl Sized { self.0 }
+    //^ Error: hidden type captures lifetime
+    //         that does not appear in bounds.
+}</code></pre>
+<p>If we were to apply this rule directly to RPITIT, we’d have an unworkable situation.  E.g.:</p>
+<pre><code class="language-rust">#![feature(return_position_impl_trait_in_trait)]
+
+trait IntoSized {
+    fn into_sized(self) -&gt; impl Sized;
+}
+
+struct Foo&lt;'a&gt;(&amp;'a ());
+impl&lt;'a&gt; IntoSized for Foo&lt;'a&gt; {
+    fn into_sized(self) -&gt; impl Sized { self.0 }
+    //^ Error: hidden type captures lifetime
+    //         that does not appear in bounds.
+}</code></pre>
+<p>There’s nowhere that we could put <code>+ 'a</code> (or <code>+ Captures&lt;&amp;'a ()&gt;</code>) in the above code to make it compile.  The trait has no way of naming <code>'a</code> at all.  It’s part of the <code>Self</code> type.  The trait itself knows nothing about that.</p>
+<p>Under the 2021 edition capture rules, our options would be to:</p>
+<ul>
+<li>
+<p>Allow implicit captures of outer lifetime parameters for all RPITITs.  That would create an inconsistency between RPITIT and Rust 2021 RPIT for inherent associated functions and methods.</p>
+</li>
+<li>
+<p>Require that only the impl list the outer lifetime parameters it captures.  This would create an inconsistency between signatures in the trait definition and in the trait impl.  Even more strangely, copying the signature from a trait definition to a trait impl would result in <em>refinement</em> of the signature because the impl would be saying it does not capture the outer lifetime parameters.</p>
+</li>
+<li>
+<p>Don’t allow useful impls of RPITITs on types with lifetime parameters.  This would limit the expressiveness of the language.</p>
+</li>
+</ul>
+<p>For RPITIT, the Rust 2021 lifetime capture rules would necessarily lead to some kind of inconsistency or loss of expressiveness.  Conversely, the rules in this RFC obviate the problem and allow RPIT to be fully consistent, whether it is used in an inherent impl, in a trait impl, or in a trait definition.</p>
+<h2 id="appendix-d-the-outlives-trick-fails-with-only-one-lifetime-parameter"><a class="header" href="#appendix-d-the-outlives-trick-fails-with-only-one-lifetime-parameter">Appendix D: The outlives trick fails with only one lifetime parameter</a></h2>
+<p>In the past, people often thought that the outlives trick was OK as long as there was only one lifetime parameter.  This is not in fact true.  Consider:</p>
+<pre><code class="language-rust">// This is a demonstration of why the Captures trick is needed even
+// when there is only one lifetime parameter.
+
+// ERROR: the parameter type `T` may not live long enough.
+fn foo&lt;'x, T&gt;(t: T, x: &amp;'x ()) -&gt; impl Sized + 'x {
+    //                                         ^^
+    // We don't need for `T` to outlived `'x`, |
+    // and we don't want to require that, so   |
+    // the Captures trick must be used here. --+
+    (t, x)
+}
+
+fn test&lt;'t, 'x&gt;(t: &amp;'t (), x: &amp;'x ()) {
+    foo(t, x);
+}</code></pre>
+<h2 id="appendix-e-adding-a-static-bound"><a class="header" href="#appendix-e-adding-a-static-bound">Appendix E: Adding a <code>'static</code> bound</a></h2>
+<p>Adding a <code>+ 'static</code> bound will work in Rust 2024 in exactly the same way that it works in Rust 2021.  E.g.:</p>
+<pre><code class="language-rust">trait Captures&lt;U&gt; {}
+impl&lt;T: ?Sized, U&gt; Captures&lt;U&gt; for T {}
+
+fn foo&lt;'x, T&gt;(t: T, x: &amp;'x ())
+-&gt; impl Sized + Captures&lt;&amp;'x ()&gt; + 'static {
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // In Rust 2021, this opaque type automatically captures the type
+    // `T`.  Additionally, we have captured the lifetime `'x` using
+    // the `Captures` trick.
+    //
+    // Since there is no `T: 'static` bound and no `'x: 'static`
+    // bound, this opaque type would not be `'static` without the
+    // specified bound on the opaque type above.  *With* that
+    // specified bound, the opaque type is `'static`, and this code
+    // compiles in Rust 2021.
+    //
+    // In Rust 2024, this opaque type will automatically capture the
+    // lifetime parameter in addition to the type parameter.  The
+    // `Captures` trick will not be needed in the signature.  However,
+    // specifically bounding the opaque type by `'static` will still
+    // work, exactly as it does in Rust 2021.
+    ()
+}
+
+fn is_static&lt;T: 'static&gt;(_t: T) {}
+fn test&lt;'t, 'x&gt;(t: &amp;'t (), x: &amp;'x ()) {
+    is_static(foo(t, x));
+}</code></pre>
+<h2 id="appendix-f-future-possibility-precise-capturing-syntax"><a class="header" href="#appendix-f-future-possibility-precise-capturing-syntax">Appendix F: Future possibility: Precise capturing syntax</a></h2>
+<p>If other solutions for precise capturing of type and lifetime parameters turn out to be unergonomic or needed too often, we may want to consider adding new syntax to <code>impl Trait</code> to allow for precise capturing.  One proposal for that would look like this:</p>
+<pre><code class="language-rust">fn foo&lt;'x, 'y, T, U&gt;() -&gt; impl&lt;'x, T&gt; Sized { todo!() }
+//                        ^^^^^^^^^^^
+//                        ^ Captures `'x` and `T` in the opaque type
+//                        but not `'y` or `U`.</code></pre>
+<h2 id="appendix-g-future-possibility-inferred-precise-capturing"><a class="header" href="#appendix-g-future-possibility-inferred-precise-capturing">Appendix G: Future possibility: Inferred precise capturing</a></h2>
+<p>When an outlives bound is stated for the opaque type, we can use that bound to allow code to compile that does not currently.  Consider:</p>
+<pre><code class="language-rust">fn capture&lt;'o, T&gt;(_: T) -&gt; impl Send + 'o {}
+
+// error[E0597]: `x` does not live long enough.
+fn test_return&lt;'o&gt;(x: ()) -&gt; impl Send + 'o {
+    capture(&amp;x)
+}
+
+// error[E0503]: cannot use `x` because it was mutably borrowed.
+fn test_drop_captured(mut x: ()) {
+    let _c = capture(&amp;mut x);
+    drop(x);
+}
+
+// OK.
+fn test_outlives&lt;'o&gt;(x: ()) {
+    fn outlives&lt;'o, T: 'o&gt;(_: T) {}
+    outlives::&lt;'o&gt;(capture(&amp;x));
+}</code></pre>
+<p>In these examples, we’re capturing a lifetime that’s local to the function.  Even though Rust recognizes that the returned opaque type from <code>capture</code> outlives any other lifetime (due to the <code>+ 'o</code> bound on the opaque), the fact that the opaque type <em>captures</em> the lifetime components within <code>T</code> results in the compilation errors above.</p>
+<p>Notably, this behavior is not specific to RPIT-like opaque types.  It can also be demonstrated using GATs:</p>
+<pre><code class="language-rust">trait PhantomCapture {
+    type FakeOpaque&lt;'o, T&gt;: Send + 'o;
+    fn capture&lt;'o, T&gt;(_: T) -&gt; Self::FakeOpaque&lt;'o, T&gt;;
+}
+
+// error[E0597]: `x` does not live long enough
+fn test_return&lt;'o, T: PhantomCapture + 'o&gt;(x: T) -&gt; impl Send + 'o {
+    &lt;T as PhantomCapture&gt;::capture(&amp;x)
+}
+
+// error[E0505]: cannot move out of `x` because it is borrowed
+fn test_drop_captured&lt;T: PhantomCapture&gt;(mut x: T) {
+    let _c = &lt;T as PhantomCapture&gt;::capture(&amp;mut x);
+    drop(x);
+}
+
+// OK.
+fn test_outlives&lt;'o, T: PhantomCapture&gt;(x: T) {
+    fn outlives&lt;'o, T: 'o&gt;(_t: T) {}
+    outlives::&lt;'o&gt;(&lt;T as PhantomCapture&gt;::capture(&amp;x))
+}</code></pre>
+<p>Future work may relax this current limitation of the compiler by more fully implementing the rules of <a href="https://github.com/rust-lang/rfcs/blob/master/text/1214-projections-lifetimes-and-wf.md">RFC 1214</a> (see, e.g., <a href="https://github.com/rust-lang/rust/pull/116733">#116733</a>).  Fixing this completely is believed to require support in the compiler for existential lifetimes (see <a href="https://github.com/rust-lang/rust/issues/60670">#60670</a>).</p>
+<p>The end result of these improvements would be that, when an outlives bound is specified for the opaque type, any type or lifetime parameters that the compiler could prove to not outlive that bound would mostly act as if it were not captured by the opaque type.</p>
+<p>This would not be quite the same as those type and lifetime parameters not actually being captured.  By checking type equality between opaque types where different captured type or lifetime parameters have been substituted, one could tell the difference.</p>
+<p>Still, this improvement would allow for solving many cases of overcapturing elegantly.  Consider this transformation:</p>
+<pre><code class="language-rust">fn callee&lt;P1, .., Pn&gt;(..) -&gt; impl Trait { .. }
+//-------------------------------------------------------------
+fn callee&lt;'o, P1: 'o, .., Pn: 'o&gt;(..) -&gt; impl Trait + 'o { .. }</code></pre>
+<p>Using this transformation (which is described more fully in <a href="#appendix-h-examples-of-outlives-rules-on-opaque-types">Appendix H</a>), we can add a specified outlives bound to an RPIT opaque type without changing the effective proof requirements on either the caller or the callee.  We can then drop the <code>Pi: 'o</code> outlives bound from any type or lifetime parameter that we would like to act as if it were not captured.</p>
+<p>This comes at the cost of adding an extra early-bound lifetime parameter in the general case.  Adding that lifetime parameter may require changing the externally visible API of the function.  However, for the common case of adding a <code>+ 'static</code> bound, or for any other case where an existing lifetime parameter suffices to specify the needed bounds, this is not a problem.</p>
+<h2 id="appendix-h-examples-of-outlives-rules-on-opaque-types"><a class="header" href="#appendix-h-examples-of-outlives-rules-on-opaque-types">Appendix H: Examples of outlives rules on opaque types</a></h2>
+<p>There is some subtlety in understanding the rules for outlives relationships on RPIT-like <code>impl Trait</code> opaque types as <a href="#capturing-lifetimes">described above</a>.  In this appendix, we provide annotated examples to make these rules more clear.</p>
+<h3 id="caller-proof-for-opaque-without-a-specified-bound"><a class="header" href="#caller-proof-for-opaque-without-a-specified-bound">Caller proof for opaque without a specified bound</a></h3>
+<p>Consider:</p>
+<pre><code class="language-rust">// For an opaque type that *does not* specify an outlives bound...
+fn callee&lt;T, U&gt;(_: T, _: U) -&gt; impl Send {}
+
+fn caller&lt;'short, T: 'short, U: 'short&gt;(x: T, y: U) {
+    fn outlives&lt;'o, T: 'o&gt;(_: T) {}
+    // ...when a caller receives a value of that opaque type...
+    let z = callee(x, y);
+    // ...and wants to prove that it outlives some lifetime
+    // (`'short`), the caller must prove that all of the captured
+    // lifetime components of the opaque type (the lifetimes within
+    // `T` and `U`) outlive that lifetime (`'short`).
+    //
+    // The caller proves this because `T: 'short, U: 'short`.
+    outlives::&lt;'short&gt;(z);
+}</code></pre>
+<p>In this example, the caller wants to prove that the returned opaque type outlives the lifetime <code>'short</code>.  To prove this, since there is no specified outlives bound on the opaque type, it must prove that all lifetimes captured by the opaque type outlive <code>'short</code>.  To do that, it must prove that <code>T</code> and <code>U</code> outlive <code>'short</code>, since those type parameters are captured by the opaque type and may contain lifetimes.  The caller is able to prove this since <code>T: 'short, U: 'short</code>.</p>
+<h3 id="caller-proof-for-opaque-with-a-specified-bound"><a class="header" href="#caller-proof-for-opaque-with-a-specified-bound">Caller proof for opaque with a specified bound</a></h3>
+<p>Consider:</p>
+<pre><code class="language-rust">// For an opaque type that *does* specify an outlives bound...
+fn callee&lt;'o, T, U&gt;(_: T, _: U) -&gt; impl Send + 'o {}
+
+fn caller&lt;'short, 'long: 'short, T, U&gt;(x: T, y: U) {
+    fn outlives&lt;'o, T: 'o&gt;(_: T) {}
+    // ...when a caller receives a value of that opaque type...
+    let z = callee::&lt;'long, _, _&gt;(x, y);
+    // ...and wants to prove that it outlives some lifetime
+    // (`'short`), it's enough to prove that the lifetime substituted
+    // (`'long`) for the specified lifetime parameter (`'o` in
+    // `callee`) in the bounds of the opaque type outlives that other
+    // lifetime (`'short`).
+    //
+    // The caller proves this because `'long: 'short`.
+    outlives::&lt;'short&gt;(z);
+}</code></pre>
+<p>In this example, the caller wants to prove that the returned opaque type outlives the lifetime <code>'short</code>.  To prove this, since there is a specified outlives bound on the opaque type (<code>+ 'o</code> in <code>callee</code>), it must prove only that the lifetime substituted for that lifetime parameter outlives <code>'short</code>.  Since <code>'long</code> is substituted for <code>'o</code>, and since <code>'long: 'short</code>, the caller is able to prove this.  Note that the caller does <em>not</em> need to prove that <code>T: 'short</code> or that <code>U: 'short</code>.</p>
+<h3 id="callee-proof-for-opaque-with-a-specified-bound"><a class="header" href="#callee-proof-for-opaque-with-a-specified-bound">Callee proof for opaque with a specified bound</a></h3>
+<p>Consider:</p>
+<pre><code class="language-rust">// For an opaque type that *does* specify an outlives bound, the
+// callee must prove that all lifetime and type parameters that are
+// used in the hidden type (`T` in this example) outlive the specified
+// bound (`'o`).
+fn callee&lt;'o, T: 'o, U&gt;(x: T, _: U) -&gt; impl Sized + 'o { x }</code></pre>
+<p>In this example, the callee has specified an outlives bound on the opaque type (<code>+ 'o</code>).  For this code to be valid, the callee must prove that all lifetime and type parameters used in the returned <em>hidden</em> type (<code>T</code> in this example) outlive <code>'o</code>.  Since <code>T: 'o</code>, the callee is able to prove this.  Note that even though <code>U</code> is also captured in the opaque type, the callee does <em>not</em> need to prove <code>U: 'o</code> since it is not used in the hidden type.</p>
+<h3 id="rough-equivalence-between-opaques-with-and-without-a-specified-bound"><a class="header" href="#rough-equivalence-between-opaques-with-and-without-a-specified-bound">Rough equivalence between opaques with and without a specified bound</a></h3>
+<p>Consider these two roughly equivalent examples.</p>
+<p>Example H.1:</p>
+<pre><code class="language-rust">fn callee&lt;T, U&gt;(x: T, y: U) -&gt; impl Sized { (x, y) }
+fn caller&lt;'short, T: 'short, U: 'short&gt;(x: T, y: U) {
+    fn outlives&lt;'o, T: 'o&gt;(_: T) {}
+    outlives::&lt;'short&gt;(callee(x, y));
+}</code></pre>
+<p>Example H.2:</p>
+<pre><code class="language-rust">fn callee&lt;'o, T: 'o, U: 'o&gt;(x: T, y: U) -&gt; impl Sized + 'o { (x, y) }
+fn caller&lt;'short, 'long: 'short, T: 'long, U: 'long&gt;(x: T, y: U) {
+    fn outlives&lt;'o, T: 'o&gt;(_: T) {}
+    outlives::&lt;'short&gt;(callee::&lt;'long, _, _&gt;(x, y));
+}</code></pre>
+<p>In the first example, to prove that the opaque type outlives <code>'short</code>, the <em>caller</em> has to prove that each of the captured lifetime components outlives <code>'short</code>.  In the second example, to prove that same thing, it only needs to prove that <code>'long: 'short</code>.</p>
+<p>(Obviously, the caller then still needs to prove the outlives relationships necessary to satisfy the other specified bounds in the signature of <code>callee</code>.)</p>
+<p>That is, at the cost of an extra early-bound lifetime parameter in the signature of the callee, we can always express an RPIT without a specified outlives bound as an RPIT with a specified outlives bound in a way that does not change the requirements on the caller or the callee.  We do this by applying the following transformation:</p>
+<pre><code class="language-rust">fn callee&lt;P1, .., Pn&gt;(..) -&gt; impl Trait { .. }
+//-------------------------------------------------------------
+fn callee&lt;'o, P1: 'o, .., Pn: 'o&gt;(..) -&gt; impl Trait + 'o { .. }</code></pre>
+<p>One application of this transformation to solve problems created by overcapturing is described in <a href="#appendix-g-future-possibility-inferred-precise-capturing">Appendix G</a>.</p>
+<h2 id="appendix-i-precise-capturing-with-tait"><a class="header" href="#appendix-i-precise-capturing-with-tait">Appendix I: Precise capturing with TAIT</a></h2>
+<p>Sometimes the capture rules result in unwanted type and lifetime parameters being captured.  This happens in Rust 2021 due to the RPIT rules for capturing lifetimes from all in-scope type parameters and the <code>async fn</code> rules for capturing all in-scope type and lifetime parameters.  Under this RFC, in Rust 2024, lifetime parameters could also be overcaptured by RPIT.</p>
+<p>Type alias <code>impl Trait</code> (TAIT) provides a precise solution.  It works as follows.  Consider this overcaptures scenario in Rust 2024:</p>
+<pre><code class="language-rust">fn foo&lt;'a, T&gt;(_: &amp;'a (), _: T) -&gt; impl Sized { () }
+//                                ^^^^^^^^^^
+// The returned opaque type captures `'a` and `T`
+// but the hidden type does not use either.
+
+fn bar&lt;'a, 'b&gt;(x: &amp;'a (), y: &amp;'b ()) {
+    fn is_static&lt;T: 'static&gt;(_: T) {}
+    is_static(foo(x, y));
+    //        ^^^^^^^^^
+    // Error: `foo` captures `'a` and `'b`.
+}</code></pre>
+<p>In the above code, we want to rely on the fact that <code>foo</code> does not actually use any lifetimes in the returned hidden type.  We can’t do that using RPIT because there’s no way to prevent the opaque type from capturing too much.  However, we can use TAIT to solve this problem elegantly as follows:</p>
+<pre><code class="language-rust">#![feature(type_alias_impl_trait)]
+
+type FooRet = impl Sized;
+fn foo&lt;'a, T&gt;(_: &amp;'a (), _: T) -&gt; FooRet { () }
+//                                ^^^^^^
+// The returned opaque type does NOT capture `'a` or `T`.
+
+fn bar&lt;'a, 'b&gt;(x: &amp;'a (), y: &amp;'b ()) {
+    fn is_static&lt;T: 'static&gt;(_: T) {}
+    is_static(foo(x, y)); // OK.
+}</code></pre>
+<p>The type alias <code>FooRet</code> has no generic parameters, so none are captured in the opaque type.  It’s always possible to desugar an RPIT opaque type into a TAIT opaque type that expresses precisely which generic parameters to capture.</p>
+<p>The stabilization of the 2024 lifetime capture rules in this RFC is contingent on the stabilization of some solution for precise capturing that will allow all code that is allowed under Rust 2021 to be expressed, in some cases with syntactic changes, in Rust 2024.</p>
+<hr>
+<ol class="footnote-definition">
+<li id="footnote-ref-captures-trait-ltps">
+<p>See <a href="#the-captures-trick">“The <code>Captures</code> trick”</a> for the definition of <code>Captures</code>. <a href="#fr-ref-captures-trait-ltps-1">↩</a></p>
+</li>
+<li id="footnote-ref-captures-trait-tps">
+<p>See <a href="#the-captures-trick">“The <code>Captures</code> trick”</a> for the definition of <code>Captures</code>.  Note that in this example, the <code>Captures</code> trick would not be needed, but it is notated explicitly for exposition. <a href="#fr-ref-captures-trait-tps-1">↩</a></p>
+</li>
+<li id="footnote-captures-trait">
+<p>Note that there are various ways to define the <code>Captures</code> trait.  In most discussions about this trick, it has been defined as above.  However, internally in the Rust compiler it is currently defined instead as <code>trait Captures&lt;'a&gt; {}</code>.  These notational differences do not affect the semantics described in this RFC.  Note, however, that <code>Captures&lt;'a&gt; + Captures&lt;'b&gt;</code> is not equivalent to <code>Captures&lt;(&amp;'a (), &amp;'b ())&gt;</code> because lifetimes do not participate in trait selection in Rust.  To get equivalent semantics, one would have to define <code>trait Captures2&lt;'a, 'b&gt; {}</code>, <code>trait Captures3&lt;'a, 'b, 'c&gt; {}</code>, etc. <a href="#fr-captures-trait-1">↩</a></p>
+</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3493-precise-pre-release-cargo-update.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3501-edition-2024.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3493-precise-pre-release-cargo-update.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3501-edition-2024.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

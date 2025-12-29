@@ -1,0 +1,483 @@
+<!DOCTYPE HTML>
+<html lang="zh_CN" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1445-restrict-constants-in-patterns - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-b61d75f0.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-5025baa3.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>structural_match</code></li>
+<li>Start Date: 2015-02-06</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/1445">rust-lang/rfcs#1445</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/31434">rust-lang/rust#31434</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>The current compiler implements a more expansive semantics for pattern matching than was originally intended. This RFC introduces several mechanisms to reign in these semantics without actually breaking (much, if any) extant code:</p>
+<ul>
+<li>Introduce a feature-gated attribute <code>#[structural_match]</code> which can be applied to a struct or enum <code>T</code> to indicate that constants of type <code>T</code> can be used within patterns.</li>
+<li>Have <code>#[derive(Eq)]</code> automatically apply this attribute to the struct or enum that it decorates. <strong>Automatically inserted attributes do not require use of feature-gate.</strong></li>
+<li>When expanding constants of struct or enum type into equivalent patterns, require that the struct or enum type is decorated with <code>#[structural_match]</code>. Constants of builtin types are always expanded.</li>
+</ul>
+<p>The practical effect of these changes will be to prevent the use of constants in patterns unless the type of those constants is either a built-in type (like <code>i32</code> or <code>&amp;str</code>) or a user-defined constant for which <code>Eq</code> is <strong>derived</strong> (not merely <em>implemented</em>).</p>
+<p>To be clear, this <code>#[structural_match]</code> attribute is <strong>never intended to be stabilized</strong>. Rather, the intention of this change is to restrict constant patterns to those cases that everyone can agree on for now. We can then have further discussion to settle the best semantics in the long term.</p>
+<p>Because the compiler currently accepts arbitrary constant patterns, this is technically a backwards incompatible change. However, the design of the RFC means that existing code that uses constant patterns will generally “just work”. The justification for this change is that it is clarifying <a href="https://github.com/rust-lang/rfcs/blob/master/text/1122-language-semver.md#underspecified-language-semantics">“underspecified language semantics” clause, as described in RFC 1122</a>. A <a href="https://gist.github.com/nikomatsakis/e714e4a824527e0ce5c9">recent crater run</a> with a prototype implementation found 6 regressions.</p>
+<p><strong>Note:</strong> this was also discussed on an <a href="https://internals.rust-lang.org/t/how-to-handle-pattern-matching-on-constants/2846">internals thread</a>. Major points from that thread are summarized either inline or in alternatives.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>The compiler currently permits any kind of constant to be used within a pattern. However, the <em>meaning</em> of such a pattern is somewhat controversial: the current semantics implemented by the compiler were <a href="https://github.com/rust-lang/rust/pull/15650">adopted in July of 2014</a> and were never widely discussed nor did they go through the RFC process. Moreover, the discussion at the time was focused primarily on implementation concerns, and overlooked the potential semantic hazards.</p>
+<h3 id="semantic-vs-structural-equality"><a class="header" href="#semantic-vs-structural-equality">Semantic vs structural equality</a></h3>
+<p>Consider a program like this one, which references a constant value from within a pattern:</p>
+<pre><code class="language-rust">struct SomeType {
+    a: u32,
+    b: u32,
+}
+
+const SOME_CONSTANT: SomeType = SomeType { a: 22+22, b: 44+44 };
+
+fn test(v: SomeType) {
+    match v {
+        SOME_CONSTANT =&gt; println!("Yes"),
+        _ =&gt; println!("No"),
+    }
+}</code></pre>
+<p>The question at hand is what do we expect this match to do, precisely? There are two main possibilities: semantic and structural equality.</p>
+<p><strong>Semantic equality.</strong> Semantic equality states that a pattern <code>SOME_CONSTANT</code> matches a value <code>v</code> if <code>v == SOME_CONSTANT</code>. In other words, the <code>match</code> statement above would be exactly equivalent to an <code>if</code>:</p>
+<pre><code class="language-rust">if v == SOME_CONSTANT {
+    println!("Yes")
+} else {
+    println!("No");
+}</code></pre>
+<p>Under semantic equality, the program above would not compile, because <code>SomeType</code> does not implement the <code>PartialEq</code> trait.</p>
+<p><strong>Structural equality.</strong> Under structural equality, <code>v</code> matches the pattern <code>SOME_CONSTANT</code> if all of its fields are (structurally) equal. Primitive types like <code>u32</code> are structurally equal if they represent the same value (but see below for discussion about floating point types like <code>f32</code> and <code>f64</code>). This means that the <code>match</code> statement above would be roughly equivalent to the following <code>if</code> (modulo privacy):</p>
+<pre><code class="language-rust">if v.a == SOME_CONSTANT.a &amp;&amp; v.b == SOME_CONSTANT.b {
+    println!("Yes")
+} else {
+    println!("No");
+}</code></pre>
+<p>Structural equality basically says “two things are structurally equal if their fields are structurally equal”. It is sort of equality you would get if everyone used <code>#[derive(PartialEq)]</code> on all types. Note that the equality defined by structural equality is completely distinct from the <code>==</code> operator, which is tied to the <code>PartialEq</code> traits. That is, two values that are <em>semantically unequal</em> could be <em>structurally equal</em> (an example where this might occur is the floating point value <code>NaN</code>).</p>
+<p><strong>Current semantics.</strong> The compiler’s current semantics are basically structural equality, though in the case of floating point numbers they are arguably closer to semantic equality (details below). In particular, when a constant appears in a pattern, the compiler first evaluates that constant to a specific value. So we would reduce the expression:</p>
+<pre><code class="language-rust">const SOME_CONSTANT: SomeType = SomeType { a: 22+22, b: 44+44 };</code></pre>
+<p>to the value <code>SomeType { a: 44, b: 88 }</code>. We then expand the pattern <code>SOME_CONSTANT</code> as though you had typed this value in place (well, almost as though, read on for some complications around privacy). Thus the match statement above is equivalent to:</p>
+<pre><code class="language-rust">match v {
+    SomeType { a: 44, b: 88 } =&gt; println!(Yes),
+    _ =&gt; println!("No"),
+}</code></pre>
+<h3 id="disadvantages-of-the-current-approach"><a class="header" href="#disadvantages-of-the-current-approach">Disadvantages of the current approach</a></h3>
+<p>Given that the compiler already has a defined semantics, it is reasonable to ask why we might want to change it. There are two main disadvantages:</p>
+<ol>
+<li><strong>No abstraction boundary.</strong> The current approach does not permit types to define what equality means for themselves (at least not if they can be constructed in a constant).</li>
+<li><strong>Scaling to associated constants.</strong> The current approach does not permit associated constants or generic integers to be used in a match statement.</li>
+</ol>
+<h4 id="disadvantage-weakened-abstraction-boundary"><a class="header" href="#disadvantage-weakened-abstraction-boundary">Disadvantage: Weakened abstraction boundary</a></h4>
+<p>The single biggest concern with structural equality is that it introduces two distinct notions of equality: the <code>==</code> operator, based on the <code>PartialEq</code> trait, and pattern matching, based on a builtin structural recursion. This will cause problems for user-defined types that rely on <code>PartialEq</code> to define equality. Put another way, <strong>it is no longer possible for user-defined types to completely define what equality means for themselves</strong> (at least not if they can be constructed in a constant). Furthermore, because the builtin structural recursion does not consider privacy, <code>match</code> statements can now be used to <strong>observe private fields</strong>.</p>
+<p><strong>Example: Normalized durations.</strong> Consider a simple duration type:</p>
+<pre><code class="language-rust">#[derive(Copy, Clone)]
+pub struct Duration {
+    pub seconds: u32,
+    pub minutes: u32,
+}</code></pre>
+<p>Let’s say that this <code>Duration</code> type wishes to represent a span of time, but it also wishes to preserve whether that time was expressed in seconds or minutes.  In other words, 60 seconds and 1 minute are equal values, but we don’t want to normalize 60 seconds into 1 minute; perhaps because it comes from user input and we wish to keep things just as the user chose to express it.</p>
+<p>We might implement <code>PartialEq</code> like so (actually the <code>PartialEq</code> trait is slightly different, but you get the idea):</p>
+<pre><code class="language-rust">impl PartialEq for Duration {
+    fn eq(&amp;self, other: &amp;Duration) -&gt; bool {
+        let s1 = (self.seconds as u64) + (self.minutes as u64 * 60);
+        let s2 = (other.seconds as u64) + (other.minutes as u64 * 60);
+        s1 == s2
+    }
+}</code></pre>
+<p>Now imagine I have some constants:</p>
+<pre><code class="language-rust">const TWENTY_TWO_SECONDS: Duration = Duration { seconds: 22, minutes: 0 };
+const ONE_MINUTE: Duration = Duration { seconds: 0, minutes: 1 };</code></pre>
+<p>And I write a match statement using those constants:</p>
+<pre><code class="language-rust">fn detect_some_case_or_other(d: Duration) {
+    match d {
+        TWENTY_TWO_SECONDS =&gt; /* do something */,
+        ONE_MINUTE =&gt; /* do something else */,
+        _ =&gt; /* do something else again */,
+    }
+}</code></pre>
+<p>Now this code is, in all probability, buggy. Probably I meant to use the notion of equality that <code>Duration</code> defined, where seconds and minutes are normalized. But that is not the behavior I will see – instead I will use a pure structural match. What’s worse, this means the code will probably work in my local tests, since I like to say “one minute”, but it will break when I demo it for my customer, since she prefers to write “60 seconds”.</p>
+<p><strong>Example: Floating point numbers.</strong> Another example is floating point numbers. Consider the case of <code>0.0</code> and <code>-0.0</code>: these two values are distinct, but they typically behave the same; so much so that they compare equal (that is, <code>0.0 == -0.0</code> is <code>true</code>).  So it is likely that code such as:</p>
+<pre><code class="language-rust">match some_computation() {
+    0.0 =&gt; ...,
+    x =&gt; ...,
+}</code></pre>
+<p>did not intend to discriminate between zero and negative zero.  In fact, in the compiler today, match <em>will</em> compare 0.0 and -0.0 as equal. We simply do not extend that courtesy to user-defined types.</p>
+<p><strong>Example: observing private fields.</strong> The current constant expansion code does not consider privacy. In other words, constants are expanded into equivalent patterns, but those patterns may not have been something the user could have typed because of privacy rules. Consider a module like:</p>
+<pre><code class="language-rust">mod foo {
+    pub struct Foo { b: bool }
+    pub const V1: Foo = Foo { b: true };
+    pub const V2: Foo = Foo { b: false };
+}</code></pre>
+<p>Note that there is an abstraction boundary here: b is a private field. But now if I wrote code from another module that matches on a value of type Foo, that abstraction boundary is pierced:</p>
+<pre><code class="language-rust">fn bar(f: x::Foo) {
+    // rustc knows this is exhaustive because if expanded `V1` into
+    // equivalent patterns; patterns you could not write by hand!
+    match f {
+        x::V1 =&gt; { /* moreover, now we know that f.b is true */ }
+        x::V2 =&gt; { /* and here we know it is false */ }
+    }
+}</code></pre>
+<p>Note that, because <code>Foo</code> does not implement <code>PartialEq</code>, just having access to <code>V1</code> would not otherwise allow us to observe the value of <code>f.b</code>. (And even if <code>Foo</code> <em>did</em> implement <code>PartialEq</code>, that implementation might not read <code>f.b</code>, so we still would not be able to observe its value.)</p>
+<p><strong>More examples.</strong> There are numerous possible examples here. For example, strings that compare using case-insensitive comparisons, but retain the original case for reference, such as those used in file-systems. Views that extract a subportion of a larger value (and hence which should only compare that subportion). And so forth.</p>
+<h4 id="disadvantage-scaling-to-associated-constants-and-generic-integers"><a class="header" href="#disadvantage-scaling-to-associated-constants-and-generic-integers">Disadvantage: Scaling to associated constants and generic integers</a></h4>
+<p>Rewriting constants into patterns requires that we can <strong>fully evaluate</strong> the constant at the time of exhaustiveness checking. For associated constants and type-level integers, that is not possible – we have to wait until monomorphization time. Consider:</p>
+<pre><code class="language-rust">trait SomeTrait {
+    const A: bool;
+    const B: bool;
+}
+
+fn foo&lt;T:SomeTrait&gt;(x: bool) {
+    match x {
+        T::A =&gt; println!("A"),
+        T::B =&gt; println!("B"),
+    }
+}
+
+impl SomeTrait for i32 {
+    const A: bool = true;
+    const B: bool = true;
+}
+
+impl SomeTrait for u32 {
+    const A: bool = true;
+    const B: bool = false;
+}</code></pre>
+<p>Is this match exhaustive? Does it contain dead code? The answer will depend on whether <code>T=i32</code> or <code>T=u32</code>, of course.</p>
+<h3 id="advantages-of-the-current-approach"><a class="header" href="#advantages-of-the-current-approach">Advantages of the current approach</a></h3>
+<p>However, structural equality also has a number of advantages:</p>
+<p><strong>Better optimization.</strong> One of the biggest “pros” is that it can potentially enable nice optimization. For example, given constants like the following:</p>
+<pre><code class="language-rust">struct Value { x: u32 }
+const V1: Value = Value { x: 0 };
+const V2: Value = Value { x: 1 };
+const V3: Value = Value { x: 2 };
+const V4: Value = Value { x: 3 };
+const V5: Value = Value { x: 4 };</code></pre>
+<p>and a match pattern like the following:</p>
+<pre><code class="language-rust">match v {
+    V1 =&gt; ...,
+    ...,
+    V5 =&gt; ...,
+}</code></pre>
+<p>then, because pattern matching is always a process of structurally extracting values, we can compile this to code that reads the field <code>x</code> (which is a <code>u32</code>) and does an appropriate switch on that value. Semantic equality would potentially force a more conservative compilation strategy.</p>
+<p><strong>Better exhautiveness and dead-code checking.</strong> Similarly, we can do more thorough exhaustiveness and dead-code checking. So for example if I have a struct like:</p>
+<pre><code class="language-rust">struct Value { field: bool }
+const TRUE: Value { field: true };
+const FALSE: Value { field: false };</code></pre>
+<p>and a match pattern like:</p>
+<pre><code class="language-rust">match v { TRUE =&gt; .., FALSE =&gt; .. }</code></pre>
+<p>then we can prove that this match is exhaustive. Similarly, we can prove that the following match contains dead-code:</p>
+<pre><code class="language-rust">const A: Value { field: true };
+match v {
+    TRUE =&gt; ...,
+    A =&gt; ...,
+}</code></pre>
+<p>Again, some of the alternatives might not allow this. (But note the cons, which also raise the question of exhaustiveness checking.)</p>
+<p><strong>Nullary variants and constants are (more) equivalent.</strong> Currently, there is a sort of equivalence between enum variants and constants, at least with respect to pattern matching. Consider a C-like enum:</p>
+<pre><code class="language-rust">enum Modes {
+    Happy = 22,
+    Shiny = 44,
+    People = 66,
+    Holding = 88,
+    Hands = 110,
+}
+
+const C: Modes = Modes::Happy;</code></pre>
+<p>Now if I match against <code>Modes::Happy</code>, that is matching against an enum variant, and under <em>all</em> the proposals I will discuss below, it will check the actual variant of the value being matched (regardless of whether <code>Modes</code> implements <code>PartialEq</code>, which it does not here). On the other hand, if matching against <code>C</code> were to require a <code>PartialEq</code> impl, then it would be illegal. Therefore matching against an <em>enum variant</em> is distinct from matching against a <em>constant</em>.</p>
+<h2 id="detailed-design"><a class="header" href="#detailed-design">Detailed design</a></h2>
+<p>The goal of this RFC is not to decide between semantic and structural equality. Rather, the goal is to restrict pattern matching to that subset of types where the two variants behave roughly the same.</p>
+<h3 id="the-structural-match-attribute"><a class="header" href="#the-structural-match-attribute">The structural match attribute</a></h3>
+<p>We will introduce an attribute <code>#[structural_match]</code> which can be applied to struct and enum types. Explicit use of this attribute will (naturally) be feature-gated. When converting a constant value into a pattern, if the constant is of struct or enum type, we will check whether this attribute is present on the struct – if so, we will convert the value as we do today. If not, we will report an error that the struct/enum value cannot be used in a pattern.</p>
+<h3 id="behavior-of-deriveeq"><a class="header" href="#behavior-of-deriveeq">Behavior of <code>#[derive(Eq)]</code></a></h3>
+<p>When deriving the <code>Eq</code> trait, we will add the <code>#[structural_match]</code> to the type in question. Attributes added in this way will be <strong>exempt from the feature gate</strong>.</p>
+<h3 id="exhaustiveness-and-dead-code-checking"><a class="header" href="#exhaustiveness-and-dead-code-checking">Exhaustiveness and dead-code checking</a></h3>
+<p>We will treat user-defined structs “opaquely” for the purpose of exhaustiveness and dead-code checking. This is required to allow for semantic equality semantics in the future, since in that case we cannot rely on <code>Eq</code> to be correctly implemented (e.g., it could always return <code>false</code>, no matter values are supplied to it, even though it’s not supposed to). The impact of this change has not been evaluated but is expected to be <strong>very</strong> small, since in practice it is rather challenging to successfully make an exhaustive match using user-defined constants, unless they are something trivial like newtype’d booleans (and, in that case, you can update the code to use a more extended pattern).</p>
+<p>Similarly, dead code detection should treat constants in a conservative fashion. that is, we can recognize that if there are two arms using the same constant, the second one is dead code, even though it may be that neither will matches (e.g., <code>match foo { C =&gt; _, C =&gt; _ }</code>). We will make no assumptions about two distinct constants, even if we can concretely evaluate them to the same value.</p>
+<p>One <strong>unresolved question</strong> (described below) is what behavior to adopt for constants that involve no user-defined types. There, the definition of <code>Eq</code> is purely under our control, and we know that it matches structural equality, so we can retain our current aggressive analysis if desired.</p>
+<h3 id="phasing"><a class="header" href="#phasing">Phasing</a></h3>
+<p>We will not make this change instantaneously. Rather, for at least one release cycle, users who are pattern matching on struct types that lack <code>#[structural_match]</code> will be warned about imminent breakage.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<p>This is a breaking change, which means some people might have to change their code. However, that is considered extremely unlikely, because such users would have to be pattern matching on constants that are not comparable for equality (this is likely a bug in any case).</p>
+<h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
+<p><strong>Limit matching to builtin types.</strong> An earlier version of this RFC limited matching to builtin types like integers (and tuples of integers). This RFC is a generalization of that which also accommodates struct types that derive <code>Eq</code>.</p>
+<p><strong>Embrace current semantics (structural equality).</strong> Naturally we could opt to keep the semantics as they are. The advantages and disadvantages are discussed above.</p>
+<p><strong>Embrace semantic equality.</strong> We could opt to just go straight towards “semantic equality”. However, it seems better to reset the semantics to a base point that everyone can agree on, and then extend from that base point. Moreover, adopting semantic equality straight out would be a riskier breaking change, as it could silently change the semantics of existing programs (whereas the current proposal only causes compilation to fail, never changes what an existing program will do).</p>
+<h2 id="discussion-thread-summary"><a class="header" href="#discussion-thread-summary">Discussion thread summary</a></h2>
+<p>This section summarizes various points that were raised in the <a href="https://internals.rust-lang.org/t/how-to-handle-pattern-matching-on-constants/2846">internals thread</a> which are related to patterns but didn’t seem to fit elsewhere.</p>
+<p><strong>Overloaded patterns.</strong> Some languages, notably Scala, permit overloading of patterns. This is related to “semantic equality” in that it involves executing custom, user-provided code at compilation time.</p>
+<p><strong>Pattern synonyms.</strong> Haskell offers a feature called “pattern synonyms” and <a href="https://internals.rust-lang.org/t/how-to-handle-pattern-matching-on-constants/2846/39?u=nikomatsakis">it was argued</a> that the current treatment of patterns can be viewed as a similar feature. This may be true, but constants-in-patterns are lacking a number of important features from pattern synonyms, such as bindings, as <a href="https://internals.rust-lang.org/t/how-to-handle-pattern-matching-on-constants/2846/48?u=nikomatsakis">discussed in this response</a>. The author feels that pattern synonyms might be a useful feature, but it would be better to design them as a first-class feature, not adapt constants for that purpose.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<p><strong>What about exhaustiveness etc on builtin types?</strong> Even if we ignore user-defined types, there are complications around exhaustiveness checking for constants of any kind related to associated constants and other possible future extensions.  For example, the following code <a href="http://is.gd/PJjNKl">fails to compile</a> because it contains dead-code:</p>
+<pre><code class="language-rust">const X: u64 = 0;
+const Y: u64 = 0;
+fn bar(foo: u64) {
+    match foo {
+        X =&gt; { }
+        Y =&gt; { }
+        _ =&gt; { }
+    }
+}</code></pre>
+<p>However, we would be unable to perform such an analysis in a more generic context, such as with an associated constant:</p>
+<pre><code class="language-rust">trait Trait {
+    const X: u64;
+    const Y: u64;
+}
+
+fn bar&lt;T:Trait&gt;(foo: u64) {
+    match foo {
+        T::X =&gt; { }
+        T::Y =&gt; { }
+        _ =&gt; { }
+    }
+}</code></pre>
+<p>Here, although it may well be that <code>T::X == T::Y</code>, we can’t know for sure. So, for consistency, we may wish to treat all constants opaquely regardless of whether we are in a generic context or not. (However, it also seems reasonable to make a “best effort” attempt at exhaustiveness and dead pattern checking, erring on the conservative side in those cases where constants cannot be fully evaluated.)</p>
+<p>A different argument in favor of treating all constants opaquely is that the current behavior can leak details that perhaps were intended to be hidden. For example, imagine that I define a fn <code>hash</code> that, given a previous hash and a value, produces a new hash.  Because I am lazy and prototyping my system, I decide for now to just ignore the new value and pass the old hash through:</p>
+<pre><code class="language-rust">const fn add_to_hash(prev_hash: u64, _value: u64) -&gt; u64 {
+    prev_hash
+}</code></pre>
+<p>Now I have some consumers of my library and they define a few constants:</p>
+<pre><code class="language-rust">const HASH_OF_ZERO: add_to_hash(0, 0);
+const HASH_OF_ONE: add_to_hash(0, 1);</code></pre>
+<p>And at some point they write a match statement:</p>
+<pre><code class="language-rust">fn process_hash(h: u64) {
+    match h {
+        HASH_OF_ZERO =&gt; /* do something */,
+        HASH_OF_ONE =&gt; /* do something else */,
+        _ =&gt; /* do something else again */,
+}</code></pre>
+<p>As before, what you get when you <a href="http://is.gd/u5WtCo">compile this</a> is a dead-code error, because the compiler can see that <code>HASH_OF_ZERO</code> and <code>HASH_OF_ONE</code> are the same value.</p>
+<p>Part of the solution here might be making “unreachable patterns” a warning and not an error. The author feels this would be a good idea regardless (though not necessarily as part of this RFC). However, that’s not a complete solution, since – at least for <code>bool</code> constants -- the same issues arise if you consider exhaustiveness checking.</p>
+<p>On the other hand, it feels very silly for the compiler not to understand that <code>match some_bool { true =&gt; ..., false =&gt; ... }</code> is exhaustive. Furthermore, there are other ways for the values of constants to “leak out”, such as when part of a type like <code>[u8; SOME_CONSTANT]</code> (a point made by both <a href="https://internals.rust-lang.org/t/how-to-handle-pattern-matching-on-constants/2846/9?u=nikomatsakis">arielb1</a> and <a href="https://internals.rust-lang.org/t/how-to-handle-pattern-matching-on-constants/2846/32?u=nikomatsakis">glaebhoerl</a> on the <a href="https://internals.rust-lang.org/t/how-to-handle-pattern-matching-on-constants/2846">internals thread</a>). Therefore, the proper way to address this question is perhaps to consider an explicit form of “abstract constant”.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="1444-union.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="1461-net2-mutators.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="1444-union.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="1461-net2-mutators.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
