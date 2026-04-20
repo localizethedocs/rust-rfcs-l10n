@@ -1,0 +1,965 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-04-14T10:00:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3721-homogeneous-try-blocks.md:1
+msgid "Feature Name: `homogeneous_try_blocks`"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:2
+msgid "Start Date: 2024-02-22"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3721](https://github.com/rust-lang/rfcs/pull/3721)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#154391](https://github.com/rust-lang/rust/"
+"issues/154391)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:9
+msgid ""
+"Tweak the behaviour of `?` inside `try{}` blocks to not depend on context, "
+"in order to work better with methods and need type annotations less often."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:12
+msgid "The stable behaviour of `?` when _not_ in a `try{}` block is untouched."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:15
+msgid "Motivation"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:18
+msgid ""
+"I do have some mild other concerns about try block -- in particular it is "
+"frequently necessary in practice to give hints as to the try of a try-block."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:21
+msgid ""
+"~ [Niko commenting on #70941](https://github.com/rust-lang/rust/"
+"issues/70941#issuecomment-612167041)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:25
+msgid "The desugaring of `val?` currently works as follows, per RFC #3058:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:34
+msgid ""
+"Importantly, that's using a trait to create the return value. And because "
+"the argument of the associated function is a generic on the trait, it "
+"depends on inference to determine the correct type to return."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:38
+msgid ""
+"That works great in functions, because Rust's inference trade-offs mean that "
+"the return type of a function is always specified in full.  Thus the "
+"`return` has complete type context, both to pick the return type as well as, "
+"for `Result`, the exact error type into which to convert the error."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:43
+msgid ""
+"However, once things get more complicated, it stops working as well.  That's "
+"even true before we start adding `try{}` blocks, since closures can hit them "
+"too. (While closures behave like functions in most ways, their return types "
+"can be left for type inference to figure out, and thus might not have full "
+"context.)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:48
+msgid ""
+"For example, consider this example of trying to use `Iterator::try_for_each` "
+"to read the `Result`s from the `BufRead::lines` iterator:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:56 src/3721-homogeneous-try-blocks.md:59
+msgid "// <-- question mark\n"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:66
+msgid "Though it looks reasonable, it doesn't compile:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:68
+msgid ""
+"```text\n"
+"error[E0282]: type annotations needed\n"
+" --> src/lib.rs:7:9\n"
+"  |\n"
+"7 |         Ok(())\n"
+"  |         ^^ cannot infer type for type parameter `E` declared on the enum "
+"`Result`\n"
+"  |\n"
+"\n"
+"error[E0283]: type annotations needed\n"
+" --> src/lib.rs:8:7\n"
+"  |\n"
+"8 |     })?; // <-- question mark\n"
+"  |       ^ cannot infer type for type parameter `E`\n"
+"  |\n"
+"```"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:84
+msgid ""
+"The core of the problem is that there's nothing to constrain the "
+"intermediate type that occurs _between_ the two `?`s.  We'd be happy for it "
+"to just be the same `io::Result<_>` as in the other places, but there's "
+"nothing saying it _must_ be that. To the compiler, we might want some "
+"completely different error type that happens to support conversion to and "
+"from `io::Error`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:90
+msgid ""
+"The easiest fix here is to annotate the return type of the closure, as "
+"follows:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:96
+msgid "// <-- return type\n"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:107
+msgid ""
+"But it would be nice to have a way to request that \"the obvious thing\" "
+"should happen."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:109
+msgid ""
+"This same kind of problem happens with `try{}` blocks as they were "
+"implemented in nightly at the time of writing of this RFC.  The desugaring "
+"of `?` in a `try{}` block was essentially the same as in a function or "
+"closure, differing only in that it \"returns\" the value from the block "
+"instead of from the enclosing function."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:114
+msgid ""
+"For example, this works great if the type context is available from the "
+"return type:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:124
+msgid ""
+"Suppose, however, that you wanted to do more in the method after the "
+"additions, and thus added a `try{}` block around it:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:130
+msgid "// pre-RFC version\n"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:139
+msgid ""
+"That doesn't compile, since a (non-trait) method call required the type be "
+"determined:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:141
+msgid ""
+"```text\n"
+"error[E0282]: type annotations needed\n"
+" --> src/lib.rs:3:5\n"
+"  |\n"
+"3 | /     try { // pre-RFC version\n"
+"4 | |         x?.checked_add(y?)?.checked_add(z?)?\n"
+"5 | |     }\n"
+"  | |_____^ cannot infer type\n"
+"  |\n"
+"  = note: type must be known at this point\n"
+"```"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:153
+msgid ""
+"This is, in a way, more annoying than the `Result` case.  Since at least "
+"there, there's the possibility that one wants the `io::Error` converted into "
+"some `my_special::Error`.  But for `Option`, there's no conversion for "
+"`None`. While it's possible that there's some other type that accepts its "
+"residual, the normal case is definitely that it just stays a `None`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:159
+msgid ""
+"This RFC proposes using the unannotated `try { ... }` block as the marker to "
+"request a slightly-different `?` desugaring that stays in the same family."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:162
+msgid ""
+"With that, the `adding_b` example just works.  And the earlier "
+"`concat_lines` problem can be solved simply as"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:169
+msgid "// <-- new version of `try`\n"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:177
+msgid ""
+"(Note that this version also removes an `Ok(())`, as was decided in "
+"[\\#70941](https://github.com/rust-lang/rust/issues/70941).)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:181
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:184
+msgid ""
+"_Assuming this would go some time after [9.2](https://doc.rust-lang.org/"
+"stable/book/ch09-02-recoverable-errors-with-result.html) in the book, which "
+"introduces `Result` and `?` for error handling._"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:189
+msgid ""
+"So far all the places we've used `?` it's been fine to just return from the "
+"function on an error.  Sometimes, however, it's nice to do a bunch of "
+"fallible operations, but still handle the errors from all of them before "
+"leaving the function."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:192
+msgid ""
+"One way to do that is to make a closure and immediately call it (an _IIFE_, "
+"immediately-invoked function expression, to borrow a name from JavaScript):"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:197
+#: src/3721-homogeneous-try-blocks.md:226
+#: src/3721-homogeneous-try-blocks.md:261
+msgid "\"hello\""
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:198
+#: src/3721-homogeneous-try-blocks.md:227
+#: src/3721-homogeneous-try-blocks.md:262
+msgid "\"world\""
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:203
+msgid ""
+"That's somewhat symbol soup, however.  And even worse, it doesn't actually "
+"compile because it doesn't know what error type to use:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:216
+msgid ""
+"Why haven't we had this problem before?  Well, when we're writing "
+"_functions_ we have to write the return type of the function down "
+"explicitly.  The `?` operator in a function uses that to know to which error "
+"type it should convert any error it gets. But in the closure, the return "
+"type is left to be inferred, and there are many possible answers, so "
+"compilation fails because of the ambiguity."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:222
+msgid "This can be fixed by using a _try block_ instead:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:232
+msgid ""
+"Here the `?` operator still does essentially the same thing -- either gives "
+"the value from the `Ok` or short-circuits the error from the `Err` -- but "
+"with slightly different details:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:236
+msgid ""
+"Rather than returning the error from the function, it returns it from the "
+"`try` block. And thus in this case an error from either `read_to_string` "
+"ends up in the `pair_result` local."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:239
+msgid ""
+"Rather than using the function's return type to decide the error type, it "
+"keeps using the same family as the type to which the `?` was applied. And "
+"thus in this case, since `read_to_string` returns `io::Result<String>`, it "
+"knows to return `io::Result<_>`, which ends up being `io::Result<(String, "
+"String)>`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:244
+msgid ""
+"The trailing expression of the `try` block is automatically wrapped in "
+"`Ok(...)`, so we get to remove that call too.  (Note to RFC readers: this "
+"decision is not part of this RFC. It was previously decided in [\\#70941]"
+"(https://github.com/rust-lang/rust/issues/70941).)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:248
+msgid ""
+"This behaviour is what you want in the vast majority of simple cases.  In "
+"particular, it always works for things with just one `?`, so simple things "
+"like `try { a? + 1 }` will do the right thing with minimal syntactic "
+"overhead.  It's also common to want to group a bunch of things with the same "
+"error type.  Perhaps it's a bunch of calls to one library, which all use "
+"that library's error type.  Or you want to do [a bunch of `io` operations]"
+"(https://github.com/rust-lang/rust/blob/"
+"d6f3a4ecb48ead838638e902f2fa4e5f3059779b/compiler/rustc_borrowck/src/nll."
+"rs#L355-L367) which all use `io::Result`.  Additionally, `try` blocks work "
+"with `?`\\-on-`Option` as well, where error-conversion is never needed, "
+"since there is only `None`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:256
+msgid ""
+"It will fail to compile, however, if not everything shares the same error "
+"type. Suppose we add some formatting operation to the previous example:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:268
+msgid "The compiler won't let us do that:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:270
+msgid ""
+"```text\n"
+"error[E0308]: mismatched types\n"
+"  --> src/lib.rs:14:32\n"
+"   |\n"
+"   |     let c: i32 = b.parse()?;\n"
+"   |                           ^ expected struct `std::io::Error`, found "
+"struct `ParseIntError`\n"
+"   = note: expected enum `Result<_, std::io::Error>`\n"
+"              found enum `Result<_, ParseIntError>`\n"
+"note: return type inferred to be `Result<_, std::io::Error>` here\n"
+"  --> src/lib.rs:14:32\n"
+"   |\n"
+"   |     let a = std::fs::read_to_string(\"hello\")?;\n"
+"   |                                             ^\n"
+"```"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:285
+msgid ""
+"For now, the best solution for that mixed-error case is the same as before: "
+"to refactor it to a function."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:287
+msgid "Common `Option` Patterns"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:289
+msgid ""
+"Various languages with `null` have a _null-conditional_ operator `?.` that "
+"short-circuits if the value to the left is `null`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:291
+msgid ""
+"Rust, of course, doesn't have `null`, but `None` often serves a similar "
+"role. `try` blocks plus `?` combine to give Rust a `?.` without needing to "
+"add it as a special operator."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:294
+msgid "Suppose you have some types like this:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:306
+msgid ""
+"where you have an `x: Foo` and want to add one to the innermost number, "
+"getting an `Option`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:308
+msgid "There's various ways you could do that, such as"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:314
+msgid "or"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:324
+msgid "but with `try` blocks, you simplify that down to"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:332
+msgid ""
+"You can also use this for things that don't have dedicated methods on "
+"`Option`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:334
+msgid ""
+"For example, there's an `Option::zip` for going from `Option<A>` and "
+"`Option<B>` to `Option<(A, B)>`. But there's no _three_\\-argument version "
+"of this."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:337
+msgid "That's ok, though, since you can do that with `try` blocks easily:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:344
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:347
+msgid ""
+"⚠️ This section describes a possible implementation that works with today's "
+"type system. ⚠️"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:349
+msgid ""
+"The core of the RFC is the homogeneity of `try` blocks.  As the author of "
+"the RFC, I'd be happy with other implementations that maintain the "
+"properties of this one. If it ended up happening with custom typing rules "
+"instead, or something, that would be fine. But it's worth emphasizing that "
+"it's doable entirely via a desugaring, no new solver features."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:354
+msgid "Grammar"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:356
+msgid "No change to the grammar; it stays just"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:358
+msgid "_TryBlockExpression_: `try` _BlockExpression_"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:360
+msgid "Desugaring"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:362
+msgid ""
+"Today on nightly, `x?` _inside a `try` block_ desugars as follows, after "
+"[RFC 3058](https://rust-lang.github.io/rfcs/3058-try-trait-v2.html):"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:373
+msgid ""
+"Where `'try` means the synthetic label added to the innermost enclosing "
+"`try` block. (The actual label is not something that can be mentioned from "
+"user code, but it's using the same [label-break-value](https://blog.rust-"
+"lang.org/2022/11/03/Rust-1.65.0.html#break-from-labeled-blocks) mechanism "
+"that stabilized in 1.65.)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:379
+msgid "This RFC changes that desugaring to"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:382
+msgid ""
+"// This is an internal convenience function for the desugar, not something "
+"public\n"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:393
+msgid ""
+"This still uses `FromResidual::from_residual` to actually create the value, "
+"but determines the type to return from the argument via the `Residual` trait "
+"rather than depending on having sufficient context to infer it."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:397
+msgid "The `Residual` trait"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:399
+msgid ""
+"This trait [already exists as unstable](https://doc.rust-lang.org/1.94.0/std/"
+"ops/trait.Residual.html), so feel free to read its rustdoc instead of here, "
+"if you prefer.  It was added to support APIs like [`Iterator::try_find`]"
+"(https://doc.rust-lang.org/1.82.0/std/iter/trait.Iterator.html#method."
+"try_find) which also need this \"I want a `Try` type from the same 'family', "
+"but with a different `Output` type\" behaviour."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:404
+msgid ""
+"⚠️ As the author of this RFC, the details of this trait are not the important "
+"part of this RFC. ⚠️ I propose that, like was done for [RFC 3058](https://"
+"rust-lang.github.io/rfcs/3058-try-trait-v2.html), the exact details here be "
+"left as an unresolved question to be finalized after nightly "
+"experimentation. In particular, it appears that the [naming and structure "
+"related to `try_trait_v2` is likely to change](https://github.com/rust-lang/"
+"rust/issues/84277#issuecomment-1066120333), and thus the `Residual` trait "
+"will likely change as part of that.  But for now this RFC is written "
+"following the names used in the previous RFC."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:418
+msgid "Implementations"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:435
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:438
+msgid ""
+"This adds extra nuance to the `?` operator, so one might argue that the "
+"extra convenience of homogeneity is not worth the complexity and that adding "
+"type annotations instead is fine."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:442
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:445
+msgid "Supporting methods"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:447
+msgid ""
+"Today on nightly, with potentially-heterogeneous `try` blocks, this code "
+"doesn't work"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:455
+msgid ""
+"because method invocation requires that it knows the type, but with a "
+"contextual return type from the `try` block that's not available"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:465
+msgid ""
+"With the homogeneous `try` blocks in this RFC, however, that works because "
+"the type flows \"out\" from the try block, rather than \"in\" from how the "
+"block is used."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:468
+msgid "Supporting generics"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:470
+msgid ""
+"Essentially the same as the previous section, but this doesn't work on "
+"nightly either:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:479
+msgid ""
+"because `dbg!` accepts any `Debug`gable type and thus here it also doesn't "
+"know what type you want"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:496
+msgid "Homogeneous `try` fixes this as well."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:498
+msgid "The simple case deserves the simple syntax"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:500
+msgid ""
+"We could add a new `try homogeneous { ... }` block with this behaviour, and "
+"leave `try { ... }` as heterogeneous."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:502
+msgid ""
+"That feels backwards, because heterogeneous try blocks are the ones that "
+"most commonly need a _type_ annotation of some sort."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:504
+msgid ""
+"If there's `?`s on multiple `Result`s with incompatible error types, we need "
+"to tell it _somehow_ which type to use. Maybe we want an `anyhow::"
+"Result<_>`, maybe we want our own `Result<_, crate::CustomError>`, whatever."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:507
+msgid ""
+"Thus if they commonly need a type annotation anyway, we can consider in the "
+"future (see below for more) an annotated version of `try` blocks that allow "
+"heterogeneity, while leaving the short thing for the simple case."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:510
+msgid "Manual error conversion is always possible"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:512
+msgid ""
+"Even inside a homogeneous `try` block, you could always _manually_ add a "
+"call to convert an error."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:514
+msgid "For example, you could do something like"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:523
+msgid ""
+"if you need to convert the error type from `bar` to the one used by `foo` "
+"and `qux`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:525
+msgid ""
+"We could always add a specific method to express that intent, though this "
+"RFC does not propose one. Spelling it as `.map_err(into)` might be pretty "
+"good already, which would be possible with [RFC#3591](https://github.com/"
+"rust-lang/rfcs/pull/3591)."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:530
+msgid "Other merging approaches"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:532
+msgid ""
+"There's a variety of other things we could do if the `?`s don't all match."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:534
+msgid "Maybe we try to convert everything to the first one"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:535
+msgid "Maybe we try to convert everything to the last one"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:536
+msgid ""
+"Maybe we fold them through some type function that attempts to merge "
+"residuals"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:538
+msgid "But these are all much less local."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:540
+msgid ""
+"A nice property of the homogeneous `try` block is that you don't have to "
+"think about all this stuff. When you see `try {`, you know that they're all "
+"the same.  You can thus reorder them without worrying. So long as you know "
+"what family one of them is from, you know the rest are the same."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:544
+msgid "This case really is common"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:546
+msgid ""
+"The rust compiler uses `try` blocks in a bunch of places already.  Last I "
+"checked, they were _all_ homogeneous. (Though of course it's possible that "
+"some have been added since then.)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:549
+msgid "Let's look at a couple of examples."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:551
+msgid ""
+"This one is single-`?` on `Option`, basically a `map`, and thus is "
+"homogeneous:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:560
+msgid ""
+"This one is homogeneous on the same visitor type, but on nightly ends up "
+"needing the type annotation because it's the method-call case discussed "
+"above:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:574
+msgid "This one is homogeneous because both are `io::Result<_>`s:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:585
+msgid "This one is homogeneous because both `?`s are on `Option`s:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:606
+msgid ""
+"These are again all `io::Result`s, where the annotation might not be needed "
+"because that failure class wants `io::Error` specifically, but that's be "
+"clearer with this RFC:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:611
+msgid "\"symbols\""
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:615
+msgid "\"{sym}\""
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:621
+msgid "\"--export-symbols\""
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:626
+msgid ""
+"Another place where everything is `io::Result<_>` already, so homogeneous "
+"would be fine and would allow removing the `let` & type annotation:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:632
+msgid "\"dot\""
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:638
+msgid "Why `Residual::TryType` isn't a GAT"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:640
+msgid ""
+"One might expect that, rather than having a generic parameter on the trait, "
+"`Residual` would look like"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:648
+msgid ""
+"The reason it's not done that way is that today we have no way to let an "
+"implementation add additional constraints for which types can be passed to "
+"that GAT.  That means it'd be impossible to implement `Residual` for a type "
+"that needed `Copy` or only supported `()`, for example."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:652
+msgid ""
+"Take this type, trying to match the common C idiom of \"zero is success; non-"
+"zero is error\":"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:686
+msgid ""
+"The proposed trait structure lets us have that `impl Residual<()> for "
+"CResultResidual`, whereas trying to implement some kind of"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:693
+msgid ""
+"just can't work because there's nowhere to put an arbitrary `V` in `CResult`."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:695
+msgid "Could we evolve this in future?"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:697
+msgid ""
+"Because this is an early desugaring to existing features, this is the "
+"easiest kind of thing to change over editions. There's no global system "
+"changes involved, just a careful arrangement of trait calls."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:700
+msgid ""
+"That means that if it turns out that we ship it and find out over time that "
+"it's not quite what we want, we could use an edition change to adjust it to "
+"work differently.  It could use the edition of the `try` token to decide "
+"which behaviour should apply, for example.  And any maintenance cost of "
+"_this_ approach on previous editions would remain low, since it didn't need "
+"any complex support in the first place."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:705
+msgid ""
+"For example, maybe in the future we could get new type system features that "
+"would allow some kind of \"fallback hinting\" so that `try` blocks wouldn't "
+"need the homogeneity restriction to compile in the common cases, and we "
+"could thus over an edition change the desugaring to use that instead.  But "
+"we don't need to wait for an unknown to ship something now; we can switch "
+"how it works later easily enough."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:711
+msgid "Prior art"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:714
+msgid ""
+"Languages with traditional exceptions don't return a value from `try` "
+"blocks, so don't have this problem. Even checked exceptions are still always "
+"the `Exception` type."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:717
+msgid "Scoping of nullability checks"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:719
+msgid ""
+"In C#, the `?.` operator is scoped without a visible lexical block. We could "
+"try to special-case `?.`, maybe over an edition change, to do something "
+"similar instead of needing the `try { ... }` at all."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:722
+msgid "The invisible scope can be trouble, however.  Take this program:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:741
+msgid "// Check 1\n"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:742
+msgid "\"FirstOnePassed\""
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:743
+msgid "// Check 2\n"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:748
+msgid ""
+"The first check never actually runs, because the `?.` skips it, as it's "
+"scoped to the statement. The second check fails, because the `?.` got scoped "
+"to the parens."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:751
+msgid "Translating the two to Rust, they'd be"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:755
+msgid "vs"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:759
+msgid ""
+"where having the lexical scope visible emphasizes what happens if the `?` "
+"does short-circuit."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:762
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:765
+msgid "Questions to be resolved in nightly:"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:766
+msgid "How exactly should the trait for this be named and structured?"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:769
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:772
+msgid "Annotated heterogeneous `try` blocks"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:774
+msgid ""
+"We could have `try ☃️ anyhow::Result<_> { ... }` blocks that use the old `?` "
+"desugaring. (Insert your favourite token in place of ☃️, but please don't "
+"discuss that in _this_ RFC.)"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:777
+msgid ""
+"The extra token is negligible compared to the type annotation, unlike it "
+"would be in the homogeneous case."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:779
+msgid ""
+"That could be done at any point, as it's not a breaking change, thanks to "
+"`try` being a keyword."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:781
+msgid ""
+"The [flavour](https://github.com/rust-lang/rfcs/pull/3710) conversation "
+"might find a version of this that could go well with `async` blocks too."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:783
+msgid ""
+"There are also other possible versions of this taking more advantage of the "
+"residual type to avoid needing to write the `_` in more cases.  Spitballing, "
+"you could have things like `try ☃️ Option` or `try ☃️ anyhow::Result`, say, "
+"where that isn't a type but is instead a 1-parameter type _constructor_."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:789
+msgid "Integration with `yeet`"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:791
+msgid ""
+"This RFC has no conflict with [`yeet`](https://github.com/rust-lang/rust/"
+"issues/96373), though it does open up some new questions."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:795
+msgid ""
+"In many ways, the discussion here is similar to an open question about "
+"`yeet` around what conversions, if any, it can do."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:798
+msgid "For example, if I'm in a `-> io::Result<()>` function, can I do"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:802
+msgid "or would it need to be"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:806
+msgid "or even require full specificity?"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:811
+msgid ""
+"One potentially-interesting version of that would be to keep `yeet` as "
+"_heterogeneous_ inside the _homogeneous_ `try` blocks."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:814
+msgid ""
+"That would mean that it would still be the `?`s that would pick the return "
+"type, but you'd be able to `yeet` more-specific types that would get "
+"translated."
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:817
+msgid "For example, that could allow something like"
+msgstr ""
+
+#: src/3721-homogeneous-try-blocks.md:828
+msgid ""
+"where the `?`s are still homogeneous, picking `io::Result<()>` as the return "
+"type for the block, but still allowing error-conversion in the `yeet` so you "
+"can `yeet` the \"more specific\" type and still have the compiler figure it "
+"out."
+msgstr ""

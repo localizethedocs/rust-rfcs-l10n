@@ -1,0 +1,1188 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-04-14T10:00:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3855-mitigation-enforcement.md:1
+msgid "Feature Name: `mitigation_enforcement`"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:2
+msgid "Start Date: 2025-09-13"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3855](https://github.com/rust-lang/rfcs/pull/3855)"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#154613](https://github.com/rust-lang/rust/"
+"issues/154613)"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:9
+msgid ""
+"Introduce the concept of \"mitigation enforcement\", so that when compiling "
+"a crate with mitigations enabled (for example, `-C stack-protector`), a "
+"compilation error will happen if the produced artifact would contain Rust "
+"code without the same mitigations enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:14
+msgid ""
+"This in many cases would require use of `-Z build-std`, since the standard "
+"library only comes with a single set of enabled mitigations per target."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:17
+msgid ""
+"Mitigation enforcement should be disableable by the end-user via a compiler "
+"flag."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:20
+msgid "Motivation"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:23
+msgid ""
+"Memory unsafety mitigations are important for reducing the chance that a "
+"vulnerability ends up being exploitable."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:26
+msgid ""
+"While in Rust, memory unsafety is less of a concern than in C, mitigations "
+"are still important for several reasons:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:29
+msgid ""
+"Some mitigations (for example, straight line speculation mitigation, [`-Z "
+"harden-sls`](https://github.com/rust-lang/compiler-team/issues/869)) "
+"mitigate the impact of Spectre-style speculative execution vulnerabilities, "
+"that exist in Rust just as well as C."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:32
+msgid ""
+"Many Rust programs also contain large C/C++ components, that can have memory "
+"vulnerabilities. The exploitation of these vulnerabilities is made easier by "
+"the presence of mitigation-less Rust code within the same address-space."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:36
+msgid ""
+"Many Rust programs use `unsafe`, that can introduce memory unsafety and "
+"vulnerabilities."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:39
+msgid ""
+"Mitigations are generally enabled by passing a flag to the compiler (for "
+"example, [`-Z harden-sls`](https://github.com/rust-lang/compiler-team/"
+"issues/869) or [`-Z stack-protector`](https://github.com/rust-lang/rust/"
+"issues/114903)). If the compilation process of a program is complex, it is "
+"very easy to end up accidentally not passing the flag to one of the "
+"constituent object files."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:44
+msgid "This can have one of several consequences:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:46
+msgid ""
+"In some cases (for example `-Z fixed-x18 -Z sanitizer=shadow-call-stack`), "
+"the mitigation changes the ABI, and linking together code with different "
+"mitigation settings leads to undefined behavior such as crashes even in the "
+"absence of an attack. In these cases, the sanitizer should be a [target "
+"modifier](https://github.com/rust-lang/rfcs/pull/3716) rather than using "
+"this RFC."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:51
+msgid ""
+"For \"Spectre-type\" mitigations (e.g. `harden-sls`), if there is some "
+"reachable code in your address space without a retpoline, attackers can "
+"execute a Spectre attack, even if there is 0 UB in your code."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:54
+msgid ""
+"For \"CFI-type\" mitigations (e.g. kcfi), if there is reachable code in your "
+"address space that does not have that sanitizer enabled, attackers can use "
+"it to leverage an already-existing memory vulnerability into ROP execution, "
+"even if the memory vulnerability is in a completely different part of the "
+"code than the part that has the mitigation disabled"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:59
+msgid ""
+"For \"local\" mitigations (e.g. stack protector, or C's `-fwrapv` - which I "
+"don't think Rust has), the mitigation protects the code when it is in the "
+"right place relative to the bug - a stack protector helps basically when it "
+"protects the buffer that overflows, and it does not matter which other "
+"functions have a stack protector."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:64
+msgid ""
+"To avoid these consequences, teams that write software with high security "
+"needs - for example, browsers and the Linux kernel - need to have a way to "
+"make sure that the programs they produce have the mitigations they want "
+"enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:68
+msgid ""
+"On the other hand, for teams that write software in a more uncoordinated "
+"environment, it can be hard to chase down all dependencies, and especially "
+"for \"local\" mitigations, being able to enable them on an object-by-object "
+"basis is the only thing that allows for the mitigations to actually be "
+"deployed. Especially important is progressive deployment - it's much easier "
+"to introduce mitigations 1 crate at a time than to introduce mitigations a "
+"whole program at a time, even if the end goal is to introduce the "
+"mitigations to the entire program."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:81
+msgid "Supported mitigations"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:83
+msgid "The following mitigations could find this feature interesting"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:85
+msgid "Already Stable"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:87
+msgid ""
+"`-C control-flow-guard` This is a \"CFI-type\" mitigation on Windows, and "
+"therefore having it enabled only partially makes it far less protective."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:91
+msgid ""
+"However, it is already stable, and we would need a `-C deny-partial-"
+"mitigations=control-flow-guard` or `-C control-flow-guard-enforce` (or "
+"bikeshed) to make it enforcing."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:95
+msgid "We could also make it enforcing over an edition boundary."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:96
+msgid ""
+"`-C relocation-model` If position-dependent code is compiled into a binary, "
+"then ASLR will not be able to be enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:100
+msgid ""
+"This is less of a problem in Rust than in C, since position-independent code "
+"is a rarely-changed default in Rust, and it can easily be checked via "
+"[`hardening-check(1)`](https://manpages.debian.org/testing/devscripts/"
+"hardening-check.1.en.html) or similar tools since it's easily visible in the "
+"ELF header."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:105
+msgid ""
+"However, we might still want to introduce a `-C deny-partial-"
+"mitigations=position-independent` or `-C enforce-position-independent`."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:108
+msgid ""
+"As far as I can tell, there is no way to disable `relro` via stable Rust "
+"compilation flags."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:110
+msgid ""
+"`-C overflow-checks` This can be thought of as a mitigation in some sense. "
+"It might make sense to add a way to make it enforcing, but I don't think it "
+"makes sense to make it enforcing by default since that is contrary to the "
+"normal use of turning overflow checks only for the crate under development."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:116
+msgid ""
+"However, we might still want to introduce a `-C deny-partial-"
+"mitigations=overflow-checks` or `-C enforce-overflow-checks`. It probably "
+"does not make sense to make it enforcing over an edition boundary, since the "
+"desired default there is not to enforce. This probably merits a separate RFC/"
+"FCP."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:122
+msgid "Currently Unstable (as of rustc 1.89)"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:124
+msgid ""
+"This RFC is not the place to make a decision of exactly which unstable "
+"mitigations should have enforcement enabled - that should take place as a "
+"part of their stabilization."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:128
+msgid ""
+"However, it would be good to see that enforcement fits well with sanitizers."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:130
+msgid ""
+"[`-Z branch-protection`](https://github.com/rust-lang/rust/issues/113369)/[`-"
+"Z cf-protection`](https://github.com/rust-lang/rust/issues/93754) - control "
+"flow protection in ARM or Intel, respectively. Would probably want this. It "
+"uses [`.note.gnu.property`](#notegnuproperty-1) which makes it active only "
+"if every object in the address space uses it, which makes it easy to detect "
+"via a [`hardening-check(1)`](https://manpages.debian.org/testing/devscripts/"
+"hardening-check.1.en.html)\\-style tool, but since it is not the default, "
+"this would make it easier to make sure it is enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:136
+msgid ""
+"[`-Z ehcont-guard`](https://learn.microsoft.com/en-us/cpp/build/reference/"
+"guard-enable-eh-continuation-metadata?view=msvc-170) - Similar for [`-Z "
+"branch-protection`](https://github.com/rust-lang/rust/issues/113369)/[`-Z cf-"
+"protection`](https://github.com/rust-lang/rust/issues/93754), but for "
+"Windows exception handlers - if every object in the address space uses it, "
+"`NtContinue` is only allowed to jump to valid exception handlers. This means "
+"it is easy to detect via a [`hardening-check(1)`](https://manpages.debian."
+"org/testing/devscripts/hardening-check.1.en.html)\\-style tool, but it "
+"probably makes sense to include it."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:141
+msgid ""
+"[`-Z indirect-branch-cs-prefix`](https://github.com/rust-lang/rust/"
+"issues/116852) - a part of retpoline (Spectre) mitigation on x86."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:143
+msgid ""
+"[`-Z no-jump-tables`](https://github.com/rust-lang/rust/issues/116592) - CFI-"
+"type mitigation? soon to be stabilized as [`-C jump-tables`](https://github."
+"com/rust-lang/rust/pull/145974). Do we want to hold that stabilization as "
+"well?"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:146
+msgid ""
+"[`-Z retpoline`](https://github.com/rust-lang/rust/issues/116852) and `-Z "
+"retpoline-external-thunk` - Spectre-type mitigation"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:147
+msgid ""
+"[`-Z sanitizer`](https://github.com/rust-lang/rust/issues/89653)\\-based "
+"mitigations. A fairly large use case. As far as I can tell, enforcement "
+"makes sense for `-Zsanitizer=kcfi, -Zsanitizer=memtag, -Zsanitizer=shadow-"
+"call-stack` and does not make sense for `-Zsanitizer=address, -"
+"Zsanitizer=dataflow, -Zsanitizer=hwaddress, -Zsanitizer=leak, -"
+"Zsanitizer=memory, -Zsanitizer=thread` (`-Z sanitizer=address` should "
+"probably be a [target modifier](https://github.com/rust-lang/rfcs/pull/3716))"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:152
+msgid ""
+"[`-Z stack-protector`](https://github.com/rust-lang/rust/issues/114903) - "
+"stack smashing protection, local-type mitigation"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:153
+msgid ""
+"[`-Z ub-checks`](https://github.com/rust-lang/rust/issues/123499): as far as "
+"I can tell, it is not intended as a mitigation, but since it prevents some "
+"UB, it might be thought of as one"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:167
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:170
+msgid ""
+"When you use a mitigation, such as `-C stack-protector=strong`, if one of "
+"your dependencies does not have that mitigation enabled, compilation will "
+"fail."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:173
+msgid ""
+"Error: your program uses the crate `foo`, that is not protected by `-C stack-"
+"protector=strong`."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:176
+msgid ""
+"Recompile that crate with the mitigation enabled, or use `-C allow-partial-"
+"mitigations=stack-protector` to allow creating an artifact that has the "
+"mitigation only partially enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:180
+msgid ""
+"It is possible to disable `-C allow-partial-mitigations=stack-protector` via "
+"`-C deny-partial-mitigations=stack-protector`."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:183
+msgid ""
+"Other flags that can be mitigations, for example `-C overflow-checks=on`, "
+"permit partial mitigations by default, but it is possible to make sure your "
+"dependencies have the same mitigation setting as you by passing `-C deny-"
+"partial-mitigations=overflow-checks`. That flag can be overridden by `-C "
+"allow-partial-mitigations=overflow-checks`."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:189
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:192
+msgid ""
+"For every mitigation-like option, the compiler CLI flags determines whether "
+"that mitigation allows or denies partial mitigations. This can be turned on "
+"via `-C allow-partial-mitigations=<mitigation>` and turned off by `-C deny-"
+"partial-mitigations=<mitigation>` (for example, `-C allow-partial-"
+"mitigations=stack-protector` and `-C deny-partial-mitigations=stack-"
+"protector`)."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:199
+msgid ""
+"These flags act like every other compiler flag, with the last flag winning "
+"if there are multiple values for the same mitigation."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:202
+msgid ""
+"When a mitigation option appears (for example, `-C stack-protector=strong`), "
+"the mitigation is denied for partial use. This is needed to allow for "
+"distributors and the like to set a default that allows partial mitigations "
+"without weakening the security of users."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:206
+msgid "For example,"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:212
+msgid ""
+"Will allow partial mitigations for stack-protector (since there's an allow) "
+"but deny partial mitigations for `overflow-checks` (since the later deny "
+"overrides the allow) and `kcfi` (since `-Csanitizer=kcfi` resets enforcement "
+"for CFI)."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:216
+msgid "It is possible to bikeshed the exact naming scheme."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:218
+msgid ""
+"Every new mitigation would need to decide whether it adopts this scheme, but "
+"mitigations are expected to adopt it."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:221
+msgid ""
+"Every crate gets a metadata field that contains the set of mitigations it "
+"has enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:223
+msgid ""
+"When compiling a crate, if the current crate has a mitigation with "
+"enforcement turned on, and one of the dependencies does not have that "
+"mitigation turned on (whether enforcing or not), a compilation error results."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:228
+msgid ""
+"If a mitigation has multiple \"levels\", a stricter level at a dependency is "
+"compatible with a looser level at the current (dependent) crate, but not "
+"vice-versa - for example, if the standard library crates were compiled with "
+"`-C stack-protector=all` (not discussing whether that is a wise idea), they "
+"would be compatible with every configuration of user crates."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:234
+msgid ""
+"The error happens independent of the target crate type (you get an error if "
+"you are building an rlib, not just the final executable)."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:237
+msgid ""
+"For example, with `-C stack-protector`, the compatibility table will be as "
+"follows:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:240
+msgid "Dependency\\Current"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:240
+#: src/3855-mitigation-enforcement.md:242
+msgid "none"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:240
+msgid "none+allow"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:240
+#: src/3855-mitigation-enforcement.md:244
+msgid "strong"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:240
+#: src/3855-mitigation-enforcement.md:245
+msgid "strong + allow partial"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:240
+#: src/3855-mitigation-enforcement.md:246
+msgid "all"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:242
+#: src/3855-mitigation-enforcement.md:243
+#: src/3855-mitigation-enforcement.md:244
+#: src/3855-mitigation-enforcement.md:245
+#: src/3855-mitigation-enforcement.md:246
+#: src/3855-mitigation-enforcement.md:247
+msgid "OK"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:242
+#: src/3855-mitigation-enforcement.md:243
+#: src/3855-mitigation-enforcement.md:244
+#: src/3855-mitigation-enforcement.md:245
+msgid "error"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:242
+#: src/3855-mitigation-enforcement.md:243
+#: src/3855-mitigation-enforcement.md:244
+#: src/3855-mitigation-enforcement.md:245
+msgid "OK - current allows partial"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:243
+msgid "none + allow partial"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:247
+msgid "all + allow partial"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:249
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:252
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:255
+msgid "Syntax alternatives"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:257
+msgid "`-C my-mitigation-noenforce`"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:259
+msgid ""
+"Instead of `-C allow-partial-mitigations`, it is possible to split every "
+"flag value that enables a mitigation for which enforcement is desired is "
+"split into 2 separate values, \"enforcing\" and \"non-enforcing\" mode. The "
+"enforcing mode is the default, non-enforcing mode is constructed by adding `-"
+"noenforce` to the name of the value, for example `-C stack-protector=strong-"
+"noenforce` or `-C sanitizer=shadow-call-stack-noenforce`."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:265
+msgid ""
+"If a program has multiple flags of the same kind, the last flag wins, so e."
+"g. `-C stack-protector=strong-noenforce -C stack-protector=strong` is the "
+"same as `-C stack-protector=strong`."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:269
+msgid "\\-C stack-protector=none-noenforce"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:271
+msgid ""
+"The option `-C stack-protector=none-noenforce` is the same as `-C stack-"
+"protector=none`. I am not sure whether we should have both, but it feels "
+"that orthogonality is in favor of having both."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:275
+msgid "Limiting the set of crates that are allowed to bypass enforcement"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:277
+msgid ""
+"You could have a syntax like `-C allow-partial-mitigations=stack-"
+"protector=@stdlib+foo`, `-C stack-protector=strong-noenforce=@stdlib+foo`, "
+"or some other syntax (using `+` since `,` should have a different level of "
+"precedence), which would only allow the mitigation to be partial on a "
+"specified set of crate names."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:282
+msgid ""
+"`@stdlib` is used here to stand for all the sysroot crates, since the user "
+"does not want to specify them all (should we bikeshed the syntax?)."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:285
+msgid ""
+"This is different from `-C pretend-mitigation-enabled` (which would be a "
+"mitigation equivalent of `-C unsafe-allow-abi-mismatch`), since it reflects "
+"a decision made by the application writer (dependent crate) rather than the "
+"library writer."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:289
+msgid "This can be done in a later stabilization that the core of the feature."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:291
+msgid "Impacts to syntax choices"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:293
+msgid ""
+"The `-C stack-protector=strong-noenforce=std+alloc+core` syntax feels ugly."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:295
+msgid ""
+"If we decide that the noenforce syntax is important to allow for flag "
+"concatenation, we can certainly have both the `noenforce` syntax and the "
+"`allow-partial-mitigations` syntax, with `noenforce` disabling enforcement "
+"for all crates while `allow-partial-mitigations` disables it only for "
+"specific crates."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:300
+msgid "Interaction with `-C unsafe-allow-abi-mismatch`"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:302
+msgid ""
+"The proposed rules do not interact with `-C unsafe-allow-abi-mismatch` at "
+"all, so if you have a \"sanitizer runtime\" crate that is compiled with the "
+"following options:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:305
+msgid ""
+"\\-C no-fixed-x18 -C sanitizer=shadow-call-stack=off -C unsafe-allow-abi-"
+"mismatch=fixed-x18 -C unsafe-allow-abi-mismatch=shadow-call-stack"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:307
+msgid ""
+"Then dependencies will need to use it with `-C allow-partial-"
+"mitigations=shadow-call-stack` rather than `-C sanitizer=shadow-call-stack`, "
+"otherwise they will get an error."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:310
+msgid ""
+"As far as I can see, there is no current demand for that sort of sanitizer "
+"runtime, but if that is desired, it might be a good idea to add a `-C "
+"pretend-mitigation-enabled=shadow-call-stack` (which would act like `-C "
+"allow-unsafe-api-mismatch` and mark a crate as a \"wildcard\"), and possibly "
+"to make `-C unsafe-allow-abi-mismatch` act like `-C pretend-mitigation-"
+"enabled` as well for mitigations that are also target modifiers."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:318
+msgid "Defaults"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:320
+msgid ""
+"We want that the most obvious way to enable mitigations (e.g. `-C stack-"
+"protector=strong` or `-C sanitizer=shadow-call-stack`) to turn on "
+"enforcement, since that will set people for a safer default where "
+"mitigations are enabled throughout."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:325
+msgid ""
+"However, we do want an easy way for distribution owners (for example, "
+"Ubuntu) to turn on mitigations in a non-enforcing way, as is done today e.g. "
+"[by Ubuntu with `-fstack-protector-strong`](https://wiki.ubuntu.com/"
+"ToolChain/CompilerFlags). Distributions can't easily add a new mitigation in "
+"an enforcing way, as that will cause widespread breakage, but they can "
+"fairly easily turn a mitigation on in a non-enforcing way."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:331
+msgid ""
+"We do want the combination of defaults to combine in a nice way - if the "
+"distribution sets `-C stack-protector=strong -C allow-partial-"
+"mitigations=stack-protector`, and the user adds `-C stack-protector=strong`, "
+"we want the result to be stack-protector set to strong and enforcing. This "
+"is done by the \"resetting\" behavior of the CLI - setting `-C stack-"
+"protector=strong -C allow-partial-mitigations=stack-protector -C stack-"
+"protector=strong` acts as if the `-C allow-partial-mitigations=stack-"
+"protector` was not passed."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:338
+msgid ""
+"Distributors and packagers can set defaults for mitigations by setting some "
+"sort of `RUSTFLAGS` argument, or by patching the compiler to act as if there "
+"was an \"implicit\" prepended `RUSTFLAGS` argument."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:344
+msgid "The standard library"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:346
+msgid ""
+"One big place where it's very easy to end up with mixed mitigations is the "
+"standard library. The standard library comes compiled with just a single set "
+"of mitigations enabled (as of Rust 1.88: [PIC](https://en.wikipedia.org/wiki/"
+"Position-independent_code), [NX](https://en.wikipedia.org/wiki/Executable-"
+"space_protection), [`-z relro -z now`](https://www.redhat.com/en/blog/"
+"hardening-elf-binaries-using-relocation-read-only-relro)), and without `-Z "
+"build-std`, it is only possible to use the mitigation settings in the "
+"shipped standard library."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:352
+msgid ""
+"If we find out that some mitigations have a positive cost-benefit ratio for "
+"the standard library (probably at least [`-Z stack-protector`](https://"
+"github.com/rust-lang/rust/issues/114903)), we probably want to ship a "
+"standard library supporting them by default, but in a way that still allows "
+"people to compile code without mitigations (for example, ship a `libstd` "
+"with `-C stack-protector=strong`, but allow users to compile their own code "
+"with `-C stack-protector=none` using that `libstd`) if that fulfills their "
+"security/performance tradeoff better."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:364
+msgid "Why not target modifiers?"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:366
+msgid ""
+"The [target modifier](https://github.com/rust-lang/rfcs/pull/3716) feature "
+"provides a similar goal of preventing mismatches in compiler settings."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:369
+msgid "There are several issues with using target modifiers for mitigations:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:371
+msgid "The name unsafe-allow-abi-mismatch"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:373
+msgid ""
+"The name of the flag that allows mixing target modifiers, `-C unsafe-allow-"
+"abi-mismatch`, does not make sense for cases that are not \"unsafe ABI "
+"mismatches\". It also uses the word \"unsafe\", which we prefer not to use "
+"except in cases that can result in actual unsoundness."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:378
+msgid "The behavior of unsafe-allow-abi-mismatch"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:380
+msgid ""
+"The behavior of `-C unsafe-allow-abi-mismatch` is also not ideal for "
+"mitigations."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:382
+msgid ""
+"The flag marks a crate as basically having a \"wildcard target modifier\", "
+"which allows it to compile with crates with any value of the target modifier."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:385
+msgid ""
+"This is quite good for the original use case - it's an \"I know what I am "
+"doing\" flag that allows \"runtime\" crates to be mixed in even if they "
+"subtly play with the ABI rules - for example, in a kernel, where floating "
+"point execution is mostly forbidden, there are a few compilation units using "
+"real floats. To call into them, first you call some special functions that "
+"make the floating point registers usable, and then you call into the CU "
+"safely by not having any floats in the signature of the function on the "
+"boundary ([example by Alice Ryhl](https://rust-lang.zulipchat.com/#narrow/"
+"channel/131828-t-compiler/topic/Target.20modifiers.20and.20-Cunsafe-allow-"
+"abi-mismatch/near/483871803))."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:393
+msgid ""
+"However, for mitigations, the expected case for disabling mitigations is "
+"less people knowing what they are doing, and more people that don't agree "
+"with the performance/security tradeoff they bring. In that case, we should "
+"allow the executable-writer to be aware of the tradeoff being made, rather "
+"than letting libraries in the middle decide it for them."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:399
+msgid "Target modifier, enforced mitigation, neither, or both?"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:401
+msgid "For every single mitigation-like flag:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:403
+msgid ""
+"If mixing values of the flag can cause unsound behavior, sanitizer false "
+"positives, or crashes, it should be a target modifier."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:405
+msgid ""
+"If mixing values of the flag can hurt a production program's security "
+"posture, it should be an enforced mitigation."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:407
+msgid ""
+"If the flag is a sanitizer intended for use only in fuzzing and testing, and "
+"mixing values of it does not lead to unsound behavior, it should be neither."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:410
+msgid ""
+"If mixing values of the flag hurt a production program's security posture in "
+"some cases, and lead to unsound behavior in other cases, it should be both. "
+"I am not aware of a current flag that fits this pattern."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:415
+msgid "`-emit=component-info`"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:417
+msgid ""
+"One possible \"big\" alternative would be emitting a component info file, "
+"via `-emit=component-info`. For example:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:422
+msgid "\"components\""
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:424
+msgid "\"type\""
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:424
+msgid "\"crate\""
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:425
+msgid "\"name\""
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:425
+msgid "\"foo\""
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:426
+msgid "\"mitigations\""
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:426
+msgid "\"a\""
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:432
+msgid ""
+"We could then have Cargo run over that file and look for missing mitigations."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:434
+msgid ""
+"Without support in Cargo, this would be not good enough since it would take "
+"an annoying enough amount of effort for people to scan the generated json "
+"files."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:438
+msgid "It is important to avoid this sort of JSON being bikeshed-land."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:440
+msgid ""
+"An advantage is that people could write their own custom policies, which "
+"would take some pressure off bikesheds for things like overflow checks."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:443
+msgid ""
+"In some sense, this is moving complexity from rustc to Cargo, which I'm not "
+"sure reduces it overall."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:446
+msgid ""
+"A disadvantage is that it would be possible to enable a mitigation in rustc "
+"but not in Cargo (e.g. by setting `RUSTFLAGS`), which would make it non-"
+"enforced."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:449
+msgid ""
+"A big disadvantage of this is that it adds much complexity and deeper-than-"
+"we-want integration to projects that are _not_ using Cargo, since they have "
+"to implement the scanning integration themselves."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:453
+msgid ""
+"Even if this alternative is not selected, some sort of `-emit=component-"
+"info` does feel like a good feature, though one that deserves a separate "
+"RFC. There does not seem to be a _conflict_ between `-emit=component-info` "
+"and `-C allow-partial-mitigations`."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:458
+msgid "Why not an external tool?"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:460
+msgid ""
+"This is somewhat hard to do with an external tool, since there is no way of "
+"looking at a binary and telling what mitigations its components have."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:464
+msgid ""
+"There are however some external tools that do check for mitigations, but "
+"they have limitations:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:467
+msgid ""
+"[`hardening-check(1)`](https://manpages.debian.org/testing/devscripts/"
+"hardening-check.1.en.html) exists, but its check for stack smashing "
+"protection only checks that at least 1 function has stack cookies, rather "
+"than checking that every interesting function has it enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:470
+msgid ""
+"The Linux kernel has [`objtool`](https://git.kernel.org/pub/scm/linux/kernel/"
+"git/torvalds/linux.git/tree/tools/objtool/Documentation/objtool.txt?"
+"id=5cd64d4f92683afa691a6b83dcad5adfb2165ed0), which checks for some other "
+"mitigations (for example, retpolines). It however needs to access the `.o` "
+"object files rather than the final linked executable or shared library - "
+"which requires its user to control the linking process - and also has "
+"hardcoded limitations that make it only suitable for the Linux kernel, "
+"rather than being useful as a general-purpose tool."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:476
+msgid ""
+"Fedora has a tool called [`annobin`](https://sourceware.org/cgit/annobin), "
+"which is able to parse the [`.gnu.build.attributes`](#gnubuildattributes-1) "
+"section, which compilers can use to indicate mitigation support. That does "
+"fit our needs, but is specific to the GNU/Linux world - it is desirable to "
+"have a solution that works on all platforms."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:481
+msgid ""
+"There is a similar tool called [`checksec`](https://www.trapkit.de/tools/"
+"checksec/), with similar limitations."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:488
+msgid "Mitigations that are manifestly visible from the program header"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:490
+msgid ""
+"For some mitigations, the mitigation is enabled for an entire program "
+"executable, by setting a flag in the program header."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:493
+msgid ""
+"Many of these mitigations normally require all the code within the program "
+"to be compatible with them, and therefore they normally work in a way where "
+"every object file indicates whether it is compatible with them, and with the "
+"mitigation being enabled for the ELF if all of the comprising object files "
+"are compatible with it."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:499
+msgid "Mitigations that act like that:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:501
+msgid ""
+"Position-independent code ([`ET_DYN`](https://stackoverflow.com/"
+"questions/34519521/why-does-gcc-create-a-shared-object-instead-of-an-"
+"executable-binary-according-to/34522357#34522357))"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:502
+msgid ""
+"Non-executable stack ([`PT_GNU_STACK`](https://refspecs.linuxfoundation.org/"
+"LSB_5.0.0/LSB-Core-generic/LSB-Core-generic/progheader.html))"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:503
+msgid "[`.note.gnu.property`](#notegnuproperty) mitigations"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:505
+msgid ""
+"Other mitigations are also manifest from the program header, but are "
+"selected at link-time, without requiring any changes to the compilation of "
+"the comprising object files:"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:509
+msgid ""
+"relro ([`PT_GNU_RELRO`](https://refspecs.linuxfoundation.org/LSB_5.0.0/LSB-"
+"Core-generic/LSB-Core-generic/progheader.html))"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:511
+msgid ""
+"In these cases, programs such as [`hardening-check(1)`](https://manpages."
+"debian.org/testing/devscripts/hardening-check.1.en.html) can often be used "
+"to check the flags in the program header and see whether the mitigation is "
+"enabled."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:518
+#: src/3855-mitigation-enforcement.md:614
+msgid ".note.gnu.property"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:520
+msgid ""
+"The `.note.gnu.property` field contains a number of properties (for example, "
+"[`GNU_PROPERTY_AARCH64_FEATURE_1_BTI`](https://docs.rs/object/0.37/object/"
+"elf/constant.GNU_PROPERTY_AARCH64_FEATURE_1_BTI.html)) that are used to "
+"indicate that the compiled code contains certain mitigations, for example "
+"BTI (`-Zbranch-protection=bti`)."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:525
+msgid ""
+"When linking multiple objects, the linker sets the resulting property to be "
+"the logical AND of the properties of the constituent objects."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:528
+msgid ""
+"For protections such as BTI, the mitigation can only be turned on if all "
+"code within the compiled binary supports it - if one of the object files "
+"doesn't, the loader has to leave the mitigation turned off entirely. The ELF "
+"loader uses the value of the property within the loaded executable to decide "
+"whether to turn on the mitigation."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:534
+msgid ""
+"If it could be arranged, using `.note.gnu.property` could allow mitigation "
+"tracking to propagate across languages - with the final compilation step "
+"intentionally erroring out if the property is not enabled. However, this is "
+"also a disadvantage - adding a new property to `.note.gnu.property` requires "
+"cooperation from the target owners."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:539
+msgid ""
+"Therefore, it might be useful as a future step with cooperation from the "
+"target owners, but is not good if we want to be able to add new enforced "
+"mitigations without requiring cooperation from all platforms."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:545
+msgid "Passing enforced mitigations to the linker"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:547
+msgid ""
+"Currently, the mitigation enforcement RFC does not do anything for native "
+"dependencies, which can be compiled without mitigations within a program "
+"that supports mitigations."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:550
+msgid ""
+"As far as I can tell, the `rustc` compiler currently does not read the "
+"object files of native dependencies, but instead passes to the linker "
+"arguments that allow the linker to find and link in the object files."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:554
+msgid ""
+"If a linker accepts flags that enforce certain mitigations - currently, "
+"these are mostly [mitigations manifest from the program header](#mitigations-"
+"that-are-manifestly-visible-from-the-program-header) - the compiler should "
+"pass these flags to the relevant linker."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:558
+msgid ""
+"Since that is a breaking change as it breaks compilation with existing C "
+"code, it might need to be done over an edition or linker-change boundary."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:561
+msgid "Use of the lint mechanism"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:563
+msgid ""
+"In theory, mitigation enforcement could be a collection of lints, accessible "
+"via our standard lint infrastructure, and as such e.g. exposed in Cargo via "
+"existing lint configuation."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:566
+msgid ""
+"The problem with this is that lints are designed to be capped - normally, "
+"lints are intended for cases where a probable bug exists, but generally, for "
+"code that is not currently under active development, users prefer to use the "
+"code with a probable, pre-existing bug as opposed to changing it, and cap "
+"the lints (using e.g. `--cap-lints=warn`) while sending the warnings to a "
+"place that might be handled eventually."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:572
+msgid ""
+"Lints have a `force-warn` option that always warns, as well as a `forbid` "
+"option that overrides `allow`. We would need a `force-error-but-allow-allow` "
+"option that overrides capping lints but does not override `allow`, which "
+"would make the lint ordering a lattice as opposed to a total ordering, and "
+"be undesirable."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:577
+msgid ""
+"For mitigations, this is an undesirable state, as you generally do not want "
+"to deploy code with pre-existing missing mitigations."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:580
+msgid ""
+"Also, lints are generally controlled by developers, while mitigations are "
+"normally controlled by DevSecOps engineers, and it is reasonable to keep the "
+"separation functional."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:583
+msgid ".gnu.build.attributes"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:585
+msgid ""
+"This is a [Fedora feature](https://fedoraproject.org/wiki/Toolchain/"
+"Watermark). It actually behaves pretty similarly to how we expect mitigation "
+"enforcement to work - a compiler plugin written by Fedora makes C/C++ "
+"compilers output a `.gnu.build.attributes` section indicating which "
+"mitigations are present or absent. The linker aggregates all of these "
+"sections, and `annocheck` can be used to check whether an object file "
+"declares an interesting mitigation as missing."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:592
+msgid ""
+"This is currently a Fedora-ism as far as I can tell. It can be used with non-"
+"Fedora linkers (of course, in that case, C code will probably not indicate "
+"which mitigations it is missing)."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:596
+msgid ""
+"It might be a good idea to coordinate with Fedora and have rustc emit this "
+"metadata, but since it only works on Linux platforms, probably better to not "
+"solely rely on it."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:601
+msgid "Prior art"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:604
+msgid "The panic strategy"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:606
+msgid ""
+"The Rust compiler already _has_ infrastructure to detect flag mismatches: "
+"the flags `-Cpanic` and `-Zpanic-in-drop`. The prebuilt stdlib comes with "
+"different pieces depending on which strategy is used, although panic landing "
+"flags are not entirely removed when using `-Cpanic=abort`, as only part of "
+"the prebuilt stdlib is switched out."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:612
+msgid "Target modifiers"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:616
+msgid ""
+"The `.note.gnu.property` section discussed previously is an example of C "
+"code detecting mismatches of a flag at link time."
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:619
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:622
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3855-mitigation-enforcement.md:625
+msgid ""
+"A possible future extension could be to provide a mechanism to enforce "
+"mitigations across C code and Rust code. This would be an interesting "
+"extension, but it would require cross-language effort that will take a long "
+"period of time to finish. Similarly, another possible future extension could "
+"be to catch mitigation mismatches when using dynamic linking."
+msgstr ""

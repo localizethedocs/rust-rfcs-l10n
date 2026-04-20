@@ -1,0 +1,321 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-04-14T10:00:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3641-export-function-ordinals.md:1
+msgid "Feature Name: `export_function_ordinals`"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:2
+msgid "Start Date: 2024-05-19"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3641](https://github.com/rust-lang/rfcs/pull/3641)"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#154022](https://github.com/rust-lang/rust/"
+"issues/154022)"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:9
+msgid ""
+"Adding an unsafe attribute, `#[unsafe(export_ordinal(n))]`, that marks the "
+"ordinal position of an exported function in a cdylib on windows targets "
+"without creating a `lib.def` file."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:14
+msgid ""
+"Sometimes when creating DLLs, the ordinal position of an exported function "
+"is very important. For example, when creating a DLL for use in [Microsoft "
+"Detours](https://github.com/microsoft/Detours/), the "
+"[`DetourFinishHelperProcess`](https://github.com/microsoft/Detours/wiki/"
+"DetourFinishHelperProcess) function must be Ordinal 1."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:16
+msgid ""
+"Rust currently has a [`link_ordinal`](https://doc.rust-lang.org/reference/"
+"items/external-blocks.html#the-link_ordinal-attribute) attribute which "
+"allows importing a function by its ordinal, however there is currently no "
+"option to do the opposite."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:18
+msgid ""
+"Currently, this would be done by creating a `lib.def` file and linking it in "
+"`build.rs`."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:28
+msgid "// build.rs\n"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:30
+msgid "\"path/to/lib.def\""
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:31
+msgid "\"cargo:rustc-cdylib-link-arg=/DEF:{}\""
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:35
+msgid ""
+"The biggest downside of the current method is that once you specify a `.def` "
+"file, you will have to specify an ordinal for every function that you want "
+"to export from the DLL, or else it won't be present in the generated `.lib` "
+"file. This can become very overwhelming if you have a lot of exported "
+"functions."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:37
+msgid ""
+"By creating an attribute for specifying function ordinals, we can choose the "
+"ordinal position for the functions where it matters, and let Rust choose the "
+"ordinal for any other functions where ordinal position is not important."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:39
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:42
+msgid "Ordinals"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:44
+msgid ""
+"Function Ordinals refer to the position of an exported function in a "
+"Dynamically Linked Library (DLL). When accessing functions by name, this is "
+"not important. However some applications access functions based on their "
+"position (ordinal), rather than their name. The Microsoft documentation for "
+"this concept is available [here.](https://learn.microsoft.com/en-us/cpp/"
+"build/exporting-functions-from-a-dll-by-ordinal-rather-than-by-name)"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:46
+msgid "Usage"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:48
+msgid ""
+"You can specify the ordinality of an exported function using the "
+"`export_ordinal` attribute on it. The attribute must be marked as unsafe."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:52
+#: src/3641-export-function-ordinals.md:95
+msgid "\"C\""
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:53
+msgid "\"Hello, World!\""
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:57
+msgid ""
+"This example will export `hello` as ordinal 1, and when a program tries to "
+"call ordinal 1 in your DLL, it will be executed."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:59
+msgid "Behaviour"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:61
+msgid ""
+"If other software expects your function to be a specific ordinal, you should "
+"be very careful when changing the ordinal or removing the `export_ordinal` "
+"attribute, as it could lead to the wrong function being called (or not found "
+"at all)."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:63
+msgid ""
+"If `export_ordinal` isn't provided, an unused ordinal will be assigned "
+"during compilation."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:65
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:68
+msgid ""
+"`export_ordinal` is a new attribute for functions which has a signature "
+"similar to the following:"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:74
+msgid "`n` must be:"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:76
+msgid "A positive integer >= 1"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:77
+msgid "Unique across the entire program."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:78
+msgid ""
+"An error should be thrown if the same ordinal is provided in multiple places."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:80
+msgid ""
+"The attribute should only affect windows targets, as ordinals are not a "
+"feature of shared libraries on other targets."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:82
+msgid "The attribute must be marked as unsafe."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:84
+msgid "The attribute must be placed above an exported function like so:"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:90
+msgid "// Also works with extern and unsafe functions\n"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:98
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:101
+msgid ""
+"Specifying ordinals in code could add a lot of additional complexity with "
+"linking."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:103
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:106
+msgid ""
+"This design is consistent with the [`link_ordinal`](https://doc.rust-lang."
+"org/reference/items/external-blocks.html#the-link_ordinal-attribute) "
+"attribute already in use."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:108
+msgid ""
+"The attribute is marked as unsafe as it shares the same concerns as "
+"`export_name`, which is [unsafe as of Rust 2024 Edition](https://github.com/"
+"ehuss/edition-guide/blob/b80cba8af64a9c52d56f7081c764e5396e406f6c/src/"
+"rust-2024/unsafe-attributes.md)."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:110
+msgid "Some considered alternatives are:"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:112
+msgid ""
+"Do nothing; keep using the `.def` files with `cargo:rustc-cdylib-link-arg=/"
+"DEF`"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:113
+msgid ""
+"The main downside of doing nothing and using the `.def` file, is that if you "
+"only need one function with a specific ordinal, you have to add every "
+"exported function to the `.def` file or they won't be linkable."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:114
+msgid "Use macros to generate a `.def` file"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:115
+msgid "A good implementation of this would likely require stateful macros."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:116
+msgid ""
+"Implement a way to provide a `.def` file without also having to specify "
+"every other exported function inside it."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:117
+msgid ""
+"This would be a good alternative, although the implementation could be more "
+"complicated."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:119
+msgid ""
+"This proposal should make the workflow of specifying ordinals much easier, "
+"while staying consistent with the syntax of the existing `link_ordinal`."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:121
+msgid "Prior art"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:124
+msgid ""
+"I am not currently aware of any programming languages that currently "
+"implement an equivalent feature."
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:126
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:129
+msgid "Some unresolved questions are:"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:130
+msgid ""
+"Can ordinals be skipped? If you specify ordinals `1, 3, 4`, should this "
+"throw an error as `2` is skipped?"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:131
+msgid ""
+"If ordinals `1, 3` are specified, and you have another exported function, "
+"should it use `2` (the next unused ordinal) or `4` (the next in the "
+"sequence)?"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:132
+msgid ""
+"Instead of implementing this proposal, Could the usage of the `.def` file be "
+"changed to allow other functions to stay exported, even if they aren't "
+"included in the `.def` file?"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:134
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3641-export-function-ordinals.md:137
+msgid "I cannot currently think of any future possibilities."
+msgstr ""
