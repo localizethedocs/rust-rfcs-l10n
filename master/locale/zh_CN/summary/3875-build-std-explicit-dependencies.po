@@ -1,0 +1,2216 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-06-02T12:59:23Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3875-build-std-explicit-dependencies.md:1
+msgid "Feature Name: `build-std-explicit-dependencies`"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:2
+msgid "Start Date: 2025-06-05"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3875](https://github.com/rust-lang/rfcs/pull/3875)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:4
+msgid ""
+"Tracking Issue: [rust-lang/cargo#16960](https://github.com/rust-lang/cargo/"
+"issues/16960)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:9
+msgid ""
+"Allow users to add explicit dependencies on standard library crates in the "
+"`Cargo.toml`. This enables Cargo to determine which standard library crates "
+"are required by the crate graph without `build-std.crates` being set and for "
+"different crates to require different standard library crates."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:14
+msgid ""
+"**This RFC is is part of the [build-std project goal](https://rust-lang."
+"github.io/rust-project-goals/2025h2/build-std.html) and a series of build-"
+"std RFCs:**"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:17
+msgid ""
+"build-std context ([rfcs#3873](https://rust-lang.github.io/rfcs/3873-build-"
+"std-context.html))"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:18
+msgid ""
+"[Background](https://rust-lang.github.io/rfcs/3873-build-std-context."
+"html#background)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:19
+msgid ""
+"[History](https://rust-lang.github.io/rfcs/3873-build-std-context."
+"html#history)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:20
+msgid ""
+"[Motivation](https://rust-lang.github.io/rfcs/3873-build-std-context."
+"html#motivation)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:21
+msgid ""
+"`build-std=\"always\"` ([rfcs#3874](https://rust-lang.github.io/rfcs/3874-"
+"build-std-always.html))"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:22
+msgid ""
+"[Proposal](https://rust-lang.github.io/rfcs/3874-build-std-always."
+"html#proposal)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:23
+msgid ""
+"[Rationale and alternatives](https://rust-lang.github.io/rfcs/3874-build-std-"
+"always.html#rationale-and-alternatives)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:24
+msgid ""
+"[Unresolved questions](https://rust-lang.github.io/rfcs/3874-build-std-"
+"always.html#unresolved-questions)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:25
+msgid ""
+"[Future possibilities](https://rust-lang.github.io/rfcs/3874-build-std-"
+"always.html#future-possibilities)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:26
+msgid "Explicit standard library dependencies (this RFC)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:27
+msgid "[Proposal](#proposal)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:28
+msgid "[Rationale and alternatives](#rationale-and-alternatives)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:29
+msgid "[Unresolved questions](#unresolved-questions)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:30
+msgid "[Future possibilities](#future-possibilities)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:31
+msgid "`build-std=\"compatible\"` (RFC not opened yet)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:32
+msgid "`build-std=\"match-profile\"` (RFC not opened yet)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:49
+msgid "Motivation"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:52
+msgid ""
+"This RFC builds on a large collection of prior art collated in the [`build-"
+"std-context`](https://rust-lang.github.io/rfcs/3873-build-std-context."
+"html#proposal) RFC. It does not directly address the main [rfcs#3873-"
+"motivation](https://rust-lang.github.io/rfcs/3873-build-std-context."
+"html#motivation) it identifies but supports later proposals."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:56
+msgid ""
+"The main motivation for this proposal is to support future extensions to "
+"build-std which allow public/private standard library dependencies or "
+"enabling features of the standard library. Allowing the standard library to "
+"behave similarly to other dependencies also reduces user friction and can "
+"improve build times."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:62
+msgid "Proposal"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:65
+msgid ""
+"Users can now optionally declare explicit dependencies on the standard "
+"library in their `Cargo.toml` files ([?](#why-explicitly-declare-"
+"dependencies-on-the-standard-library-in-cargotoml)):"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:68
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true }\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:78
+msgid ""
+"`builtin` is a new source of dependency, like registry dependencies (with "
+"the `version` key and optionally the `registry` key), `path` dependencies or "
+"`git` dependencies. `builtin` can only be set to `true` and cannot be "
+"combined with any other dependency source for a given dependency ([?](#why-"
+"disallow-builtin-dependencies-to-be-combined-with-other-sources))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:84
+msgid ""
+"`builtin` can only be used with crates named `core`, `alloc` or `std` ([?]"
+"(#why-disallow-builtin-dependencies-on-other-crates)) on stable. This set "
+"could be expanded with new crates in future."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:88
+msgid ""
+"Use with any other crate name is gated on a perma-unstable `cargo-feature` "
+"([?](#why-unstably-allow-all-names-for-builtin-crates)). If a builtin "
+"dependency on a unstable crate name exists but is not used due to cfgs, then "
+"Cargo will still require the Cargo feature."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:93
+#: src/3875-build-std-explicit-dependencies.md:113
+#: src/3875-build-std-explicit-dependencies.md:203
+#: src/3875-build-std-explicit-dependencies.md:439
+#: src/3875-build-std-explicit-dependencies.md:598
+#: src/3875-build-std-explicit-dependencies.md:652
+msgid "\\[!NOTE\\]"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:95
+msgid ""
+"Explicit dependencies are passed to rustc without the `noprelude` modifier "
+"([?](#why-not-use-noprelude-for-explicit-builtin-dependencies)) (`noprelude` "
+"refers to the compiler's notion of the \"extern prelude\", not the prelude "
+"in the the user-facing sense of `std::prelude::*`)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:100
+msgid ""
+"When adding an explicit dependency, users may need to adjust their code "
+"(removing extraneous `extern crate` statements or root-relative paths, like "
+"`::std` - this will likely only be the case on the 2015 edition)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:104
+msgid ""
+"Crates without an explicit dependency on the standard library now have a "
+"implicit dependency ([?](#why-not-require-builtin-dependencies-instead-of-"
+"supporting-implicit-ones)) on that target's default set of standard library "
+"crates (see [build-std-always](https://github.com/davidtwco/rfcs/blob/build-"
+"std-part-two-always/text/3874-build-std-always.md#standard-library-crate-"
+"stability)). Any explicit standard library dependency present in any "
+"dependency table applicable to the current target will disable the implicit "
+"dependencies (e.g. an explicit `builtin` or `path` dependency from `std` "
+"will disable the implicit dependencies)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:115
+msgid ""
+"Implicit dependencies are passed to rustc with the `noprelude` modifier to "
+"ensure backwards compatibility as in [`build-std=always`](https://github.com/"
+"davidtwco/rfcs/blob/build-std-part-two-always/text/3874-build-std-always."
+"md#why-use-noprelude-with---extern)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:119
+msgid ""
+"When a `std` dependency is present an additional implicit dependency on the "
+"`test` crate is added for crates that are being tested with the default test "
+"harness. The `test` crate's name, but not its interface, will be stabilised "
+"so Cargo can refer to it."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:124
+msgid ""
+"crates.io will accept crates published which have `builtin` dependencies."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:126
+msgid ""
+"Standard library dependencies can be marked as `optional` and be enabled "
+"conditionally by a feature in the crate:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:129
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true, optional = true }\n"
+"core = { builtin = true }\n"
+"\n"
+"[features]\n"
+"default = [\"std\"]\n"
+"std = [\"dep:std\"]\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:144
+msgid ""
+"If there is an optional dependency on the standard library then Cargo will "
+"validate that there is at least one non-optional dependency on the standard "
+"library (e.g. an optional `std` and non-optional `core` or `alloc`, or an "
+"optional `alloc` and non-optional `core`). `core` cannot be optional. For "
+"example, the following example will error as it could result in a build "
+"without `core` (if the `std` feature were disabled):"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:151
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true, optional = true }\n"
+"# error: must have a non-optional dependency on core\n"
+"\n"
+"[features]\n"
+"default = [\"std\"]\n"
+"std = [\"dep:std\"]\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:166
+msgid ""
+"However, in this example, a build for the `x86-64-pc-windows-gnu` target "
+"would have an explicit dependency on `alloc` (and indirectly on `core`), "
+"while a build for any other target would have implicit dependencies on "
+"`std`, `alloc` and `core`:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:171
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"# implicit deps on `core`, `alloc` and `std` unless target='x86_64-pc-"
+"windows-gnu'\n"
+"\n"
+"[target.x86_64-pc-windows-gnu.dependencies]\n"
+"alloc.builtin = true\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:184
+msgid ""
+"Dependencies with `builtin = true` cannot be renamed with the `package` key "
+"([?](#why-disallow-renaming-standard-library-dependencies)). It is not "
+"possible to perform source replacement on the `builtin` source using the "
+"`[source]` Cargo config table ([?](#why-disallow-source-replacement-on-"
+"builtin-packages)), and nor is it possible to override `builtin` "
+"dependencies with the `[replace]` sections or `paths` overrides ([?](#why-"
+"not-permit-overriding-dependencies-with-replace-or-paths)), though [patching]"
+"(#patches) is permitted under a perma-unstable feature flag ([?](#why-"
+"unstably-permit-patching-of-the-standard-library-dependencies))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:192
+msgid ""
+"Dependencies with `builtin = true` can be specified as platform-specific "
+"dependencies:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:200
+msgid ""
+"Implicit and explicit standard library dependencies are added to `Cargo."
+"lock` files ([?](#why-add-standard-library-dependencies-to-cargolock))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:205
+msgid ""
+"A new version of the `Cargo.lock` file will be introduced to add support for "
+"packages with a `builtin` source:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:208
+msgid ""
+"```toml\n"
+"[[package]]\n"
+"name = \"std\"\n"
+"version = \"0.0.0\"\n"
+"source = \"builtin\"\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:215
+msgid ""
+"The package version of `std`, `alloc` and `core` will be fixed at `0.0.0`. "
+"The optional lockfile fields `dependencies` and `checksum` will not be "
+"present for `builtin` dependencies."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:219
+msgid ""
+"A perma-unstable Cargo feature for disabling all standard library "
+"dependencies will be added to allow the `core` crate to be defined."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:222
+msgid ""
+"When a crate has no builtin dependency on `std` (or an optional builtin "
+"dependency on `std`), then Cargo will pass `-Zcrate-attr=no_std` to rustc "
+"(or some equivalent; [?](#why-pass--zcrate-attrno_std-to-rustc))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:226
+msgid ""
+"Builtin dependencies defined in `workspace.dependencies` are inherited by "
+"members of the workspace in the same way as any other dependency and then "
+"the same behaviour and constraints apply."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:230
+#: src/3875-build-std-explicit-dependencies.md:330
+#: src/3875-build-std-explicit-dependencies.md:357
+#: src/3875-build-std-explicit-dependencies.md:402
+#: src/3875-build-std-explicit-dependencies.md:491
+msgid "_See the following sections for rationale/alternatives:_"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:232
+msgid ""
+"[_Why explicitly declare dependencies on the standard library in `Cargo."
+"toml`?_](#why-explicitly-declare-dependencies-on-the-standard-library-in-"
+"cargotoml)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:233
+msgid ""
+"[_Why disallow builtin dependencies to be combined with other sources?_]"
+"(#why-disallow-builtin-dependencies-to-be-combined-with-other-sources)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:234
+msgid ""
+"[_Why disallow builtin dependencies on other crates?_](#why-disallow-builtin-"
+"dependencies-on-other-crates)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:235
+msgid ""
+"[_Why unstably allow all names for `builtin` crates?_](#why-unstably-allow-"
+"all-names-for-builtin-crates)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:236
+msgid ""
+"[_Why not use `noprelude` for explicit `builtin` dependencies?_](#why-not-"
+"use-noprelude-for-explicit-builtin-dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:237
+msgid ""
+"[_Why not require builtin dependencies instead of supporting implicit ones?_]"
+"(#why-not-require-builtin-dependencies-instead-of-supporting-implicit-ones)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:238
+msgid ""
+"[_Why disallow renaming standard library dependencies?_](#why-disallow-"
+"renaming-standard-library-dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:239
+msgid ""
+"[_Why disallow source replacement on `builtin` packages?_](#why-disallow-"
+"source-replacement-on-builtin-packages)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:240
+msgid ""
+"[_Why add standard library dependencies to Cargo.lock?_](#why-add-standard-"
+"library-dependencies-to-cargolock)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:241
+msgid ""
+"[_Why pass `-Zcrate-attr=no_std` to rustc?_](#why-pass--zcrate-attrno_std-to-"
+"rustc)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:243
+#: src/3875-build-std-explicit-dependencies.md:334
+#: src/3875-build-std-explicit-dependencies.md:397
+#: src/3875-build-std-explicit-dependencies.md:421
+#: src/3875-build-std-explicit-dependencies.md:497
+msgid "_See the following sections for relevant unresolved questions:_"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:245
+msgid ""
+"[_What syntax is used to identify dependencies on the standard library in "
+"`Cargo.toml`?_](#what-syntax-is-used-to-identify-dependencies-on-the-"
+"standard-library-in-cargotoml)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:246
+msgid ""
+"[_What is the format for builtin dependencies in `Cargo.lock`?_](#what-is-"
+"the-format-for-builtin-dependencies-in-cargolock)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:248
+#: src/3875-build-std-explicit-dependencies.md:361
+msgid "_See the following sections for future possibilities:_"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:250
+msgid ""
+"[_Allow unstable crate names to be referenced behind cfgs without requiring "
+"nightly_](#allow-unstable-crate-names-to-be-referenced-behind-cfgs-without-"
+"requiring-nightly)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:251
+msgid ""
+"[_Allow `builtin` source replacement_](#allow-builtin-source-replacement)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:252
+msgid "[_Remove `rustc_dep_of_std`_](#remove-rustc_dep_of_std)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:257
+msgid "Non-`builtin` standard library dependencies"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:260
+msgid ""
+"Cargo already supports `path` and `git` dependencies for crates named "
+"`core`, `alloc` and `std` which continue to be supported and work:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:263
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { path = \"../my_std\" } # already supported by Cargo\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:273
+msgid ""
+"A `core`/`alloc`/`std` dependency with a `path`/`git` source can be combined "
+"with `builtin` dependencies:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:276
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { path = \"../my_std\" }\n"
+"core = { builtin = true }\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:287
+msgid ""
+"Crates with these dependency sources will remain unable to be published to "
+"crates.io."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:290
+msgid ""
+"Building on both of the above, a `core`/`alloc`/`std` dependency can have "
+"`path`/`git` source at the same time as a `builtin` source. This allows the "
+"crate to remain publishable while the `path`/`git` source is only used "
+"locally:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:294
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true, path = \"../my_std\" } # published as `builtin` dep, "
+"`path` used locally\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:304
+msgid ""
+"This mirrors the existing behaviour for `path`/`git` sources when combined "
+"with registry sources."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:307
+msgid "Patches"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:310
+msgid ""
+"Under a perma-unstable feature it is permitted to patch standard library "
+"dependencies with `path` and `git` sources (or any other source) ([?](#why-"
+"unstably-permit-patching-of-the-standard-library-dependencies)):"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:314
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true }\n"
+"\n"
+"[patch.builtin] # permitted on nightly\n"
+"std = { path = \"../libstd\" }\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:327
+msgid ""
+"As with dependencies, crates with `path`/`git` patches for `core`, `alloc` "
+"or `std` are not accepted by crates.io."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:332
+msgid ""
+"[_Why unstably permit patching of standard library dependencies?_](#why-"
+"unstably-permit-patching-of-the-standard-library-dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:336
+msgid ""
+"[_What syntax is used to patch dependencies on the standard library in "
+"`Cargo.toml`?_](#what-syntax-is-used-to-patch-dependencies-on-the-standard-"
+"library-in-cargotoml)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:338
+msgid "Features"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:341
+msgid ""
+"On a stable toolchain, it is not permitted to enable or disable features of "
+"explicit standard library dependencies ([?](#why-limit-enabling-standard-"
+"library-features-to-an-unstable-feature)), as in the below example:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:345
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true, features = [ \"foo\" ] } # not permitted\n"
+"# ..or..\n"
+"std = { builtin = true, default-features = false } # not permitted\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:359
+msgid ""
+"[_Why limit enabling standard library features to an unstable feature?_]"
+"(#why-limit-enabling-standard-library-features-to-an-unstable-feature)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:363
+msgid ""
+"[_Allow enabling/disabling features with build-std_](#allow-"
+"enablingdisabling-features-with-build-std)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:365
+msgid "Public and private dependencies"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:368
+msgid ""
+"Implicit dependencies on the standard library default to being public "
+"dependencies ([?](#why-default-to-public-for-implicit-standard-library-"
+"dependencies))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:371
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:380
+msgid "..is equivalent to the following explicit dependency on `std`:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:382
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true, public = true }\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:392
+msgid ""
+"Explicit dependencies on the standard library default to being private "
+"dependencies ([?](#why-default-to-public-for-implicit-standard-library-"
+"dependencies)). `cargo add` will add `public = true` by default for builtin "
+"dependencies (see [_Cargo subcommands_](#cargo-subcommands))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:399
+msgid ""
+"[_Should implicit standard library dependencies default to public?_](#should-"
+"implicit-standard-library-dependencies-default-to-public)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:400
+msgid ""
+"[_Should explicit standard library dependencies default to private?_]"
+"(#should-explicit-standard-library-dependencies-default-to-private)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:404
+msgid ""
+"[_Why default to public for implicit standard library dependencies?_](#why-"
+"default-to-public-for-implicit-standard-library-dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:405
+msgid ""
+"[_Why default to private for explicit standard library dependencies?_](#why-"
+"default-to-private-for-explicit-standard-library-dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:407
+msgid "`dev-dependencies` and `build-dependencies`"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:410
+msgid ""
+"Explicit dependencies on the standard library can be specified in `dev-"
+"dependencies` in the same way as regular `dependencies`. Any explicit "
+"`builtin` dependency present in `dev-dependencies` table will disable the "
+"implicit dependencies. It is possible for `dev-dependencies` to have "
+"additional `builtin` dependencies that the `dependencies` section does not "
+"have (e.g. requiring `std` when the regular dependencies only require "
+"`core`)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:417
+msgid ""
+"Build scripts and proc macros continue to use the pre-built standard library "
+"as in [`build-std=always`](https://rust-lang.github.io/rfcs/3874-build-std-"
+"always.html#proposal), and so explicit dependencies on the standard library "
+"are not supported in `build-dependencies`."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:423
+msgid ""
+"[_Should we support `build-dependencies`?_](#should-we-support-build-"
+"dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:425
+msgid "Registries"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:428
+msgid ""
+"Standard library dependencies will be present in the registry index such "
+"that standard library dependencies can be dependencies of other crates, but "
+"not as top-level crates in the registry ([?](#why-include-standard-library-"
+"crates-in-cargos-index-format))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:432
+msgid ""
+"A `builtin_deps` key is added to the [index's JSON schema](https://doc.rust-"
+"lang.org/cargo/reference/registry-index.html#json-schema) ([?](#why-add-a-"
+"new-key-to-cargos-registry-index-json-schema)). `builtin_deps` is similar to "
+"the existing `deps` key and contains a list of JSON objects, each "
+"representing a dependency that is \"builtin\" to the Rust toolchain and "
+"cannot otherwise be found in the registry. The [\"publish\" endpoint]"
+"(https://doc.rust-lang.org/cargo/reference/registry-web-api.html#publish) of "
+"the Registry Web API will similarly be updated to support `builtin_deps`."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:441
+msgid "It is expected that the keys of these objects will be:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:443
+msgid "`name`"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:444
+msgid ""
+"String containing name of the `builtin` package. Can shadow the names of "
+"other packages in the registry (except those packages in the `deps` key of "
+"the current package) ([?](#why-can-builtin_deps-shadow-other-packages-in-the-"
+"registry))"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:448
+msgid "`features`:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:449
+msgid ""
+"An array of strings containing enabled features in order to support changing "
+"the standard library features on nightly. Optional, empty by default."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:453
+msgid "`optional`, `default_features`, `target`, `kind`:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:454
+msgid "These keys have the same definition as in the `deps` key"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:456
+msgid ""
+"The keys `req`, `registry` and `package` from `deps` are not required per "
+"the limitations on builtin dependencies."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:459
+msgid ""
+"The `builtin_deps` key is optional and if not present its default value will "
+"be the implicit builtin dependencies:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:463
+msgid "\"builtin_deps\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:465
+#: src/3875-build-std-explicit-dependencies.md:473
+#: src/3875-build-std-explicit-dependencies.md:477
+#: src/3875-build-std-explicit-dependencies.md:609
+msgid "\"name\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:465
+#: src/3875-build-std-explicit-dependencies.md:609
+msgid "\"std\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:466
+#: src/3875-build-std-explicit-dependencies.md:616
+msgid "\"features\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:467
+#: src/3875-build-std-explicit-dependencies.md:614
+msgid "\"optional\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:468
+msgid "\"default_features\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:469
+#: src/3875-build-std-explicit-dependencies.md:617
+msgid "\"target\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:470
+#: src/3875-build-std-explicit-dependencies.md:612
+msgid "\"kind\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:470
+msgid "\"normal\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:473
+msgid "\"alloc\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:477
+msgid "\"core\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:483
+msgid ""
+"When producing a registry index entry for a package Cargo will strip any "
+"`builtin` dependencies that match the implicit state. This allows the "
+"implicit state to change in the future if needed and prevents publishing a "
+"package with a new Cargo from raising your MSRV. Similarly, the published "
+"`Cargo.toml` will not explicitly declare any dependencies that match the "
+"implicit state. `builtin` dependencies that do match the implicit state "
+"could be made explicit in a future edition."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:493
+msgid ""
+"[_Why add standard library crates to Cargo's index?_](#why-include-standard-"
+"library-crates-in-cargos-index-format)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:494
+msgid ""
+"[_Why add a new key to Cargo's registry index JSON schema?_](#why-add-a-new-"
+"key-to-cargos-registry-index-json-schema)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:495
+msgid ""
+"[_Why can `builtin_deps` shadow other packages in the registry?_](#why-can-"
+"builtin_deps-shadow-other-packages-in-the-registry)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:499
+msgid ""
+"[_Should parsed manifests be used instead of the registry index?_](#should-"
+"parsed-manifests-be-used-instead-of-the-registry-index)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:503
+msgid "Cargo subcommands"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:506
+msgid ""
+"Any Cargo command which accepts a package spec with `-p` will now "
+"additionally recognise `core`, `alloc` and `std` and none of their "
+"dependencies. Many of Cargo's subcommands will need modification to support "
+"build-std:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:510
+msgid ""
+"[`cargo add`](https://doc.rust-lang.org/cargo/commands/cargo-add.html)'s "
+"heuristics will include adding `std`, `alloc` or `core` as builtin "
+"dependencies if these crate names are provided. `cargo add` will "
+"additionally have a `--builtin` flag to allow for adding crates with a "
+"`builtin` source explicitly:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:515
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true } # <-- this would be added\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:525
+msgid ""
+"If attempting to add a crate name outside of `core`, `alloc` or `std` this "
+"will fail unless the required `cargo-feature` is added to allow other "
+"`builtin` crate names as described in [the rationale](#why-unstably-allow-"
+"all-names-for-builtin-crates)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:529
+msgid ""
+"If attempting to add a `builtin` crate with features then this will fail "
+"unless the required `cargo-feature` is enabled as described in [_Features_]"
+"(#features)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:532
+msgid ""
+"Once public and private dependencies are stabilised ([rust#44663](https://"
+"github.com/rust-lang/rust/issues/44663)), `cargo add` will add `public = "
+"true` by default for the standard library dependencies added:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:535
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true, public = true } # <-- this would be added\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:545
+msgid ""
+"If adding `std` or `alloc` with `--optional`, then a non-optional `core` "
+"would also be added:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:548
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true, optional = true } # <-- this would be added\n"
+"core = { builtin = true } # <-- this would also be added\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:559
+msgid ""
+"[`cargo info`](https://doc.rust-lang.org/cargo/commands/cargo-info.html) "
+"will learn how to print information for the built-in `std`, `alloc` and "
+"`core` dependencies:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:562
+msgid ""
+"```shell-session\n"
+"$ cargo info std\n"
+"std\n"
+"rust standard library\n"
+"license: Apache 2.0 + MIT\n"
+"rust-version: 1.86.0\n"
+"documentation: https://doc.rust-lang.org/1.86.0/std/index.html\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:571
+msgid ""
+"```shell-session\n"
+"$ cargo info alloc\n"
+"alloc\n"
+"rust standard library\n"
+"license: Apache 2.0 + MIT\n"
+"rust-version: 1.86.0\n"
+"documentation: https://doc.rust-lang.org/1.86.0/alloc/index.html\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:580
+msgid ""
+"```shell-session\n"
+"$ cargo info core\n"
+"core\n"
+"rust standard library\n"
+"license: Apache 2.0 + MIT\n"
+"rust-version: 1.86.0\n"
+"documentation: https://doc.rust-lang.org/1.86.0/core/index.html\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:589
+msgid ""
+"[`cargo metadata`](https://doc.rust-lang.org/cargo/commands/cargo-metadata."
+"html) will emit `std`, `alloc` and `core` dependencies to the metadata "
+"emitted by `cargo metadata` (when those crates differ from the implicit "
+"state). `source` would be set to `builtin` and the remaining fields would be "
+"set like any other dependency. Per the `cargo metadata` [_Compatibility_]"
+"(https://doc.rust-lang.org/cargo/commands/cargo-metadata.html#compatibility) "
+"documentation, adding a new source kind is not considered an incompatible "
+"change. See also unresolved question [_Should `cargo metadata` include the "
+"standard library's dependencies?_](#should-cargo-metadata-include-the-"
+"standard-librarys-dependencies)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:600
+msgid "`cargo metadata` output could look as follows:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:604
+msgid "\"packages\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:606
+#: src/3875-build-std-explicit-dependencies.md:621
+msgid "/* ... */"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:607
+msgid "\"dependencies\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:610
+msgid "\"source\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:610
+msgid "\"builtin\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:611
+msgid "\"req\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:611
+msgid "\"*\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:613
+msgid "\"rename\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:615
+msgid "\"uses_default_features\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:616
+msgid "\"compiler-builtins-mem\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:618
+msgid "\"public\""
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:627
+msgid ""
+"[`cargo pkgid`](https://doc.rust-lang.org/cargo/commands/cargo-pkgid.html) "
+"when passed `-p core` would print `builtin://.#core` as the source, likewise "
+"with `alloc` and `std`. This format complies with [Cargo's spec for Package "
+"IDs](https://doc.rust-lang.org/cargo/reference/pkgid-spec.html). See also "
+"unresolved question [_What should the exact format of the `pkgid` spec for "
+"builtin dependencies be?_](#what-should-the-exact-format-of-the-pkgid-spec-"
+"for-builtin-dependencies-be)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:633
+msgid ""
+"[`cargo remove`](https://doc.rust-lang.org/cargo/commands/cargo-remove.html) "
+"will remove `core`, `alloc` or `std` explicitly from the manifest if invoked "
+"with those crate names (using the same heuristics as those described above "
+"for `cargo add`):"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:637
+msgid ""
+"```toml\n"
+"[package]\n"
+"name = \"hello_world\"\n"
+"version = \"0.1.0\"\n"
+"edition = \"2024\"\n"
+"\n"
+"[dependencies]\n"
+"std = { builtin = true } # <-- this would be removed\n"
+"```"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:647
+msgid ""
+"[`cargo tree`](https://doc.rust-lang.org/cargo/commands/cargo-tree.html) "
+"will show `std`, `alloc` and `core` at appropriate places in the tree of "
+"dependencies. As opaque dependencies, none of the other dependencies of "
+"`std`, `alloc` or `core` will be shown. Neither `std`, `alloc` or `core` "
+"will have a version number."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:654
+msgid "`cargo tree` output could look as follows:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:682
+msgid ""
+"This part of the RFC has no implications for the following Cargo subcommands:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:684
+msgid ""
+"[`cargo bench`](https://doc.rust-lang.org/cargo/commands/cargo-bench.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:685
+msgid ""
+"[`cargo build`](https://doc.rust-lang.org/cargo/commands/cargo-build.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:686
+msgid ""
+"[`cargo check`](https://doc.rust-lang.org/cargo/commands/cargo-check.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:687
+msgid ""
+"[`cargo clean`](https://doc.rust-lang.org/cargo/commands/cargo-clean.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:688
+msgid ""
+"[`cargo clippy`](https://doc.rust-lang.org/cargo/commands/cargo-clippy.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:689
+msgid "[`cargo doc`](https://doc.rust-lang.org/cargo/commands/cargo-doc.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:690
+msgid ""
+"[`cargo fetch`](https://doc.rust-lang.org/cargo/commands/cargo-fetch.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:691
+msgid "[`cargo fix`](https://doc.rust-lang.org/cargo/commands/cargo-fix.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:692
+msgid "[`cargo fmt`](https://doc.rust-lang.org/cargo/commands/cargo-fmt.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:693
+msgid ""
+"[`cargo generate-lockfile`](https://doc.rust-lang.org/cargo/commands/cargo-"
+"generate-lockfile.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:694
+msgid ""
+"[`cargo help`](https://doc.rust-lang.org/cargo/commands/cargo-help.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:695
+msgid ""
+"[`cargo init`](https://doc.rust-lang.org/cargo/commands/cargo-init.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:696
+msgid ""
+"[`cargo install`](https://doc.rust-lang.org/cargo/commands/cargo-install."
+"html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:697
+msgid ""
+"[`cargo locate-project`](https://doc.rust-lang.org/cargo/commands/cargo-"
+"locate-project.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:698
+msgid ""
+"[`cargo login`](https://doc.rust-lang.org/cargo/commands/cargo-login.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:699
+msgid ""
+"[`cargo logout`](https://doc.rust-lang.org/cargo/commands/cargo-login.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:700
+msgid ""
+"[`cargo miri`](https://doc.rust-lang.org/cargo/commands/cargo-miri.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:701
+msgid "[`cargo new`](https://doc.rust-lang.org/cargo/commands/cargo-new.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:702
+msgid ""
+"[`cargo owner`](https://doc.rust-lang.org/cargo/commands/cargo-owner.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:703
+msgid ""
+"[`cargo package`](https://doc.rust-lang.org/cargo/commands/cargo-package."
+"html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:704
+msgid ""
+"[`cargo publish`](https://doc.rust-lang.org/cargo/commands/cargo-publish."
+"html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:705
+msgid ""
+"[`cargo report`](https://doc.rust-lang.org/cargo/commands/cargo-report.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:706
+msgid "[`cargo run`](https://doc.rust-lang.org/cargo/commands/cargo-run.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:707
+msgid ""
+"[`cargo rustc`](https://doc.rust-lang.org/cargo/commands/cargo-rustc.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:708
+msgid ""
+"[`cargo rustdoc`](https://doc.rust-lang.org/cargo/commands/cargo-rustdoc."
+"html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:709
+msgid ""
+"[`cargo search`](https://doc.rust-lang.org/cargo/commands/cargo-search.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:710
+msgid ""
+"[`cargo test`](https://doc.rust-lang.org/cargo/commands/cargo-test.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:711
+msgid ""
+"[`cargo uninstall`](https://doc.rust-lang.org/cargo/commands/cargo-uninstall."
+"html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:712
+msgid ""
+"[`cargo update`](https://doc.rust-lang.org/cargo/commands/cargo-update.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:713
+msgid ""
+"[`cargo vendor`](https://doc.rust-lang.org/cargo/commands/cargo-vendor.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:714
+msgid ""
+"[`cargo version`](https://doc.rust-lang.org/cargo/commands/cargo-version."
+"html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:715
+msgid ""
+"[`cargo yank`](https://doc.rust-lang.org/cargo/commands/cargo-yank.html)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:760
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:763
+msgid ""
+"This section aims to justify all of the decisions made in the proposed "
+"design from [_Proposal_](#proposal) and discuss why alternatives were not "
+"chosen."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:766
+msgid ""
+"Why explicitly declare dependencies on the standard library in `Cargo.toml`?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:769
+msgid ""
+"If there are no explicit dependencies on standard library crates, Cargo "
+"would need to be able to determine which standard library crates to build "
+"when this is required:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:773
+msgid ""
+"Cargo could unconditionally build `std`, `alloc` and `core`. Not only would "
+"this be unnecessary and wasteful for `no_std` crates in the embedded "
+"ecosystem, but sometimes a target may not support building `std` at all and "
+"this would cause the build to fail."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:778
+msgid ""
+"rustc could support a `--print` value that would print whether the crate "
+"declares itself as `#![no_std]` crate, and based on this, Cargo could build "
+"`std` or only `core`. This would require asking rustc to parse crates' "
+"sources while resolving dependencies, slowing build times. Alternatively, "
+"Cargo can already read Rust source to detect frontmatter (for `cargo "
+"script`) so it could additionally look for `#![no_std]` itself. Regardless "
+"of how it determines a crate is no-std, Cargo would also need to know "
+"whether to build `alloc` too, which checking for `#![no_std]` does not help "
+"with. Cargo could go further and ask rustc whether a crate (or its "
+"dependencies) used `alloc`, but this seems needlessly complicated."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:789
+msgid ""
+"Cargo could allow the user to specify which crates are required to be built, "
+"such as with the existing options to the `-Zbuild-std=` flag. [`build-"
+"std=always`](https://rust-lang.github.io/rfcs/3874-build-std-always."
+"html#proposal) proposes a `build-std.crates` flag to enable explicit "
+"dependencies to be a separate part of this RFC."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:794
+msgid ""
+"Furthermore, supporting explicit dependencies on standard library crates "
+"enables use of other Cargo features that apply to dependencies in a natural "
+"and intuitive way. If there were not explicit standard library dependencies "
+"and enabling features on the `std` crate was desirable, then a mechanism "
+"other than the standard syntax for this would be necessary, such as a flag "
+"(e.g. `-Zbuild-std-features`) or option in Cargo's configuration. This also "
+"applies to optional dependencies, public/private features, etc."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:802
+msgid ""
+"Users already use Cargo features to toggle `#![no_std]` in crates which "
+"support building without the standard library. When dependencies on the "
+"standard library are exposed in `Cargo.toml` then they can be made optional "
+"and enabled by the existing Cargo features that crates already have."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:807
+#: src/3875-build-std-explicit-dependencies.md:832
+#: src/3875-build-std-explicit-dependencies.md:849
+#: src/3875-build-std-explicit-dependencies.md:867
+#: src/3875-build-std-explicit-dependencies.md:884
+#: src/3875-build-std-explicit-dependencies.md:901
+#: src/3875-build-std-explicit-dependencies.md:917
+#: src/3875-build-std-explicit-dependencies.md:931
+#: src/3875-build-std-explicit-dependencies.md:939
+#: src/3875-build-std-explicit-dependencies.md:951
+#: src/3875-build-std-explicit-dependencies.md:970
+#: src/3875-build-std-explicit-dependencies.md:1105
+#: src/3875-build-std-explicit-dependencies.md:1114
+#: src/3875-build-std-explicit-dependencies.md:1245
+#: src/3875-build-std-explicit-dependencies.md:1256
+#: src/3875-build-std-explicit-dependencies.md:1267
+#: src/3875-build-std-explicit-dependencies.md:1282
+msgid "↩ [_Proposal_](#proposal)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:809
+msgid "Why disallow builtin dependencies to be combined with other sources?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:812
+msgid ""
+"If using `path`/`git` sources with `builtin` dependencies worked in the same "
+"way as using `path`/`git` sources with `version` sources, then: crates with "
+"`path`/`git` standard library dependencies could be pushed to crates.io."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:816
+msgid ""
+"This is not desirable as it is unclear that supporting `path`/`git` sources "
+"which shadow standard library crates was a deliberate choice and so enabling "
+"that pattern to be used more widely when not necessary is needlessly "
+"permissive."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:820
+msgid ""
+"In addition, when combined with a `git`/`path` source, the `version` "
+"constraint also applies to package from the `git`/`path` source. If "
+"`version` were used alongside `builtin`, then this behaviour would be a poor "
+"fit as.."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:824
+msgid ""
+"..the `std`, `alloc` and `core` crates all currently have a version of "
+"`0.0.0`"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:826
+msgid ""
+"..choosing different version requirements for different `builtin` crates is "
+"confusing when a single version of these crates is provided by the toolchain"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:829
+msgid ""
+"Hypothetically, choosing a different version for `builtin` crates could be a "
+"way of supporting per-target/per-profile MSRVs, but this has limited utility."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:834
+msgid "Why disallow builtin dependencies on other crates?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:837
+msgid ""
+"`builtin` dependencies could be accepted on two other crates - dependencies "
+"of the standard library, like `compiler_builtins`, or other crates in the "
+"sysroot added manually by users, however:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:841
+msgid ""
+"The standard library's dependencies are not part of the stable interface of "
+"the standard library and it is not desirable that users can observe their "
+"existence or depend on them directly"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:845
+msgid ""
+"Other crates in the sysroot added by users are not something that can "
+"reasonably be supported by build-std and these crates should become regular "
+"dependencies"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:851
+msgid "Why unstably allow all names for `builtin` crates?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:854
+msgid ""
+"For any crate shipped with the standard library in the sysroot, the user can "
+"already write an `extern crate` declaration to use it. Most are marked "
+"unstable either explicitly or implicitly with the use of `-Zforce-unstable-"
+"if-unmarked` so this does not allow items from these crates to be used on "
+"stable."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:859
+msgid ""
+"For example, some users write benchmarks using `libtest` and have written "
+"`extern crate test` without the `#[cfg(test)]` attribute to load the crate. "
+"There may be other niche uses of unstable sysroot crates that this enables "
+"to continue on nightly toolchains."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:864
+msgid ""
+"An allowlist of `builtin` crate names isn't used here to avoid Cargo needing "
+"to hardcode the names of many crates in the sysroot which are inherently "
+"unstable."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:869
+msgid "Why not use `noprelude` for explicit `builtin` dependencies?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:872
+msgid ""
+"Explicit builtin dependencies without the `noprelude` modifier behave more "
+"consistently with other dependencies specified in the Cargo manifest."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:875
+msgid ""
+"This is a trade-off, trading consistency of user experience with special-"
+"casing in Cargo. Cargo would have to handle implicit vs explicit "
+"dependencies differently. An explicit dependency on the standard library "
+"will behave similarly to other dependencies in their manifest, but the "
+"behaviour will be subtly different than with implicit builtin dependencies "
+"(where `extern crate` is required)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:882
+msgid ""
+"See [the rustc documentation for more details on `noprelude`](https://doc."
+"rust-lang.org/nightly/unstable-book/compiler-flags/extern-options.html#--"
+"extern-options)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:888
+msgid ""
+"Why not require builtin dependencies instead of supporting implicit ones?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:891
+msgid ""
+"Requiring explicit `builtin` dependencies over an edition would increase the "
+"boilerplate required for users of Cargo and make the minimal `Cargo.toml` "
+"file larger."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:895
+msgid ""
+"Supporting implicit dependencies allows the majority of the Rust ecosystem "
+"from having to make any changes - `no_std` crates (or crates with a `std` "
+"feature) will still benefit from adding explicit dependencies as allow them "
+"to be easily used with `no_std` targets but users can still work around any "
+"legacy crates in the graph with [`build-std.crates`](https://rust-lang."
+"github.io/rfcs/3874-build-std-always.html#proposal)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:903
+msgid "Why disallow renaming standard library dependencies?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:906
+msgid ""
+"Cargo allows [renaming dependencies](https://doc.rust-lang.org/cargo/"
+"reference/specifying-dependencies.html#renaming-dependencies-in-cargotoml) "
+"with the `package` key, which allows user code to refer to dependencies by "
+"names which do not match their `package` name in their respective `Cargo."
+"toml` files."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:910
+msgid ""
+"However, rustc expects the standard library crates to be present with their "
+"existing names - for example, `core` is always added to the [extern prelude]"
+"(https://doc.rust-lang.org/reference/names/preludes.html#extern-prelude)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:914
+msgid ""
+"Alternatively, a mechanism could be added to rustc so that it could be "
+"informed of the user's names for `builtin` crates."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:922
+msgid "Why disallow source replacement on `builtin` packages?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:925
+msgid ""
+"Modifying the source code of the standard library in the `rust-src` "
+"component is not supported. Source replacement of the `builtin` source could "
+"be a way to support this in future but this is out-of-scope for this "
+"proposal."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:929
+msgid ""
+"See [_Allow `builtin` source replacement_](#allow-builtin-source-"
+"replacement)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:933
+msgid "Why not permit overriding dependencies with `replace` or `paths`?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:936
+msgid ""
+"Similarly to [source replacement](#why-disallow-source-replacement-on-"
+"builtin-packages), easing modification of the standard library sources is "
+"out-of-scope for this proposal."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:941
+msgid "Why add standard library dependencies to `Cargo.lock`?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:944
+msgid ""
+"`Cargo.lock` is a direct serialisation of a resolve and that must be a two-"
+"way non-lossy process in order to make the `Cargo.lock` useful without doing "
+"further resolution to fill in missing `builtin` packages."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:948
+msgid ""
+"Cargo will nevertheless need to support lockfiles without builtin "
+"dependencies as Cargo does not force new lockfile versions."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:953
+msgid "Why pass `-Zcrate-attr=no_std` to rustc?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:956
+msgid ""
+"The introduction of explicit dependencies means that there are now two ways "
+"to indicate whether a crate depends on the standard library - builtin "
+"dependencies in the Cargo manifest and the `#![no_std]` attribute. This "
+"isn't ideal."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:960
+msgid ""
+"By passing `-Zcrate-attr=no_std` to rustc (or some equivalent), users no "
+"longer need to specify the attribute explicitly in their source code. The "
+"attribute can still be explicitly specified this way, which is useful when "
+"rustc is used without a build system like Cargo. Other build systems can "
+"similarly pass `-Zcrate-attr=no_std` if emulating how build-std works in "
+"Cargo."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:966
+msgid ""
+"Removing or replacing `#![no_std]` as a mechanism is left as a follow-up to "
+"avoid introducing a language change in this RFC - see [_Replace `#![no_std]` "
+"as the source-of-truth for whether a crate depends on `std`_](#replace-"
+"no_std-as-the-source-of-truth-for-whether-a-crate-depends-on-std)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:972
+msgid "Why unstably permit patching of the standard library dependencies?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:975
+msgid ""
+"Being able to patch `builtin = true` dependencies and replace their source "
+"with a `path` dependency is required to be able to replace "
+"`rustc_dep_of_std`. As crates which use these sources cannot be published to "
+"crates.io, this would not enable a usable general-purpose mechanism for "
+"crates to modify the standard library sources. This capability is restricted "
+"to nightly toolchains as that is all that is required for it to be used in "
+"replacing `rustc_dep_of_std`."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:982
+#: src/3875-build-std-explicit-dependencies.md:1123
+msgid "↩ [_Patches_](#patches)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:984
+msgid "Why limit enabling standard library features to an unstable feature?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:987
+msgid ""
+"If it were possible to enable features of the standard library crates on "
+"stable then all of the standard library's current features would immediately "
+"be held to the same stability guarantees as the rest of the standard "
+"library, which is not desirable. See [_Allow enabling/disabling features "
+"with build-std_](#allow-enablingdisabling-features-with-build-std)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:993
+#: src/3875-build-std-explicit-dependencies.md:1302
+msgid "↩ [_Features_](#features)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:995
+msgid "Why default to public for implicit standard library dependencies?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:998
+msgid ""
+"There are crates building on stable which re-export from the standard "
+"library. If implicit standard library dependencies were not public then "
+"these crates would start to trigger the `exported_private_dependencies` lint "
+"when upgrading to a version of Cargo with a implicit standard library "
+"dependency."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1003
+#: src/3875-build-std-explicit-dependencies.md:1014
+#: src/3875-build-std-explicit-dependencies.md:1133
+#: src/3875-build-std-explicit-dependencies.md:1142
+msgid "↩ [_Public and private dependencies_](#public-and-private-dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1005
+msgid "Why default to private for explicit standard library dependencies?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1008
+msgid ""
+"All other explicitly written dependencies in the Cargo manifest are private-"
+"by-default. This RFC tries to make builtin dependencies as consistent with "
+"other dependencies in the manifest as possible (e.g. in [_Why not use "
+"`noprelude` for explicit `builtin` dependencies?_](#why-not-use-noprelude-"
+"for-explicit-builtin-dependencies))."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1016
+msgid "Why include standard library crates in Cargo's index format?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1019
+msgid ""
+"When Cargo builds the unit graph - roughly speaking, think of this as the "
+"compiler invocations it will eventually make - it queries the dependency "
+"resolver as to which dependencies a given crate has. The dependency resolver "
+"only looks at the source of a dependency, in many cases a registry source (i."
+"e. a dependency from crates.io). In practice, this is the entry in the Cargo "
+"index for that dependency. As this is the information that is directly "
+"available, that a crate depends on the standard library should be reflected "
+"in the index entry."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1027
+msgid ""
+"Alternatively, the Cargo manifests of dependencies would need to be parsed "
+"in order to determine whether they have standard library dependencies as the "
+"index entry would be insufficient."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1031
+#: src/3875-build-std-explicit-dependencies.md:1074
+#: src/3875-build-std-explicit-dependencies.md:1090
+#: src/3875-build-std-explicit-dependencies.md:1165
+msgid "↩ [_Registries_](#registries)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1033
+msgid "Why add a new key to Cargo's registry index JSON schema?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1036
+msgid ""
+"Cargo's [registry index schema](https://doc.rust-lang.org/cargo/reference/"
+"registry-index.html#json-schema) is versioned and making a behaviour-of-"
+"Cargo-modifying change to the existing `deps` keys would be a breaking "
+"change. Each package is published under one particular version of the "
+"schema, meaning that older versions of Cargo cannot use newer versions of "
+"packages which are defined using a schema it does not have knowledge of."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1042
+msgid ""
+"Cargo ignores packages published under an unsupported schema version, so "
+"older versions of Cargo cannot use newer versions of packages relying on "
+"these features (though this would be true because of an incompatible Cargo "
+"manifest anyway). New schema versions are disruptive to users on older "
+"toolchains, as the resolver will act as if a package does not exist. Recent "
+"Cargo versions have improved error reporting for this circumstance."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1049
+msgid ""
+"Some new fields, including `rust-version`, were added to all versions of the "
+"schema. Cargo ignores fields it does not have knowledge of, so older "
+"versions of Cargo will simply not use `rust-version` and its presence does "
+"not change their behaviour."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1054
+msgid ""
+"Existing versions of Cargo already function correctly without knowledge of "
+"crate's standard library dependencies. A new top-level key will be ignored "
+"by older versions of Cargo, while newer versions will understand it. This is "
+"a different approach to that taken when artifact dependencies were added to "
+"the schema, as those do not have a suitable representation in older versions "
+"of Cargo."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1061
+msgid ""
+"The obvious alternative to a `builtin_deps` key is to modify `deps` entries "
+"with a new `builtin: bool` field and to increment the version of the schema. "
+"However, these entries would not be understood by older versions of Cargo "
+"which would look in the registry to find these packages and fail to do so."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1066
+msgid ""
+"That approach could be made to work if dummy packages for `core`/`alloc`/"
+"`std` were added to registries. Older versions of Cargo would pass these to "
+"rustc via `--extern` and shadow the real standard library dependencies in "
+"the sysroot, so these packages would need to contain `extern crate std; pub "
+"use std::*;` (and similar for `alloc`/`core`) to try and load the pre-built "
+"libraries from the sysroot (this is the same approach as packages like "
+"[embed-rs](https://github.com/embed-rs/stm32f7-discovery/blob/"
+"e2bf713263791c028c2a897f2eb1830d7f09eceb/core/src/lib.rs#L7) take today, "
+"using `path` dependencies for the standard library to shadow it)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1079
+msgid "Why can `builtin_deps` shadow other packages in the registry?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1082
+msgid ""
+"While `crates.io` forbids certain crate names including `std`, `alloc` and "
+"`core`, third party registries may allow them without a warning. The schema "
+"needs a way to refer to packages with the same name either in the registry "
+"or builtin, which `builtin_deps` allows."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1087
+msgid ""
+"`builtin_deps` names are not allowed to shadow names of packages in `deps` "
+"as these would conflict when passed to rustc via `--extern`."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1092
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1095
+msgid ""
+"The following small details are likely to be bikeshed prior to this part of "
+"the RFC's acceptance or stabilisation and aren't pertinent to the overall "
+"design:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1098
+msgid ""
+"What syntax is used to identify dependencies on the standard library in "
+"`Cargo.toml`?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1101
+msgid ""
+"What syntax should be used for the explicit standard library dependencies? "
+"`builtin = true`? `sysroot = true` (not ideal, as \"sysroot\" isn't a "
+"concept that we typically introduce to end-users)?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1107
+msgid "What is the format for builtin dependencies in `Cargo.lock`?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1110
+msgid ""
+"How should `builtin` deps be represented in lockfiles? Is `builtin = true` "
+"appropriate? Could the `source` field be reused with the string \"builtin\" "
+"or should it stay only as a URL+scheme?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1116
+msgid ""
+"What syntax is used to patch dependencies on the standard library in `Cargo."
+"toml`?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1119
+msgid ""
+"`[patch.builtin]` is the natural syntax given `builtin` is a new source, but "
+"may be needlessly different to existing packages. This mechanism exists only "
+"for internal purposes so the exact syntax isn't especially important."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1125
+msgid "Should implicit standard library dependencies default to public?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1128
+msgid ""
+"Implicit standard library dependencies defaulting to public is a trade-off "
+"between special-casing in Cargo and requiring that any user with a "
+"dependency on the standard library who re-exports from the standard library "
+"manually declare their dependency as public."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1135
+msgid "Should explicit standard library dependencies default to private?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1138
+msgid ""
+"Explicit standard library dependencies defaulting to private is a trade-off "
+"between consistency with other dependencies in the manifest and implicit "
+"standard library dependencies."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1144
+msgid "Should we support `build-dependencies`?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1147
+msgid ""
+"Allowing `builtin` dependencies to be used in `dependencies` and `dev-"
+"dependencies` but not in `build-dependencies` is an inconsistency."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1150
+msgid ""
+"However, supporting `builtin` dependencies in `build-dependencies` would "
+"permit no-std build scripts. It is unclear whether supporting no-std build "
+"scripts would be desirable. Not supporting `build-dependencies` initially is "
+"a safe default that can be changed later if this is deemed necessary, "
+"without breaking any existing users."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1156
+msgid ""
+"↩ [_`dev-dependencies` and `build-dependencies`_](#dev-dependencies-and-"
+"build-dependencies)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1158
+msgid "Should parsed manifests be used instead of the registry index?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1161
+msgid ""
+"An alternative to changing the registry index would be checking the parsed "
+"manifests of dependencies - which are downloaded and available when the unit "
+"graph is being built (and used for other Cargo features)."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1167
+msgid "Should `cargo metadata` include the standard library's dependencies?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1170
+msgid ""
+"`cargo metadata` is used by tools like rust-analyzer to determine the entire "
+"crate graph and would benefit from knowledge of the standard library's "
+"dependencies, but this leaks internal details of the standard library and is "
+"counter to the intent behind opaque dependencies."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1175
+msgid ""
+"This is primarily a compatibility concern, though were `builtin` "
+"dependencies to be included in the metadata, it is expected that it would "
+"not be too disruptive, as:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1179
+msgid ""
+"`cargo pkgid` and `cargo build --message-format` will unconditionally use "
+"the new `pkgid` spec anyway;"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1181
+msgid ""
+"[`cargo_metadata`](https://crates.io/crates/cargo_metadata) does not "
+"currently parse the pkgid spec so this won't break all users;"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1183
+msgid ""
+"and this will also show up in the source which is still opaque and "
+"`cargo_metadata` does not parse"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1186
+msgid ""
+"Therefore this would only be a problem for users who are parsing the pkgid "
+"specs using `cargo-util-schemas` or their own parser, which is unlikely to "
+"be disruptive."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1190
+#: src/3875-build-std-explicit-dependencies.md:1200
+msgid "↩ [_Cargo subcommands_](#cargo-subcommands)"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1194
+msgid ""
+"What should the exact format of the `pkgid` spec for builtin dependencies be?"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1197
+msgid ""
+"The format for builtin dependencies of `cargo pkgid` can be changed prior to "
+"stabilisation and does not need to match what is proposed in this RFC "
+"exactly."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1202
+msgid "Prior art"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1205
+msgid ""
+"See the [_Background_](https://rust-lang.github.io/rfcs/3873-build-std-"
+"context.html#background) and [_History_](https://rust-lang.github.io/"
+"rfcs/3873-build-std-context.html#history) of the build-std context RFC."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1208
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1211
+msgid ""
+"This RFC unblocks fixing [rust-lang/cargo#8798](https://github.com/rust-lang/"
+"cargo/issues/8798), enabling no-std crates from being prevented from having "
+"std dependencies."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1214
+msgid "There are also many possible follow-ups to this part of the RFC:"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1218
+msgid ""
+"Replace `#![no_std]` as the source-of-truth for whether a crate depends on "
+"`std`"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1221
+msgid ""
+"Crates can currently use the crate attribute `#![no_std]` to indicate a lack "
+"of dependency on `std`. `#![no_std]` serves two purposes - it stops the "
+"compiler from adding `std` to the extern prelude and it prevents the user "
+"from depending on anything from `std` accidentally."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1226
+msgid ""
+"rustc's default behaviour of loading `std` when not explicitly provided the "
+"crate via an `--extern` flag must be preserved for backwards-compatibility "
+"with existing direct invocations of rustc."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1230
+msgid ""
+"Ideally, `#![no_std]` would be removed entirely and the compiler would only "
+"load `std` if it were used, but this isn't possible with the current "
+"compiler implementation."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1234
+msgid ""
+"Therefore, an explicit flag or attribute is necessary to tell rustc whether "
+"to load `std`. `-Zcrate-attr=no_std` could be replaced with a explicit "
+"compiler flag `--no-std` (naming subject to bikeshed) that Cargo and other "
+"drivers of rustc could use. `#![no_std]` could be removed over an edition "
+"alongside addition of builtin dependencies to the Cargo manifest."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1240
+msgid ""
+"As removing `#![no_std]` could easily be left to a follow-up, and is a "
+"change to a stable attribute in the surface language (which would require "
+"language team approval), it isn't included in this proposal to keep scope "
+"and the number of required approvals small."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1247
+msgid ""
+"Allow unstable crate names to be referenced behind cfgs without requiring "
+"nightly"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1250
+msgid ""
+"It is possible to allow builtin dependencies on unstable crate names to "
+"exist behind cfgs and for the crate to be compiled on a stable toolchain as "
+"long as the cfgs are not active. This is a trade-off - it adds a large "
+"constraint on when Cargo can validate the set of crate names, but would "
+"enable users to avoid using nightly or doing MSRV bumps."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1258
+msgid "Allow `builtin` source replacement"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1261
+msgid ""
+"This involves allowing the user to blanket-override the standard library "
+"sources with a `[source.builtin]` section of the Cargo configuration."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1264
+msgid ""
+"As [rationale-source-replacement](#why-disallow-source-replacement-on-"
+"builtin-packages) details it is unclear if users need to do this or if it's "
+"even something the Rust project wishes to support."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1269
+msgid "Remove `rustc_dep_of_std`"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1272
+msgid ""
+"With first-class explicit dependencies on the standard library, "
+"`rustc_dep_of_std` is rendered unnecessary and explicit dependencies on the "
+"standard library can always be present in the `Cargo.toml` of the standard "
+"library's dependencies."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1277
+msgid ""
+"The `core`, `alloc` and `std` dependencies can be patched in the standard "
+"library's workspace to point to the local copy of the crates. This avoids "
+"`crates.io` dependencies needing to add support for `rustc_dep_of_std` "
+"before the standard library can depend on them."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1284
+msgid "Allow enabling/disabling features with build-std"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1287
+msgid ""
+"This would require the library team be comfortable with the features "
+"declared on the standard library being part of the stable interface of the "
+"standard library."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1290
+msgid ""
+"The behaviour of disabling default features has been highlighted as a "
+"potential cause of breaking changes."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1293
+msgid ""
+"Alternatively, this could be enabled alongside another proposal which would "
+"allow the standard library to define some features as stable and others as "
+"unstable."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1297
+msgid ""
+"As there are some features that Cargo will set itself when appropriate (e.g. "
+"to enable or disable [panic runtimes](https://github.com/davidtwco/rfcs/blob/"
+"build-std-part-two-always/text/3874-build-std-always.md#panic-strategies) or "
+"[`compiler-builtins/mem`](https://github.com/davidtwco/rfcs/blob/build-std-"
+"part-two-always/text/3874-build-std-always.md#compiler-builtinsmem)), Cargo "
+"may need to always prevent some otherwise stable features from being toggled "
+"as it controls those."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1307
+msgid "Allow local builds of `compiler-rt` intrinsics"
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1310
+msgid ""
+"The [`c` feature](https://rust-lang.github.io/rfcs/3873-build-std-context."
+"html#dependencies) of `compiler_builtins` (which is also exposed by `core`, "
+"`alloc` and `std` through `compiler-builtins-c`) causes its `build.rs` file "
+"to build and link in more optimised C versions of intrinsics."
+msgstr ""
+
+#: src/3875-build-std-explicit-dependencies.md:1314
+msgid ""
+"It will not be enabled by default because it is possible that the target "
+"platform does not have a suitable C compiler available. The user being able "
+"to enable this manually will be enabled through work on features (see "
+"[_Allow enabling/disabling features with build-std_](#allow-"
+"enablingdisabling-features-with-build-std)). Once the user can enable "
+"`compiler-builtins/c`, they will need to manually configure `CFLAGS` to "
+"ensure that the C components will link with Rust code."
+msgstr ""
