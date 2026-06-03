@@ -1,0 +1,1324 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-06-02T12:59:23Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3946-crates-io-username-identity.md:1
+msgid "Feature Name: crates-io-username-identity"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:2
+msgid "Start Date: 2026-04-07"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3946](https://github.com/rust-lang/rfcs/pull/3946)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:4
+msgid ""
+"Crates.io Issue: [rust-lang/crates.io#13758](https://github.com/rust-lang/"
+"crates.io/issues/13758)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:9
+msgid ""
+"Someday, we would like to enable people to log in to crates.io with other "
+"services in addition to GitHub. This RFC is not yet about adding other "
+"services for login. It is proposing that crates.io change to have the "
+"concept of a \"crates.io username\" separate and possibly different from "
+"users' GitHub usernames. Crates.io needs this change to make authenticating "
+"with different services possible while minimizing confusion."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:15
+msgid ""
+"🚨 After this RFC is accepted and implemented, you will still only be able "
+"to log in to crates.io via GitHub. This is a prerequisite of the eventual "
+"goal to add other methods of logging in. 🚨"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:18
+msgid "The biggest changes to crates.io as a result of this RFC will be:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:20
+msgid ""
+"There will be a crates.io username that may not always match the associated "
+"GitHub username"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:21
+msgid ""
+"Crates.io will no longer automatically update your crates.io username if you "
+"rename your GitHub account"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:24
+msgid "Motivation"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:27
+msgid ""
+"Crates.io's code currently has a one-to-one mapping between crates.io "
+"accounts and GitHub accounts. The URL `https://crates.io/users/"
+"some_username` displays the crates owned by the user with the GitHub account "
+"`some_username`, and running `cargo owner --add some_username` adds "
+"`some_username` as an owner of the current crate. Owners of a crate appear "
+"in the sidebar. Crate ownership conveys trust."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:33
+msgid ""
+"Eventually (after future RFCs and additional work after this RFC), we'd like "
+"to add the ability to create crates.io accounts by logging in via OAuth with "
+"accounts from services other than GitHub, as well as associating OAuth "
+"accounts from multiple services to one crates.io account."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:37
+msgid ""
+"The same username on GitHub is not guaranteed to belong to the same person "
+"on other services, and one person's usernames across different services are "
+"not guaranteed to be the same. When we add more services, crates.io's "
+"codebase needs to be able to handle these situations and clearly convey "
+"crates.io user identities to minimize the possibility of confusion or "
+"deliberate impersonation."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:42
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:45
+msgid ""
+"This section will address changes to what users will experience on the "
+"crates.io website and via the `cargo owner` CLI."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:48
+msgid ""
+"Today, crates.io usernames always match the GitHub username of the account "
+"used to log in to crates.io (with exceptions for renamed or deleted GitHub "
+"accounts that will be discussed below). The link between a crates.io account "
+"and a GitHub account is public information."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:52
+msgid ""
+"After this change, there will be the concept of a crates.io username that "
+"may or may not match the GitHub username of the associated account. When "
+"there are multiple ways of logging in in the future, the crates.io username "
+"may or may not match the usernames on the other services. All existing "
+"active (that is, not deleted or renamed) accounts will have their crates.io "
+"username set to their current username, their GitHub username."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:58
+msgid ""
+"When you visit your account settings page, you will be able to edit your "
+"username to anything that isn't already claimed as a crates.io username. "
+"Thus, crates.io usernames will become first-come-first-served as crate names "
+"are today. Crates.io admins will not change an account's username without "
+"the consent of the current username holder, except in cases such as Code of "
+"Conduct or usage policy violations like impersonation (see [Unresolved "
+"Questions](#unresolved-questions) about username squatting)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:65
+msgid ""
+"When you visit a user's page at `https://crates.io/users/example_username` "
+"or see a user account listed as an owner of a crate in the crate's sidebar "
+"and the account's crates.io username differs from the GitHub username "
+"associated with the account, you will see some sort of icon to indicate that "
+"something is different (this RFC will use the warning icon ⚠️, but we may "
+"decide to use something more neutral such as an \"information\" ℹ️, to be "
+"determined during implementation). Accompanying text will says something "
+"like \"username does not match GitHub username\". Given that the common "
+"case, and what people are used to being able to know, will be that the "
+"GitHub and crates.io usernames will match, this will make it obvious in "
+"cases where that assumption does not hold. We may decide after some "
+"transition period (say, 1-2 years) that the username mismatch warning is no "
+"longer needed (especially once crates.io supports OAuth services other than "
+"GitHub)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:76
+msgid ""
+"If you run `cargo owner --add example_username` and the account's crates.io "
+"username differs from the GitHub username associated with the account, the "
+"command will error with a message similar to:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:79
+msgid ""
+"```console\n"
+"$ cargo owner --add example_username\n"
+"error: username `example_username` is possibly ambiguous\n"
+"\n"
+"Caused by:\n"
+"  The crates.io account `example_username` is associated with:\n"
+"\n"
+"  - https://github.com/something_else\n"
+"  - [any other accounts once we have that ability]\n"
+"\n"
+"  To confirm this is the account you want to add, please run one of the "
+"following:\n"
+"\n"
+"  $ cargo owner --add cratesio:example_username\n"
+"  $ cargo owner --add github:something_else\n"
+"\n"
+"  If this is not the account you want to add, verify the crates.io username "
+"of the account you want.\n"
+"```"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:97
+msgid ""
+"Returning an error and requesting the user re-run a command with a "
+"disambiguation prefix to confirm is the easiest way to maintain "
+"compatibility with existing versions of Cargo. With some additional work on "
+"Cargo, newer versions could be made that only require a `y` or `n` "
+"confirmation; see the \"Prior Art\" section on Keybase for one possibility."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:102
+msgid ""
+"After this RFC is implemented, if you create an account on crates.io with an "
+"OAuth account (GitHub or otherwise), whether or not the associated OAuth "
+"account's username is currently claimed on crates.io, you will be asked to "
+"register your crates.io account by choosing a username that hasn't yet been "
+"taken on crates.io. The crates.io username field will be prefilled with the "
+"associated OAuth account's username and an indication of whether that "
+"username is available on crates.io or not."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:109
+msgid "Renamed and deleted GitHub accounts"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:111
+msgid ""
+"GitHub allows users to change their username (but keep the same GitHub ID "
+"number so that crates.io can know it's the same account) or delete their "
+"account, which makes the username available for someone else to claim (with "
+"a different GitHub ID number than was previously associated with it)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:115
+msgid ""
+"Crates.io currently does not proactively check GitHub for account status, at "
+"the time of this RFC's drafting, but [we hope to implement proactive "
+"checking](https://github.com/rust-lang/crates.io/pull/13143) before this RFC "
+"is implemented and independently of this RFC's acceptance. Before this RFC "
+"is implemented, we would check with GitHub for all renames/deletes to update "
+"crates.io's usernames one last time. After this RFC is implemented, the "
+"script would be changed to only update the `oauth_github.username` and not "
+"the crates.io username."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:123
+msgid ""
+"There's still a possibility of a window of time between when a user renames "
+"or deletes their GitHub account and when crates.io learns about it "
+"(depending on how often we check each account), during which the following "
+"scenarios could occur."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:127
+msgid "If someone takes these actions:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:129
+msgid "Creates GitHub account with the username \"example\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:130
+msgid ""
+"Logs in to crates.io with that account so that they have the crates.io "
+"username \"example\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:131
+msgid "Renames their GitHub account to \"something_else\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:132
+msgid "Never logs in to crates.io with that GitHub account again"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:134
+msgid ""
+"Their crates.io username will remain \"example\", until such a point that "
+"they decide to log in to crates.io again. Currently, crates.io will then "
+"update their username in our database to match."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:137
+msgid ""
+"This RFC proposes decoupling GitHub account renaming from crates.io username "
+"completely, so that GitHub account renames do NOT automatically become "
+"crates.io account renames."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:140
+msgid ""
+"A similar situation occurs when a user deletes their GitHub account. The "
+"username \"example\" will then be available for someone else to claim on "
+"GitHub, but will remain claimed on crates.io."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:143
+msgid "If a different user does one of the following:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:145
+msgid "Creates the GitHub account \"example\" and logs in to crates.io"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:146
+msgid "Tries to edit their username to \"example\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:147
+msgid ""
+"Logs in to crates.io with an account on some service other than GitHub with "
+"username \"example\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:149
+msgid "At that point, crates.io will:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:151
+msgid "See that the crates.io username \"example\" is taken"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:152
+msgid ""
+"Require the user with the GitHub username \"example\" to pick a different "
+"crates.io username"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:154
+msgid ""
+"If the old \"example\" account had it via their associated GitHub account "
+"(and thus didn't have the mismatch ⚠️ warning discussed above), then a new "
+"associated GitHub account logs in with the GitHub username \"example\" (and "
+"a different GitHub ID), at that point we know the GitHub account \"example\" "
+"does NOT belong to the crates.io account \"example\" and the crates.io "
+"account \"example\" should get the mismatch ⚠️ warning."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:160
+msgid ""
+"If a user manually changes their crates.io username to "
+"`best_rust_programmer_ever` (and doesn't have the matching GitHub account "
+"and thus has the warning symbol), and then later someone creates a GitHub "
+"account with the username `best_rust_programmer_ever` and logs in to crates."
+"io, the GitHub user `best_rust_programmer_ever` will need to choose a "
+"different crates.io username. Both crates.io accounts will have the warning "
+"symbol. The latter user may see this as unfair, but this is where the first-"
+"come-first-serve policy should be enforced."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:167
+msgid "Crates.io username requirements"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:169
+msgid ""
+"Crates.io usernames will largely use the same rules that GitHub usernames "
+"use today. All existing crates.io accounts will be valid under whatever "
+"rules we decide on."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:172
+msgid "Crates.io usernames must:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:174
+msgid ""
+"Only contain alphanumeric characters `[a-zA-Z0-9]`, hyphens `-`, and "
+"underscores `_` [^why_underscores]."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:176
+msgid ""
+"Be unique case insensitively and hyphen/underscore insensitively, much like "
+"crate names. That is, uniqueness will be determined by normalizing case and "
+"normalizing hyphens and underscores together. For example, the crates.io "
+"usernames `hello-there` and `Hello_There` will be considered to be the same: "
+"once a user named `hello-there` exists, a user named `Hello_There` will not "
+"be allowed."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:181
+msgid ""
+"Not start with a hyphen or underscore. See [Unresolved Questions]"
+"(#unresolved-questions) for why not prohibiting ending with these characters "
+"or prohibiting two of these characters in a row."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:183
+msgid "Not exceed 39 characters."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:185
+msgid ""
+"Even though `github.com` does not allow you to create an account with a "
+"username that contains an underscore, [Enterprise Managed Users](https://"
+"docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/iam-"
+"configuration-reference/username-considerations-for-external-authentication) "
+"get a username that ends in `_[enterprise shortcode]`. We have accounts of "
+"this sort in crates.io's database today."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:190
+msgid ""
+"We have a list of reserved crate names that no one may register that "
+"includes top-level Rust standard library modules and keywords, reserved "
+"Windows filenames, and some swear words or slurs (which will never be "
+"exhaustive but contains the most common ones in English). We'll have a "
+"similar list of reserved usernames that no one may use; GitHub's Terms of "
+"Service is providing us some protection currently that we'd need to manage "
+"ourselves."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:196
+msgid ""
+"These requirements will be clearly documented on a page on crates.io as well "
+"as in the signup form when we are requiring the person to pick a crates.io "
+"username."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:199
+msgid "Crates.io account rename restrictions"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:202
+msgid ""
+"The biggest concerns with allowing crates.io username changes are "
+"impersonation and resurrection attacks."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:205
+msgid ""
+"Impersonation is already possible and is already against [crates.io policies]"
+"(https://crates.io/policies), but of course we don't want to make it easier "
+"to falsely gain the trust of crates.io users by pretending to be a well-"
+"known person. We plan to add typosquatting checks on usernames similar to "
+"those we're already doing for crate names. We also plan to limit how often "
+"you can change your crates.io username (say, not more often than once every "
+"30 days)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:212
+msgid ""
+"Resurrection attacks are a subset of impersonation, where a user named "
+"`carols10cents`, for example, renames away from that username or deletes "
+"their account and another user claims the `carols10cents` username to appear "
+"to be that person to users who don't know about the rename or deletion. We "
+"plan to limit the re-use of usernames, using a similar mechanism that we "
+"have today that prevents re-use of a deleted crate name, so that no one "
+"could claim an abandonded username for, say, 30 days. We will allow the "
+"person who changed away from a username to reclaim/\"revert to\" that "
+"username within the re-use prevention period."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:220
+msgid ""
+"We also plan to mitigate the effectiveness of impersonation attacks by "
+"making the display of the linked accounts associated with a crates.io "
+"account very clear so that anyone is able to feel confident that the crates."
+"io account has the same owner as the GitHub, GitLab, etc account they trust."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:225
+msgid ""
+"In the database, accessible by admins only, we will track history of "
+"username changes (starting from whenever the feature is implemented; we "
+"don't have historical data of GitHub username changes). This could be useful "
+"for forensic investigation of accounts that may be attempting to impersonate "
+"other users. We could display historical usernames and their dates on a "
+"user's page for transparency, but this would be problematic in cases such as "
+"someone transitioning and wanting to remove all association with their "
+"deadname (if their name was part of their crates.io username). We will "
+"update [the privacy policy](https://rustfoundation.org/policy/privacy-"
+"policy/) section on crates.io to make this retention clear, and we will "
+"delete even admin-only viewable information from the database on request."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:235
+msgid "Crates.io account and GitHub account link privacy"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:237
+msgid ""
+"Currently, the knowledge that a crates.io account corresponds to a GitHub "
+"account is public information. This link is displayed on user pages and is "
+"present in the database dumps. This RFC is deliberately going to continue "
+"this status quo and publicly display the GitHub account that a crates.io "
+"account is linked with (whether or not the usernames match). We will add "
+"documentation in the signup process making it clear that knowledge of your "
+"GitHub account will be publicly associated with your crates.io account, and "
+"that you should not make a crates.io account with any GitHub account you do "
+"not want to have linked with your work on crates.io. See the [Private Linked "
+"Accounts](#private-linked-accounts) section under Future Possibilities for "
+"the possibility of adding a way to have a private linked account in the "
+"future."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:248
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:251
+msgid ""
+"This section will address changes to crates.io's HTTP API. It will not "
+"address low-level implementation details of the crates.io database schema or "
+"backend code changes; those will be worked out during implementation of this "
+"RFC."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:255
+msgid "User API"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:257
+msgid ""
+"The `find_user` API is currently defined to respond to URLs in the form `/"
+"api/v1/users/{user}`, where `{user}` is currently the GitHub username that "
+"crates.io has been told about for that account."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:260
+msgid ""
+"This route would be changed such that `{user}` would be assumed to be the "
+"crates.io username only. So for a user with crates.io username "
+"`carols10cents` and GitHub username `carolgithub`, the API request `/api/v1/"
+"users/carols10cents` would return this user's information, and requesting `/"
+"api/v1/users/carolgithub` would return a 404 Not Found, because there is no "
+"crates.io username `carolgithub`."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:266
+msgid ""
+"We could choose to have this route's implementation attempt a lookup in the "
+"table of GitHub usernames (and eventually in other services' tables when "
+"those are supported) if no crates.io username is found, but that seems like "
+"it could cause confusion."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:270
+msgid ""
+"See the [Unresolved Questions](#unresolved-questions) section for possibly "
+"changing this API's parameter to optionally accept a prefix with the "
+"username to allow lookup by GitHub (or other service) username."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:274
+msgid ""
+"`/api/v1/users/{user}` currently returns this information (for the "
+"`carols10cents` user):"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:278
+#: src/3946-crates-io-username-identity.md:307
+#: src/3946-crates-io-username-identity.md:327
+msgid "\"user\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:279
+#: src/3946-crates-io-username-identity.md:308
+#: src/3946-crates-io-username-identity.md:328
+msgid "\"id\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:279
+msgid ""
+"// crates.io database ID\n"
+"\t\t\"login\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:280
+#: src/3946-crates-io-username-identity.md:309
+#: src/3946-crates-io-username-identity.md:329
+#: src/3946-crates-io-username-identity.md:341
+msgid "\"carols10cents\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:280
+msgid ""
+"// crates.io and GitHub username\n"
+"\t\t\"name\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:281
+msgid "\"Carol (Nichols || Goulding)\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:281
+msgid ""
+"// display name (as set in GitHub)\n"
+"\t\t\"avatar\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:282
+#: src/3946-crates-io-username-identity.md:310
+#: src/3946-crates-io-username-identity.md:330
+#: src/3946-crates-io-username-identity.md:337
+msgid "\"https://avatars.githubusercontent.com/u/193874?v=4\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:282
+msgid ""
+"// from GitHub\n"
+"\t\t\"url\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:283
+msgid "\"https://github.com/carols10cents\" // assumes GitHub\n"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:288
+msgid "This RFC would change the following:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:290
+msgid "`login` would be the crates.io username"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:291
+msgid ""
+"`name` would be deprecated and the UI would use `login` (we could continue "
+"to provide the `name` attribute with its value set to `login` to ease "
+"migration. Also see the \"display name\" Unresolved Question)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:294
+msgid ""
+"There would still be an `avatar` URL returned; for how that is managed, see "
+"the [Unresolved Questions](#unresolved-questions)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:296
+msgid ""
+"`url` would be deprecated in favor of explicitly requesting linked account "
+"information (we could continue to provide a GitHub URL if the user has a "
+"linked GitHub account)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:298
+msgid ""
+"A field named `github_username_matches` (with a value of a boolean that the "
+"user's GitHub username is either the same as, or different from, their "
+"crates.io username)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:301
+msgid ""
+"So that the response eventually looks like this (without the values "
+"supporting deprecated fields that we may choose to offer for more "
+"compatibility) for crates.io user `carols10cents` that has GitHub username "
+"`carolgithub`:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:308
+#: src/3946-crates-io-username-identity.md:328
+msgid ""
+"// same as before; crates.io database ID\n"
+"\t\t\"login\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:309
+#: src/3946-crates-io-username-identity.md:329
+msgid ""
+"// now the crates.io username\n"
+"\t\t\"avatar\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:311
+#: src/3946-crates-io-username-identity.md:331
+msgid "\"github_username_matches\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:316
+msgid ""
+"This request would require querying the `users` table and the `oauth_github` "
+"table, but not any other services' linked tables to limit database load by "
+"default. The `github_username_matches` would be used to decide whether to "
+"show the ⚠️ warning about username mismatches discussed in the Guide section."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:321
+msgid ""
+"If desired, the requester could instead use `/api/v1/users/{user}?"
+"include=linked_accounts` (much like the current crate API allows for opt-in "
+"of returning related data) which would query all OAuth tables and return all "
+"account information for this user once crates.io supports more services:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:333
+msgid "\"linked_accounts\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:335
+#: src/3946-crates-io-username-identity.md:340
+msgid "\"service\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:335
+msgid "\"github\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:336
+#: src/3946-crates-io-username-identity.md:341
+msgid "\"login\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:336
+msgid "\"carolgithub\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:337
+#: src/3946-crates-io-username-identity.md:342
+msgid "\"avatar\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:340
+msgid "\"gitlab\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:342
+msgid ""
+"\"https://secure.gravatar.com/"
+"avatar/5eefdbf7a532f1a36d5cdce703a3b346cadbebc6098c4fce5354af871f662f55\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:348
+msgid ""
+"The `?include=linked_accounts` variant would be called by the frontend when "
+"visiting `https://crates.io/users/carols10cents`, to be able to display all "
+"of a user's linked accounts."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:351
+msgid ""
+"We would likely not request linked accounts for crate pages when displaying "
+"ownership information; we could add a way to view that information on a "
+"crate page on-demand, for example when hovering over an owner (or tapping on "
+"an icon next to the owner that the frontend shows when viewed on mobile "
+"devices), we could request the linked account information then and display a "
+"\"detail card\" for that owner showing the information on their linked "
+"accounts."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:357
+msgid "Owner APIs"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:359
+msgid ""
+"The current API request for inviting user owners or adding team owners "
+"consists of a `PUT` request to `/api/v1/crates/[crate name]/owners` with the "
+"following JSON (using a request to add user `some_user` and team `some_team` "
+"from the `some_org` GitHub organization as an example):"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:365
+msgid "\"owners\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:366
+msgid "\"some_user\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:367
+msgid "\"github:some_org:some_team\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:372
+msgid ""
+"The backend processes owner strings starting with `github` and containing "
+"two colons as an organization name and a team name; this behavior will be "
+"unchanged."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:374
+msgid ""
+"This request will begin to accept owners specified by strings containing one "
+"colon and starting with `cratesio`[^1], `github`, and any other OAuth "
+"service we eventually add. An owner specification of `cratesio:some_user` "
+"will only query `users.username` and not any other table. An owner "
+"specification of `github:some_user` will only query `oauth_github.login` and "
+"not any other table. As other services are added, we will add a prefix that "
+"can be used to only look up usernames in that service's table. If the "
+"username isn't found in the specified table (say, the `cratesio` prefix that "
+"specfies the `users` table), the request will return an error even if the "
+"username is in another table (such as the `oauth_github` table, for this "
+"example)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:383
+msgid ""
+"The `cratesio` prefix may possibly be `crates.io`, `crates_io`, `crates-io`, "
+"or all of them, to be bikeshed during implementation."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:386
+msgid ""
+"If the owner specification doesn't contain any colons, the behavior is "
+"similar to that of the users API: we assume it's a crates.io username and "
+"look it up in `users.username` only. We will also query the `oauth_github` "
+"table to see if the crates.io username and GitHub username match. If they do "
+"match, we will continue with adding this user as an owner. If they don't "
+"match, we will return an error containing information about the mismatch and "
+"asking the user to rerun the command with a service prefix and colon in "
+"front of the username to ensure we're adding the account they mean to add."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:394
+msgid "An error response would look something like this:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:398
+msgid "\"errors\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:400
+msgid "\"detail\""
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:400
+msgid "\"username `some_user` is possibly ambiguous. The crates.io account\n"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:403
+msgid "//github.com/something_else\n"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:412
+msgid "\"\n"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:418
+msgid ""
+"This maintains backwards compatibilty with existing `cargo` versions. We "
+"could do additional work on Cargo and add more fields if a newer version of "
+"Cargo is making the request, to support a \"confirmation\" flow as presented "
+"in the \"Prior Art\" section under Keybase."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:422
+msgid ""
+"The \"remove owner\" API would behave similarly as the \"add owner\" API - "
+"it will support `cratesio:` or `github:` (etc) prefixes to usernames and "
+"will return an error if there is no current owner with the specified "
+"username in the specified service's table. If given a username without a "
+"prefix, the \"remove owner\" API will only return an error if there are two "
+"current owners of the crate that have the username on different services, "
+"and will then ask the user to rerun with a prefix to disambiguate. That is, "
+"if the user runs `cargo owner --remove some_user` and there's a crates.io "
+"user with the `users.username` of `some_user` and a different account that "
+"has the GitHub user `some_user`, the API will only return an error if both "
+"these accounts are owners of the crate the request is being made about. If "
+"only one account is an owner, that account will be removed as an owner."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:433
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:436
+msgid ""
+"Impedes signup flow if you have to choose a username or try multiple "
+"usernames before finding an available one"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:438
+msgid "Could cause confusion during signup and user lookup"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:439
+msgid ""
+"People who can't or don't want to have their GitHub username and crates.io "
+"username match will have a warning by their username that they might not "
+"want to have there and might imply there's something wrong or untrustworthy "
+"about their account when that isn't the case"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:442
+msgid ""
+"When crates.io was first created, only implementing GitHub OAuth for "
+"authentication was the quickest and lowest effort way to have a functional "
+"package registry in the rush to the Rust 1.0 launch. GitHub was, and still "
+"is to a slightly lesser extent, the most widely used platform for open "
+"source developers. GitHub profiles (as denoted by their username) convey "
+"identity which can confer trust. By allowing crates.io usernames to "
+"potentially diverge from GitHub usernames, and eventually to potentially "
+"have accounts only associated with accounts on service providers other than "
+"GitHub, crates.io loses any conferred identity verification or trust "
+"bestowed via association. Crates.io could also be more vulnerable to "
+"impersonation or account resurrection attacks, as discussed (with potential "
+"mitigations) in [Crates.io account rename restrictions](#crates-io-account-"
+"rename-restrictions)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:453
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:456
+msgid ""
+"We could choose to diverge from crates.io's current behavior more than "
+"proposed here, such as:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:458
+msgid ""
+"We could force everyone to specify whether they mean the crates.io username "
+"or GitHub username for every lookup, to force education that they're no "
+"longer guaranteed to be the same. That is, if someone runs `cargo owner --"
+"add example`, we'd always return an error and ask them to rerun `cargo owner "
+"--add cratesio:example` or `cargo owner --add github:example` explicitly "
+"even if they both refer to the same account. This could be confusing for the "
+"most common case, but would be a way to force communication with people that "
+"something is changing."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:464
+msgid ""
+"We could implement the backend changes for this RFC but choose to wait to "
+"allow username editing until we have multiple ways of logging in."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:467
+msgid "\"Disambiguation page\" alternative"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:469
+msgid ""
+"We could choose not to have a `username` field on the `users` table at all. "
+"When visiting `https://crates.io/users/example`, crates.io would always look "
+"up usernames in all available `oauth_*` tables. If only one `user` record "
+"was associated with `oauth_*` records that had the username `example`, we'd "
+"display that user's information. This would nicely handle the most common "
+"case of having one user with a unique GitHub username."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:475
+msgid ""
+"If, however, there is one crates.io `user` record (id 1234) associated with "
+"the `oauth_github` record that has the username `example`, and another "
+"crates.io `user` record (id 5678) associated with the `oauth_gitlab` record "
+"that has the username `example`, we could show content similar to a "
+"Wikipedia \"disambiguation page\", something like:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:480
+msgid "There are multiple users with the username \"example\". Did you mean:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:482
+msgid "[example on GitHub](https://crates.io/users/example/1234)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:483
+msgid "[example on GitLab](https://crates.io/users/example/5678)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:485
+msgid ""
+"and then you'd have to click an extra time. We could support direct linking "
+"to these users either by including their crates.io user record ID (something "
+"like `https://crates.io/users/example/1234`), or by including the name of "
+"the service where they hold the username (something like `https://crates.io/"
+"users/example/github`)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:490
+msgid ""
+"For the `cargo owner --add` CLI, we could show similar disambiguation text "
+"and exit with an error:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:492
+msgid ""
+"```console\n"
+"$ cargo owner --add example\n"
+"\n"
+"error: There are multiple users with the username \"example\".\n"
+"\n"
+"If you meant https://github.com/example, rerun with `cargo owner --add "
+"github:example`.\n"
+"If you meant https://gitlab.com/example, rerun with `cargo owner --add "
+"gitlab:example`.\n"
+"```"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:501
+msgid ""
+"The disambiguation page and extra specification for users who happen to have "
+"colliding usernames with users from other services is a bit more friction "
+"and annoyance for those people, through no real fault of their own. However, "
+"this case should be fairly rare."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:505
+msgid ""
+"Looking up a user would be more complex and require more queries to more "
+"tables, which may impact overall performance."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:508
+msgid ""
+"This idea may not match people's expectations of how crates.io usernames "
+"work, causing confusion. If a GitHub user with the username "
+"`best_rust_programmer_ever` was well known in Rust spaces but actually never "
+"logged in to crates.io, but someone else claimed the username "
+"`best_rust_programmer_ever` on GitLab and _did_ log in to crates.io, the "
+"content on `https://crates.io/users/best_rust_programmer_ever` would only "
+"show the GitLab user's information with no indication that the GitHub user "
+"even exists. We'd need to make the page content clear that there was only a "
+"GitLab account attached, not a GitHub account attached as most people would "
+"expect in most cases."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:517
+msgid "Prior art"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:520
+msgid ""
+"Crates.io appears to be unique among the major OSS package registries in "
+"only offering GitHub OAuth, so there aren't direct lessons we can draw from "
+"other ecosystems. Here are a few examples:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:523
+msgid ""
+"[PyPI](https://pypi.org) [does not currently support changing a username]"
+"(https://pypi.org/help/#username-change). Instead, you can create a new "
+"account with the desired username, add the new account as a maintainer of "
+"all the projects your old account owns, and then delete the old account, "
+"which will have the same effect. There is no OAuth support."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:528
+msgid ""
+"[npm](https://www.npmjs.com/) (JavaScript) does not have any OAuth login "
+"mechanisms. [Their policies](https://docs.npmjs.com/policies/disputes) state "
+"they are \"extremely unlikely to transfer control of a username, as it is "
+"totally valid to be an npm user and never publish any packages\". [It is not "
+"currently possible to change your npm username](https://docs.npmjs.com/"
+"changing-your-npm-username) other than creating a new account and migrating "
+"data manually. When npm accounts are deleted, usernames become available for "
+"anyone to claim again after 30 days."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:536
+msgid ""
+"[Maven Central](https://central.sonatype.com/) (Java) allows you to create "
+"an account and log in via email or OAuth with Google, GitHub, or Microsoft. "
+"There is no way to rename, update or change your Maven Central username. If "
+"you want a different username, you have to create a new account. However, "
+"usernames don't appear to be as important as they are on crates.io. Maven "
+"Central is organized around domain-based namespaces registered through DNS, "
+"and it's the namespace that conveys authority."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:543
+msgid ""
+"[Keybase](https://keybase.io/) is a service that tries to make working with "
+"public key cryptography easier. They have ways of proving ownership of "
+"various accounts on other services to help people ensure they're "
+"communicating with the account that belongs to the intended person. Keybase "
+"also has a CLI with a confirmation flow that we could use as inspiration for "
+"the `cargo owner --add` user flow. See [the Keybase documentation](https://"
+"book.keybase.io/docs/server), under the heading \"Step 3: the human review\":"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:550
+msgid ""
+"Recall, in Step 2 your client proved \"maria\" has a number of identities, "
+"and it cryptographically verified all of them. Now you can review the "
+"usernames it verified, to determine if it's the maria you wanted."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:554
+msgid ""
+"```console\n"
+"✔ maria2929 on twitter: https://twitter.com/2131231232133333...\n"
+"✔ pasc4l_programmer on github: https://gist.github.com/pasc4...\n"
+"✔ admin of mariah20.com via HTTPS: https://mariah20/keybase.tx...\n"
+"\n"
+"Is this the maria you wanted? [y/N]\n"
+"```"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:562
+msgid ""
+"With `cargo owner --add`, once we support multiple logins, the CLI could "
+"look something like this:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:564
+msgid ""
+"```console\n"
+"$ cargo owner --add carols10cents\n"
+"\n"
+"Crates.io account `carols10cents` is associated with:\n"
+"✔ https://github.com/carols10cents\n"
+"✔ https://brand-new-code-hosting-platform.dev/some_other_username\n"
+"\n"
+"Is this the `carols10cents` you wanted? [y/N]\n"
+"```"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:574
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:577
+msgid ""
+"How would we define \"squatting\" of usernames that would be clear cases for "
+"admins to make available again? Accounts that don't have any crates and that "
+"don't have any valid associated OAuth logins (that is, all the associated "
+"accounts have been deleted)?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:580
+msgid ""
+"Selling names is already prohibited by crates.io's usage policy but "
+"transferrability of a username may increase the perceived value and "
+"likelihood of username selling attempts. If this becomes a frequent problem, "
+"we should explore mitigation mechanisms that will depend on the nature of "
+"the incidents and how to avoid false positives that prevent legitimate use."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:584
+msgid ""
+"We currently have the concept of a \"display name\" that is associated with "
+"and managed through your GitHub \"display name\" that's currently used on "
+"crate pages for owners and user pages. Do we want to have an authentication-"
+"independent \"display name\"? Or should we get rid of the \"display name\" "
+"concept completely and only show crates.io usernames everywhere? It seems "
+"like the display name would be a vector for possible impersonation (one "
+"that's technically possible today. It is against crates.io policies, and as "
+"far as I can remember we haven't had an account impersonation reported)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:591
+msgid ""
+"We are not yet committing to the support of organization/team owners from "
+"other services, but adding teams already requires specifying a literal "
+"`github:` before the `org:team` when adding team owners so there shouldn't "
+"be as much confusion around the identity of a team if we choose to add "
+"different team owners via different services."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:595
+msgid ""
+"Should we have a URL for user pages that uses their crates.io ID number (ex: "
+"`https://crates.io/users/id/1234` would run the query `SELECT * FROM users "
+"WHERE id = 1234`), and thus won't change no matter what happens with the "
+"account's username or connected accounts?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:598
+msgid ""
+"How would people discover what their crates.io ID is (without needing to "
+"look in the API response)?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:600
+msgid "Should we start displaying it on user pages?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:601
+msgid ""
+"Should we start using these ID-based URLs as the canonical user URLs? That "
+"is, should visiting `https://crates.io/users/carols10cents` redirect to "
+"`https://crates.io/users/id/396`?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:603
+msgid ""
+"Should we accept it in the CLI, such as `cargo owner --add id:396`? And/or "
+"should we accept GitHub IDs in the CLI, such as `cargo owner --add "
+"github_id: 123456789`?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:605
+msgid ""
+"Should we have a URL for user pages or for the user API that allows "
+"specifying a prefix of an OAuth service, to allow for looking up a crates.io "
+"user when you only know, say, their GitHub username? For example, the user "
+"page at `https://crates.io/users/{user}` calls the `find_user` API, which is "
+"currently defined to respond to URLs in the form `/api/v1/users/{user}` "
+"where `{user}` is the username (which is currently the GitHub username but "
+"when this RFC is implemented will be the crates.io username)."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:612
+msgid ""
+"This route could be changed and expanded to allow disambiguation between "
+"GitHub, other services, and crates.io usernames. So for a user with crates."
+"io username `carols10cents` and GitHub username `carolgithub`, these API "
+"requests could return the same information for this user:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:616
+msgid ""
+"```text\n"
+"/api/v1/users/carols10cents            // assumes this is the crates.io "
+"username\n"
+"/api/v1/users/cratesio:carols10cents\n"
+"/api/v1/users/github:carolgithub\n"
+"```"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:622
+msgid ""
+"Is this behavior useful and do we want to commit to it in our public API? Do "
+"we want to offer it in an experimental form to see how/if it's used?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:624
+msgid ""
+"Is there a way we could avoid having both hyphens and underscores in "
+"usernames and needing to normalize them together for uniqueness purposes, "
+"which can be confusing?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:626
+msgid ""
+"There are usernames in the database currently that contain two hyphens in a "
+"row or end in a hyphen. Example: [@ra--](https://github.com/ra--). I suspect "
+"GitHub didn't initially prohibit this, but now prohibit new accounts from "
+"doing this. If we wanted to disallow consecutive hyphens or ending in a "
+"hyphen, and someone with a legacy GitHub account like this who hasn't signed "
+"up for crates.io before but does after this change, we could force them to "
+"have a crates.io username that doesn't match their GitHub account. This "
+"would mean they'd get the ⚠️ which would be unfair because there's no way "
+"they could match their GitHub account. Alternatively, we could allow "
+"consecutive hyphens or ending in hyphen _only_ if that matches your GitHub "
+"account exactly. Would this be confusing? Is this a significant number of "
+"accounts worth handling specially?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:635
+msgid ""
+"Would it be useful to display on the crates.io website that a user had "
+"recently changed their username (without displaying what their old username "
+"was for privacy reasons, and for some value of \"recently\")? This could "
+"alert people that they might not have the username of the person they want "
+"to add as a crate owner, for example."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:639
+msgid ""
+"For a user that recently changed their crates.io username, should we prevent "
+"that user from being added as an owner of a crate for a short holding period "
+"(1 day, for example) to potentially slow down/prevent impersonation attacks? "
+"How often would this be a false positive/annoyance?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:643
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:646
+msgid "Email/password login"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:648
+msgid ""
+"This functionality change would also enable a way of creating crates.io "
+"accounts without any associated identity/reputation, only an email address. "
+"But this opens more potential for spam and abuse as it's easier to create "
+"anonymous email addresses than it is to maintain accounts in good standing "
+"on services like GitHub. When we choose which services to add as OAuth "
+"providers, we will assess in what ways the candidate services also provide "
+"these protections if we want to continue to have this benefit."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:655
+msgid "Avatars"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:657
+msgid ""
+"Avatars are also indicators of identities; as we evolve crates.io's "
+"capabilities with regards to authentication services, we should evolve how "
+"crates.io handles avatars, considering aspects such as:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:661
+msgid ""
+"Once we have multiple authentication services, each possibly providing an "
+"avatar, which do we display when a crates.io user account has different "
+"accounts associated and different avatars?"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:663
+msgid ""
+"We currently don't host avatar images; we don't really want to as that would "
+"add maintenance, bandwidth, and moderation costs. However, hosting avatars "
+"ourselves would be the most privacy-preserving, and preferable to a service "
+"such as Gravatar that may unintentionally leak personal information."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:667
+msgid "Could we let the user choose between:"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:668
+msgid ""
+"Avatar associated with a linked OAuth account, hosted by the linked service "
+"(like we do today with GitHub avatars)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:670
+msgid "One placeholder image we provide (ex: Ferris)"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:671
+msgid ""
+"Impersonation via avatar is technically possible today with only GitHub "
+"unless GitHub policy enforcement disallows that, and I don't think the "
+"decision on avatar resolution is as important as username resolution, but it "
+"might make implementation/database queries nicer if we make a similar "
+"decision with avatars as with usernames."
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:676
+msgid "Private linked accounts"
+msgstr ""
+
+#: src/3946-crates-io-username-identity.md:679
+msgid ""
+"Currently, the link between a crates.io account and a GitHub account is "
+"public information both in the web interface and in the database dump. For "
+"this RFC, knowing which GitHub account is linked to which crates.io username "
+"will continue to be public information. In the future, we could implement an "
+"option to have a crates.io username that uses an authentication service for "
+"login but does not expose the link publicly. This feature deserves more "
+"thought, design, and its own RFC before implementation. For now, we are "
+"deliberately deciding to continue to have the link between a crates.io "
+"account and a GitHub account be public information."
+msgstr ""
