@@ -1,0 +1,331 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0565-show-string-guidelines.md:1
+msgid "Start Date: 2015-01-08"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#565](https://github.com/rust-lang/rfcs/pull/565)"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#21436](https://github.com/rust-lang/rust/"
+"issues/21436)"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:7
+msgid ""
+"A [recent RFC](https://github.com/rust-lang/rfcs/pull/504) split what was "
+"previously `fmt::Show` into two traits, `fmt::Show` and `fmt::String`, with "
+"format specifiers `{:?}` and `{}` respectively."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:11
+msgid ""
+"That RFC did not, however, establish complete conventions for when to "
+"implement which of the traits, nor what is expected from the output.  That's "
+"what this RFC seeks to do."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:15
+msgid ""
+"It turns out that, due to the suggested conventions and other concerns, "
+"renaming the traits is also desirable."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:20
+msgid ""
+"Part of the reason for splitting up `Show` in the first place was some "
+"tension around the various use cases it was trying to cover, and the fact "
+"that it could not cover them all simultaneously. Now that the trait has been "
+"split, this RFC aims to provide clearer guidelines about their use."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:25
+msgid "Detailed design"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:27
+msgid "The design of the conventions stems from two basic desires:"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:29
+msgid ""
+"It should be easy to generate a debugging representation of essentially any "
+"type."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:32
+msgid ""
+"It should be possible to create user-facing text output via convenient "
+"interpolation."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:35
+msgid ""
+"Part of the premise behind (2) is that user-facing output cannot "
+"automatically be \"composed\" from smaller pieces of user-facing output "
+"(via, say, `#[derive]`). Most of the time when you're preparing text for a "
+"user consumption, the output needs to be quite tailored, and interpolation "
+"via `format` is a good tool for that job."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:41
+msgid "As part of the conventions being laid out here, the RFC proposes to:"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:43
+msgid "Rename `fmt::Show` to `fmt::Debug`, and"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:44
+msgid "Rename `fmt::String` to `fmt::Display`."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:46
+msgid "Debugging: `fmt::Debug`"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:48
+msgid "The `fmt::Debug` trait is intended for debugging. It should:"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:50
+msgid "Be implemented on every type, usually via `#[derive(Debug)]`."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:51 src/0565-show-string-guidelines.md:95
+msgid "Never panic."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:52
+msgid "Escape away control characters."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:53
+msgid ""
+"Introduce quotes and other delimiters as necessary to give a clear "
+"representation of the data involved."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:55
+msgid ""
+"Focus on the _runtime_ aspects of a type; repeating information such as "
+"suffixes for integer literals is not generally useful since that data is "
+"readily available from the type definition."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:59
+msgid ""
+"In terms of the output produced, the goal is make it easy to make sense of "
+"compound data of various kinds without overwhelming debugging output with "
+"every last bit of type information -- most of which is readily available "
+"from the source. The following rules give rough guidance:"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:64
+msgid "Scalars print as unsuffixed literals."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:65
+msgid "Strings print as normal quoted notation, with escapes."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:66
+msgid ""
+"Smart pointers print as whatever they point to (without further annotation)."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:67
+msgid ""
+"Fully public structs print as you'd normally construct them: `MyStruct "
+"{ f1: ..., f2: ... }`"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:69
+msgid ""
+"Enums print as you'd construct their variants (possibly with special cases "
+"for things like `Option` and single-variant enums?)."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:71
+msgid ""
+"Containers print using _some_ notation that makes their type and contents "
+"clear. (Since we lack literals for all container types, this will be ad hoc)."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:75
+msgid ""
+"It is _not_ a _requirement_ for the debugging output to be valid Rust "
+"source. This is in general not possible in the presence of private fields "
+"and other abstractions. However, when it is feasible to do so, debugging "
+"output _should_ match Rust syntax; doing so makes it easier to copy debug "
+"output into unit tests, for example."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:81
+msgid "User-facing: `fmt::Display`"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:83
+msgid "The `fmt::Display` trait is intended for user-facing output. It should:"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:85
+msgid "Be implemented for scalars, strings, and other basic types."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:86
+msgid ""
+"Be implemented for generic wrappers like `Option<T>` or smart pointers, "
+"where the output can be wholly delegated to a _single_ `fmt::Display` "
+"implementation on the underlying type."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:89
+msgid ""
+"_Not_ be implemented for generic containers like `Vec<T>` or even `Result<T, "
+"E>`, where there is no useful, general way to tailor the output for user "
+"consumption."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:91
+msgid ""
+"Be implemented for _specific_ user-defined types as useful for an "
+"application, with application-defined user-facing output. In particular, "
+"applications will often make their types implement `fmt::Display` "
+"specifically for use in `format` interpolation."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:96
+msgid ""
+"Avoid quotes, escapes, and so on unless specifically desired for a user-"
+"facing purpose."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:97
+msgid ""
+"Require use of an explicit adapter (like the `display` method in `Path`) "
+"when it potentially looses significant information."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:100
+msgid ""
+"A common pattern for `fmt::Display` is to provide simple \"adapters\", which "
+"are types wrapping another type for the sole purpose of formatting in a "
+"certain style or context. For example:"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:117
+msgid "Rationale for format specifiers"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:119
+msgid ""
+"Given the above conventions, it should be clear that `fmt::Debug` is much "
+"more commonly _implemented_ on types than `fmt::Display`. Why, then, use `{}"
+"` for `fmt::Display` and `{:?}` for `fmt::Debug`? Aren't those the wrong "
+"defaults?"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:124
+msgid "There are two main reasons for this choice:"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:126
+msgid ""
+"Debugging output usually makes very little use of interpolation. In general, "
+"one is typically using `#[derive(Show)]` or `format!(\"{:?}\", "
+"something_to_debug)`, and the latter is better done via [more direct "
+"convenience](https://github.com/SimonSapin/rust-std-candidates#the-show-"
+"debugging-macro)."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:131
+msgid ""
+"When creating tailored string output via interpolation, the expected "
+"\"default\" formatting for things like strings is unquoted and unescaped. It "
+"would be surprising if the default specifiers below did not yield "
+"\\`\"hello, world!\" as the output string."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:137
+msgid "\"{}, {}!\""
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:137
+msgid "\"hello\""
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:137
+msgid "\"world\""
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:140
+msgid ""
+"In other words, although more types implement `fmt::Debug`, most meaningful "
+"uses of interpolation (other than in such implementations) will use `fmt::"
+"Display`, making `{}` the right choice."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:144
+msgid "Use in errors"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:146
+msgid ""
+"Right now, the (unstable) `Error` trait comes equipped with a `description` "
+"method yielding an `Option<String>`. This RFC proposes to drop this method "
+"an instead inherit from `fmt::Display`. It likewise proposes to make "
+"`unwrap` in `Result` depend and use `fmt::Display` rather than `fmt::Debug`."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:151
+msgid ""
+"The reason in both cases is the same: although errors are often thought of "
+"in terms of debugging, the messages they result in are often presented "
+"directly to the user and should thus be tailored. Tying them to `fmt::"
+"Display` makes it easier to remember and add such tailoring, and less likely "
+"to spew a lot of unwanted internal representation."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:157
+msgid "Alternatives"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:159
+msgid ""
+"We've already explored an alternative where `Show` tries to play both of the "
+"roles above, and found it to be problematic. There may, however, be "
+"alternative conventions for a multi-trait world. The RFC author hopes this "
+"will emerge from the discussion thread."
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:164
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0565-show-string-guidelines.md:166
+msgid "(Previous questions here have been resolved in an RFC update)."
+msgstr ""

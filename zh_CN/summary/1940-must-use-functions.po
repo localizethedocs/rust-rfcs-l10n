@@ -1,0 +1,195 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1940-must-use-functions.md:1
+msgid "Feature Name: none?"
+msgstr ""
+
+#: src/1940-must-use-functions.md:2
+msgid "Start Date: 2015-02-18"
+msgstr ""
+
+#: src/1940-must-use-functions.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1940](https://github.com/rust-lang/rfcs/pull/1940)"
+msgstr ""
+
+#: src/1940-must-use-functions.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#43302](https://github.com/rust-lang/rust/"
+"issues/43302)"
+msgstr ""
+
+#: src/1940-must-use-functions.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1940-must-use-functions.md:8
+msgid ""
+"Support the `#[must_use]` attribute on arbitrary functions, to make the "
+"compiler lint when a call to such a function is ignored. Mark `PartialEq::"
+"{eq, ne}` `#[must_use]` as well as `PartialOrd::{lt, gt, le, ge}`."
+msgstr ""
+
+#: src/1940-must-use-functions.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/1940-must-use-functions.md:14
+msgid ""
+"The `#[must_use]` lint is extremely useful for ensuring that values that are "
+"likely to be important are handled, even if by just explicitly ignoring them "
+"with, e.g., `let _ = ...;`. This expresses the programmers intention "
+"clearly, so that there is less confusion about whether, for example, "
+"ignoring the possible error from a `write` call is intentional or just an "
+"accidental oversight."
+msgstr ""
+
+#: src/1940-must-use-functions.md:21
+msgid ""
+"Rust has got a lot of mileage out connecting the `#[must_use]` lint to "
+"specific types: types like `Result`, `MutexGuard` (any guard, in general) "
+"and the lazy iterator adapters have narrow enough use cases that the "
+"programmer usually wants to do something with them. These types are marked "
+"`#[must_use]` and the compiler will print an error if a semicolon ever "
+"throws away a value of that type:"
+msgstr ""
+
+#: src/1940-must-use-functions.md:44
+msgid ""
+"One of the most important use-cases for this would be annotating `PartialEq::"
+"{eq, ne}` with `#[must_use]`."
+msgstr ""
+
+#: src/1940-must-use-functions.md:46
+msgid ""
+"There's a bug in Android where instead of `modem_reset_flag = 0;` the file "
+"affected has `modem_reset_flag == 0;`. Rust does not do better in this case. "
+"If you wrote `modem_reset_flag == false;` the compiler would be perfectly "
+"happy and wouldn't warn you. By marking `PartialEq` `#[must_use]` the "
+"compiler would complain about things like:"
+msgstr ""
+
+#: src/1940-must-use-functions.md:49
+msgid ""
+"```\n"
+"    modem_reset_flag == false; //warning\n"
+"    modem_reset_flag = false; //ok\n"
+"```"
+msgstr ""
+
+#: src/1940-must-use-functions.md:54
+msgid ""
+"See further discussion in [\\#1812.](https://github.com/rust-lang/rfcs/"
+"pull/1812)"
+msgstr ""
+
+#: src/1940-must-use-functions.md:56
+msgid "Detailed design"
+msgstr ""
+
+#: src/1940-must-use-functions.md:58
+msgid ""
+"If a semicolon discards the result of a function or method tagged with "
+"`#[must_use]`, the compiler will emit a lint message (under same lint as "
+"`#[must_use]` on types). An optional message `#[must_use = \"...\"]` will be "
+"printed, to provide the user with more guidance."
+msgstr ""
+
+#: src/1940-must-use-functions.md:71
+msgid "\"maybe you meant something else\""
+msgstr ""
+
+#: src/1940-must-use-functions.md:76
+msgid "// warning: unused result that must be used\n"
+msgstr ""
+
+#: src/1940-must-use-functions.md:77
+msgid ""
+"// warning: unused result that must be used: maybe you meant something else\n"
+msgstr ""
+
+#: src/1940-must-use-functions.md:81
+msgid ""
+"The primary motivation is to mark `PartialEq` functions as `#[must_use]`:"
+msgstr ""
+
+#: src/1940-must-use-functions.md:83
+msgid ""
+"```\n"
+"#[must_use = \"the result of testing for equality should not be "
+"discarded\"]\n"
+"fn eq(&self, other: &Rhs) -> bool;\n"
+"```"
+msgstr ""
+
+#: src/1940-must-use-functions.md:88
+msgid ""
+"The same thing for `ne`, and also `lt`, `gt`, `ge`, `le` in `PartialOrd`. "
+"There is no reason to discard the results of those operations. This means "
+"the `impl`s of these functions are not changed, it still issues a warning "
+"even for a custom `impl`."
+msgstr ""
+
+#: src/1940-must-use-functions.md:90
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1940-must-use-functions.md:92
+msgid ""
+"This adds a little more complexity to the `#[must_use]` system, and may be "
+"misused by library authors (but then, many features may be misused)."
+msgstr ""
+
+#: src/1940-must-use-functions.md:96
+msgid ""
+"The rule stated doesn't cover every instance where a `#[must_use]` function "
+"is ignored, e.g. `(foo());` and `{ ...; foo() };` will not be picked up, "
+"even though it is passing the result through a piece of no-op syntax. This "
+"could be tweaked. Notably, the type-based rule doesn't have this problem, "
+"since that sort of \"passing-through\" causes the outer piece of syntax to "
+"be of the `#[must_use]` type, and so is considered for the lint itself."
+msgstr ""
+
+#: src/1940-must-use-functions.md:104
+msgid ""
+"Marking functions `#[must_use]` is a breaking change in certain cases, e.g. "
+"if someone is ignoring their result and has the relevant lint (or warnings "
+"in general) set to be an error. This is a general problem of improving/"
+"expanding lints."
+msgstr ""
+
+#: src/1940-must-use-functions.md:109
+msgid "Alternatives"
+msgstr ""
+
+#: src/1940-must-use-functions.md:111
+msgid ""
+"Adjust the rule to propagate `#[must_used]`ness through parentheses and "
+"blocks, so that `(foo());`, `{ foo() };` and even `if cond { foo() } else "
+"{ 0 };` are linted."
+msgstr ""
+
+#: src/1940-must-use-functions.md:115
+msgid ""
+"Should we let particular `impl`s of a function have this attribute? Current "
+"design allows you to attach it inside the declaration of the trait."
+msgstr ""
+
+#: src/1940-must-use-functions.md:117
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1940-must-use-functions.md:119
+msgid "Should this be feature gated?"
+msgstr ""

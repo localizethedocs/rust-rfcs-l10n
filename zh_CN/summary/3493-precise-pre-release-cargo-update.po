@@ -1,0 +1,613 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3493-precise-pre-release-cargo-update.md:1
+msgid "Feature Name: precise-pre-release-cargo-update"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:2
+msgid "Start Date: 2023-09-20"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3493](https://github.com/rust-lang/rfcs/pull/3493)"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:4
+msgid ""
+"Tracking Issue: [rust-lang/cargo#13290](https://github.com/rust-lang/cargo/"
+"issues/13290)"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:9
+msgid ""
+"This RFC proposes extending `cargo update` to allow updates to pre-release "
+"versions when requested with `--precise`. For example, a `cargo` user would "
+"be able to call `cargo update -p dep --precise 0.1.1-pre.0` as long as the "
+"version of `dep` requested by their project and its dependencies are semver "
+"compatible with `0.1.1`. This effectively splits the notion of compatibility "
+"in `cargo`. A pre-release version may be considered compatible when the "
+"version is explicitly requested with `--precise`. Cargo will not "
+"automatically select that version via a basic `cargo update`."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:15
+msgid ""
+"One way to think of this is that we are changing from the version "
+"requirements syntax requiring opt-in to match pre-release of higher versions "
+"to the resolver ignoring pre-releases like yanked packages, with an override "
+"flag."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:19
+msgid "Motivation"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:22
+msgid ""
+"Today, version requirements ignore pre-release versions by default, so "
+"`1.0.0` cannot be used with `1.1.0-alpha.1`. Specifying a pre-release in a "
+"version requirement has two affects"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:25
+msgid "Specifies the minimum compatible pre-release."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:26
+msgid "Opts-in to matching version requirements (within a version)"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:28
+msgid ""
+"However, coupling these concerns makes it difficult to try out pre-releases "
+"because every dependency in the tree has to opt-in. For example, a "
+"maintainer asks one of their users to try new API additions in `dep = "
+"\"0.1.1-pre.0\"` in a large project so that the user can give feedback on "
+"the release before the maintainer stabilises the new parts of the API. "
+"Unfortunately, since `dep = \"0.1.0\"` is a transitive dependency of several "
+"dependencies of the large project, `cargo` refuses the upgrade, stating that "
+"`0.1.1-pre.0` is incompatible with `0.1.0`. The user is left with no upgrade "
+"path to the pre-release unless they are able to convince all of their "
+"transitive uses of `dep` to release pre-releases of their own."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:36
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:39
+msgid ""
+"When Cargo considers `Cargo.toml` requirements for dependencies it always "
+"favours selecting stable versions over pre-release versions. When the "
+"specification is itself a pre-release version, Cargo will always select a "
+"pre-release. Cargo is unable to resolve a project with a `Cargo.toml` "
+"specification for a pre-release version if any of its dependencies request a "
+"stable release."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:43
+msgid ""
+"If a user does want to select a pre-release version they are able to do so "
+"by explicitly requesting Cargo to update to that version. This is done by "
+"passing the `--precise` flag to Cargo. Cargo will refuse to select pre-"
+"release versions that are \"incompatible\" with the requirement in the "
+"projects `Cargo.toml`. A pre-release version is considered compatible for a "
+"precise upgrade if its major, minor, and patch versions are compatible with "
+"the requirement, ignoring its pre-release version. `x.y.z-pre.0` is "
+"considered compatible with `a.b.c` when requested `--precise`ly if `x.y.z` "
+"is semver compatible with `a.b.c` and `a.b.c` `!=` `x.y.z`."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:49
+msgid "Consider a `Cargo.toml` with this `[dependencies]` section"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:51
+msgid ""
+"```\n"
+"[dependencies]\n"
+"example = \"1.0.0\"\n"
+"```"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:56
+msgid ""
+"It is possible to update to `1.2.0-pre.0` because `1.2.0` is semver "
+"compatible with `1.0.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:64
+msgid ""
+"It is not possible to update to `2.0.0-pre.0` because `2.0.0` is not semver "
+"compatible with `1.0.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:66
+msgid ""
+"```\n"
+"> cargo update -p example --precise 2.0.0-pre.0\n"
+"    Updating crates.io index\n"
+"error: failed to select a version for the requirement `example = \"^1\"`\n"
+"candidate versions found which didn't match: 2.0.0-pre.0\n"
+"location searched: crates.io index\n"
+"required by package `tmp-oyyzsf v0.1.0 (/home/ethan/.cache/cargo-temp/tmp-"
+"OYyZsF)`\n"
+"```"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:75
+msgid "Cargo.toml"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:75
+msgid "Cargo.lock"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:75
+msgid "Desired"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:75
+msgid "Selectable w/o `--precise`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:75
+msgid "Selectable w/ `--precise`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:77
+#: src/3493-precise-pre-release-cargo-update.md:78
+#: src/3493-precise-pre-release-cargo-update.md:79
+#: src/3493-precise-pre-release-cargo-update.md:80
+msgid "`^1.0.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:77
+#: src/3493-precise-pre-release-cargo-update.md:78
+#: src/3493-precise-pre-release-cargo-update.md:79
+msgid "`1.0.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:77
+msgid "`1.0.0-pre.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:77
+#: src/3493-precise-pre-release-cargo-update.md:79
+#: src/3493-precise-pre-release-cargo-update.md:80
+msgid "❌"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:78
+msgid "`1.2.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:78
+#: src/3493-precise-pre-release-cargo-update.md:79
+#: src/3493-precise-pre-release-cargo-update.md:80
+#: src/3493-precise-pre-release-cargo-update.md:81
+#: src/3493-precise-pre-release-cargo-update.md:82
+msgid "✅"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:79
+#: src/3493-precise-pre-release-cargo-update.md:80
+#: src/3493-precise-pre-release-cargo-update.md:81
+#: src/3493-precise-pre-release-cargo-update.md:82
+msgid "`1.2.0-pre.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:80
+#: src/3493-precise-pre-release-cargo-update.md:81
+msgid "`1.2.0-pre.1`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:81
+#: src/3493-precise-pre-release-cargo-update.md:82
+msgid "`^1.2.0-pre.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:81
+#: src/3493-precise-pre-release-cargo-update.md:82
+msgid "✅¹"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:82
+msgid "`1.3.0`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:84
+msgid "✅: Will upgrade"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:86
+msgid "❌: Will not upgrade"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:88
+msgid ""
+"¹This behaviour is considered by some to be undesirable and may change as "
+"proposed in [RFC: Precise Pre-release Deps](https://github.com/rust-lang/"
+"rfcs/pull/3263). This RFC preserves this behaviour to remain backwards "
+"compatible. Since this RFC is concerned with the behaviour of `cargo update "
+"--precise` changes to bare `cargo update` made in future RFCs should have no "
+"impact on this proposal."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:92
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:95
+msgid "Version requirements"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:97
+msgid ""
+"Version requirement operator semantics will change to encompass pre-release "
+"versions, compared to before where the presence of pre-release would change "
+"matching modes. This will also better align with the mathematical properties "
+"associated with some of the operators (see the closed [RFC 3266](https://"
+"github.com/rust-lang/rfcs/pull/3266))."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:100
+msgid "So before,"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:104
+msgid "would become"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:108
+msgid ""
+"Note that the old syntax implicitly excluded `2.0.0-<prerelease>` which we "
+"have have to explicitly exclude by referencing the smallest possible pre-"
+"release version of `-0`."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:110
+msgid "This change applies to all operators."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:112
+msgid "Dependency Resolution"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:114
+msgid "The intent is to mirror the behavior of yanked today."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:116
+msgid ""
+"When parsing a `Cargo.lock`, any pre-release version would be tracked in an "
+"allow-list. When resolving, we would exclude from consideration any pre-"
+"release version unless:"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:118
+msgid "It is in the allow-list"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:119
+msgid ""
+"It matches the version requirement under the old pre-release version "
+"requirement semantics."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:121
+msgid "`cargo update`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:123
+msgid "The version passed in via `--precise` would be added to the allow-list."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:125
+msgid ""
+"**Note:** overriding of yanked via this mechanism is not meant to be assumed "
+"to be a part of this proposal. Support for selecting yanked with `--precise` "
+"should be decided separately from this RFC, instead see [rust-lang/"
+"cargo#4225](https://github.com/rust-lang/cargo/issues/4225)"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:128
+msgid "[`semver`](https://crates.io/crates/semver)"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:130
+msgid ""
+"`cargo` will need both the old and new behavior exposed. To reduce risk of "
+"tools in the ecosystem unintentionally matching pre-releases (despite them "
+"still needing an opt-in), it might be reasonable for the `semver` package to "
+"offer this new matching behavior under a different name (e.g. `VersionReq::"
+"matches_prerelease` in contrast to the existing `VersionReq::matches`) (also "
+"avoiding a breaking change). However, we leave the exact API details to the "
+"maintainer of the `semver` package."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:139
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:142
+msgid ""
+"Pre-release versions are not easily auditable when they are only specified "
+"in the lock file. A change that makes use of a pre-release version may not "
+"be noticed during code review as reviewers don't always check for changes in "
+"the lock file."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:144
+msgid ""
+"Library crates that require a pre-release version are not well supported "
+"since their lock files are ignored by their users (see [future-possibilities]"
+"(#future-possibilities))"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:145
+msgid ""
+"This is an invasive change to cargo with a significant risk for bugs.  This "
+"also extends out to packages in the ecosystem that deal with dependency "
+"versions."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:146
+msgid ""
+"There is a risk that error messages from the resolver may be negatively "
+"affected and we might be limited in fixes due to the resolver's current "
+"design."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:148
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:151
+msgid "One-time opt-in"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:153
+msgid ""
+"With this proposal, pre-release is like yanked: having `foo@1.2.3-alpha.0` "
+"in your `Cargo.lock` does not implicitly mean you can use `foo@1.2.3-"
+"alpha.1`. To update within pre-releases, you'll have to use `--precise` "
+"again."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:157
+msgid ""
+"Instead, the lockfile could identify that `foo@1.2.3-alpha.0` is a pre-"
+"release allow updating to any `1.2.3` pre-release. `cargo update` focuses on "
+"compatible updates and pre-releases aren't necessarily compatible with each "
+"other (see also [RFC: Precise Pre-release Deps](https://github.com/rust-lang/"
+"rfcs/pull/3263)). Alternatively, in [future-possibilities](#future-"
+"possibilities) is `cargo update -p foo --allow-prerelease` which would be an "
+"explicit way to update."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:162
+msgid "Use overrides"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:164
+msgid ""
+"Cargo overrides can be used instead using `[patch]`. These provide a similar "
+"experience to pre-releases, however, they require that the library's code is "
+"somehow vendored outside of the registry, usually with git. This can cause "
+"issues particularly in CI where jobs may have permission to fetch from a "
+"private registry but not from private git repositories. Resolving issues "
+"around not being able to fetch pre-releases from the registry usually wastes "
+"a significant amount of time."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:169
+msgid "Extend `[patch]`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:171
+msgid ""
+"It could be possible to build upon `[patch]` to [allow it to use crates "
+"published in the registry](https://github.com/rust-lang/cargo/issues/9227). "
+"This could be combined with [version overrides](https://github.com/rust-lang/"
+"cargo/issues/5640) to pretend that the pre-release crate is a stable version."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:174
+msgid ""
+"My concern with this approach is that it doesn't introduce the concept of "
+"compatible pre-releases. This would allow any version to masquerade as "
+"another. Without the concept of compatible pre-releases there would be no "
+"path forward towards being able to express pre-release requirements in "
+"library crates. This is explored in [future-possibilities](#future-"
+"possibilities)."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:179
+msgid ""
+"Change the version in `Cargo.toml` rather than `Cargo.lock` when using `--"
+"precise`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:181
+msgid ""
+"This [accepted proposal](https://github.com/rust-lang/cargo/issues/12425) "
+"allows cargo to update a projects `Cargo.toml` when the version is "
+"incompatible."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:183
+msgid ""
+"The issue here is that cargo will not unify a pre-release version with a "
+"stable version. If the crate being updated is used pervasively this will "
+"more than likely cause a resolver error. This makes this alternative unfit "
+"for our [motivation](#motivation)."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:187
+msgid ""
+"The [accepted proposal](https://github.com/rust-lang/cargo/issues/12425) is "
+"affected by this RFC, insofar as it will not update the `Cargo.toml` in "
+"cases when the pre-release can be considered compatible for upgrade in "
+"`Cargo.lock`."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:190
+msgid "Pre-releases in `Cargo.toml`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:192
+msgid ""
+"Another alternative would be to resolve pre-release versions in `Cargo."
+"toml`s even when another dependency specifies a stable version. This is "
+"explored in [future-possibilities](#future-possibilities). This would "
+"require significant changes to the resolver since the latest compatible "
+"version would depend on the versions required by other parts of the "
+"dependency tree. This RFC may be a stepping stone in that direction since it "
+"lays the groundwork for pre-release compatibility rules, however, I consider "
+"detailing such a change outside of the scope of this RFC."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:197
+msgid "Prior art"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:200
+msgid ""
+"[RFC: Precise Pre-release Deps](https://github.com/rust-lang/rfcs/pull/3263) "
+"aims to solve a similar but different issue where `cargo update` opts to "
+"upgrade pre-release versions to new pre-releases when one is released."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:203
+msgid "Implementation-wise, this is very similar to how yanked packages work."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:204
+msgid "Not selected under normal conditions"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:205
+msgid "Once its in the lockfile, that gets respected and stays in the lockfile"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:207
+msgid ""
+"The only difference being that `--precise` does not allow overriding the "
+"\"ignore yank\" behavior (though [it is desired by some](https://github.com/"
+"rust-lang/cargo/issues/4225))."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:210
+msgid ""
+"For `--precise` forcing a version through, we have precedence in [an "
+"approved-but-not-implemented proposal](https://github.com/rust-lang/cargo/"
+"issues/12425) for `cargo update --precise` for incompatible versions to "
+"force its way through by modifying `Cargo.toml`."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:215
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:218
+msgid "Version ranges with pre-release upper bounds"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:220
+msgid ""
+"[As stated earlier](#reference-level-explanation), this RFC proposes that "
+"semver version semantics change to encompass pre-release versions."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:226
+msgid ""
+"The addition of an implicit `-0` excludes `2.0.0-<prerelease>` releases. "
+"This transformation will also be made when the user explicitly specifies a "
+"multiple-version requirement range."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:233
+msgid ""
+"This leaves a corner case for `>=0.14-0, <0.14.0`. Intuitively the user may "
+"expect this range to match all `0.14` pre-releases, however, due to the "
+"implicit `-0` on the second version requirement, this range will not match "
+"any versions. There are two ways we could go about solving this."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:237
+msgid ""
+"Only add the implicit `-0` to the upper bound if there is no pre-release on "
+"the lower bound."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:238
+msgid "Accept the existence of this unexpected behaviour."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:240
+msgid ""
+"Either way, it may be desirable to introduce a dedicated warning for this "
+"case."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:242
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:245
+msgid "Pre-release dep \"allows\" pre-release everywhere"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:247
+msgid ""
+"It would be nice if cargo could unify pre-release version requirements with "
+"stable versions."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:249
+msgid "Take for example this dependency tree."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:258
+msgid ""
+"Since crates ignore the lock files of their dependencies there is no way for "
+"`a` to communicate with `example` that it requires features from `b = 0.1.1-"
+"pre.0` without breaking `example`'s direct dependency on `b`. To enable this "
+"we could use the same concept of compatible pre-releases in `Cargo.toml`, "
+"not just `Cargo.lock`. This would require that pre-releases are specified "
+"with `=` and would allow pre-release versions to be requested anywhere "
+"within the dependency tree without causing the resolver to throw an error."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:262
+msgid "`--allow-prerelease`"
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:264
+msgid ""
+"Instead of manually selecting a version with `--precise`, we could support "
+"`cargo update --package foo --allow-prerelease`."
+msgstr ""
+
+#: src/3493-precise-pre-release-cargo-update.md:266
+msgid ""
+"If we made this flag work without `--package`, we could the extend it also "
+"to `cargo generate-lockfile`."
+msgstr ""

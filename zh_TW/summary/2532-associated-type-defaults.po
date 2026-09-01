@@ -1,0 +1,1647 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2532-associated-type-defaults.md:1
+msgid "Feature Name: `associated_type_defaults`"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:2
+msgid "Start Date: 2018-08-27"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2532](https://github.com/rust-lang/rfcs/pull/2532)"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#29661](https://github.com/rust-lang/rust/"
+"issues/29661)"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:6
+#: src/2532-associated-type-defaults.md:938
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2532-associated-type-defaults.md:11
+msgid ""
+"[Resolve](#changes-in-this-rfc) the design of associated type defaults, "
+"first introduced in [RFC 192](https://github.com/rust-lang/rfcs/blob/master/"
+"text/0195-associated-items.md#defaults), such that provided methods and "
+"other items may not assume type defaults. This applies equally to `default` "
+"with respect to specialization. Finally, `dyn Trait` will assume provided "
+"defaults and allow those to be elided."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:17
+#: src/2532-associated-type-defaults.md:945
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2532-associated-type-defaults.md:20
+msgid ""
+"As discussed in the [background](#background-and-the-status-quo) and "
+"mentioned in the [summary](#summary), associated type defaults were "
+"introduced in [RFC 192](https://github.com/rust-lang/rfcs/blob/master/"
+"text/0195-associated-items.md#defaults). These defaults are valuable for a "
+"few reasons:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:24
+msgid ""
+"You can already provide defaults for `const`s and `fn`s. Allowing `type`s to "
+"have defaults adds consistency and uniformity to the language, thereby "
+"reducing surprises for users."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:28
+msgid ""
+"Associated `type` defaults in `trait`s simplify the grammar, allowing the "
+"grammar of `trait`s them to be more in line with the grammar of `impl`s. In "
+"addition, this brings `trait`s more in line with `type` aliases."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:33
+msgid ""
+"The following points were also noted in [RFC 192](https://github.com/rust-"
+"lang/rfcs/blob/master/text/0195-associated-items.md#defaults), but we expand "
+"upon them here:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:35
+msgid "Most notably, type defaults allow you to provide more ergonomic APIs."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:39
+msgid ""
+"For example, we could change [proptest](https://altsysrq.github.io/rustdoc/"
+"proptest/latest/proptest/arbitrary/trait.Arbitrary.html)'s API to be:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:55
+msgid ""
+"Being able to say that the default of `Parameters` is `()` means that users, "
+"who are not interested in this further detail, may simply ignore specifying "
+"`Parameters`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:59
+msgid ""
+"The inability of having defaults results in an inability to provide APIs "
+"that are both a) simple to use, and b) flexible / customizable. By allowing "
+"defaults, we can have our cake and eat it too, enabling both a) and b) "
+"concurrently."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:64
+msgid ""
+"Type defaults also aid in API evolution. Consider a situation such as "
+"`Arbitrary` from above; The API might have originally been:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:76
+msgid "with an implementation:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:86
+msgid ""
+"By allowing defaults, we can transition to this more flexible API without "
+"breaking any consumers by simply saying:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:99
+msgid "// This co-recursive definition will blow the stack.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:100
+msgid "// However; since we can assume that previous implementors\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:101
+msgid "// actually provided a definition for `arbitrary` that\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:102
+msgid "// can't possibly reference `arbitrary_with`, we are OK.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:103
+msgid "// You would only run into trouble for new implementations;\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:104
+msgid "// but that can be dealt with in documentation.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:111
+msgid ""
+"The implementation `Arbitrary for usize` _remains valid_ even after the "
+"change."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:113
+#: src/2532-associated-type-defaults.md:1062
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:116
+msgid "Background and The status quo"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:119
+msgid ""
+"Let's consider a simple trait with an associated type and another item (1):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:131
+msgid ""
+"Ever since [RFC 192](https://github.com/rust-lang/rfcs/blob/master/text/0195-"
+"associated-items.md#defaults), Rust has been capable of assigning default "
+"types to associated types as in (2):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:146
+msgid ""
+"However, unlike as specified in [RFC 192](https://github.com/rust-lang/rfcs/"
+"blob/master/text/0195-associated-items.md#defaults), which would permit (2), "
+"the current implementation rejects (2) with the following error messages (3):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:171
+msgid ""
+"The compiler rejects snippet (2) to preserve the soundness of the type "
+"system. It must be rejected because a user might write (4):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:182
+msgid ""
+"Given snippet (4), `Self::Bar` will evaluate to `Vec<u8>`, which is "
+"therefore the type of `<Bar as Foo>::QUUX`. However, we have not given a "
+"different value for the constant, and so it must be `42u8`, which has the "
+"type `u8`. Therefore, we have reached an inconsistency in the type system: "
+"`<Bar as Foo>::QUUX` is of value `42u8`, but of type `Vec<u8>`. So we may "
+"accept either `impl Foo for Bar` as defined in (4), or the definition of "
+"`Foo` as in (2), but not _both_."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:191
+msgid ""
+"[RFC 192](https://github.com/rust-lang/rfcs/blob/master/text/0195-associated-"
+"items.md#defaults) solved this dilemma by rejecting the implementation and "
+"insisting that if you override _one_ associated type, then you must override "
+"_all_ other defaulted items. Or stated in its own words:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:196
+msgid ""
+"If a trait implementor overrides any default associated types, they must "
+"also override all default functions and methods."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:198
+msgid ""
+"Otherwise, a trait implementor can selectively override individual default "
+"methods/functions, as they can today."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:201
+msgid ""
+"Meanwhile, as we saw in the error message above (3), the current "
+"implementation takes the alternative approach of accepting `impl Foo for "
+"Bar` (4) but not the definition of `Foo` as in (2)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:205
+msgid "Changes in this RFC"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:208
+msgid ""
+"In this RFC, we change the approach in [RFC 192](https://github.com/rust-"
+"lang/rfcs/blob/master/text/0195-associated-items.md#defaults) to the "
+"currently implemented approach. Thus, you will continue to receive the error "
+"message above and you will be able to provide associated type defaults."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:214
+msgid ""
+"With respect to [specialization](https://github.com/rust-lang/rfcs/"
+"pull/1210), the behaviour is the same. That is, if you write (5):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:235
+msgid ""
+"The compiler will reject this because you are not allowed to assume, just "
+"like before, that `x: u8`. The reason why is much the same as we have "
+"previously discussed in the [background](#background-and-the-status-quo)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:241
+msgid ""
+"One place where this proposal diverges from what is currently implemented is "
+"with respect to the [following example](https://play.rust-lang.org/?"
+"gist=30e01d77f7045359e30c7d3f3144e984&version=nightly&mode=debug&edition=2015) "
+"(6):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:258
+msgid ""
+"In the current implementation, (6) is rejected because the compiler will not "
+"let you assume that `x` is of type `usize`. But in this proposal, you would "
+"be allowed to assume this. To permit this is not a problem because `Foo for "
+"Vec<T>` is not further specializable since `Bar` in the implementation has "
+"not been marked as `default`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:264
+msgid "Trait objects"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:266
+msgid ""
+"Another divergence in this RFC as compared to the current implementation is "
+"with respect to trait objects. Currently, if you write (7):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:278
+msgid "the compiler will reject it with (8):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:291
+msgid ""
+"With this RFC however, the error in (8) will disappear and (7) will be "
+"_accepted_. That is, `Box<dyn Foo>` is taken as equivalent as `Box<dyn "
+"Foo<Bar = u8>>`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:294
+msgid ""
+"If we complicate the situation slightly and introduce another associated "
+"`type` `Baz` which refers to `Bar` in its default, the compiler will still "
+"let us elide specifying the defaults (9):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:306
+msgid ""
+"//               -------\n"
+"//               Same as: `dyn Foo<Bar = u8, Baz = Vec<u8>>`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:310
+msgid ""
+"//              ------------------\n"
+"//              Same as: `dyn Foo<Bar = u16, Baz = Vec<u16>>`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:315
+msgid ""
+"Note that in `Beta`, `Bar` was specified but `Baz` was not. The compiler can "
+"infer that `Baz` is `Vec<u16>` since `Self::Bar = u16` and `Baz = Vec<Self::"
+"Bar>`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:319
+msgid ""
+"With these changes, we consider the design of associated type defaults to be "
+"_finalized_."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:322
+#: src/2532-associated-type-defaults.md:1449
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:325
+msgid ""
+"The proposal makes no changes to the dynamic semantics and the grammar of "
+"Rust."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:327
+msgid "Static semantics"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:329
+msgid ""
+"This section supersedes [RFC 192](https://github.com/rust-lang/rfcs/blob/"
+"master/text/0195-associated-items.md#defaults) with respect to associated "
+"type defaults."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:331
+msgid ""
+"Associated types can be assigned a default type in a `trait` definition:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:341
+msgid ""
+"Any item in `$other_items`, which have any provided definitions, may only "
+"assume that the type of `Self::Bar` is `Self::Bar`. They may _not_ assume "
+"that the underlying type of `Self::Bar` is `$default_type`. This property is "
+"essential for the soundness of the type system."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:346
+msgid ""
+"When an associated type default exists in a `trait` definition, it need not "
+"be specified in the implementations of that `trait`. If implementations of "
+"that `trait` do not make that associated type available for specialization, "
+"the `$default_type` may be assumed in other items specified in the "
+"implementation. If an implementation does make the associated type available "
+"for further specialization, then other definitions in the implementation may "
+"not assume the given underlying specified type of the associated type and "
+"may only assume that it is `Self::TheAssociatedType`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:356
+msgid ""
+"This applies generally to any item inside a `trait`. You may only assume the "
+"signature of an item, but not any provided definition, in provided "
+"definitions of other items. For example, this means that you may not assume "
+"the value of an associated `const` item in other items with provided "
+"definition in a `trait` definition."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:363
+msgid "Interaction with `dyn Trait<...>`"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:365
+msgid "Let `σ` denote a well-formed type."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:366
+msgid "Let `L` denote a well-formed lifetime."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:367
+msgid "Let `X` refer to an object safe `trait`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:368
+msgid "Let `k` denote the number of lifetime parameters in `X`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:369
+msgid "Let `l` denote the number of type parameters in `X`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:370
+msgid ""
+"Let `m` where `0 ≤ m ≤ l` denote the number of type parameters in `X` "
+"without specified defaults."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:372
+msgid "Let `A` denote the set of associated types in `X`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:373
+msgid "Let `o = |A|`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:374
+msgid ""
+"Let `D` where `D ⊆ A` denote set of associated types in `X` with defaults."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:375
+msgid "Let `E = A \\ D`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:377
+msgid "Then, in a type of form (where `m ≤ n ≤ l`):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:387
+msgid ""
+"the associated types in `E` must be bound in `A0, .., Ao` whereas those in "
+"`D` may be omitted selectively (i.e. omit zero, some, or all)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:390
+msgid ""
+"When inferring the types of the omitted projections in `D`, projections in "
+"the assigned defaults of types in `D` will use the types in `A0, .., Ao` "
+"instead of the defaults specified in `D`. For example, if given:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:401
+msgid ""
+"then the type `dyn X<A0 = u16>` is inferred to `dyn X<A0 = u16, A1 = "
+"Vec<u16>>` as opposed to `dyn X<A0 = u16, A1 = Vec<u8>>`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:404
+msgid "Interaction with `existential type`"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:408
+msgid ""
+"[RFC 2071](https://github.com/rust-lang/rfcs/blob/master/text/2071-impl-"
+"trait-existential-types.md#reference-existential-types) defines a construct "
+"`existential type Foo: Bar;` which is permitted in associated types and "
+"results in an opaque type. This means that the nominal type identity is "
+"hidden from certain contexts and only `Bar` is extensionally known about the "
+"type wherefore only the operations of `Bar` is afforded. This construct is "
+"sometimes written as `type Foo = impl Bar;` in conversation instead."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:417
+msgid ""
+"With respect to this RFC, the semantics of `type Assoc = impl Bar;` inside a "
+"trait definition, where `Assoc` is the name of the associated type, is "
+"understood as what it means in terms of `default impl ..` as discussed in "
+"[RFC 1210](https://github.com/rust-lang/rfcs/blob/master/text/1210-impl-"
+"specialization.md#default-impls). What this means in concrete terms is that "
+"given:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:430
+msgid ""
+"the underlying type of `Assoc` stays the same for all implementations which "
+"do not change the default of `Assoc`. The same applies to specializations. "
+"With respect to type opacity, it is the same as that of `existential type`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:434
+#: src/2532-associated-type-defaults.md:1650
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:437
+#: src/2532-associated-type-defaults.md:1652
+msgid "The main drawbacks of this proposal are that:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:439
+msgid ""
+"if you have implementations where you commonly would have needed to write "
+"`default { .. }` because you need to assume the type of an associated type "
+"default in a provided method, then the solution proposed in this RFC is less "
+"ergonomic."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:444
+msgid ""
+"However, it is the contention of this RFC that such needs will be less "
+"common and that the nesting mechanism or other similar ideas will be "
+"sufficiently ergonomic for such cases. This is discussed below."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:448
+#: src/2532-associated-type-defaults.md:1660
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:451
+#: src/2532-associated-type-defaults.md:1662
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/2532-associated-type-defaults.md:453
+msgid ""
+"The main alternative is to retain the behaviour in [RFC 192](https://github."
+"com/rust-lang/rfcs/blob/master/text/0195-associated-items.md#defaults) such "
+"that you may assume the type of associated type defaults in provided "
+"methods. As noted in the [drawbacks](#drawbacks) section, this would be "
+"useful for certain types of APIs. However, it is more likely than not that "
+"associated type defaults will be used as a mechanism for code reuse than for "
+"other constructs. As such, we consider the approach in this RFC to be more "
+"ergonomic."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:461
+msgid ""
+"Another alternative to the mechanism proposed in this RFC is to somehow "
+"track which methods rely on which associated types as well as constants. "
+"However, we have historically had a strong bias toward being explicit in "
+"signatures about such things, avoiding to infer them. With respect to "
+"semantic versioning, such an approach may also cause surprises for crate "
+"authors and their dependents alike because it may be difficult at glance to "
+"decide what the dependencies are. This in turn reduces the maintainability "
+"and readability of code."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:470
+msgid "Consistency with associated `const`s"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:472
+msgid "Consider the following valid example from stable Rust:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:478
+msgid "\"Hi I'm baz.\""
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:482
+msgid "\"Hi I'm () baz.\""
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:486
+msgid ""
+"As we can see, you are permitted to override `baz` but leave `BAR` "
+"defaulted. This is consistent with the behaviour in this RFC in that it has "
+"the same property: _\"you don't need to override all items if you override "
+"one\"_."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:490
+msgid ""
+"Consistency and uniformity of any programming language is vital to make its "
+"learning easy and to rid users of surprising corner cases and caveats. By "
+"staying consistent, as shown above, we can reduce the cost to our complexity "
+"budget that associated type defaults incur."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:495
+msgid "Overriding everything is less ergonomic"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:497
+msgid ""
+"We have already discussed this to some extent. Another point to consider is "
+"that Rust code frequently sports traits such as `Iterator` and `Future` that "
+"have many provided methods and few associated types. While these particular "
+"traits may not benefit from associated type defaults, many other traits, "
+"such as `Arbitrary` defined in the [motivation](#motivation), would."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:503
+msgid "True API evolution by inferring in `dyn Trait`"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:505
+msgid ""
+"While `impl Trait` will not take associated type defaults into account, `dyn "
+"trait` will. This may seem inconsistent. However, it is justified by the "
+"inherent difference in semantics between these constructs and by the goal "
+"set out in the [motivation](#motivation) to facilitate API evolution."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:510
+msgid "As an illustration, consider `Iterator`:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:520
+msgid "Currently, you may write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:526
+msgid "and when `foo` is called, you will know nothing about `Item`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:528
+msgid "However, you cannot write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:534
+msgid "since the associated type `Item` is not specified."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:536
+msgid ""
+"In `bar`, the type of `Item` is unknown and so the compiler does not know "
+"how to generate the vtable. As a result, an error is emitted:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:544
+msgid "If we introduced a default for `Item`:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:550
+msgid ""
+"then `bar` would become legal under this RFC and so strictly more code than "
+"today would be accepted."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:553
+msgid ""
+"Meanwhile, if `impl Iterator` meant `impl Iterator<Item = ()>`, this would "
+"impose a stronger requirement on existing code where `impl Iterator` is used "
+"and thus it would be a breaking change to the users of `Iterator`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:557
+msgid ""
+"For `Iterator`, it would not be helpful to introduce a default for `Item`. "
+"However, for the purposes of API evolution, the value is not in assigning "
+"defaults to the existing associated types of a trait. Rather, the value "
+"comes from being able to add associated types without breaking dependent "
+"crates."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:562
+msgid ""
+"Due to the possible breakage of `dyn Trait<..>` when adding an associated "
+"type to `Trait`, to truly achieve API evolution, defaults must be taken into "
+"account and be inferable for `dyn Trait`. The opposite is true for `impl "
+"Trait`. To facilitate API evolution, stronger requirements must not be "
+"placed on `impl Trait` and therefore defaults should not be taken into "
+"account."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:568
+msgid "Prior art"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:571
+msgid "Haskell"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:575
+msgid ""
+"As Rust traits are a form of type classes, we naturally look for prior art "
+"from were they first were introduced. That language, being Haskell, permits "
+"a user to specify [associated type defaults](https://www.microsoft.com/en-us/"
+"research/wp-content/uploads/2005/01/at-syns.pdf). For example, we may write "
+"the following legal program:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:586
+#: src/2532-associated-type-defaults.md:609
+msgid "-- A default:\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:589
+#: src/2532-associated-type-defaults.md:612
+msgid "-- Provided method:\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:599
+msgid ""
+"As in this proposal, we may assume that `y :: Int` in the above snippet."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:601
+msgid ""
+"In this case, we are not assuming that `Bar x` unifies with `Int` in the "
+"`class`. Let's try to assume that now:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:617
+msgid "This snippet results in a type checking error (tested on GHC 8.0.1):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:630
+msgid "The thing to pay attention to here is:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:631
+msgid "Couldn't match expected type ‘`Int`’ with actual type ‘`Bar x`’"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:633
+msgid ""
+"We can clearly see that the type checker is _not_ allowing us to assume that "
+"`Int` and `Bar x` are the same type. This is consistent with the approach "
+"this RFC proposes."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:637
+msgid ""
+"To our knowledge, Haskell does not have any means such as `default { .. }` "
+"to change this behaviour. Presumably, this is the case because Haskell "
+"preserves parametricity thus lacking specialization, wherefore `default "
+"{ .. }`, as suggested in the [future possibilities](#future-possibilities), "
+"might not carry its weight."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:643
+msgid "Idris"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:648
+msgid ""
+"Idris has a concept it calls [`interface`s](http://docs.idris-lang.org/en/"
+"latest/tutorial/interfaces.html). These resemble type classes in Haskell, "
+"and by extension traits in Rust. However, unlike Haskell and Rust, these "
+"`interface`s do not have the property of [coherence](http://blog.ezyang."
+"com/2014/07/type-classes-confluence-coherence-global-uniqueness/) and will "
+"permit multiple implementations of the same interface."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:653
+msgid ""
+"Since Idris is language with full spectrum dependent types, it does not "
+"distinguish between terms and types, instead, types are terms. Therefore, "
+"there is really not a distinct concept called \"associated type\". However, "
+"an `interface` may require certain definitions to be provided and this "
+"includes types. For example, we may write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:670
+msgid ""
+"Like in Haskell, in Idris, a function or value in an interface may be given "
+"a default definition. For example, the following is a valid program:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:684
+msgid ""
+"However, if we provide a default for `baz` in the `interface` which assumes "
+"the default value `Bool` of `bar`, as with the following example:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:696
+msgid "then we run into an error:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:713
+msgid ""
+"The behaviour here is exactly as in Haskell and as proposed in this RFC."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:715
+msgid "C++"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:717
+msgid ""
+"In C++, it is possible to provide associated types and specialize them as "
+"well. This is shown in the following example:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:721
+msgid "<iostream>"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:726
+msgid "// Unspecialized.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:732
+msgid "// Partial specialization.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:735
+msgid "\"hello world\""
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:747
+msgid ""
+"You will note that C++ allows us to assume in both the base template class, "
+"as well as the specialization, that `bar` is equal to the underlying type. "
+"This is because one cannot specialize any part of a class without "
+"specializing the whole of it. It's equivalent to one atomic `default { .. }` "
+"block."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:752
+msgid "Swift"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:756
+msgid ""
+"One language which does have [associated types](https://docs.swift.org/swift-"
+"book/LanguageGuide/Generics.html) and defaults but which does not have "
+"provided definitions for methods is Swift. As an example, we may write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:774
+msgid "However, we may not write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:784
+msgid "This would result in:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:791
+msgid "Scala"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:793
+msgid ""
+"Another language which allows for these kinds of type projections and "
+"defaults for them is Scala. While Scala does not have type classes like Rust "
+"and Haskell does, it does have a concept of `trait` which can be likened to "
+"a sort of incoherent \"type class\" system. For example, we may write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:811
+msgid "There are a few interesting things to note here:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:813
+msgid "We are allowed to specify a default type `Int` for `Bar`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:815
+msgid "A default definition for `baz` may be provided."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:817
+msgid "This default definition may assume the default given for `Bar`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:819
+msgid "However, we _must_ explicitly state that we are overriding `baz`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:821
+msgid ""
+"If we change the definition of of `override type Bar` to `Double`, the Scala "
+"compiler will reject it."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:824
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2532-associated-type-defaults.md:827
+msgid "1. When do suitability of defaults need to be proven?"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:829
+msgid "Consider a trait `Foo<T>` defined as:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:837
+msgid "Let's also assume the following implementation of `Clone`:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:843
+msgid ""
+"To prove that `Vec<T>: Clone`, we must prove that `T: Clone`. However, "
+"`Foo<T>` does not say that `T: Clone` so is its definition valid? If the "
+"suitability of `Vec<T>` is checked where `Foo<T>` is defined (1), then we "
+"don't know that `T: Clone` and so the definition must be rejected. To make "
+"the compiler admit `Foo<T>`, we would have to write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:855
+msgid ""
+"Now it is provable that `T: Clone` so `Vec<T>: Clone` which is what was "
+"required."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:857
+msgid ""
+"If instead the suitability of defaults are checked in `impl`ementations (2), "
+"then proving `Vec<T>: Clone` would not be required in `Foo<T>`'s definition "
+"and so then `Foo<T>` would type-check. As a result, it would be admissible "
+"to write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:870
+msgid "since `Vec<A>: Clone` holds."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:872
+msgid ""
+"With condition (2), strictly more programs are accepted than with (1). It "
+"may be that useful programs are rejected if we enforce (1) rather than (2). "
+"However, it would also be the more conservative choice, allowing us to move "
+"towards (2) when necessary. As it is currently unclear what solution is "
+"best, this question is left unresolved."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:878
+msgid "2. Where are cycles checked?"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:882
+msgid ""
+"Consider a program _([playground](https://play.rust-lang.org/?"
+"version=nightly&mode=debug&edition=2018&gist=e823eea5e7ecba5da78cff225e0adaf9))_:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:888
+msgid "// B defaults to C,\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:889
+msgid "// C defaults to B, and we have a cycle!\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:897
+msgid "// Removing this function will make the example compile.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:904
+msgid ""
+"Currently, this results in a crash. This will need to be fixed. At the very "
+"latest, `impl A for () {}` should have been an error."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:913
+msgid "// This OK but shouldn't be.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:916
+msgid ""
+"If cycles are checked for in `impl A for ()`, then it would be valid to "
+"write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:925
+msgid "// The cycle is broken!\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:929
+msgid ""
+"Alternatively, cycles could be checked for in `A`'s definition. This is "
+"similar to the previous question in (1)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:932
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:935
+msgid ""
+"This section in the RFC used to be part of the proposal. To provide context "
+"for considerations made in the proposal, it is recorded here."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:940
+msgid ""
+"[Introduce](#default-specialization-groups) the concept of `default { .. }` "
+"groups in traits and their implementations which may be used to introduce "
+"atomic units of specialization (if anything in the group is specialized, "
+"everything must be). These groups may be nested and form a [tree of cliques]"
+"(#nesting-and-a-tree-of-cliques)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:947
+msgid "For `default { .. }` groups"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:949
+msgid ""
+"Finally, because we are making [changes](#changes-in-this-rfc) to how "
+"associated type defaults work in this RFC, a new mechanism is required to "
+"regain the loss of expressive power due to these changes. This mechanism is "
+"described in the section on [`default { .. }` groups](#default-"
+"specialization-groups) as alluded to in the summary."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:954
+msgid ""
+"These groups not only retain the expressive power due to [RFC 192](https://"
+"github.com/rust-lang/rfcs/blob/master/text/0195-associated-items."
+"md#defaults) but extend power such that users get fine grained control over "
+"what things may and may not be overridden together. In addition, these "
+"groups allow users to assume the definition of type defaults in other items "
+"in a way that preserves soundness."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:959
+msgid ""
+"Examples where it is useful for other items to assume the default of an "
+"associated type include:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:967
+msgid ""
+"[A default method](https://github.com/rust-lang/rust/"
+"issues/29661#issuecomment-174527854) whose [return type is an associated "
+"type:](https://github.com/rust-lang/rust/issues/29661#issuecomment-280944035)"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:971
+msgid "/// \"Callbacks\" for a push-based parser\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:978
+msgid "// OK to assume what `Output` really is because any overriding\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:979
+msgid "// must override both `Output` and `finish`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:985
+msgid ""
+"There are plenty of other examples in [rust-lang/rust#29661](https://github."
+"com/rust-lang/rust/issues/29661)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:989
+msgid ""
+"Other examples where `default { .. }` would have been useful can be found in "
+"the [tracking issue](https://github.com/rust-lang/rust/issues/31844) for "
+"[specialization](https://github.com/rust-lang/rfcs/pull/1210):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:992
+msgid "<https://github.com/rust-lang/rust/issues/31844#issuecomment-198853202>"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:994
+msgid ""
+"You can see `default { .. }` being used [here](https://github.com/rust-lang/"
+"rust/issues/31844#issuecomment-249355377)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:997
+msgid "<https://github.com/rust-lang/rust/issues/31844#issuecomment-230093545>"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:998
+msgid "<https://github.com/rust-lang/rust/issues/31844#issuecomment-247867693>"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:999
+msgid "<https://github.com/rust-lang/rust/issues/31844#issuecomment-263175793>"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1000
+msgid "<https://github.com/rust-lang/rust/issues/31844#issuecomment-279350986>"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1004
+msgid ""
+"Encoding a more powerful [`std::remove_reference`](http://www.cplusplus.com/"
+"reference/type_traits/remove_reference/)"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1006
+msgid ""
+"We can encode a more powerful version of C++'s `remove_reference` construct, "
+"which allows you to get the base type of a reference type recursively. "
+"Without default groups, we can get access to the base type like so:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1024
+msgid ""
+"However, we don't have any way to transitively dereference to `&Self::"
+"WithoutRef`. With default groups we can gain that ability with:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1038
+msgid "// We can assume that `T == Self::WithoutRef`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1048
+msgid "// We can assume that `T::WithoutRef == Self::WithoutRef`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1054
+msgid "We can then proceed to writing things such as:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1064
+msgid "`default` specialization groups"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1067
+msgid ""
+"Note: Overlapping implementations, where one is more specific than the "
+"other, requires actual support for [specialization](https://github.com/rust-"
+"lang/rfcs/pull/1210)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1070
+msgid ""
+"Now, you might be thinking: - _\"Well, what if I **do** need to assume that "
+"my defaulted associated type is what I said in a provided method, what do I "
+"do then?\"_. Don't worry; We've got you covered."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1074
+msgid ""
+"To be able to assume that `Self::Bar` is truly `u8` in snippets (2) and (5), "
+"you may henceforth use `default { .. }` to group associated items into "
+"atomic units of specialization. This means that if one item in `default "
+"{ .. }` is overridden in an implementation, then all all the items must be. "
+"An example (7):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1088
+msgid "\"Scotland\""
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1088
+#: src/2532-associated-type-defaults.md:1089
+#: src/2532-associated-type-defaults.md:1153
+#: src/2532-associated-type-defaults.md:1156
+#: src/2532-associated-type-defaults.md:1170
+#: src/2532-associated-type-defaults.md:1187
+msgid "// OK!\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1092
+msgid "// https://en.wikipedia.org/wiki/Emily_Riehl\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1095
+msgid "// https://www.cis.upenn.edu/~sweirich/\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1098
+msgid "// http://www.cse.chalmers.se/~andrei/\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1101
+msgid "// https://en.wikipedia.org/wiki/Conor_McBride\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1108
+msgid "// ERROR! You must override THE_DETAILS and papers.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1112
+msgid "\"USA\""
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1115
+msgid "// ERROR! You must override Details.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1123
+msgid "// OK! We have overridden all items in the group.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1127
+msgid "// OK! We have not overridden anything in the group.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1131
+msgid ""
+"You may also use `default { .. }` in implementations. When you do so, "
+"everything in the group is automatically overridable. For any items outside "
+"the group, you may assume their signatures, but not the default definitions "
+"given. An example:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1160
+#: src/2532-associated-type-defaults.md:1174
+msgid "// Removing this item here causes an error.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1162
+msgid "// ERROR! You may not assume that `Self::Details == bool` here.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1176
+msgid ""
+"// ERROR! You may not assume that `Self::Details == bool` here,\n"
+"        // even tho we specified that in `Fruit for Citrus<S>`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1179
+msgid "// ERROR! Can't assume that it's u8 either!\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1199
+msgid "// ERROR! Can't assume it is f32.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1204
+msgid ""
+"So far our examples have always included an associated type. However, this "
+"is not a requirement. We can also group associated `const`s and `fn`s "
+"together or just `fn`s. An example:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1230
+msgid ""
+"// For whatever reason; The crate author has found it imperative\n"
+"        // that `wibble` and `wobble` always be defined together.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1236
+msgid "Case study"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1241
+msgid ""
+"One instance where default groups could be useful to provide a more "
+"ergonomic API is to improve upon [RFC 2500](https://github.com/rust-lang/"
+"rfcs/pull/2500). The RFC proposes the following API:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1254
+msgid ""
+"However, it turns out that usually, `Consumer` and `Searcher` are the same "
+"underlying type. Therefore, we would like to save the user from some "
+"unnecessary work by letting them elide parts of the required definitions in "
+"implementations."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1259
+msgid "One might imagine that we'd write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1273
+msgid ""
+"However, the associated type `Searcher` does not necessarily implement "
+"`Consumer<H::Target>`. Therefore, the above definition would not type check."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1276
+msgid ""
+"However, we can encode the above construct by rewriting it slightly, using "
+"the concept of partial implementations from [RFC 1210](https://github.com/"
+"rust-lang/rfcs/blob/master/text/1210-impl-specialization.md#default-impls):"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1289
+msgid ""
+"Now we have ensured that `Self::Searcher` is a `Consumer<H::Target>` and "
+"therefore, the above definition will type check. Having done this, the API "
+"has become more ergonomic because we can let users define instances of "
+"`Needle<H>` with half as many requirements."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1294
+msgid "`default fn foo() { .. }` is syntactic sugar"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1296
+msgid ""
+"In the section of [changes](#changes-in-this-rfc) to associated type "
+"defaults, snippet (5) actually indirectly introduced default groups of a "
+"special form, namely \"singleton groups\". That is, when we wrote:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1308
+msgid "this was actually sugar for:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1322
+msgid ""
+"We can see that these are equivalent since in the [specialization](https://"
+"github.com/rust-lang/rfcs/pull/1210) RFC, the semantics of `default fn` were "
+"that `fn` may be overridden in more specific implementations. With these "
+"singleton groups, you may assume the body of `Bar` in all other items in the "
+"same group; but it just happens to be the case that there are no other items "
+"in the group."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1328
+msgid "Nesting and a tree of cliques"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1331
+msgid ""
+"In the summary, we alluded to the notion of groups being nested. However, "
+"thus far we have seen no examples of such nesting. This RFC does permit you "
+"do that. For example, you may write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1341
+msgid "// OK! In the same group, so we may assume `Self::Bar == usize`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1344
+msgid "// OK; we can rely on `Self::Bar == usize`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1348
+msgid "// OK; we can depend on the underlying type of `Self::Bar`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1352
+msgid "/// This is rejected:\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1354
+msgid ""
+"// ERROR! we may not rely on not on `Self::BETA`'s value because\n"
+"            // `Self::BETA` is a sibling of `Self::gamma` which is not in "
+"the\n"
+"            // same group and is not an ancestor either.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1360
+msgid "// But this is accepted:\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1362
+msgid "// OK; we can depend on `Self::Bar == usize`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1367
+msgid "// OK; we can still depend on `Self::Bar == usize`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1371
+msgid ""
+"// OK; We can assume the value of `Self::EPSILON` because it\n"
+"                // is a sibling in the same group. We may also assume that\n"
+"                // `Self::Bar == usize` because it is an ancestor.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1385
+msgid ""
+"// We can override `gamma` without overriding anything else because\n"
+"    // `gamma` is the sole member of its sub-group. Note in particular\n"
+"    // that we don't have to override `alpha`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1394
+msgid ""
+"// Since `EPSILON` and `zeta` are in the same group; we must override\n"
+"    // them together. However, we still don't have to override anything\n"
+"    // in ancestral groups.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1405
+msgid ""
+"// We have overridden `Bar` which is in the root group.\n"
+"    // Since all other items are descendants of the same group as `Bar` is "
+"in,\n"
+"    // they are allowed to depend on what `Bar` is.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1410
+msgid "// Definitions for all the other items elided for brevity.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1416
+msgid ""
+"In graph theory, a set of a vertices, in a graph, for which each distinct "
+"pair of vertices is connected by a unique edge is said to form a [clique]"
+"(https://en.wikipedia.org/wiki/Clique_(graph_theory)). What the snippet "
+"above encodes is a tree of such cliques. In other words, we can visualize "
+"the snippet as:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1435
+msgid ""
+"Please pay extra attention to the fact that items in the same group may "
+"depend on each other's definitions as well as definitions of items that are "
+"ancestors (up the tree). The inverse implication holds for what you must "
+"override: if you override one item in a group, you must override all items "
+"in that groups and all items in sub-groups (recursively). As before, these "
+"limitations exist to preserve the soundness of the type system."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1442
+msgid ""
+"Nested groups are intended primarily expected to be used when there is one "
+"associated type, for which you want to define a default, coupled with a "
+"bunch of functions which need to rely on the definition of the associated "
+"type. This is a good mechanism for API evolution in the sense that you can "
+"introduce a new associated type, rely on it in provided methods, but still "
+"perform no breaking change."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1451
+msgid "Grammar"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1454
+msgid ""
+"Productions in this section which are not defined here are taken from "
+"[parser-lalr.y](https://github.com/rust-lang/rust/blob/master/src/grammar/"
+"parser-lalr.y)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1457
+#: src/2532-associated-type-defaults.md:1503
+msgid "Given:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1483
+msgid "The production `trait_item` is changed into:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1523
+msgid "The production `impl_item` is changed into:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1540
+msgid ""
+"Note that associated type defaults are already in the grammar due to [RFC "
+"192](https://github.com/rust-lang/rfcs/blob/master/text/0195-associated-"
+"items.md#defaults) but we have specified them in the grammar here "
+"nonetheless."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1543
+msgid ""
+"Note also that `default default fn ..` as well as `default default { .. }` "
+"are intentionally recognized by the grammar to make life easier for macro "
+"authors even though writing `default default ..` should never be written "
+"directly."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1547
+msgid "Desugaring"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1549
+msgid ""
+"After macro expansion, wherever the production `trait_default_singleton` "
+"occurs, it is treated in all respects as, except for error reporting -- "
+"which is left up to implementations of Rust, and is desugared to `DEFAULT "
+"'{' trait_item '}'`. The same applies to `impl_default_singleton`. In other "
+"words: `default fn f() {}` is desugared to `default { fn f() {} }`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1555
+msgid "Semantics and type checking"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1557
+msgid "Semantic restrictions on the syntax"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1559
+msgid ""
+"According to the [grammar](#grammar), the parser will accept items inside "
+"`default { .. }` without a body. However, such an item will later be "
+"rejected during type checking. The parser will also accept visibility "
+"modifiers on `default { .. }` (e.g. `pub default { .. }`). However, such a "
+"visibility modifier will also be rejected by the type checker."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1565
+msgid "Specialization groups"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1567
+msgid ""
+"Implementations of a `trait` as well as `trait`s themselves may now contain "
+"_\"specialization default groups\"_ (henceforth: _\"group(s)\"_) as defined "
+"by the [grammar](#grammar)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1571
+msgid ""
+"A group forms a [clique](https://en.wikipedia.org/wiki/"
+"Clique_(graph_theory)) and is considered an _atomic unit of specialization_ "
+"wherein each item can be specialized / overridden."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1574
+msgid ""
+"Groups may contain other groups - such groups are referred to as _\"nested "
+"groups\"_ and may be nested arbitrarily deeply. Items which are not in any "
+"group are referred to as _`0`\\-deep_. An item directly defined in a group "
+"which occurs at the top level of a `trait` or an `impl` definition is "
+"referred to as being _`1`\\-deep_. An item in a group which is contained in "
+"a _`1`\\-deep_ group is _`2`\\-deep_. If an item is nested in `k` groups it "
+"is _`k`\\-deep_."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1582
+msgid ""
+"A group and its sub-groups form a _tree of cliques_. Given a group `$g` with "
+"items `$x_1, .. $x_n`, an item `$x_j` in `$g` can assume the definitions of "
+"`$x_i, ∀ i ∈ { 1..n }` as well as any definitions of items in `$f` where "
+"`$f` is an ancestor of `$g` (up the tree). Conversely, items in `$g` may not "
+"assume the definitions of items in descendant groups `$h_i` of `$g` as well "
+"as items which are grouped at all or which are in groups which are not "
+"ancestors of `$g`."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1590
+msgid ""
+"If an `impl` block overrides one item `$x_j` in `$g`, it also has to "
+"override all `$x_i` in `$g` where `i ≠ j` as well as all items in groups "
+"`$h_i` which are descendants of `$g` (down the tree). Otherwise, items do "
+"not need to be overridden."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1595
+msgid "For example, you may write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1622
+msgid "Linting redundant `default`s"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1624
+msgid ""
+"When in source code (but not as a consequence of macro expansion), any of "
+"the following occurs, a warn-by-default lint (`redundant_default`) will be "
+"emitted:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1629
+#: src/2532-associated-type-defaults.md:1633
+msgid ""
+"//  ^^^^^^^ warning: Redundant `default`\n"
+"//          hint: remove `default`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1642
+msgid ""
+"//      ^^^^^^^ warning: Redundant `default`\n"
+"//              hint: remove `default`.\n"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1654
+msgid ""
+"`default { .. }` is introduced, adding to the complexity of the language."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1656
+msgid ""
+"However, it should be noted that token `default` is already accepted for use "
+"by specialization and for `default impl`. Therefore, the syntax is only "
+"partially new."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1664
+msgid ""
+"One may consider mechanisms such as `default(Bar, BAZ) { .. }` to give more "
+"freedom as to which dependency graphs may be encoded. However, in practice, "
+"we believe that the _tree of cliques_ approach proposed in this RFC should "
+"be more than enough for practical applications."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1669
+msgid "`default { .. }` is syntactically light-weight"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1671
+msgid ""
+"When you actually do need to assume the underlying default of an associated "
+"type in a provided method, `default { .. }` provides a syntax that is "
+"comparatively not _that_ heavy weight."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1675
+msgid ""
+"In addition, when you want to say that multiple items are overridable, "
+"`default { .. }` provides less repetition than specifying `default` on each "
+"item would. Thus, we believe the syntax is ergonomic."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1679
+msgid ""
+"Finally, `default { .. }` works well and allows the user a good deal of "
+"control over what can and can't be assumed and what must be specialized "
+"together. The grouping mechanism also composes well as seen in [the section "
+"where it is discussed](#default-specialization-groups)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1684
+msgid "Tree of cliques is familiar"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1686
+msgid ""
+"The _\"can depend on\"_ rule is similar to the rule used to determine "
+"whether a non-`pub` item in a module tree is accessible or not. Familiarity "
+"is a good tool to limit complexity costs."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1690
+msgid "Non-special treatment for methods"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1692
+msgid ""
+"In this RFC we haven't given methods any special treatment. We could do so "
+"by allowing methods to assume the underlying type of an associated type and "
+"still be overridable without having to override the type. However, this "
+"might lead to _semantic breakage_ in the sense that the details of an `fn` "
+"may be tied to the definition of an associated type. When those details "
+"change, it may also be prudent to change the associated type. Default groups "
+"give users a mechanism to enforce such decisions."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1700
+msgid "Future work"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1702
+msgid "`where` clauses on `default { .. }` groups"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1704
+msgid ""
+"From our [case study](#case-study), we noticed that we had to depart from "
+"our `trait` definition into a separate `default impl..` to handle the "
+"conditionality of `Self::Searcher: Consumer<H::Target>`. However, one method "
+"to regain the locality provided by having `default { .. }` inside the "
+"`trait` definition is to realize that we could attach an optional `where` "
+"clause to the group. This would allow us to write:"
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1725
+msgid ""
+"The defaults in this snippet would then be equivalent to the `default impl.."
+"` snippet noted in the [case study](#case-study)."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1728
+msgid ""
+"This `default where $bounds` construct should be able to subsume common "
+"cases where you only have a single `default impl..` but provide "
+"comparatively better local reasoning."
+msgstr ""
+
+#: src/2532-associated-type-defaults.md:1732
+msgid ""
+"However, we do not propose this at this stage because it is unclear how "
+"common `default impl..` will be in practice."
+msgstr ""

@@ -1,0 +1,917 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-06-16T13:57:24Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3808-register-tool.md:1
+msgid "Feature Name: `register_tool`"
+msgstr ""
+
+#: src/3808-register-tool.md:2
+msgid "Start Date: 2025-03-22"
+msgstr ""
+
+#: src/3808-register-tool.md:3
+msgid "RFC PR: [\\#3803](https://github.com/rust-lang/rfcs/pull/3808)"
+msgstr ""
+
+#: src/3808-register-tool.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#66079](https://github.com/rust-lang/rust/"
+"issues/66079)"
+msgstr ""
+
+#: src/3808-register-tool.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/3808-register-tool.md:9
+msgid "This RFC adds three new attributes:"
+msgstr ""
+
+#: src/3808-register-tool.md:10
+msgid ""
+"`#![register_lint_tool(tool_name)]` allows controlling namespaced lints with "
+"`#[warn(tool_name::lint_name)]`."
+msgstr ""
+
+#: src/3808-register-tool.md:11
+msgid ""
+"`#![register_attribute_tool(tool_name)]` allows using tool names in [inert "
+"attributes](https://rustc-dev-guide.rust-lang.org/attributes."
+"html#builtininert-attributes) with `#[tool_name::"
+"attribute_name(token_tree)]`."
+msgstr ""
+
+#: src/3808-register-tool.md:12
+msgid ""
+"`#![register_tool(tool_name)]` is an alias for `#!"
+"[register_lint_tool(tool_name)] #![register_attribute_tool(tool_name)]`."
+msgstr ""
+
+#: src/3808-register-tool.md:14
+msgid ""
+"Note that this does not add any new functionality into the compiler; it only "
+"relaxes the current restrictions. While `rustc` verifies that tool "
+"attributes and lints are syntactically valid and do not cause ambiguity "
+"during name resolution, it does no extra processing."
+msgstr ""
+
+#: src/3808-register-tool.md:16
+msgid "Motivation"
+msgstr "動機"
+
+#: src/3808-register-tool.md:19
+msgid ""
+"There are [several tools predefined in the tool namespace](https://doc.rust-"
+"lang.org/nightly/reference/attributes.html#tool-attributes). These tools are "
+"hard-coded, and cannot be extended with user-defined tools. There are many "
+"external programs that would benefit from being able to annotate specific "
+"portions of a crate or register custom lints without the compiler raising an "
+"error."
+msgstr ""
+
+#: src/3808-register-tool.md:23
+msgid "Here is a short summary of the built-in tools:"
+msgstr ""
+
+#: src/3808-register-tool.md:25
+msgid "Tool"
+msgstr ""
+
+#: src/3808-register-tool.md:25
+msgid "Lints"
+msgstr ""
+
+#: src/3808-register-tool.md:25
+msgid "Attributes"
+msgstr ""
+
+#: src/3808-register-tool.md:27
+msgid "`clippy`"
+msgstr ""
+
+#: src/3808-register-tool.md:27 src/3808-register-tool.md:28
+#: src/3808-register-tool.md:29 src/3808-register-tool.md:30
+#: src/3808-register-tool.md:31 src/3808-register-tool.md:33
+msgid "✅"
+msgstr ""
+
+#: src/3808-register-tool.md:28
+msgid "`rustfmt`"
+msgstr ""
+
+#: src/3808-register-tool.md:28 src/3808-register-tool.md:29
+#: src/3808-register-tool.md:30 src/3808-register-tool.md:31
+#: src/3808-register-tool.md:32 src/3808-register-tool.md:33
+msgid "❌"
+msgstr ""
+
+#: src/3808-register-tool.md:29
+msgid "`miri`"
+msgstr ""
+
+#: src/3808-register-tool.md:30
+msgid "`rust_analyzer`"
+msgstr ""
+
+#: src/3808-register-tool.md:31
+msgid "`rustdoc`"
+msgstr ""
+
+#: src/3808-register-tool.md:32
+msgid "`rustc`"
+msgstr ""
+
+#: src/3808-register-tool.md:32
+msgid "✅ (with `-Z unstable-options`)"
+msgstr ""
+
+#: src/3808-register-tool.md:33
+msgid "`diagnostic`"
+msgstr ""
+
+#: src/3808-register-tool.md:35
+msgid "Why support custom lints?"
+msgstr ""
+
+#: src/3808-register-tool.md:37
+msgid ""
+"There are several crates, such as `bevy` and `regex`, that would benefit "
+"from API-specific lints that encourage specific styles or warn against "
+"potential footguns. While it is possible to create a custom `rustc` driver "
+"that registers these lints, any reference to them in code would cause the "
+"default compiler to raise an error."
+msgstr ""
+
+#: src/3808-register-tool.md:40
+msgid ""
+"// While `bevy_lint` will recognize this, the default `rustc` will not, "
+"raising a compile error.\n"
+msgstr ""
+
+#: src/3808-register-tool.md:44
+msgid ""
+"There are currently two solutions to this: [upstream lints directly to "
+"Clippy](https://rust-lang.github.io/rust-clippy/master/index."
+"html#invalid_regex) or [use `#[cfg_attr(my_tool, warn(...))]`](https://"
+"thebevyflock.github.io/bevy_cli/bevy_lint/index.html#toggling-lints-in-"
+"code). The prior solution increases the maintenance burden for Clippy "
+"developers, and thus will rarely be accepted. The latter is very verbose and "
+"requires adding `unexpected_cfgs = { level = \"warn\", check-cfg = "
+"[\"cfg(my_tool)\"] }` in `Cargo.toml`."
+msgstr ""
+
+#: src/3808-register-tool.md:46
+msgid ""
+"There are also several linting tools that don't make sense to upstream to "
+"Clippy:"
+msgstr ""
+
+#: src/3808-register-tool.md:48
+msgid ""
+"[`cargo-semver-checks`](https://github.com/obi1kenobi/cargo-semver-checks/) "
+"(uses its own analysis framework, unrelated to `rustc_driver`)"
+msgstr ""
+
+#: src/3808-register-tool.md:49
+msgid ""
+"[`dylint`](https://github.com/trailofbits/dylint) (custom, user-extensible "
+"lints)"
+msgstr ""
+
+#: src/3808-register-tool.md:50
+msgid ""
+"[`marker`](https://github.com/rust-marker/marker) (custom, user-extensible "
+"lints, but a different approach)"
+msgstr ""
+
+#: src/3808-register-tool.md:51
+msgid ""
+"[`klint`](https://github.com/Rust-for-Linux/linux/pull/958) (Rust-for-Linux "
+"specific linter)"
+msgstr ""
+
+#: src/3808-register-tool.md:53
+msgid "Why support custom attributes?"
+msgstr ""
+
+#: src/3808-register-tool.md:55
+msgid ""
+"There are also some tools that would benefit from using developer-added "
+"metadata on portions of source code:"
+msgstr ""
+
+#: src/3808-register-tool.md:57
+msgid ""
+"Formal verification tools, such as [prusti](https://viperproject.github.io/"
+"prusti-dev/user-guide/syntax.html) and [kani](https://github.com/model-"
+"checking/kani), want to mark specific functions for verification. While "
+"adding contracts is an [explicit project goal](https://rust-lang.github.io/"
+"rust-project-goals/2024h2/Contracts-and-invariants.html), there are many "
+"existing tools for contracts that developers would benefit from in the "
+"meantime, and formal verification includes more than just contracts."
+msgstr ""
+
+#: src/3808-register-tool.md:58
+msgid ""
+"Coverage tools, such as [tarpaulin](https://github.com/xd009642/tarpaulin/"
+"#ignoring-code-in-files), allow marking specific functions as skipped."
+msgstr ""
+
+#: src/3808-register-tool.md:59
+msgid ""
+"Source code translation tools, such as [c2rust](https://github.com/immunant/"
+"c2rust/blob/d28087df86d7fca8532d8679d35efec66f074f8b/c2rust-refactor/tests/"
+"reorganize_definitions/old.rs#L18), want to mark the origin of generated "
+"code. One could imagine this also being useful for any kind of generated "
+"code, such as a build script, for recording [Source Map](https://web.dev/"
+"articles/source-maps)\\-like metadata."
+msgstr ""
+
+#: src/3808-register-tool.md:69
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3808-register-tool.md:72
+msgid "For users of external tools"
+msgstr ""
+
+#: src/3808-register-tool.md:74
+msgid ""
+"Several official tools let you configure their behavior on specific parts of "
+"your code. For example, Clippy lets you use `#[warn(clippy::"
+"as_ptr_cast_mut)]` to warn on that lint for a single item, and Rustfmt lets "
+"you use `#[rustfmt::skip]` to avoid formatting a single item. You can also "
+"do this for external tools that are not provided in the Rust toolchain. See "
+"the documentation of those tools for the lints and attributes they support."
+msgstr ""
+
+#: src/3808-register-tool.md:76
+msgid ""
+"To tell the compiler about an external tool, add `#!"
+"[register_tool(some_tool)]` to your crate root."
+msgstr ""
+
+#: src/3808-register-tool.md:78
+msgid ""
+"Crate-level lints for external tools can use `#![warn(some_tool::"
+"lint_name)]`, like any lint. Tools may also support a custom configuration "
+"format that allows you to control lints for your whole workspace at once. "
+"Consult the documentation of the tool you use."
+msgstr ""
+
+#: src/3808-register-tool.md:82
+msgid "Fixing name resolution errors"
+msgstr ""
+
+#: src/3808-register-tool.md:84
+msgid ""
+"Note that `register_tool` changes name resolution, and may give errors if "
+"you have a crate named `some_tool`. The compiler will suggest ways to fix "
+"the new errors."
+msgstr ""
+
+#: src/3808-register-tool.md:87
+msgid ""
+"If a tool name conflicts with a crate name, you can disambiguate the crate "
+"with `::some_tool`:"
+msgstr ""
+
+#: src/3808-register-tool.md:92
+msgid "//~ ERROR: is this the tool or a proc-macro?\n"
+msgstr ""
+
+#: src/3808-register-tool.md:94 src/3808-register-tool.md:99
+#: src/3808-register-tool.md:110
+msgid "// ...\n"
+msgstr ""
+
+#: src/3808-register-tool.md:97
+msgid "// OK: This is the proc-macro defined in the crate.\n"
+msgstr ""
+
+#: src/3808-register-tool.md:102
+msgid ""
+"However, if you want to go on to use a tool attribute, you must rename the "
+"crate so it doesn't conflict:"
+msgstr ""
+
+#: src/3808-register-tool.md:108
+msgid "// OK: This is the attribute specified by the tool.\n"
+msgstr ""
+
+#: src/3808-register-tool.md:113
+msgid ""
+"Alternatively, if you only want to use lints, you can use "
+"`register_lint_tool` instead of `register_tool`, which will avoid resolution "
+"errors."
+msgstr ""
+
+#: src/3808-register-tool.md:115
+msgid "Overlaps like this are expected to be rare in practice."
+msgstr ""
+
+#: src/3808-register-tool.md:121
+msgid "For authors of external tools"
+msgstr ""
+
+#: src/3808-register-tool.md:123
+msgid ""
+"The Rust language can be extended and analyzed using external tools. If your "
+"tool can parse Rust, you may wish to allow configuring it at sub-crate "
+"levels (e.g. individual functions, types, and modules). To reuse the same "
+"syntax as the official tools, like Clippy and Rustfmt, instruct your users "
+"to add `#![register_lint_tool(your_tool)]` (if your tool only adds new "
+"lints) or `#![register_attribute_tool(your_tool)]` (if your tool only adds "
+"new attributes). If your tool supports both lints and attributes, use `#!"
+"[register_tool(your_tool]`. Then, instruct your users to add either "
+"`#[warn(your_tool::your_lint)]` or `#[your_tool::"
+"your_attribute(your_tokens)]` as appropriate."
+msgstr ""
+
+#: src/3808-register-tool.md:125
+msgid ""
+"We do not specify a syntax for package-level configuration. We suggest using "
+"`[package.metadata.your_tool]` in Cargo.toml."
+msgstr ""
+
+#: src/3808-register-tool.md:127
+msgid ""
+"The syntax for external attributes is carefully designed such that you do "
+"not need to do name resolution in order to recognize the attributes. As long "
+"as `register_attribute_tool(your_tool)` is present at the crate root, "
+"`#[your_tool::your_attribute]` will always be an [inert](https://rustc-dev-"
+"guide.rust-lang.org/attributes.html#builtininert-attributes) attribute you "
+"can parse directly; it can never be a re-export of a different item, nor a "
+"reference to a local item."
+msgstr ""
+
+#: src/3808-register-tool.md:129
+msgid ""
+"Please _do_ verify that `register_attribute_tool` is present, and either "
+"warn or error otherwise. If you do not do so, you may accidentally interpret "
+"a crate or local module as your tool. We will ensure that `rustdoc --output-"
+"format json` includes `register_attribute_tool` so that users of rustdoc "
+"json are not required to reimplement a rust parser."
+msgstr ""
+
+#: src/3808-register-tool.md:132
+msgid ""
+"Please do _not_ suggest using `#[cfg_attr(your_tool, your_attribute)]`. "
+"Doing so runs the risk that the language will add that lint or attribute in "
+"a future version. Use tool namespaces instead, as that's what they're for! "
+"It's ok to pass a custom `cfg` when your tool runs, but avoid using it to "
+"guard tool lints and attributes unless it would break your MSRV (minimum "
+"supported Rust version)."
+msgstr ""
+
+#: src/3808-register-tool.md:134
+msgid ""
+"Please do _not_ use tool attributes for metadata that changes the meaning of "
+"the code. At that point you are parsing a dialect of Rust, and there is no "
+"indication for your users that their code will be interpreted differently by "
+"your tool than by the compiler.  For example, `#[must_use]` and "
+"`#[automatically_derived]` would be suitable for tool attributes, but "
+"`#[repr]` and `#[panic_handler]` are not, because they change the meaning of "
+"the code. For that use case, use proc-macros, generated code, or bare (un-"
+"namespaced) attributes instead, all of which will give a hard error if they "
+"cannot be understood by the compiler. If absolutely necessary to use bare "
+"attributes, use a C-style namespace like `#[rustc_const_stable]`."
+msgstr ""
+
+#: src/3808-register-tool.md:136
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3808-register-tool.md:139
+msgid "Language"
+msgstr ""
+
+#: src/3808-register-tool.md:141
+msgid "Background: name resolution of preludes"
+msgstr ""
+
+#: src/3808-register-tool.md:143
+msgid ""
+"Currently, names in the type namespace are resolved in [the following order]"
+"(https://github.com/rust-lang/reference/pull/1765):"
+msgstr ""
+
+#: src/3808-register-tool.md:145
+msgid "Explicit definitions (including imports)"
+msgstr ""
+
+#: src/3808-register-tool.md:146
+msgid ""
+"[Extern prelude](https://doc.rust-lang.org/nightly/reference/names/preludes."
+"html#extern-prelude) (crates injected using either `extern crate` or `--"
+"extern`)"
+msgstr ""
+
+#: src/3808-register-tool.md:147
+msgid ""
+"[Tool prelude](https://doc.rust-lang.org/nightly/reference/attributes."
+"html#tool-attributes)"
+msgstr ""
+
+#: src/3808-register-tool.md:148
+msgid "Standard library prelude"
+msgstr ""
+
+#: src/3808-register-tool.md:149
+msgid "Language prelude"
+msgstr ""
+
+#: src/3808-register-tool.md:153
+msgid ""
+"Note that currently, loading a crate completely prevents using a tool "
+"attribute with that name. Consider this program:"
+msgstr ""
+
+#: src/3808-register-tool.md:156
+msgid "// or --extern rustfmt\n"
+msgstr ""
+
+#: src/3808-register-tool.md:158
+msgid "// ERROR could not find `skip` in `rustfmt`\n"
+msgstr ""
+
+#: src/3808-register-tool.md:162
+msgid "Semantics"
+msgstr ""
+
+#: src/3808-register-tool.md:164
+msgid ""
+"The tool prelude is separated into the tool attribute prelude (which is in "
+"the type namespace) and the lint prelude (which is only active inside lint "
+"controls)."
+msgstr ""
+
+#: src/3808-register-tool.md:166
+msgid ""
+"The `#![register_attribute_tool(ident)]` crate-level attribute adds a new "
+"tool to the tool attribute prelude. The `#![register_lint_tool(ident)]` "
+"crate-level attribute adds a new tool to the lint prelude. For both "
+"attributes, tools must be a single ident, not a nested path."
+msgstr ""
+
+#: src/3808-register-tool.md:168
+msgid ""
+"`register_attribute_tool` and `register_lint_tool` are idempotent; "
+"duplicating the attribute has no effect."
+msgstr ""
+
+#: src/3808-register-tool.md:170
+msgid ""
+"Crate-level macros such as `#![cfg_attr(...)]` may expand to "
+"`register_*_tool`, subject to all existing rules for macro expansion."
+msgstr ""
+
+#: src/3808-register-tool.md:172
+msgid ""
+"Like today, attributes and lints in a tool namespace are always considered "
+"used by the compiler. The compiler does not verify the contents of any tool "
+"attribute, except to verify that all attributes are syntactically valid "
+"[tool attributes](https://doc.rust-lang.org/nightly/reference/attributes."
+"html#tool-attributes)."
+msgstr ""
+
+#: src/3808-register-tool.md:174
+msgid ""
+"Registering a predefined tool (`clippy`, `miri`, etc.) using `#!"
+"[register_*_tool(...)]` is an error."
+msgstr ""
+
+#: src/3808-register-tool.md:176
+msgid ""
+"The `rustc` tool namespace is currently reserved and will continue to be "
+"reserved after this RFC, i.e, `register_*_tool(rustc)` is an error."
+msgstr ""
+
+#: src/3808-register-tool.md:178
+msgid ""
+"Note that the compiler currently reserves all attributes starting with "
+"`rustc` (such as `#[rustcat]`), even if they do not have a trailing `_`. "
+"That continues to be the case after this RFC, but tool names starting with "
+"`rustc` are not explicitly prohibited in `register_*_tool` attributes."
+msgstr ""
+
+#: src/3808-register-tool.md:181
+msgid ""
+"Ambiguity between a tool name and any other name in the type namespace is "
+"always a hard error. For example, this code would error:"
+msgstr ""
+
+#: src/3808-register-tool.md:187 src/3808-register-tool.md:197
+msgid "// ERROR: ambiguous\n"
+msgstr ""
+
+#: src/3808-register-tool.md:188 src/3808-register-tool.md:199
+msgid "// OK\n"
+msgstr ""
+
+#: src/3808-register-tool.md:193
+msgid "// Import the derive macro.\n"
+msgstr ""
+
+#: src/3808-register-tool.md:198
+msgid "// ERROR: ambiguous (even though y is not present)\n"
+msgstr ""
+
+#: src/3808-register-tool.md:203
+msgid ""
+"This is in order to not require external tools to perform name resolution. "
+"This restriction may be relaxed in the future to favor tool names."
+msgstr ""
+
+#: src/3808-register-tool.md:205
+msgid ""
+"To disambiguate a local item, developers may use `self::` to force "
+"resolution in the current module. To disambiguate a crate, developers may "
+"write `#[::rustfmt::skip]`, which forces resolution in the [Extern prelude]"
+"(https://doc.rust-lang.org/nightly/reference/names/preludes.html#extern-"
+"prelude). To disambiguate an item in the standard prelude (e.g. `Clone`), "
+"developers may use `std::prelude::v1::Clone`. There is no way to "
+"disambiguate the tool; developers must use `extern crate rustfmt as "
+"my_rustfmt` (or the equivalent in Cargo.toml) to avoid the ambiguity. As a "
+"quality of implementation issue, errors should mention one of the above "
+"workarounds."
+msgstr ""
+
+#: src/3808-register-tool.md:213
+msgid ""
+"Modules in the first path of an attribute (e.g. `#[unregistered::name]`) are "
+"assumed to be a crate if they cannot be resolved, and therefore give a hard "
+"error if not registered."
+msgstr ""
+
+#: src/3808-register-tool.md:215
+msgid ""
+"Unknown tool names in lints remain a hard error until the story for proc-"
+"macro lints is resolved (see [Future possibilities](#future-possibilities))."
+msgstr ""
+
+#: src/3808-register-tool.md:217
+msgid ""
+"[Inner attributes](https://github.com/rust-lang/rust/issues/54726) for tools "
+"remain a hard error. Tool names are not affected by the current scope, but "
+"we need to know the current scope in order to give an ambiguity error."
+msgstr ""
+
+#: src/3808-register-tool.md:221
+msgid ""
+"Today, `#![no_implicit_prelude]` suppresses the tool attribute prelude but "
+"does not suppress the lint prelude (e.g., `#[allow(clippy::foo)]` continues "
+"to work). Under this RFC, neither prelude is suppressed by `#!"
+"[no_implicit_prelude]`. This is technically a breaking change since it can "
+"produce new ambiguity errors in stable code."
+msgstr ""
+
+#: src/3808-register-tool.md:231
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3808-register-tool.md:234
+msgid "This makes the rules for name resolution even more complicated."
+msgstr ""
+
+#: src/3808-register-tool.md:236
+msgid ""
+"This runs the risk that external tools will add attributes that change the "
+"meaning of the code, such that the behavior is different when the tool is "
+"present. There is not much we can do about this other than to ask tool "
+"authors not to do that."
+msgstr ""
+
+#: src/3808-register-tool.md:238
+msgid ""
+"This introduces a new \"meta-breaking\" concern: once this is stabilized, "
+"adding a new tool namespace, like we did for `diagnostic` and "
+"`rust_analyzer`, becomes a breaking change. That said, this is what editions "
+"are for; I think adding a new namespace is rare enough that waiting for an "
+"edition isn't a big deal in practice."
+msgstr ""
+
+#: src/3808-register-tool.md:240
+msgid ""
+"The lang team [expressed a concern](https://github.com/rust-lang/rust/"
+"issues/66079#issuecomment-1010266282) in 2022 that the name "
+"`register_*_tool` would mislead users into thinking that this "
+"_automatically_ runs the tool. I do not think this is likely in practice; if "
+"someone adds this attribute, it's because the docs for the external tool "
+"told them to do so, and those docs should also say how to run the tool."
+msgstr ""
+
+#: src/3808-register-tool.md:244
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3808-register-tool.md:247
+msgid ""
+"We could \"just not do this\". That makes it harder to write external tools, "
+"and in practice just means that people use `cfg_attr` instead of a "
+"namespace, which seems strictly worse."
+msgstr ""
+
+#: src/3808-register-tool.md:248
+msgid ""
+"We could relax the constraint that tool names cannot conflict with local "
+"items. This requires tools to do name resolution; but in practice I do not "
+"think we can expect tools to do this, and we must assume that the tool will "
+"behave differently than the compiler (`rustfmt` already does this today)."
+msgstr ""
+
+#: src/3808-register-tool.md:249
+msgid ""
+"We could change name resolution so tools take precedence over crate names, "
+"instead of giving an ambiguity error. That would allow using crates side-by-"
+"side with tools of the same name; but it would complicate the name "
+"resolution rules."
+msgstr ""
+
+#: src/3808-register-tool.md:250
+msgid ""
+"We could add a syntax to disambiguate tool names from local items. That "
+"would add inconsistency with the existing built-in tool attributes, and "
+"requires tool authors to parse both the new and existing syntax."
+msgstr ""
+
+#: src/3808-register-tool.md:251
+msgid ""
+"We could use a CLI argument for register_tool instead of a crate-level "
+"attribute. This means that the source code is no longer independent from the "
+"way it's built (although this is already true for some existing flags, like "
+"`--edition`). This would also be unnecessary if [`--crate-attr`](https://"
+"github.com/rust-lang/rfcs/pull/3791) is merged, since that would allow "
+"passing any attribute as a flag."
+msgstr ""
+
+#: src/3808-register-tool.md:252
+msgid ""
+"We could rename the attribute from `register_*_tool` to something else; "
+"perhaps `import_*_tool`, `inject_*_tool`, or `use_*_tool` by analogy with "
+"the `use` keyword. However, that makes the semantics unclear, and emphasizes "
+"the [lang concern](https://github.com/rust-lang/rust/"
+"issues/66079#issuecomment-1010266282) about it seeming as if the tool is run "
+"automatically. `rustc` calls adding new lints \"registering\" internally, "
+"and I think this is a good name for the semantics."
+msgstr ""
+
+#: src/3808-register-tool.md:253
+msgid ""
+"We could continue using a single `register_tool` attribute instead of "
+"splitting it up into `register_lint_tool` and `register_attribute_tool`. "
+"This is slightly less complicated to write, but has the drawback that merely "
+"adding a lint tool changes name resolution for attribute macros, even if the "
+"tool does not define any attribute."
+msgstr ""
+
+#: src/3808-register-tool.md:254
+msgid ""
+"`register_attribute_tool` could be named `register_metadata_tool` instead. "
+"`register_metadata_tool` makes it clear that tool attributes do not change "
+"the meaning of code, but `register_attribute_tool` makes it clearer how the "
+"tool is intended to be used."
+msgstr ""
+
+#: src/3808-register-tool.md:258
+msgid "Prior art"
+msgstr ""
+
+#: src/3808-register-tool.md:261
+msgid ""
+"[`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/#suppressing-"
+"undesired-diagnostics), [`pylint`](https://pylint.pycqa.org/en/latest/"
+"user_guide/messages/message_control.html#block-disables), [`eslint`](https://"
+"eslint.org/docs/latest/use/configure/rules#using-configuration-comments-1), "
+"and [`review`](https://github.com/Bogdanp/racket-review#usage) (a racket "
+"linter) use inline comments. Whether these count as namespacing is "
+"debatable; pylint and eslint include their name in the inline comment and "
+"clang-tidy does not. `review` allows both `review: ignore` and `lint: "
+"ignore`."
+msgstr ""
+
+#: src/3808-register-tool.md:262
+msgid ""
+"[Roslyn analyzers](https://johnnyreilly.com/eslint-your-csharp-in-vs-code-"
+"with-roslyn-analyzers#deactivate-linting-partially) and [gcc](https://gcc."
+"gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html) use `#pragma`s. GCC uses "
+"`#pragma GCC` and Roslyn uses `#pragma warning`."
+msgstr ""
+
+#: src/3808-register-tool.md:263
+msgid ""
+"C and C++ use [vendor attributes](https://en.cppreference.com/w/cpp/language/"
+"attributes), which are very similar to tool attributes, including "
+"namespacing. They do not have syntactic ambiguity with items in the type "
+"namespace and so do not perform any kind of name resolution; in Rust terms, "
+"all vendor attributes are [inert](https://rustc-dev-guide.rust-lang.org/"
+"attributes.html#builtininert-attributes). Like this RFC, and unlike the "
+"current language, C++ mandates that tools do not restrict namespaces they "
+"don't recognize."
+msgstr ""
+
+#: src/3808-register-tool.md:264
+msgid ""
+"C# uses [attributes](https://learn.microsoft.com/en-us/dotnet/standard/"
+"attributes/applying-attributes), which are [active](https://rustc-dev-guide."
+"rust-lang.org/attributes.html#non-builtinactive-attributes), not [inert]"
+"(https://rustc-dev-guide.rust-lang.org/attributes.html#builtininert-"
+"attributes), i.e. they follow normal name resolution rules. Like attribute "
+"macros in Rust, they can be defined in user code and are unrelated to "
+"external tools."
+msgstr ""
+
+#: src/3808-register-tool.md:265
+msgid ""
+"[`Resyntax`](https://docs.racket-lang.org/resyntax/"
+"Refactoring_Rules_and_Suites.html#(part._.Exercising_.Fine_.Control_.Over_."
+"Comments)) (a racket refactoring tool, like `cargo fix`) does not allow "
+"inline configuration; instead it requires you to write an extension to the "
+"tool specifying the new behavior in code."
+msgstr ""
+
+#: src/3808-register-tool.md:278
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/3808-register-tool.md:281
+msgid ""
+"How does this interact with [proc-macro lints](https://github.com/rust-lang/"
+"rust/pull/135432)?"
+msgstr ""
+
+#: src/3808-register-tool.md:283
+msgid "Future possibilities"
+msgstr "未來的可能性"
+
+#: src/3808-register-tool.md:286
+msgid ""
+"We could allow registering tools in Cargo.toml (with a `package.tools` or "
+"`workspace.tools` field). This would avoid duplicating tool registration for "
+"each crate in the package/workspace. This depends on [`--crate-attr`]"
+"(https://github.com/rust-lang/rfcs/pull/3791) being stabilized."
+msgstr ""
+
+#: src/3808-register-tool.md:287
+msgid ""
+"If this is a `package.tools` field, it should allow workspace inheritance."
+msgstr ""
+
+#: src/3808-register-tool.md:288
+msgid ""
+"External tools often have a dedicated cfg (e.g. `cfg(kani)`). We could add a "
+"way for registering the tool to also register the name with `check-cfg`. We "
+"would need an opt-out for tools that don't have a dedicated cfg."
+msgstr ""
+
+#: src/3808-register-tool.md:289
+msgid ""
+"Since tool authors will usually be different from package authors, we may "
+"want to allow specifying tool metadata in a reusable form (e.g. `.cargo/"
+"tools.toml`)."
+msgstr ""
+
+#: src/3808-register-tool.md:290
+msgid ""
+"We could allow building an external tool as a [runnable dependency](https://"
+"github.com/rust-lang/cargo/issues/2267)."
+msgstr ""
+
+#: src/3808-register-tool.md:291
+msgid ""
+"We could make `[lints]` support external tools as a first-class feature. "
+"This needs a way for tools to read the metadata out of `Cargo.toml` (e.g. "
+"`cargo metadata`, or just parsing the toml file), because cargo does not "
+"drive external tools. Additionally, we cannot guarantee that tools will "
+"actually read the metadata."
+msgstr ""
+
+#: src/3808-register-tool.md:292
+msgid ""
+"`[lints]` could automatically imply registering the tool, even if not "
+"present in `package.tools`."
+msgstr ""
+
+#: src/3808-register-tool.md:293
+msgid ""
+"Proc macros wish to register custom lints; see [`proc_macro_lint`](https://"
+"github.com/rust-lang/rust/pull/135432). We would have to establish some "
+"mechanism to prevent overlapping namespaces. Perhaps `warn(::project::"
+"lint_name)` could refer to the proc macro and `warn(project::lint_name)` "
+"would refer to any registered tool (only when a `project` tool is "
+"registered; in the common case where no tool is registered, `project::` "
+"would still refer to the proc macro)."
+msgstr ""
+
+#: src/3808-register-tool.md:294
+msgid ""
+"Projects may wish to have both a proc-macro crate with lints and a CLI with "
+"lints. To allow this, we would require `proc_macro_lint` to create an "
+"exhaustive list of lints that can be created, such that we can still run "
+"`unknown_lints` and do not need to create a new cooperation mechanism "
+"between `proc_macro_lint` and `register_lint_tool`, nor to require users of "
+"the project to distinguish the two with `::project` (see immediately above). "
+"We might still run into difficulty if the proc-macro lint namespace is only "
+"active while the proc-macro is expanding; it depends on how "
+"`proc_macro_lint` is specified. But I think it's ok to delay that discussion "
+"until `proc_macro_lint` gets an RFC."
+msgstr ""
+
+#: src/3808-register-tool.md:295
+msgid ""
+"We could allow attribute macros to register a [derive helper](https://doc."
+"rust-lang.org/nightly/reference/procedural-macros.html#derive-macro-helper-"
+"attributes), so that they can emit other attributes for an external tool."
+msgstr ""
+
+#: src/3808-register-tool.md:296
+msgid ""
+"We could allow proc-macros to register a scoped tool, such that e.g. "
+"`#[serde::flatten]` is valid while the proc-macro is expanding, but not "
+"elsewhere in the crate. This is similar to [derive helpers](https://doc.rust-"
+"lang.org/nightly/reference/procedural-macros.html#derive-macro-helper-"
+"attributes), but namespaced. We would have to take care to avoid ambiguity "
+"between the scoped tool and globally registered tools in such a way that "
+"external tools still do not need to perform name resolution."
+msgstr ""
+
+#: src/3808-register-tool.md:297
+msgid ""
+"Once [expression attributes](https://github.com/rust-lang/rust/issues/15701) "
+"are stabilized, this would also allow tool attributes on expressions."
+msgstr ""
+
+#: src/3808-register-tool.md:298
+msgid ""
+"Some existing attributes, such as [`coverage`](https://doc.rust-lang.org/"
+"nightly/unstable-book/language-features/coverage-attribute."
+"html#coverage_attribute), have exactly the semantics of a tool attribute: "
+"they add additional meaning when a specific feature or flag is enabled, and "
+"ignored otherwise. They could use this mechanism (over an edition boundary, "
+"as described above)."
+msgstr ""
+
+#: src/3808-register-tool.md:299
+msgid ""
+"We can allow defining and exporting tool attributes from crates using "
+"declarative macro syntax, which would enable IDE tooling to provide "
+"suggestions."
+msgstr ""
+
+#: src/3808-register-tool.md:300
+msgid ""
+"This would require tools to do name resolution, which is a drawback. "
+"However, the compiler can provide an extension point akin to rustdoc JSON "
+"that exports tool attributes as metadata."
+msgstr ""
+
+#: src/3808-register-tool.md:301
+msgid ""
+"Taking advantage of this would require users to move away from register_tool "
+"and use a crate dependency with the name of the tool instead. This would be "
+"a benefit for users who already depend on a support crate from their tool, "
+"like [crubit_annotate](https://github.com/rust-lang/rfcs/"
+"pull/3808#issuecomment-2866000525), as they would no longer also need "
+"register_tool macros at their own crate root."
+msgstr ""
+
+#: src/3808-register-tool.md:302
+msgid ""
+"One danger of accepting this proposal now is that tools will use the crate "
+"name for their binary instead of saving it for an eventual support library "
+"that can declare attribute macros and potentially other things. This could "
+"be mitigated with explicit guidance to use another crate name. For example, "
+"kani uses [kani-verifier](https://crates.io/crates/kani-verifier) for the "
+"binary while reserving [kani](https://crates.io/crates/kani) for an eventual "
+"library."
+msgstr ""
+
+#: src/3808-register-tool.md:303
+msgid ""
+"This is somewhat akin to the way the [proc_macro_lint](https://github.com/"
+"rust-lang/rust/pull/135432) proposal puts declared lints in the macro "
+"namespace."
+msgstr ""
+
+#: src/3808-register-tool.md:304
+msgid ""
+"We can allow defining and exporting tool attributes from crates using Rust "
+"types. This would enable the use of versioned, structured metadata that can "
+"be shared among different tools and reflection APIs."
+msgstr ""
+
+#: src/3808-register-tool.md:305
+msgid ""
+"This could be combined with attribute macros to present more flexible syntax "
+"options."
+msgstr ""

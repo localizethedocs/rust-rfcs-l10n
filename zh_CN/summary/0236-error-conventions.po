@@ -1,0 +1,467 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0236-error-conventions.md:1
+msgid "Start Date: 2014-10-30"
+msgstr ""
+
+#: src/0236-error-conventions.md:2
+msgid ""
+"RFC PR #: [rust-lang/rfcs#236](https://github.com/rust-lang/rfcs/pull/236)"
+msgstr ""
+
+#: src/0236-error-conventions.md:3
+msgid ""
+"Rust Issue #: [rust-lang/rust#18466](https://github.com/rust-lang/rust/"
+"issues/18466)"
+msgstr ""
+
+#: src/0236-error-conventions.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0236-error-conventions.md:7
+msgid ""
+"This is a _conventions_ RFC for formalizing the basic conventions around "
+"error handling in Rust libraries."
+msgstr ""
+
+#: src/0236-error-conventions.md:10
+msgid "The high-level overview is:"
+msgstr ""
+
+#: src/0236-error-conventions.md:12
+msgid ""
+"For _catastrophic errors_, abort the process or fail the task depending on "
+"whether any recovery is possible."
+msgstr ""
+
+#: src/0236-error-conventions.md:15
+msgid ""
+"For _contract violations_, fail the task. (Recover from programmer errors at "
+"a coarse grain.)"
+msgstr ""
+
+#: src/0236-error-conventions.md:17
+msgid ""
+"For _obstructions to the operation_, use `Result` (or, less often, "
+"`Option`). (Recover from obstructions at a fine grain.)"
+msgstr ""
+
+#: src/0236-error-conventions.md:20
+msgid ""
+"Prefer liberal function contracts, especially if reporting errors in input "
+"values may be useful to a function's caller."
+msgstr ""
+
+#: src/0236-error-conventions.md:23
+msgid ""
+"This RFC follows up on [two](https://github.com/rust-lang/rfcs/pull/204) "
+"[earlier](https://github.com/rust-lang/rfcs/pull/220) attempts by giving "
+"more leeway in when to fail the task."
+msgstr ""
+
+#: src/0236-error-conventions.md:27
+msgid "Motivation"
+msgstr ""
+
+#: src/0236-error-conventions.md:29
+msgid "Rust provides two basic strategies for dealing with errors:"
+msgstr ""
+
+#: src/0236-error-conventions.md:31
+msgid ""
+"_Task failure_, which unwinds to at least the task boundary, and by default "
+"propagates to other tasks through poisoned channels and mutexes. Task "
+"failure works well for coarse-grained error handling."
+msgstr ""
+
+#: src/0236-error-conventions.md:35
+msgid ""
+"_The Result type_, which allows functions to signal error conditions through "
+"the value that they return. Together with a lint and the `try!` macro, "
+"`Result` works well for fine-grained error handling."
+msgstr ""
+
+#: src/0236-error-conventions.md:39
+msgid ""
+"However, while there have been some general trends in the usage of the two "
+"handling mechanisms, we need to have formal guidelines in order to ensure "
+"consistency as we stabilize library APIs. That is the purpose of this RFC."
+msgstr ""
+
+#: src/0236-error-conventions.md:43
+msgid ""
+"For the most part, the RFC proposes guidelines that are already followed "
+"today, but it tries to motivate and clarify them."
+msgstr ""
+
+#: src/0236-error-conventions.md:46
+msgid "Detailed design"
+msgstr ""
+
+#: src/0236-error-conventions.md:48
+msgid "Errors fall into one of three categories:"
+msgstr ""
+
+#: src/0236-error-conventions.md:50
+msgid "Catastrophic errors, e.g. out-of-memory."
+msgstr ""
+
+#: src/0236-error-conventions.md:51
+msgid "Contract violations, e.g. wrong input encoding, index out of bounds."
+msgstr ""
+
+#: src/0236-error-conventions.md:52
+msgid "Obstructions, e.g. file not found, parse error."
+msgstr ""
+
+#: src/0236-error-conventions.md:54
+msgid "The basic principle of the conventions is that:"
+msgstr ""
+
+#: src/0236-error-conventions.md:56
+msgid ""
+"Catastrophic errors and programming errors (bugs) can and should only be "
+"recovered at a _coarse grain_, i.e. a task boundary."
+msgstr ""
+
+#: src/0236-error-conventions.md:58
+msgid ""
+"Obstructions preventing an operation should be reported at a maximally _fine "
+"grain_ -- to the immediate invoker of the operation."
+msgstr ""
+
+#: src/0236-error-conventions.md:61
+msgid "Catastrophic errors"
+msgstr ""
+
+#: src/0236-error-conventions.md:63
+msgid ""
+"An error is _catastrophic_ if there is no meaningful way for the current "
+"task to continue after the error occurs."
+msgstr ""
+
+#: src/0236-error-conventions.md:66
+msgid ""
+"Catastrophic errors are _extremely_ rare, especially outside of `libstd`."
+msgstr ""
+
+#: src/0236-error-conventions.md:68
+msgid "**Canonical examples**: out of memory, stack overflow."
+msgstr ""
+
+#: src/0236-error-conventions.md:70
+msgid "For catastrophic errors, fail the task."
+msgstr ""
+
+#: src/0236-error-conventions.md:72
+msgid ""
+"For errors like stack overflow, Rust currently aborts the process, but could "
+"in principle fail the task, which (in the best case) would allow reporting "
+"and recovery from a supervisory task."
+msgstr ""
+
+#: src/0236-error-conventions.md:76
+msgid "Contract violations"
+msgstr ""
+
+#: src/0236-error-conventions.md:78
+msgid ""
+"An API may define a contract that goes beyond the type checking enforced by "
+"the compiler. For example, slices support an indexing operation, with the "
+"contract that the supplied index must be in bounds."
+msgstr ""
+
+#: src/0236-error-conventions.md:82
+msgid ""
+"Contracts can be complex and involve more than a single function invocation. "
+"For example, the `RefCell` type requires that `borrow_mut` not be called "
+"until all existing borrows have been relinquished."
+msgstr ""
+
+#: src/0236-error-conventions.md:86
+msgid "For contract violations, fail the task."
+msgstr ""
+
+#: src/0236-error-conventions.md:88
+msgid ""
+"A contract violation is always a bug, and for bugs we follow the Erlang "
+"philosophy of \"let it crash\": we assume that software _will_ have bugs, "
+"and we design coarse-grained task boundaries to report, and perhaps recover, "
+"from these bugs."
+msgstr ""
+
+#: src/0236-error-conventions.md:93
+msgid "Contract design"
+msgstr ""
+
+#: src/0236-error-conventions.md:95
+msgid ""
+"One subtle aspect of these guidelines is that the contract for a function is "
+"chosen by an API designer -- and so the designer also determines what counts "
+"as a violation."
+msgstr ""
+
+#: src/0236-error-conventions.md:99
+msgid ""
+"This RFC does not attempt to give hard-and-fast rules for designing "
+"contracts. However, here are some rough guidelines:"
+msgstr ""
+
+#: src/0236-error-conventions.md:102
+msgid "Prefer expressing contracts through static types whenever possible."
+msgstr ""
+
+#: src/0236-error-conventions.md:104
+msgid ""
+"It _must_ be possible to write code that uses the API without violating the "
+"contract."
+msgstr ""
+
+#: src/0236-error-conventions.md:107
+msgid ""
+"Contracts are most justified when violations are _inarguably_ bugs -- but "
+"this is surprisingly rare."
+msgstr ""
+
+#: src/0236-error-conventions.md:110
+msgid ""
+"Consider whether the API client could benefit from the contract-checking "
+"logic.  The checks may be expensive. Or there may be useful programming "
+"patterns where the client does not want to check inputs before hand, but "
+"would rather attempt the operation and then find out whether the inputs were "
+"invalid."
+msgstr ""
+
+#: src/0236-error-conventions.md:115
+msgid ""
+"When a contract violation is the _only_ kind of error a function may "
+"encounter \\-- i.e., there are no obstructions to its success other than "
+"\"bad\" inputs -- using `Result` or `Option` instead is especially "
+"warranted. Clients can then use `unwrap` to assert that they have passed "
+"valid input, or re-use the error checking done by the API for their own "
+"purposes."
+msgstr ""
+
+#: src/0236-error-conventions.md:121
+msgid ""
+"When in doubt, use loose contracts and instead return a `Result` or `Option`."
+msgstr ""
+
+#: src/0236-error-conventions.md:123
+msgid "Obstructions"
+msgstr ""
+
+#: src/0236-error-conventions.md:125
+msgid ""
+"An operation is _obstructed_ if it cannot be completed for some reason, even "
+"though the operation's contract has been satisfied. Obstructed operations "
+"may have (documented!) side effects -- they are not required to roll back "
+"after encountering an obstruction.  However, they should leave the data "
+"structures in a \"coherent\" state (satisfying their invariants, continuing "
+"to guarantee safety, etc.)."
+msgstr ""
+
+#: src/0236-error-conventions.md:132
+msgid ""
+"Obstructions may involve external conditions (e.g., I/O), or they may "
+"involve aspects of the input that are not covered by the contract."
+msgstr ""
+
+#: src/0236-error-conventions.md:135
+msgid "**Canonical examples**: file not found, parse error."
+msgstr ""
+
+#: src/0236-error-conventions.md:137
+msgid "For obstructions, use `Result`"
+msgstr ""
+
+#: src/0236-error-conventions.md:139
+msgid ""
+"The [`Result<T,E>` type](http://static.rust-lang.org/doc/master/std/result/"
+"index.html) represents either a success (yielding `T`) or failure (yielding "
+"`E`). By returning a `Result`, a function allows its clients to discover and "
+"react to obstructions in a fine-grained way."
+msgstr ""
+
+#: src/0236-error-conventions.md:145
+msgid "What about `Option`?"
+msgstr ""
+
+#: src/0236-error-conventions.md:147
+msgid ""
+"The `Option` type should not be used for \"obstructed\" operations; it "
+"should only be used when a `None` return value could be considered a "
+"\"successful\" execution of the operation."
+msgstr ""
+
+#: src/0236-error-conventions.md:151
+msgid ""
+"This is of course a somewhat subjective question, but a good litmus test is: "
+"would a reasonable client ever ignore the result? The `Result` type provides "
+"a lint that ensures the result is actually inspected, while `Option` does "
+"not, and this difference of behavior can help when deciding between the two "
+"types."
+msgstr ""
+
+#: src/0236-error-conventions.md:157
+msgid ""
+"Another litmus test: can the operation be understood as asking a question "
+"(possibly with sideeffects)? Operations like `pop` on a vector can be viewed "
+"as asking for the contents of the first element, with the side effect of "
+"removing it if it exists -- with an `Option` return value."
+msgstr ""
+
+#: src/0236-error-conventions.md:163
+msgid "Do not provide both `Result` and `fail!` variants."
+msgstr ""
+
+#: src/0236-error-conventions.md:165
+msgid ""
+"An API should not provide both `Result`\\-producing and `fail`ing versions "
+"of an operation. It should provide just the `Result` version, allowing "
+"clients to use `try!` or `unwrap` instead as needed. This is part of the "
+"general pattern of cutting down on redundant variants by instead using "
+"method chaining."
+msgstr ""
+
+#: src/0236-error-conventions.md:170
+msgid ""
+"There is one exception to this rule, however. Some APIs are strongly "
+"oriented around failure, in the sense that their functions/methods are "
+"explicitly intended as assertions.  If there is no other way to check in "
+"advance for the validity of invoking an operation `foo`, however, the API "
+"may provide a `foo_catch` variant that returns a `Result`."
+msgstr ""
+
+#: src/0236-error-conventions.md:176
+msgid ""
+"The main examples in `libstd` that _currently_ provide both variants are:"
+msgstr ""
+
+#: src/0236-error-conventions.md:178
+msgid ""
+"Channels, which are the primary point of failure propagation between tasks. "
+"As such, calling `recv()` is an _assertion_ that the other end of the "
+"channel is still alive, which will propagate failures from the other end of "
+"the channel. On the other hand, since there is no separate way to atomically "
+"test whether the other end has hung up, channels provide a `recv_opt` "
+"variant that produces a `Result`."
+msgstr ""
+
+#: src/0236-error-conventions.md:185
+msgid ""
+"Note: the `_opt` suffix would be replaced by a `_catch` suffix if this RFC "
+"is accepted."
+msgstr ""
+
+#: src/0236-error-conventions.md:188
+msgid ""
+"`RefCell`, which provides a dynamic version of the borrowing rules. Calling "
+"the `borrow()` method is intended as an assertion that the cell is in a "
+"borrowable state, and will `fail!` otherwise. On the other hand, there is no "
+"separate way to check the state of the `RefCell`, so the module provides a "
+"`try_borrow` variant that produces a `Result`."
+msgstr ""
+
+#: src/0236-error-conventions.md:194
+msgid ""
+"Note: the `try_` prefix would be replaced by a `_catch` catch if this RFC is "
+"accepted."
+msgstr ""
+
+#: src/0236-error-conventions.md:197
+msgid ""
+"(Note: it is unclear whether these APIs will continue to provide both "
+"variants.)"
+msgstr ""
+
+#: src/0236-error-conventions.md:199
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0236-error-conventions.md:201
+msgid "The main drawbacks of this proposal are:"
+msgstr ""
+
+#: src/0236-error-conventions.md:203
+msgid ""
+"Task failure remains somewhat of a landmine: one must be sure to document, "
+"and be aware of, all relevant function contracts in order to avoid task "
+"failure."
+msgstr ""
+
+#: src/0236-error-conventions.md:206
+msgid ""
+"The choice of what to make part of a function's contract remains somewhat "
+"subjective, so these guidelines cannot be used to decisively resolve "
+"disagreements about an API's design."
+msgstr ""
+
+#: src/0236-error-conventions.md:210
+msgid ""
+"The alternatives mentioned below do not suffer from these problems, but have "
+"drawbacks of their own."
+msgstr ""
+
+#: src/0236-error-conventions.md:213
+msgid "Alternatives"
+msgstr ""
+
+#: src/0236-error-conventions.md:215
+msgid ""
+"[Two](https://github.com/rust-lang/rfcs/pull/204) [alternative](https://"
+"github.com/rust-lang/rfcs/pull/220) designs have been given in earlier RFCs, "
+"both of which take a much harder line on using `fail!` (or, put differently, "
+"do not allow most functions to have contracts)."
+msgstr ""
+
+#: src/0236-error-conventions.md:220
+msgid ""
+"As was [pointed out by @SiegeLord](https://github.com/rust-lang/rfcs/"
+"pull/220#issuecomment-54715268), however, mixing what might be seen as "
+"contract violations with obstructions can make it much more difficult to "
+"write obstruction-robust code; see the linked comment for more detail."
+msgstr ""
+
+#: src/0236-error-conventions.md:226
+msgid "Naming"
+msgstr ""
+
+#: src/0236-error-conventions.md:228
+msgid ""
+"There are numerous possible suffixes for a `Result`\\-producing variant:"
+msgstr ""
+
+#: src/0236-error-conventions.md:230
+msgid ""
+"`_catch`, as proposed above. As [@lilyball points out](https://github.com/"
+"rust-lang/rfcs/pull/236#issuecomment-55344336), this name connotes exception "
+"handling, which could be considered misleading. However, since it "
+"effectively prevents further unwinding, catching an exception may indeed be "
+"the right analogy."
+msgstr ""
+
+#: src/0236-error-conventions.md:236
+msgid ""
+"`_result`, which is straightforward but not as informative/suggestive as "
+"some of the other proposed variants."
+msgstr ""
+
+#: src/0236-error-conventions.md:239
+msgid ""
+"`try_` prefix. Also connotes exception handling, but has an unfortunately "
+"overlap with the common use of `try_` for nonblocking variants (which is in "
+"play for `recv` in particular)."
+msgstr ""

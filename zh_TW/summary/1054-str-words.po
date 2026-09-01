@@ -1,0 +1,155 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1054-str-words.md:1
+msgid "Feature Name: str-words"
+msgstr ""
+
+#: src/1054-str-words.md:2
+msgid "Start Date: 2015-04-10"
+msgstr ""
+
+#: src/1054-str-words.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1054](https://github.com/rust-lang/rfcs/pull/1054)"
+msgstr ""
+
+#: src/1054-str-words.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#24543](https://github.com/rust-lang/rust/"
+"issues/24543)"
+msgstr ""
+
+#: src/1054-str-words.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1054-str-words.md:8
+msgid "Rename or replace `str::words` to side-step the ambiguity of “a word”."
+msgstr ""
+
+#: src/1054-str-words.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1054-str-words.md:13
+msgid ""
+"The [`str::words`](http://doc.rust-lang.org/std/primitive.str.html#method."
+"words) method is currently marked `#[unstable(reason = \"the precise "
+"algorithm to use is unclear\")]`. Indeed, the concept of “a word” is not "
+"easy to define in presence of punctuation or languages with various "
+"conventions, including not using spaces at all to separate words."
+msgstr ""
+
+#: src/1054-str-words.md:18
+msgid ""
+"[Issue #15628](https://github.com/rust-lang/rust/issues/15628) suggests "
+"changing the algorithm to be based on [the _Word Boundaries_ section of "
+"_Unicode Standard Annex #29: Unicode Text Segmentation_](http://www.unicode."
+"org/reports/tr29/#Word_Boundaries)."
+msgstr ""
+
+#: src/1054-str-words.md:22
+msgid ""
+"While a Rust implementation of UAX#29 would be useful, it belong on crates."
+"io more than in `std`:"
+msgstr ""
+
+#: src/1054-str-words.md:24
+msgid ""
+"It carries significant complexity that may be surprising from something that "
+"looks as simple as a parameter-less “words” method in the standard library. "
+"Users may not be aware of how subtle defining “a word” can be."
+msgstr ""
+
+#: src/1054-str-words.md:27
+msgid "It is not a definitive answer. The standard itself notes:"
+msgstr ""
+
+#: src/1054-str-words.md:29
+msgid ""
+"It is not possible to provide a uniform set of rules that resolves all "
+"issues across languages or that handles all ambiguous situations within a "
+"given language. The goal for the specification presented in this annex is to "
+"provide a workable default; tailored implementations can be more "
+"sophisticated."
+msgstr ""
+
+#: src/1054-str-words.md:34
+msgid "and gives many examples of such ambiguous situations."
+msgstr ""
+
+#: src/1054-str-words.md:36
+msgid ""
+"Therefore, `std` would be better off avoiding the question of defining word "
+"boundaries entirely."
+msgstr ""
+
+#: src/1054-str-words.md:39
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1054-str-words.md:41
+msgid ""
+"Rename the `words` method to `split_whitespace`, and keep the current "
+"behavior unchanged. (That is, return an iterator equivalent to `s."
+"split(char::is_whitespace).filter(|s| !s.is_empty())`.)"
+msgstr ""
+
+#: src/1054-str-words.md:44
+msgid ""
+"Rename the return type `std::str::Words` to `std::str::SplitWhitespace`."
+msgstr ""
+
+#: src/1054-str-words.md:46
+msgid ""
+"Optionally, keep a `words` wrapper method for a while, both `#[deprecated]` "
+"and `#[unstable]`, with an error message that suggests `split_whitespace` or "
+"the chosen alternative."
+msgstr ""
+
+#: src/1054-str-words.md:50
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1054-str-words.md:52
+msgid ""
+"`split_whitespace` is very similar to the existing `str::split<P: "
+"Pattern>(&self, P)` method, and having a separate method seems like weak API "
+"design. (But see below.)"
+msgstr ""
+
+#: src/1054-str-words.md:56
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1054-str-words.md:58
+msgid ""
+"Replace `str::words` with `struct Whitespace;` with a custom `Pattern` "
+"implementation, which can be used in `str::split`. However this requires the "
+"`Whitespace` symbol to be imported separately."
+msgstr ""
+
+#: src/1054-str-words.md:61
+msgid ""
+"Remove `str::words` entirely and tell users to use `s.split(char::"
+"is_whitespace).filter(|s| !s.is_empty())` instead."
+msgstr ""
+
+#: src/1054-str-words.md:65
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1054-str-words.md:67
+msgid "Is there a better alternative?"
+msgstr ""

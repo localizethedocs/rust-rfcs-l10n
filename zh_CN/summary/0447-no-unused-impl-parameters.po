@@ -1,0 +1,220 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0447-no-unused-impl-parameters.md:1
+msgid "Start Date: 2014-11-06"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#447](https://github.com/rust-lang/rfcs/pull/447)"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#20598](https://github.com/rust-lang/rust/"
+"issues/20598)"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:7
+msgid ""
+"Disallow unconstrained type parameters from impls. In practice this means "
+"that every type parameter must either:"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:10
+msgid "appear in the trait reference of the impl, if any;"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:11
+msgid "appear in the self type of the impl; or,"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:12
+msgid "be bound as an associated type."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:14
+msgid "This is an informal description, see below for full details."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:16
+msgid "Motivation"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:18
+msgid ""
+"Today it is legal to have impls with type parameters that are effectively "
+"unconstrainted. This RFC proses to make these illegal by requiring that all "
+"impl type parameters must appear in either the self type of the impl or, if "
+"the impl is a trait impl, an (input) type parameter of the trait reference. "
+"Type parameters can also be constrained by associated types."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:25
+msgid ""
+"There are many reasons to make this change. First, impls are not explicitly "
+"instantiated or named, so there is no way for users to manually specify the "
+"values of type variables; the values must be inferred. If the type "
+"parameters do not appear in the trait reference or self type, however, there "
+"is no basis on which to infer them; this almost always yields an error in "
+"any case (unresolved type variable), though there are some corner cases "
+"where the inferencer can find a constraint."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:34
+msgid ""
+"Second, permitting unconstrained type parameters to appear on impls can "
+"potentially lead to ill-defined semantics later on. The current way that the "
+"language works for cross-crate inlining is that the body of the method is "
+"effectively reproduced within the target crate, but in a fully elaborated "
+"form where it is as if the user specified every type explicitly that they "
+"possibly could. This should be sufficient to reproduce the same trait "
+"selections, even if the crate adds additional types and additional impls -- "
+"but this cannot be guaranteed if there are free-floating type parameters on "
+"impls, since their values are not written anywhere. (This semantics, "
+"incidentally, is not only convenient, but also required if we wish to allow "
+"for specialization as a possibility later on.)"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:47
+msgid ""
+"Finally, there is little to no loss of expressiveness. The type parameters "
+"in question can always be moved somewhere else."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:50
+msgid ""
+"Here are some examples to clarify what's allowed and disallowed. In each "
+"case, we also clarify how the example can be rewritten to be legal."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:55
+msgid ""
+"// Legal:\n"
+"// - A is used in the self type.\n"
+"// - B is used in the input trait type parameters.\n"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:61
+msgid ""
+"// Legal:\n"
+"// - A and B are used in the self type\n"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:67
+msgid ""
+"// Illegal:\n"
+"// - A does not appear in the self type nor trait type parameters.\n"
+"//\n"
+"// This sort of pattern can generally be written by making `Bar` carry\n"
+"// `A` as a phantom type parameter, or by making `Elem` an input type\n"
+"// of `Foo`.\n"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:75
+msgid "// associated types do not count\n"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:78
+msgid ""
+"// Illegal: B does not appear in the self type.\n"
+"//\n"
+"// Note that B could be moved to the method `get()` with no\n"
+"// loss of expressiveness.\n"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:91
+msgid ""
+"// Legal: `U` does not appear in the input types,\n"
+"// but it bound as an associated type of `T`.\n"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:99
+msgid "Detailed design"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:101
+msgid ""
+"Type parameters are legal if they are \"constrained\" according to the "
+"following inference rules:"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:117
+msgid ""
+"The interesting rule is of course the final one. It says that type "
+"parameters whose value is determined by an associated type reference are "
+"legal. A simple example is:"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:126
+msgid ""
+"However, we have to be careful to avoid cases where the associated type is "
+"an associated type of things that are not themselves constrained:"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:135
+msgid ""
+"Similarly, the final clause in the rule aims to prevent an impl from \"self-"
+"referentially\" constraining an output type parameter:"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:143
+msgid ""
+"This last case isn't that important because impls like this, when used, tend "
+"to result in overflow in the compiler, but it's more user-friendly to report "
+"an error earlier."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:147
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:149
+msgid "This pattern requires a non-local rewrite to reproduce:"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:151
+msgid ""
+"```\n"
+"impl<A> Foo for Bar {\n"
+"    type Elem = A; // associated types do not count\n"
+"    ...\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:158
+msgid "Alternatives"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:160
+msgid ""
+"To make these type parameters well-defined, we could also create a syntax "
+"for specifying impl type parameter instantiations and/or have the compiler "
+"track the full tree of impl type parameter instantiations at type-checking "
+"time and supply this to the translation phase. This approach rules out the "
+"possibility of impl specialization."
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:166
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0447-no-unused-impl-parameters.md:168
+msgid "None."
+msgstr ""

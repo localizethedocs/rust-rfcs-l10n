@@ -1,0 +1,240 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1758-repr-transparent.md:1
+msgid "Feature Name: `repr_transparent`"
+msgstr ""
+
+#: src/1758-repr-transparent.md:2
+msgid "Start Date: 2016-09-26"
+msgstr ""
+
+#: src/1758-repr-transparent.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1758](https://github.com/rust-lang/rfcs/pull/1758)"
+msgstr ""
+
+#: src/1758-repr-transparent.md:4
+msgid "Rust Issue:https://github.com/rust-lang/rust/issues/43036"
+msgstr ""
+
+#: src/1758-repr-transparent.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1758-repr-transparent.md:9
+msgid ""
+"Extend the existing `#[repr]` attribute on newtypes with a `transparent` "
+"option specifying that the type representation is the representation of its "
+"only field. This matters in FFI context where `struct Foo(T)` might not "
+"behave the same as `T`."
+msgstr ""
+
+#: src/1758-repr-transparent.md:15
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1758-repr-transparent.md:18
+msgid ""
+"On some ABIs, structures with one field aren't handled the same way as "
+"values of the same type as the single field. For example on ARM64, functions "
+"returning a structure with a single `f64` field return nothing and take a "
+"pointer to be filled with the return value, whereas functions returning a "
+"`f64` return the floating-point number directly."
+msgstr ""
+
+#: src/1758-repr-transparent.md:24
+msgid ""
+"This means that if someone wants to wrap a `f64` value in a struct tuple "
+"wrapper and use that wrapper as the return type of a FFI function that "
+"actually returns a bare `f64`, the calls to this function will be compiled "
+"incorrectly by Rust and the execution of the program will segfault."
+msgstr ""
+
+#: src/1758-repr-transparent.md:29
+msgid ""
+"This also means that `UnsafeCell<T>` cannot be soundly used in place of a "
+"bare `T` in FFI context, which might be necessary to signal to the Rust side "
+"of things that this `T` value may unexpectedly be mutated."
+msgstr ""
+
+#: src/1758-repr-transparent.md:34
+msgid ""
+"// The value is returned directly in a floating-point register on ARM64.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:44
+msgid ""
+"// Incorrect: the wrapped value on ARM64 is indirectly returned and the\n"
+"        // function takes a pointer to where the return value must be "
+"stored.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:55
+msgid ""
+"// Correct: FancyWrapper is handled exactly the same as f64 on all\n"
+"        // platforms.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:62
+msgid ""
+"Given this attribute delegates all representation concerns, no other `repr` "
+"attribute should be present on the type. This means the following "
+"definitions are illegal:"
+msgstr ""
+
+#: src/1758-repr-transparent.md:67 src/1758-repr-transparent.md:123
+msgid "\"128\""
+msgstr ""
+
+#: src/1758-repr-transparent.md:74
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1758-repr-transparent.md:77
+msgid ""
+"The `#[repr]` attribute on newtypes will be extended to include a form such "
+"as:"
+msgstr ""
+
+#: src/1758-repr-transparent.md:84
+msgid ""
+"This structure will still have the same representation as a raw `f64` value."
+msgstr ""
+
+#: src/1758-repr-transparent.md:86
+msgid ""
+"Syntactically, the `repr` meta list will be extended to accept a meta item "
+"with the name \"transparent\". This attribute can be placed on newtypes, i."
+"e. structures (and structure tuples) with a single field, and on structures "
+"that are logically equivalent to a newtype, i.e. structures with multiple "
+"fields where only a single one of them has a non-zero size."
+msgstr ""
+
+#: src/1758-repr-transparent.md:92
+msgid "Some examples of `#[repr(transparent)]` are:"
+msgstr ""
+
+#: src/1758-repr-transparent.md:95
+msgid "// Transparent struct tuple.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:98
+msgid "// Transparent structure.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:102
+msgid "// Transparent struct wrapper with a marker.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:111
+msgid ""
+"This new representation is mostly useful when the structure it is put on "
+"must be used in FFI context as a wrapper to the underlying type without "
+"actually being affected by any ABI semantics."
+msgstr ""
+
+#: src/1758-repr-transparent.md:115
+msgid ""
+"It is also useful for `AtomicUsize`\\-like types, which [RFC 1649](https://"
+"github.com/rust-lang/rfcs/pull/1649) states should have the same "
+"representation as their underlying types."
+msgstr ""
+
+#: src/1758-repr-transparent.md:120
+msgid ""
+"This new representation cannot be used with any other representation "
+"attribute:"
+msgstr ""
+
+#: src/1758-repr-transparent.md:124
+msgid "// Error, must be aligned like the underlying type.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:127
+msgid "// Error, repr cannot be C and transparent.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:130
+msgid ""
+"As a matter of optimisation, eligible `#[repr(Rust)]` structs behave as if "
+"they were `#[repr(transparent)]` but as an implementation detail that can't "
+"be relied upon by users."
+msgstr ""
+
+#: src/1758-repr-transparent.md:139
+msgid ""
+"// While ImplicitlyTransparentWrapper implicitly has the same "
+"representation\n"
+"    // as f64, this will fail to compile because "
+"ImplicitlyTransparentWrapper\n"
+"    // has no explicit transparent or C representation.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:146
+msgid ""
+"The representation of a transparent wrapper is the representation of its "
+"only non-zero-sized field, transitively:"
+msgstr ""
+
+#: src/1758-repr-transparent.md:159
+msgid "// Behaves as f64.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:161
+msgid "// Representation is Rust.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:163
+msgid "// Representation is C.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:165
+msgid "// Transitively C.\n"
+msgstr ""
+
+#: src/1758-repr-transparent.md:168
+msgid ""
+"Coercions and casting between the transparent wrapper and its non-zero-sized "
+"types are forbidden."
+msgstr ""
+
+#: src/1758-repr-transparent.md:171
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1758-repr-transparent.md:174
+msgid "None."
+msgstr ""
+
+#: src/1758-repr-transparent.md:176
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1758-repr-transparent.md:179
+msgid ""
+"The only alternative to such a construct for FFI purposes is to use the "
+"exact same types as specified in the C header (or wherever the FFI types "
+"come from) and to make additional wrappers for them in Rust. This does not "
+"help if a field using interior mutability (i.e. uses `UnsafeCell<T>`) has to "
+"be passed to the FFI side, so this alternative does not actually cover all "
+"the uses cases allowed by `#[repr(transparent)]`."
+msgstr ""
+
+#: src/1758-repr-transparent.md:186
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1758-repr-transparent.md:189
+msgid "None"
+msgstr ""

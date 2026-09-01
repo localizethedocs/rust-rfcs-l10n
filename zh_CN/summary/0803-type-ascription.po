@@ -1,0 +1,380 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0803-type-ascription.md:1
+msgid "Start Date: 2015-02-03"
+msgstr ""
+
+#: src/0803-type-ascription.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#803](https://github.com/rust-lang/rfcs/pull/803)"
+msgstr ""
+
+#: src/0803-type-ascription.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#23416](https://github.com/rust-lang/rust/"
+"issues/23416)"
+msgstr ""
+
+#: src/0803-type-ascription.md:4
+msgid "Feature: `ascription`"
+msgstr ""
+
+#: src/0803-type-ascription.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/0803-type-ascription.md:8
+msgid ""
+"Add type ascription to expressions. (An earlier version of this RFC covered "
+"type ascription in patterns too, that has been postponed)."
+msgstr ""
+
+#: src/0803-type-ascription.md:11
+msgid "Type ascription on expression has already been implemented."
+msgstr ""
+
+#: src/0803-type-ascription.md:13
+msgid ""
+"See also discussion on [\\#354](https://github.com/rust-lang/rfcs/"
+"issues/354) and [rust issue 10502](https://github.com/rust-lang/rust/"
+"issues/10502)."
+msgstr ""
+
+#: src/0803-type-ascription.md:17
+msgid "Motivation"
+msgstr ""
+
+#: src/0803-type-ascription.md:19
+msgid ""
+"Type inference is imperfect. It is often useful to help type inference by "
+"annotating a sub-expression with a type. Currently, this is only possible by "
+"extracting the sub-expression into a variable using a `let` statement and/or "
+"giving a type for a whole expression or pattern. This is un- ergonomic, and "
+"sometimes impossible due to lifetime issues. Specifically, where a variable "
+"has lifetime of its enclosing scope, but a sub-expression's lifetime is "
+"typically limited to the nearest semi-colon."
+msgstr ""
+
+#: src/0803-type-ascription.md:27
+msgid ""
+"Typical use cases are where a function's return type is generic (e.g., "
+"collect) and where we want to force a coercion."
+msgstr ""
+
+#: src/0803-type-ascription.md:30
+msgid ""
+"Type ascription can also be used for documentation and debugging - where it "
+"is unclear from the code which type will be inferred, type ascription can be "
+"used to precisely communicate expectations to the compiler or other "
+"programmers."
+msgstr ""
+
+#: src/0803-type-ascription.md:34
+msgid ""
+"By allowing type ascription in more places, we remove the inconsistency that "
+"type ascription is currently only allowed on top-level patterns."
+msgstr ""
+
+#: src/0803-type-ascription.md:37
+msgid "Examples:"
+msgstr ""
+
+#: src/0803-type-ascription.md:39
+msgid ""
+"(Somewhat simplified examples, in these cases there are sometimes better "
+"solutions with the current syntax)."
+msgstr ""
+
+#: src/0803-type-ascription.md:42
+msgid "Generic return type:"
+msgstr ""
+
+#: src/0803-type-ascription.md:44
+msgid ""
+"```\n"
+"// Current.\n"
+"let z = if ... {\n"
+"    let x: Vec<_> = foo.enumerate().collect();\n"
+"    x\n"
+"} else {\n"
+"    ...\n"
+"};\n"
+"\n"
+"// With type ascription.\n"
+"let z = if ... {\n"
+"    foo.enumerate().collect(): Vec<_>\n"
+"} else {\n"
+"    ...\n"
+"};\n"
+"```"
+msgstr ""
+
+#: src/0803-type-ascription.md:61
+msgid "Coercion:"
+msgstr ""
+
+#: src/0803-type-ascription.md:63
+msgid ""
+"```\n"
+"fn foo<T>(a: T, b: T) { ... }\n"
+"\n"
+"// Current.\n"
+"let x = [1u32, 2, 4];\n"
+"let y = [3u32];\n"
+"...\n"
+"let x: &[_] = &x;\n"
+"let y: &[_] = &y;\n"
+"foo(x, y);\n"
+"\n"
+"// With type ascription.\n"
+"let x = [1u32, 2, 4];\n"
+"let y = [3u32];\n"
+"...\n"
+"foo(x: &[_], y: &[_]);\n"
+"```"
+msgstr ""
+
+#: src/0803-type-ascription.md:81
+msgid "Generic return type and coercion:"
+msgstr ""
+
+#: src/0803-type-ascription.md:83
+msgid ""
+"```\n"
+"// Current.\n"
+"let x: T = {\n"
+"    let temp: U<_> = foo();\n"
+"    temp\n"
+"};\n"
+"\n"
+"// With type ascription.\n"
+"let x: T = foo(): U<_>;\n"
+"```"
+msgstr ""
+
+#: src/0803-type-ascription.md:95
+msgid "Detailed design"
+msgstr ""
+
+#: src/0803-type-ascription.md:97
+msgid "The syntax of expressions is extended with type ascription:"
+msgstr ""
+
+#: src/0803-type-ascription.md:103
+msgid ""
+"where `e` is an expression and `T` is a type. Type ascription has the same "
+"precedence as explicit coercions using `as`."
+msgstr ""
+
+#: src/0803-type-ascription.md:106
+msgid ""
+"When type checking `e: T`, `e` must have type `T`. The `must have type` test "
+"includes implicit coercions and subtyping, but not explicit coercions. `T` "
+"may be any well-formed type."
+msgstr ""
+
+#: src/0803-type-ascription.md:110
+msgid ""
+"At runtime, type ascription is a no-op, unless an implicit coercion was used "
+"in type checking, in which case the dynamic semantics of a type ascription "
+"expression are exactly those of the implicit coercion."
+msgstr ""
+
+#: src/0803-type-ascription.md:114
+msgid ""
+"@eddyb has implemented the expressions part of this RFC, [PR](https://github."
+"com/rust-lang/rust/pull/21836)."
+msgstr ""
+
+#: src/0803-type-ascription.md:117
+msgid "This feature should land behind the `ascription` feature gate."
+msgstr ""
+
+#: src/0803-type-ascription.md:120
+msgid "coercion and `as` vs `:`"
+msgstr ""
+
+#: src/0803-type-ascription.md:122
+msgid ""
+"A downside of type ascription is the overlap with explicit coercions (aka "
+"casts, the `as` operator). To the programmer, type ascription makes implicit "
+"coercions explicit (however, the compiler makes no distinction between "
+"coercions due to type ascription and other coercions). In RFC 401, it is "
+"proposed that all valid implicit coercions are valid explicit coercions. "
+"However, that may be too confusing for users, since there is no reason to "
+"use type ascription rather than `as` (if there is some coercion). "
+"Furthermore, if programmers do opt to use `as` as the default whether or not "
+"it is required, then it loses its function as a warning sign for programmers "
+"to beware of."
+msgstr ""
+
+#: src/0803-type-ascription.md:132
+msgid ""
+"To address this I propose two lints which check for: trivial casts and "
+"trivial numeric casts. Other than these lints we stick with the proposal "
+"from #401 that unnecessary casts will no longer be an error."
+msgstr ""
+
+#: src/0803-type-ascription.md:136
+msgid ""
+"A trivial cast is a cast `x as T` where `x` has type `U` and `x` can be "
+"implicitly coerced to `T` or is already a subtype of `T`."
+msgstr ""
+
+#: src/0803-type-ascription.md:139
+msgid ""
+"A trivial numeric cast is a cast `x as T` where `x` has type `U` and `x` is "
+"implicitly coercible to `T` or `U` is a subtype of `T`, and both `U` and `T` "
+"are numeric types."
+msgstr ""
+
+#: src/0803-type-ascription.md:143
+msgid ""
+"Like any lints, these can be customised per-crate by the programmer. Both "
+"lints are 'warn' by default."
+msgstr ""
+
+#: src/0803-type-ascription.md:146
+msgid ""
+"Although this is a somewhat complex scheme, it allows code that works today "
+"to work with only minor adjustment, it allows for a backwards compatible "
+"path to 'promoting' type conversions from explicit casts to implicit "
+"coercions, and it allows customisation of a contentious kind of error "
+"(especially so in the context of cross-platform programming)."
+msgstr ""
+
+#: src/0803-type-ascription.md:153
+msgid "Type ascription and temporaries"
+msgstr ""
+
+#: src/0803-type-ascription.md:155
+msgid ""
+"There is an implementation choice between treating `x: T` as an lvalue or "
+"rvalue. Note that when an rvalue is used in 'reference context' (e.g., the "
+"subject of a reference operation), then the compiler introduces a temporary "
+"variable. Neither option is satisfactory, if we treat an ascription "
+"expression as an lvalue (i.e., no new temporary), then there is potential "
+"for unsoundness:"
+msgstr ""
+
+#: src/0803-type-ascription.md:161
+msgid ""
+"```\n"
+"let mut foo: S = ...;\n"
+"{\n"
+"    let bar = &mut (foo: T);  // S <: T, no coercion required\n"
+"    *bar = ... : T;\n"
+"}\n"
+"// Whoops, foo has type T, but the compiler thinks it has type S, where "
+"potentially T </: S\n"
+"```"
+msgstr ""
+
+#: src/0803-type-ascription.md:170
+msgid ""
+"If we treat ascription expressions as rvalues (i.e., create a temporary in "
+"lvalue position), then we don't have the soundness problem, but we do get "
+"the unexpected result that `&(x: T)` is not in fact a reference to `x`, but "
+"a reference to a temporary copy of `x`."
+msgstr ""
+
+#: src/0803-type-ascription.md:175
+msgid ""
+"The proposed solution is that type ascription expressions inherit their "
+"'lvalue-ness' from their underlying expressions. I.e., `e: T` is an lvalue "
+"if `e` is an lvalue, and an rvalue otherwise. If the type ascription "
+"expression is in reference context, then we require the ascribed type to "
+"exactly match the type of the expression, i.e., neither subtyping nor "
+"coercion is allowed. These reference contexts are as follows (where `<expr>` "
+"is a type ascription expression):"
+msgstr ""
+
+#: src/0803-type-ascription.md:183
+msgid ""
+"```\n"
+"&[mut] <expr>\n"
+"let ref [mut] x = <expr>\n"
+"match <expr> { .. ref [mut] x .. => { .. } .. }\n"
+"<expr>.foo() // due to autoref\n"
+"<expr> = ...;\n"
+"```"
+msgstr ""
+
+#: src/0803-type-ascription.md:191
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0803-type-ascription.md:193
+msgid "More syntax, another feature in the language."
+msgstr ""
+
+#: src/0803-type-ascription.md:195
+msgid ""
+"Interacts poorly with struct initialisers (changing the syntax for struct "
+"literals has been [discussed and rejected](https://github.com/rust-lang/rfcs/"
+"pull/65) and again in [discuss](http://internals.rust-lang.org/t/replace-"
+"point-x-3-y-5-with-point-x-3-y-5/198))."
+msgstr ""
+
+#: src/0803-type-ascription.md:199
+msgid ""
+"If we introduce named arguments in the future, then it would make it more "
+"difficult to support the same syntax as field initialisers."
+msgstr ""
+
+#: src/0803-type-ascription.md:203
+msgid "Alternatives"
+msgstr ""
+
+#: src/0803-type-ascription.md:205
+msgid ""
+"We could do nothing and force programmers to use temporary variables to "
+"specify a type. However, this is less ergonomic and has problems with scopes/"
+"lifetimes."
+msgstr ""
+
+#: src/0803-type-ascription.md:208
+msgid ""
+"Rely on explicit coercions - the current plan [RFC 401](https://github.com/"
+"rust-lang/rfcs/blob/master/text/0401-coercions.md) is to allow explicit "
+"coercion to any valid type and to use a customisable lint for trivial casts "
+"(that is, those given by subtyping, including the identity case). If we "
+"allow trivial casts, then we could always use explicit coercions instead of "
+"type ascription. However, we would then lose the distinction between "
+"implicit coercions which are safe and explicit coercions, such as narrowing, "
+"which require more programmer attention. This also does not help with "
+"patterns."
+msgstr ""
+
+#: src/0803-type-ascription.md:216
+msgid "We could use a different symbol or keyword instead of `:`, e.g., `is`."
+msgstr ""
+
+#: src/0803-type-ascription.md:219
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0803-type-ascription.md:221
+msgid "Is the suggested precedence correct?"
+msgstr ""
+
+#: src/0803-type-ascription.md:223
+msgid "Should we remove integer suffixes in favour of type ascription?"
+msgstr ""
+
+#: src/0803-type-ascription.md:225
+msgid ""
+"Style guidelines - should we recommend spacing or parenthesis to make type "
+"ascription syntax more easily recognisable?"
+msgstr ""

@@ -1,0 +1,358 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0132-ufcs.md:1
+msgid "Start Date: 2014-03-17"
+msgstr ""
+
+#: src/0132-ufcs.md:2
+msgid "RFC PR #: [\\#132](https://github.com/rust-lang/rfcs/pull/132)"
+msgstr ""
+
+#: src/0132-ufcs.md:3
+msgid ""
+"Rust Issue #: [\\#16293](https://github.com/rust-lang/rust/issues/16293)"
+msgstr ""
+
+#: src/0132-ufcs.md:5
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0132-ufcs.md:7
+msgid ""
+"This RFC describes a variety of extensions to allow any method to be used as "
+"first-class functions. The same extensions also allow for trait methods "
+"without receivers to be invoked in a more natural fashion."
+msgstr ""
+
+#: src/0132-ufcs.md:12
+msgid ""
+"First, at present, the notation `path::method()` can be used to invoke "
+"inherent methods on types. For example, `Vec::new()` is used to create an "
+"instance of a vector. This RFC extends that notion to also cover trait "
+"methods, so that something like `T::size_of()` or `T::default()` is legal."
+msgstr ""
+
+#: src/0132-ufcs.md:18
+msgid ""
+"Second, currently it is permitted to reference so-called \"static methods\" "
+"from traits using a function-like syntax. For example, one can write "
+"`Default::default()`. This RFC extends that notation so it can be used with "
+"any methods, whether or not they are defined with a receiver. (In fact, the "
+"distinction between static methods and other methods is completely erased, "
+"as per the method lookup of RFC PR #48.)"
+msgstr ""
+
+#: src/0132-ufcs.md:25
+msgid ""
+"Third, we introduce an unambiguous if verbose notation that permits one to "
+"precisely specify a trait method and its receiver type in one form. "
+"Specifically, the notation `<T as TraitRef>::item` can be used to designate "
+"an item `item`, defined in a trait `TraitRef`, as implemented by the type "
+"`T`."
+msgstr ""
+
+#: src/0132-ufcs.md:31
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0132-ufcs.md:33
+msgid "There are several motivations:"
+msgstr ""
+
+#: src/0132-ufcs.md:35
+msgid ""
+"There is a need for an unambiguous way to invoke methods. This is typically "
+"a fallback for when the more convenient invocation forms fail:"
+msgstr ""
+
+#: src/0132-ufcs.md:37
+msgid ""
+"For example, when multiple traits are in scope that all define the same "
+"method for the same types, there must be a way to disambiguate which method "
+"you mean."
+msgstr ""
+
+#: src/0132-ufcs.md:40
+msgid "It is sometimes desirable not to have autoderef:"
+msgstr ""
+
+#: src/0132-ufcs.md:41
+msgid ""
+"For methods like `clone()` that apply to almost all types, it is convenient "
+"to be more specific about which precise type you want to clone. To get this "
+"right with autoderef, one must know the precise rules being used, which is "
+"contrary to the \"DWIM\" intention."
+msgstr ""
+
+#: src/0132-ufcs.md:46
+msgid ""
+"For types that implement `Deref<T>`, UFCS can be used to unambiguously "
+"differentiate between methods invoked on the smart pointer itself and "
+"methods invoked on its referent."
+msgstr ""
+
+#: src/0132-ufcs.md:49
+msgid ""
+"There are many methods, such as `SizeOf::size_of()`, that return properties "
+"of the type alone and do not naturally take any argument that can be used to "
+"decide which trait impl you are referring to."
+msgstr ""
+
+#: src/0132-ufcs.md:52
+msgid ""
+"This proposal introduces a variety of ways to invoke such methods, varying "
+"in the amount of explicit information one includes:"
+msgstr ""
+
+#: src/0132-ufcs.md:54
+msgid "`T::size_of()` -- shorthand, but only works if `T` is a path"
+msgstr ""
+
+#: src/0132-ufcs.md:55
+msgid ""
+"`<T>::size_of()` -- infers the trait `SizeOf` based on the traits in scope, "
+"just as with a method call"
+msgstr ""
+
+#: src/0132-ufcs.md:57
+msgid "`<T as SizeOf>::size_of()` -- completely unambiguous"
+msgstr ""
+
+#: src/0132-ufcs.md:59
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0132-ufcs.md:61
+msgid "Path syntax"
+msgstr ""
+
+#: src/0132-ufcs.md:63
+msgid "The syntax of paths is extended as follows:"
+msgstr ""
+
+#: src/0132-ufcs.md:72
+msgid ""
+"Examples of valid paths. In these examples, capitalized names refer to types "
+"(though this doesn't affect the grammar)."
+msgstr ""
+
+#: src/0132-ufcs.md:84
+msgid "Normalization of path that reference types"
+msgstr ""
+
+#: src/0132-ufcs.md:86
+msgid ""
+"Whenever a path like `...::a::...` resolves to a type (but not a _trait_), "
+"it is rewritten (internally) to `<...::a>::...`."
+msgstr ""
+
+#: src/0132-ufcs.md:89
+msgid "Note that there is a subtle distinction between the following paths:"
+msgstr ""
+
+#: src/0132-ufcs.md:94
+msgid ""
+"In the former, we are selecting the member `to_str` from the trait `ToStr`. "
+"The result is a function whose type is basically equivalent to:"
+msgstr ""
+
+#: src/0132-ufcs.md:99
+msgid ""
+"In the latter, we are selecting the member `to_str` from the _type_ `ToStr` "
+"(i.e., an `ToStr` object). Resolving type members is different. In this "
+"case, it would yield a function roughly equivalent to:"
+msgstr ""
+
+#: src/0132-ufcs.md:106
+msgid ""
+"This subtle distinction arises from the fact that we pun on the trait name "
+"to indicate both a type and a reference to the trait itself. In this case, "
+"depending on which interpretation we choose, the path resolution rules "
+"differ slightly."
+msgstr ""
+
+#: src/0132-ufcs.md:111
+msgid "Paths that begin with a TYPE_SEGMENT"
+msgstr ""
+
+#: src/0132-ufcs.md:113
+msgid ""
+"When a path begins with a TYPE_SEGMENT, it is a type-relative path. If this "
+"is the complete path (e.g., `<int>`), then the path resolves to the "
+"specified type. If the path continues (e.g., `<int>::size_of`) then the next "
+"segment is resolved using the following procedure.  The procedure is "
+"intended to mimic method lookup, and hence any changes to method lookup may "
+"also change the details of this lookup."
+msgstr ""
+
+#: src/0132-ufcs.md:120
+msgid "Given a path `<T>::m::...`:"
+msgstr ""
+
+#: src/0132-ufcs.md:122
+msgid ""
+"Search for members of inherent impls defined on `T` (if any) with the name "
+"`m`. If any are found, the path resolves to that item."
+msgstr ""
+
+#: src/0132-ufcs.md:124
+msgid ""
+"Otherwise, let `IN_SCOPE_TRAITS` be the set of traits that are in scope and "
+"which contain a member named `m`:"
+msgstr ""
+
+#: src/0132-ufcs.md:126
+msgid ""
+"Let `IMPLEMENTED_TRAITS` be those traits from `IN_SCOPE_TRAITS` for which an "
+"implementation exists that (may) apply to `T`."
+msgstr ""
+
+#: src/0132-ufcs.md:128
+msgid ""
+"There can be ambiguity in the case that `T` contains type inference "
+"variables."
+msgstr ""
+
+#: src/0132-ufcs.md:130
+msgid ""
+"If `IMPLEMENTED_TRAITS` is not a singleton set, report an ambiguity error. "
+"Otherwise, let `TRAIT` be the member of `IMPLEMENTED_TRAITS`."
+msgstr ""
+
+#: src/0132-ufcs.md:132
+msgid ""
+"If `TRAIT` is ambiguously implemented for `T`, report an ambiguity error and "
+"request further type information."
+msgstr ""
+
+#: src/0132-ufcs.md:134
+msgid "Otherwise, rewrite the path to `<T as Trait>::m::...` and continue."
+msgstr ""
+
+#: src/0132-ufcs.md:137
+msgid "Paths that begin with an ASSOC_SEGMENT"
+msgstr ""
+
+#: src/0132-ufcs.md:139
+msgid ""
+"When a path begins with an ASSOC_SEGMENT, it is a reference to an associated "
+"item defined from a trait. Note that such paths must always have a follow-on "
+"member `m` (that is, `<T as Trait>` is not a complete path, but `<T as "
+"Trait>::m` is)."
+msgstr ""
+
+#: src/0132-ufcs.md:144
+msgid ""
+"To resolve the path, first search for an applicable implementation of "
+"`Trait` for `T`. If no implementation can be found -- or the result is "
+"ambiguous -- then report an error."
+msgstr ""
+
+#: src/0132-ufcs.md:148
+msgid "Otherwise:"
+msgstr ""
+
+#: src/0132-ufcs.md:150
+msgid ""
+"Determine the types of output type parameters for `Trait` from the "
+"implementation."
+msgstr ""
+
+#: src/0132-ufcs.md:152
+msgid ""
+"If output type parameters were specified in the path, ensure that they are "
+"compatible with those specified on the impl."
+msgstr ""
+
+#: src/0132-ufcs.md:154
+msgid ""
+"For example, if the path were `<int as SomeTrait<uint>>`, and the impl is "
+"declared as `impl SomeTrait<char> for int`, then an error would be reported "
+"because `char` and `uint` are not compatible."
+msgstr ""
+
+#: src/0132-ufcs.md:157
+msgid ""
+"Resolve the path to the member of the trait with the substitution composed "
+"of the output type parameters from the impl and `Self => T`."
+msgstr ""
+
+#: src/0132-ufcs.md:160
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0132-ufcs.md:162
+msgid ""
+"We have explored a number of syntactic alternatives. This has been selected "
+"as being the only one that is simultaneously:"
+msgstr ""
+
+#: src/0132-ufcs.md:165
+msgid "Tolerable to look at."
+msgstr ""
+
+#: src/0132-ufcs.md:166
+msgid ""
+"Able to convey _all_ necessary information along with auxiliary information "
+"the user may want to verify:"
+msgstr ""
+
+#: src/0132-ufcs.md:168
+msgid "Self type, type of trait, name of member, type output parameters"
+msgstr ""
+
+#: src/0132-ufcs.md:170
+msgid ""
+"Here are some leading candidates that were considered along with their "
+"equivalents in the syntax proposed by this RFC. The reasons for their "
+"rejection are listed:"
+msgstr ""
+
+#: src/0132-ufcs.md:184
+msgid ""
+"One variation that is definitely possible is that we could use the `:` "
+"rather than the keyword `as`:"
+msgstr ""
+
+#: src/0132-ufcs.md:191
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0132-ufcs.md:193
+msgid ""
+"Is there a better way to disambiguate a reference to a trait item `ToStr::"
+"to_str` versus a reference to a member of the object type `<ToStr>::to_str`? "
+"I personally do not think so: so long as we pun on the name of the trait, "
+"the potential for confusion will remain. Therefore, the only two "
+"possibilities I could come up with are to try and change the question:"
+msgstr ""
+
+#: src/0132-ufcs.md:200
+msgid ""
+"One answer might be that we simply make the second form meaningless by "
+"prohibiting inherent impls on object types. But there remains a utility to "
+"being able to write something like `<ToStr>::is_sized()` (where `is_sized()` "
+"is an example of a trait fn that could apply to both sized and unsized "
+"types). Moreover, artificially restricting object types just for this reason "
+"doesn't seem right."
+msgstr ""
+
+#: src/0132-ufcs.md:207
+msgid ""
+"Another answer is to change the syntax of object types. I have sometimes "
+"considered that `impl ToStr` might be better suited as the object type and "
+"then `ToStr` could be used as syntactic sugar for a type parameter.  But "
+"there exists a lot of precedent for the current approach and hence I think "
+"this is likely a bad idea (not to mention that it's a drastic change)."
+msgstr ""

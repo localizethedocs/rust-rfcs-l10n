@@ -1,0 +1,2371 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1210-impl-specialization.md:1
+msgid "Feature Name: specialization"
+msgstr ""
+
+#: src/1210-impl-specialization.md:2
+msgid "Start Date: 2015-06-17"
+msgstr ""
+
+#: src/1210-impl-specialization.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1210](https://github.com/rust-lang/rfcs/pull/1210)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#31844](https://github.com/rust-lang/rust/"
+"issues/31844)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1210-impl-specialization.md:8
+msgid ""
+"This RFC proposes a design for _specialization_, which permits multiple "
+"`impl` blocks to apply to the same type/trait, so long as one of the blocks "
+"is clearly \"more specific\" than the other. The more specific `impl` block "
+"is used in a case of overlap. The design proposed here also supports "
+"refining default trait implementations based on specifics about the types "
+"involved."
+msgstr ""
+
+#: src/1210-impl-specialization.md:14
+msgid ""
+"Altogether, this relatively small extension to the trait system yields "
+"benefits for performance and code reuse, and it lays the groundwork for an "
+"\"efficient inheritance\" scheme that is largely based on the trait system "
+"(described in a forthcoming companion RFC)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:19
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1210-impl-specialization.md:21
+msgid "Specialization brings benefits along several different axes:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:23
+msgid ""
+"**Performance**: specialization expands the scope of \"zero cost "
+"abstraction\", because specialized impls can provide custom high-performance "
+"code for particular, concrete cases of an abstraction."
+msgstr ""
+
+#: src/1210-impl-specialization.md:27
+msgid ""
+"**Reuse**: the design proposed here also supports refining default (but "
+"incomplete) implementations of a trait, given details about the types "
+"involved."
+msgstr ""
+
+#: src/1210-impl-specialization.md:31
+msgid ""
+"**Groundwork**: the design lays the groundwork for supporting [\"efficient "
+"inheritance\"](https://internals.rust-lang.org/t/summary-of-efficient-"
+"inheritance-rfcs/494) through the trait system."
+msgstr ""
+
+#: src/1210-impl-specialization.md:35
+msgid ""
+"The following subsections dive into each of these motivations in more detail."
+msgstr ""
+
+#: src/1210-impl-specialization.md:37
+msgid "Performance"
+msgstr ""
+
+#: src/1210-impl-specialization.md:39
+msgid ""
+"The simplest and most longstanding motivation for specialization is "
+"performance."
+msgstr ""
+
+#: src/1210-impl-specialization.md:42
+msgid ""
+"To take a very simple example, suppose we add a trait for overloading the "
+"`+=` operator:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:51
+msgid ""
+"It's tempting to provide an impl for any type that you can both `Clone` and "
+"`Add`:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:63
+msgid ""
+"This impl is especially nice because it means that you frequently don't have "
+"to bound separately by `Add` and `AddAssign`; often `Add` is enough to give "
+"you both operators."
+msgstr ""
+
+#: src/1210-impl-specialization.md:67
+msgid ""
+"However, in today's Rust, such an impl would rule out any more specialized "
+"implementation that, for example, avoids the call to `clone`. That means "
+"there's a tension between simple abstractions and code reuse on the one "
+"hand, and performance on the other. Specialization resolves this tension by "
+"allowing both the blanket impl, and more specific ones, to coexist, using "
+"the specialized ones whenever possible (and thereby guaranteeing maximal "
+"performance)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:74
+msgid ""
+"More broadly, traits today can provide static dispatch in Rust, but they can "
+"still impose an abstraction tax. For example, consider the `Extend` trait:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:83
+msgid ""
+"Collections that implement the trait are able to insert data from arbitrary "
+"iterators. Today, that means that the implementation can assume nothing "
+"about the argument `iterable` that it's given except that it can be "
+"transformed into an iterator. That means the code must work by repeatedly "
+"calling `next` and inserting elements one at a time."
+msgstr ""
+
+#: src/1210-impl-specialization.md:89
+msgid ""
+"But in specific cases, like extending a vector with a slice, a much more "
+"efficient implementation is possible -- and the optimizer isn't always "
+"capable of producing it automatically. In such cases, specialization can be "
+"used to get the best of both worlds: retaining the abstraction of `extend` "
+"while providing custom code for specific cases."
+msgstr ""
+
+#: src/1210-impl-specialization.md:95
+msgid ""
+"The design in this RFC relies on multiple, overlapping trait impls, so to "
+"take advantage for `Extend` we need to refactor a bit:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:102
+msgid "// The generic implementation\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:105
+msgid "// the `default` qualifier allows this method to be specialized below\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:107
+msgid "// implementation using push (like today's extend)\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:110
+msgid "// A specialized implementation for slices\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:114
+msgid "// implementation using ptr::write (like push_all)\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:119
+msgid ""
+"Other kinds of specialization are possible, including using marker traits "
+"like:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:125
+msgid ""
+"that can allow the optimization to apply to a broader set of types than "
+"slices, but are still more specific than `T: IntoIterator`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:128
+msgid "Reuse"
+msgstr ""
+
+#: src/1210-impl-specialization.md:130
+msgid ""
+"Today's default methods in traits are pretty limited: they can assume only "
+"the `where` clauses provided by the trait itself, and there is no way to "
+"provide conditional or refined defaults that rely on more specific type "
+"information."
+msgstr ""
+
+#: src/1210-impl-specialization.md:134
+msgid ""
+"For example, consider a different design for overloading `+` and `+=`, such "
+"that they are always overloaded together:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:145
+msgid ""
+"In this case, there's no natural way to provide a default implementation of "
+"`add_assign`, since we do not want to restrict the `Add` trait to `Clone` "
+"data."
+msgstr ""
+
+#: src/1210-impl-specialization.md:148
+msgid ""
+"The specialization design in this RFC also allows for _default impls_, which "
+"can provide specialized defaults without actually providing a full trait "
+"implementation:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:153
+msgid ""
+"// the `default` qualifier here means (1) not all items are implied\n"
+"// and (2) those that are can be further specialized\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:163
+msgid ""
+"This default impl does _not_ mean that `Add` is implemented for all `Clone` "
+"data, but just that when you do impl `Add` and `Self: Clone`, you can leave "
+"off `add_assign`:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:170 src/1210-impl-specialization.md:176
+#: src/1210-impl-specialization.md:333 src/1210-impl-specialization.md:1381
+#: src/1210-impl-specialization.md:1390 src/1210-impl-specialization.md:1397
+msgid "// ...\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:178
+msgid "// no fn add_assign necessary\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:182
+msgid ""
+"A particularly nice case of refined defaults comes from trait hierarchies: "
+"you can sometimes use methods from subtraits to improve default supertrait "
+"methods. For example, consider the relationship between `size_hint` and "
+"`ExactSizeIterator`:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:195
+msgid "Supporting efficient inheritance"
+msgstr ""
+
+#: src/1210-impl-specialization.md:197
+msgid ""
+"Finally, specialization can be seen as a form of inheritance, since methods "
+"defined within a blanket impl can be overridden in a fine-grained way by a "
+"more specialized impl. As we will see, this analogy is a useful guide to the "
+"design of specialization. But it is more than that: the specialization "
+"design proposed here is specifically tailored to support \"efficient "
+"inheritance\" schemes (like those discussed [here](https://internals.rust-"
+"lang.org/t/summary-of-efficient-inheritance-rfcs/494)) without adding an "
+"entirely separate inheritance mechanism."
+msgstr ""
+
+#: src/1210-impl-specialization.md:206
+msgid ""
+"The key insight supporting this design is that virtual method definitions in "
+"languages like C++ and Java actually encompass two distinct mechanisms: "
+"virtual dispatch (also known as \"late binding\") and implementation "
+"inheritance. These two mechanisms can be separated and addressed "
+"independently; this RFC encompasses an \"implementation inheritance\" "
+"mechanism distinct from virtual dispatch, and useful in a number of other "
+"circumstances. But it can be combined nicely with an orthogonal mechanism "
+"for virtual dispatch to give a complete story for the \"efficient "
+"inheritance\" goal that many previous RFCs targeted."
+msgstr ""
+
+#: src/1210-impl-specialization.md:215
+msgid ""
+"The author is preparing a companion RFC showing how this can be done with a "
+"relatively small further extension to the language. But it should be said "
+"that the design in _this_ RFC is fully motivated independently of its "
+"companion RFC."
+msgstr ""
+
+#: src/1210-impl-specialization.md:219
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1210-impl-specialization.md:221
+msgid ""
+"There's a fair amount of material to cover, so we'll start with a basic "
+"overview of the design in intuitive terms, and then look more formally at a "
+"specification."
+msgstr ""
+
+#: src/1210-impl-specialization.md:224
+msgid ""
+"At the simplest level, specialization is about allowing overlap between impl "
+"blocks, so long as there is always an unambiguous \"winner\" for any type "
+"falling into the overlap. For example:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:237 src/1210-impl-specialization.md:241
+msgid "\"\\\"\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:239
+msgid "\"{}\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:246
+msgid ""
+"The idea for this pair of impls is that you can rest assured that _any_ type "
+"implementing `Display` will also implement `Debug` via a reasonable default, "
+"but go on to provide more specific `Debug` implementations when warranted. "
+"In particular, the intuition is that a `Self` type of `String` is somehow "
+"\"more specific\" or \"more concrete\" than `T where T: Display`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:252
+msgid ""
+"The bulk of the detailed design is aimed at making this intuition more "
+"precise. But first, we need to explore some problems that arise when you "
+"introduce specialization in any form."
+msgstr ""
+
+#: src/1210-impl-specialization.md:256
+msgid "Hazard: interactions with type checking"
+msgstr ""
+
+#: src/1210-impl-specialization.md:258
+msgid "Consider the following, somewhat odd example of overlapping impls:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:277
+msgid ""
+"The key point to pay attention to here is the difference in associated "
+"types: the blanket impl uses `Box<T>`, while the impl for `bool` just uses "
+"`bool`. If we write some code that uses the above impls, we can get into "
+"trouble:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:292
+msgid ""
+"What's going on? When type checking `trouble`, the compiler has a type `T` "
+"about which it knows nothing, and sees an attempt to employ the `Example` "
+"trait via `Example::generate(t)`. Because of the blanket impl, this use of "
+"`Example` is allowed -- but furthermore, the associated type found in the "
+"blanket impl is now directly usable, so that `<T as Example>::Output` is "
+"known within `trouble` to be `Box<T>`, allowing `trouble` to type check. But "
+"during _monomorphization_, `weaponize` will actually produce a version of "
+"the code that returns a boolean instead, and then attempt to dereference "
+"that boolean. In other words, things look different to the typechecker than "
+"they do to codegen. Oops."
+msgstr ""
+
+#: src/1210-impl-specialization.md:302
+msgid ""
+"So what went wrong? It should be fine for the compiler to assume that `T: "
+"Example` for all `T`, given the blanket impl. But it's clearly problematic "
+"to _also_ assume that the associated types will be the ones given by that "
+"blanket impl. Thus, the \"obvious\" solution is just to generate a type "
+"error in `trouble` by preventing it from assuming `<T as Example>::Output` "
+"is `Box<T>`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:308
+msgid ""
+"Unfortunately, this solution doesn't work. For one thing, it would be a "
+"breaking change, since the following code _does_ compile today:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:327
+msgid ""
+"And there are definitely cases where this pattern is important. To pick just "
+"one example, consider the following impl for the slice iterator:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:337
+msgid ""
+"It's essential that downstream code be able to assume that `<Iter<'a, T> as "
+"Iterator>::Item` is just `&'a T`, no matter what `'a` and `T` happen to be."
+msgstr ""
+
+#: src/1210-impl-specialization.md:340
+msgid ""
+"Furthermore, it doesn't work to say that the compiler can make this kind of "
+"assumption _unless_ specialization is being used, since we want to allow "
+"downstream crates to add specialized impls. We need to know up front."
+msgstr ""
+
+#: src/1210-impl-specialization.md:344
+msgid ""
+"Another possibility would be to simply disallow specialization of associated "
+"types. But the trouble described above isn't limited to associated types. "
+"Every function/method in a trait has an implicit associated type that "
+"implements the closure types, and similar bad assumptions about blanket "
+"impls can crop up there. It's not entirely clear whether they can be "
+"weaponized, however. (That said, it may be reasonable to stabilize only "
+"specialization of functions/methods to begin with, and wait for strong use "
+"cases of associated type specialization to emerge before stabilizing that.)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:353
+msgid ""
+"The solution proposed in this RFC is instead to treat specialization of "
+"items in a trait as a per-item _opt in_, described in the next section."
+msgstr ""
+
+#: src/1210-impl-specialization.md:356
+msgid "The `default` keyword"
+msgstr ""
+
+#: src/1210-impl-specialization.md:358
+msgid ""
+"Many statically-typed languages that allow refinement of behavior in some "
+"hierarchy also come with ways to signal whether or not this is allowed:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:361
+msgid ""
+"C++ requires the `virtual` keyword to permit a method to be overridden in "
+"subclasses. Modern C++ also supports `final` and `override` qualifiers."
+msgstr ""
+
+#: src/1210-impl-specialization.md:364
+msgid ""
+"C# requires the `virtual` keyword at definition and `override` at point of "
+"overriding an existing method."
+msgstr ""
+
+#: src/1210-impl-specialization.md:367
+msgid "Java makes things silently virtual, but supports `final` as an opt out."
+msgstr ""
+
+#: src/1210-impl-specialization.md:369
+msgid ""
+"Why have these qualifiers? Overriding implementations is, in a way, \"action "
+"at a distance\". It means that the code that's actually being run isn't "
+"obvious when e.g. a class is defined; it can change in subclasses defined "
+"elsewhere. Requiring qualifiers is a way of signaling that this non-local "
+"change is happening, so that you know you need to look more globally to "
+"understand the actual behavior of the class."
+msgstr ""
+
+#: src/1210-impl-specialization.md:376
+msgid ""
+"While impl specialization does not directly involve virtual dispatch, it's "
+"closely-related to inheritance, and it allows some amount of \"action at a "
+"distance\" (modulo, as we'll see, coherence rules). We can thus borrow "
+"directly from these previous designs."
+msgstr ""
+
+#: src/1210-impl-specialization.md:381
+msgid ""
+"This RFC proposes a \"final-by-default\" semantics akin to C++ that is "
+"backwards-compatible with today's Rust, which means that the following "
+"overlapping impls are prohibited:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:397
+msgid ""
+"The error in these impls is that the first impl is implicitly defining "
+"\"final\" versions of its items, which are thus not allowed to be refined in "
+"further specializations."
+msgstr ""
+
+#: src/1210-impl-specialization.md:401
+msgid ""
+"If you want to allow specialization of an item, you do so via the `default` "
+"qualifier _within the impl block_:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:416
+msgid ""
+"Thus, when you're trying to understand what code is going to be executed, if "
+"you see an impl that applies to a type and the relevant item is _not_ marked "
+"`default`, you know that the definition you're looking at is the one that "
+"will apply. If, on the other hand, the item is marked `default`, you need to "
+"scan for other impls that could apply to your type. The coherence rules, "
+"described below, help limit the scope of this search in practice."
+msgstr ""
+
+#: src/1210-impl-specialization.md:423
+msgid ""
+"This design optimizes for fine-grained control over when specialization is "
+"permitted. It's worth pausing for a moment and considering some alternatives "
+"and questions about the design:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:427
+msgid ""
+"**Why mark `default` on impls rather than the trait?** There are a few "
+"reasons to have `default` apply at the impl level. First of all, traits are "
+"fundamentally _interfaces_, while `default` is really about "
+"_implementations_. Second, as we'll see, it's useful to be able to \"seal "
+"off\" a certain avenue of specialization while leaving others open; doing it "
+"at the trait level is an all-or-nothing choice."
+msgstr ""
+
+#: src/1210-impl-specialization.md:434
+msgid ""
+"**Why mark `default` on items rather than the entire impl?** Again, this is "
+"largely about granularity; it's useful to be able to pin down part of an "
+"impl while leaving others open for specialization. Furthermore, while this "
+"RFC doesn't propose to do it, we could easily add a shorthand later on in "
+"which `default impl Trait for Type` is sugar for adding `default` to all "
+"items in the impl."
+msgstr ""
+
+#: src/1210-impl-specialization.md:441
+msgid ""
+"**Won't `default` be confused with default methods?** Yes! But usefully so: "
+"as we'll see, in this RFC's design today's default methods become sugar for "
+"tomorrow's specialization."
+msgstr ""
+
+#: src/1210-impl-specialization.md:445
+msgid ""
+"Finally, how does `default` help with the hazards described above? Easy: an "
+"associated type from a blanket impl must be treated \"opaquely\" if it's "
+"marked `default`. That is, if you write these impls:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:461
+msgid "then the function `trouble` will fail to typecheck:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:469
+msgid ""
+"The error is that `<T as Example>::Output` no longer normalizes to `Box<T>`, "
+"because the applicable blanket impl marks the type as `default`. The fact "
+"that `default` is an opt in makes this behavior backwards-compatible."
+msgstr ""
+
+#: src/1210-impl-specialization.md:473
+msgid "The main drawbacks of this solution are:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:475
+msgid ""
+"**API evolution**. Adding `default` to an associated type _takes away_ some "
+"abilities, which makes it a breaking change to a public API. (In principle, "
+"this is probably true for functions/methods as well, but the breakage there "
+"is theoretical at most.) However, given the design constraints discussed so "
+"far, this seems like an inevitable aspect of any simple, backwards-"
+"compatible design."
+msgstr ""
+
+#: src/1210-impl-specialization.md:482
+msgid ""
+"**Verbosity**. It's possible that certain uses of the trait system will "
+"result in typing `default` quite a bit. This RFC takes a conservative "
+"approach of introducing the keyword at a fine-grained level, but leaving the "
+"door open to adding shorthands (like writing `default impl ...`) in the "
+"future, if need be."
+msgstr ""
+
+#: src/1210-impl-specialization.md:487
+msgid "Overlapping impls and specialization"
+msgstr ""
+
+#: src/1210-impl-specialization.md:489
+msgid "What is overlap?"
+msgstr ""
+
+#: src/1210-impl-specialization.md:491
+msgid ""
+"Rust today does not allow any \"overlap\" between impls. Intuitively, this "
+"means that you cannot write two trait impls that could apply to the same "
+"\"input\" types. (An input type is either `Self` or a type parameter of the "
+"trait). For overlap to occur, the input types must be able to \"unify\", "
+"which means that there's some way of instantiating any type parameters "
+"involved so that the input types are the same. Here are some examples:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:500
+msgid "// No overlap: String and Vec<u8> cannot unify.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:504
+msgid ""
+"// No overlap: Vec<u16> and Vec<u8> cannot unify because u16 and u8 cannot "
+"unify.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:508 src/1210-impl-specialization.md:589
+msgid "// Overlap: T can be instantiated to String.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:512 src/1210-impl-specialization.md:593
+msgid ""
+"// Overlap: Vec<T> and Vec<u8> can unify because T can be instantiated to "
+"u8.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:516
+msgid "// No overlap: String and Vec<T> cannot unify, no matter what T is.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:520 src/1210-impl-specialization.md:597
+msgid "// Overlap: for any T that is Clone, both impls apply.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:524
+msgid ""
+"// No overlap: implicitly, T: Sized, and since !Foo: Sized, you cannot "
+"instantiate T with it.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:531
+msgid "// Overlap: nothing prevents a T such that T: Trait1 + Trait2.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:538 src/1210-impl-specialization.md:612
+#: src/1210-impl-specialization.md:937
+msgid "// Overlap: any T: Trait4 is covered by both impls.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:544 src/1210-impl-specialization.md:548
+msgid "// No overlap: *all* input types must unify for overlap to happen.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:552
+msgid ""
+"// No overlap: no way to instantiate T such that T == u8 and T == u16.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:556 src/1210-impl-specialization.md:618
+msgid "// Overlap: instantiate U as T.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:560
+msgid "// No overlap: no way to instantiate T such that T == &'a T.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:564 src/1210-impl-specialization.md:622
+msgid "// Overlap: instantiate T = &'a U.\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:570
+msgid "Permitting overlap"
+msgstr ""
+
+#: src/1210-impl-specialization.md:572
+msgid ""
+"The goal of specialization is to allow overlapping impls, but it's not as "
+"simple as permitting _all_ overlap. There has to be a way to decide which of "
+"two overlapping impls to actually use for a given set of input types. The "
+"simpler and more intuitive the rule for deciding, the easier it is to write "
+"and reason about code -- and since dispatch is already quite complicated, "
+"simplicity here is a high priority. On the other hand, the design should "
+"support as many of the motivating use cases as possible."
+msgstr ""
+
+#: src/1210-impl-specialization.md:580
+msgid ""
+"The basic intuition we've been using for specialization is the idea that one "
+"impl is \"more specific\" than another it overlaps with. Before turning this "
+"intuition into a rule, let's go through the previous examples of overlap and "
+"decide which, if any, of the impls is intuitively more specific. **Note that "
+"since we're leaving out the body of the impls, you won't see the `default` "
+"keyword that would be required in practice for the less specialized impls.**"
+msgstr ""
+
+#: src/1210-impl-specialization.md:592
+msgid "// String is more specific than T\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:596
+msgid "// Vec<u8> is more specific than Vec<T>\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:599
+msgid ""
+"// \"Vec<T> where T: Clone\" is more specific than \"Vec<T> for any T\"\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:605 src/1210-impl-specialization.md:921
+msgid "// Overlap: nothing prevents a T such that T: Trait1 + Trait2\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:607 src/1210-impl-specialization.md:923
+msgid "// Neither is more specific;\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:608 src/1210-impl-specialization.md:924
+msgid "// there's no relationship between the traits here\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:615 src/1210-impl-specialization.md:940
+msgid "// T: Trait4 is more specific than T: Trait3\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:620
+msgid "// More specific since both input types are identical\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:624
+msgid "// Neither is more specific\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:629
+msgid "What are the patterns here?"
+msgstr ""
+
+#: src/1210-impl-specialization.md:631
+msgid "Concrete types are more specific than type variables, e.g.:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:632
+msgid "`String` is more specific than `T`"
+msgstr ""
+
+#: src/1210-impl-specialization.md:633
+msgid "`Vec<u8>` is more specific than `Vec<T>`"
+msgstr ""
+
+#: src/1210-impl-specialization.md:634
+msgid "More constraints lead to more specific impls, e.g.:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:635
+msgid "`T: Clone` is more specific than `T`"
+msgstr ""
+
+#: src/1210-impl-specialization.md:636
+msgid "`Bar<T> for T` is more specific than `Bar<T> for U`"
+msgstr ""
+
+#: src/1210-impl-specialization.md:637
+msgid "Unrelated constraints don't contribute, e.g.:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:638
+msgid "Neither `T: Trait1` nor `T: Trait2` is more specific than the other."
+msgstr ""
+
+#: src/1210-impl-specialization.md:640
+msgid ""
+"For many purposes, the above simple patterns are sufficient for working with "
+"specialization. But to provide a spec, we need a more general, formal way of "
+"deciding precedence; we'll give one next."
+msgstr ""
+
+#: src/1210-impl-specialization.md:644
+msgid "Defining the precedence rules"
+msgstr ""
+
+#: src/1210-impl-specialization.md:646
+msgid ""
+"An impl block `I` contains basically two pieces of information relevant to "
+"specialization:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:649
+msgid "A set of type variables, like `T, U` in `impl<T, U> Bar<T> for U`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:650
+msgid "We'll call this `I.vars`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:651
+msgid ""
+"A set of where clauses, like `T: Clone` in `impl<T: Clone> Foo for Vec<T>`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:652
+msgid "We'll call this `I.wc`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:654
+msgid ""
+"We're going to define a _specialization relation_ `<=` between impl blocks, "
+"so that `I <= J` means that impl block `I` is \"at least as specific as\" "
+"impl block `J`. (If you want to think of this in terms of \"size\", you can "
+"imagine that the set of types `I` applies to is no bigger than those `J` "
+"applies to.)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:659
+msgid ""
+"We'll say that `I < J` if `I <= J` and `!(J <= I)`. In this case, `I` is "
+"_more specialized_ than `J`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:662
+msgid ""
+"To ensure specialization is coherent, we will ensure that for any two impls "
+"`I` and `J` that overlap, we have either `I < J` or `J < I`.  That is, one "
+"must be truly more specific than the other. Specialization chooses the "
+"\"smallest\" impl in this order -- and the new overlap rule ensures there is "
+"a unique smallest impl among those that apply to a given set of input types."
+msgstr ""
+
+#: src/1210-impl-specialization.md:668
+msgid ""
+"More broadly, while `<=` is not a total order on _all_ impls of a given "
+"trait, it will be a total order on any set of impls that all mutually "
+"overlap, which is all we need to determine which impl to use."
+msgstr ""
+
+#: src/1210-impl-specialization.md:672
+msgid ""
+"One nice thing about this approach is that, if there is an overlap without "
+"there being an intersecting impl, the compiler can tell the programmer "
+"_precisely which impl needs to be written_ to disambiguate the overlapping "
+"portion."
+msgstr ""
+
+#: src/1210-impl-specialization.md:676
+msgid ""
+"We'll start with an abstract/high-level formulation, and then build up "
+"toward an algorithm for deciding specialization by introducing a number of "
+"building blocks."
+msgstr ""
+
+#: src/1210-impl-specialization.md:680
+msgid "Abstract formulation"
+msgstr ""
+
+#: src/1210-impl-specialization.md:682
+msgid ""
+"Recall that the [input types](https://github.com/aturon/rfcs/blob/associated-"
+"items/active/0000-associated-items.md) of a trait are the `Self` type and "
+"all trait type parameters. So the following impl has input types `bool`, "
+"`u8` and `String`:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:688 src/1210-impl-specialization.md:860
+msgid "// impl I\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:693
+msgid ""
+"If you think of these input types as a tuple, `(bool, u8, String`) you can "
+"think of each trait impl `I` as determining a set `apply(I)` of input type "
+"tuples that obeys `I`'s where clauses. The impl above is just the singleton "
+"set `apply(I) = { (bool, u8, String) }`.  Here's a more interesting case:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:699 src/1210-impl-specialization.md:862
+msgid "// impl J\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:703
+msgid "which gives the set `apply(J) = { (T, u8, U) | T: Clone }`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:705
+msgid "Two impls `I` and `J` overlap if `apply(I)` and `apply(J)` intersect."
+msgstr ""
+
+#: src/1210-impl-specialization.md:707
+msgid ""
+"**We can now define the specialization order abstractly**: `I <= J` if "
+"`apply(I)` is a subset of `apply(J)`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:710
+msgid "This is true of the two sets above:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:718
+msgid "Here are a few more examples."
+msgstr ""
+
+#: src/1210-impl-specialization.md:720
+msgid "**Via where clauses**:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:723
+msgid ""
+"// impl I\n"
+"// apply(I) = { T | T a type }\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:726
+msgid ""
+"// impl J\n"
+"// apply(J) = { T | T: Clone }\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:730 src/1210-impl-specialization.md:744
+msgid "// J < I\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:734
+msgid "**Via type structure**:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:737
+msgid ""
+"// impl I\n"
+"// apply(I) = { (T, U) | T, U types }\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:740
+msgid ""
+"// impl J\n"
+"// apply(J) = { (T, T) | T a type }\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:748
+msgid ""
+"The same reasoning can be applied to all of the examples we saw earlier, and "
+"the reader is encouraged to do so. We'll look at one of the more subtle "
+"cases here:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:752
+msgid ""
+"// impl I\n"
+"// apply(I) = { (T, T) | T any type }\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:755
+msgid ""
+"// impl J\n"
+"// apply(J) = { (T, &'a U) | U: Bar<T>, 'a any lifetime }\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:761
+msgid ""
+"The claim is that `apply(I)` and `apply(J)` intersect, but neither contains "
+"the other. Thus, these two impls are not permitted to coexist according to "
+"this RFC's design. (We'll revisit this limitation toward the end of the RFC.)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:765
+msgid "Algorithmic formulation"
+msgstr ""
+
+#: src/1210-impl-specialization.md:767
+msgid ""
+"The goal in the remainder of this section is to turn the above abstract "
+"definition of `<=` into something closer to an algorithm, connected to "
+"existing mechanisms in the Rust compiler. We'll start by reformulating `<=` "
+"in a way that effectively \"inlines\" `apply`:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:772
+msgid "`I <= J` if:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:774 src/1210-impl-specialization.md:854
+msgid ""
+"For any way of instantiating `I.vars`, there is some way of instantiating `J."
+"vars` such that the `Self` type and trait type parameters match up."
+msgstr ""
+
+#: src/1210-impl-specialization.md:777
+msgid ""
+"For this instantiation of `I.vars`, if you assume `I.wc` holds, you can "
+"prove `J.wc`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:780
+msgid ""
+"It turns out that the compiler is already quite capable of answering these "
+"questions, via \"unification\" and \"skolemization\", which we'll see next."
+msgstr ""
+
+#: src/1210-impl-specialization.md:783
+msgid "Unification: solving equations on types"
+msgstr ""
+
+#: src/1210-impl-specialization.md:785
+msgid ""
+"Unification is the workhorse of type inference and many other mechanisms in "
+"the Rust compiler. You can think of it as a way of solving equations on "
+"types that contain variables. For example, consider the following situation:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:798
+msgid ""
+"The compiler ultimately needs to infer what type to use for the `T` in "
+"`use_vec` within the call in `caller`, given that the actual argument has "
+"type `Vec<u8>`. You can frame this as a unification problem: solve the "
+"equation `Vec<T> = Vec<u8>`. Easy enough: `T = u8`!"
+msgstr ""
+
+#: src/1210-impl-specialization.md:803
+msgid "Some equations can't be solved. For example, if we wrote instead:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:807
+msgid "\"hello\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:812
+msgid ""
+"we would end up equating `Vec<T> = &str`. There's no choice of `T` that "
+"makes that equation work out. Type error!"
+msgstr ""
+
+#: src/1210-impl-specialization.md:815
+msgid ""
+"Unification often involves solving a series of equations between types "
+"simultaneously, but it's not like high school algebra; the equations "
+"involved all have the limited form of `type1 = type2`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:819
+msgid ""
+"One immediate way in which unification is relevant to this RFC is in "
+"determining when two impls \"overlap\": roughly speaking, they overlap if "
+"each pair of input types can be unified simultaneously. For example:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:824
+msgid "// No overlap: String and bool do not unify\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:827
+msgid "// Overlap: String and T unify\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:831
+msgid "// Overlap: T = U, T = V is trivially solvable\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:835
+msgid "// No overlap: T = u8, T = bool not solvable\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:841
+msgid ""
+"Note the difference in how _concrete types_ and _type variables_ work for "
+"unification. When `T`, `U` and `V` are variables, it's fine to say that `T = "
+"U`, `T = V` is solvable: we can make the impls overlap by instantiating all "
+"three variables with the same type. But asking for e.g. `String = bool` "
+"fails, because these are concrete types, not variables. (The same happens in "
+"algebra; consider that `2 = 3` cannot be solved, but `x = y` and `y = z` can "
+"be.)  This distinction may seem obvious, but we'll next see how to leverage "
+"it in a somewhat subtle way."
+msgstr ""
+
+#: src/1210-impl-specialization.md:850
+msgid "Skolemization: asking forall/there exists questions"
+msgstr ""
+
+#: src/1210-impl-specialization.md:852
+msgid ""
+"We've already rephrased `<=` to start with a \"for all, there exists\" "
+"problem:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:857
+msgid "For example:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:867
+msgid ""
+"For any choice of `T`, it's possible to choose a `U` and `V` such that the "
+"two impls match -- just choose `U = T` and `V = T`. But the opposite isn't "
+"possible: if `U` and `V` are different (say, `String` and `bool`), then no "
+"choice of `T` will make the two impls match up."
+msgstr ""
+
+#: src/1210-impl-specialization.md:872
+msgid ""
+"This feels similar to a unification problem, and it turns out we can solve "
+"it with unification using a scary-sounding trick known as \"skolemization\"."
+msgstr ""
+
+#: src/1210-impl-specialization.md:875
+msgid ""
+"Basically, to \"skolemize\" a type variable is to treat it _as if it were a "
+"concrete type_. So if `U` and `V` are skolemized, then `U = V` is "
+"unsolvable, in the same way that `String = bool` is unsolvable. That's "
+"perfect for capturing the \"for any instantiation of I.vars\" part of what "
+"we want to formalize."
+msgstr ""
+
+#: src/1210-impl-specialization.md:880
+msgid ""
+"With this tool in hand, we can further rephrase the \"for all, there "
+"exists\" part of `<=` in the following way:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:883 src/1210-impl-specialization.md:913
+msgid "After skolemizing `I.vars`, it's possible to unify `I` and `J`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:885
+msgid ""
+"Note that a successful unification through skolemization gives you the same "
+"answer as you'd get if you unified without skolemizing."
+msgstr ""
+
+#: src/1210-impl-specialization.md:888
+msgid "The algorithmic version"
+msgstr ""
+
+#: src/1210-impl-specialization.md:890
+msgid ""
+"One outcome of running unification on two impls as above is that we can "
+"understand both impl headers in terms of a single set of type variables. For "
+"example:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:895
+msgid "// Before unification:\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:898
+msgid ""
+"// After unification:\n"
+"// T = Vec<W>\n"
+"// U = Vec<W>\n"
+"// V = W\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:907
+msgid ""
+"By putting everything in terms of a single set of type params, it becomes "
+"possible to do things like compare the `where` clauses, which is the last "
+"piece we need for a final rephrasing of `<=` that we can implement directly."
+msgstr ""
+
+#: src/1210-impl-specialization.md:911
+msgid "Putting it all together, we'll say `I <= J` if:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:914
+msgid "Under the resulting unification, `I.wc` implies `J.wc`"
+msgstr ""
+
+#: src/1210-impl-specialization.md:916
+msgid "Let's look at a couple more examples to see how this works:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:927
+msgid ""
+"In comparing these two impls in either direction, we make it past "
+"unification and must try to prove that one where clause implies another. But "
+"`T: Trait1` does not imply `T: Trait2`, nor vice versa, so neither impl is "
+"more specific than the other. Since the impls do overlap, an ambiguity error "
+"is reported."
+msgstr ""
+
+#: src/1210-impl-specialization.md:932
+msgid "On the other hand:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:943
+msgid "Here, since `T: Trait4` implies `T: Trait3` but not vice versa, we get"
+msgstr ""
+
+#: src/1210-impl-specialization.md:949
+msgid "Key properties"
+msgstr ""
+
+#: src/1210-impl-specialization.md:951
+msgid ""
+"Remember that for each pair of impls `I`, `J`, the compiler will check that "
+"exactly one of the following holds:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:954
+msgid "`I` and `J` do not overlap (a unification check), or else"
+msgstr ""
+
+#: src/1210-impl-specialization.md:955
+msgid "`I < J`, or else"
+msgstr ""
+
+#: src/1210-impl-specialization.md:956
+msgid "`J < I`"
+msgstr ""
+
+#: src/1210-impl-specialization.md:958
+msgid ""
+"Recall also that if there is an overlap without there being an intersecting "
+"impl, the compiler can tell the programmer _precisely which impl needs to be "
+"written_ to disambiguate the overlapping portion."
+msgstr ""
+
+#: src/1210-impl-specialization.md:962
+msgid ""
+"Since `I <= J` ultimately boils down to a subset relationship, we get a lot "
+"of nice properties for free (e.g., transitivity: if `I <= J <= K` then `I <= "
+"K`). Together with the compiler check above, we know that at "
+"monomorphization time, after filtering to the impls that apply to some "
+"concrete input types, there will always be a unique, smallest impl in "
+"specialization order. (In particular, if multiple impls apply to concrete "
+"input types, those impls must overlap.)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:969
+msgid ""
+"There are various implementation strategies that avoid having to recalculate "
+"the ordering during monomorphization, but we won't delve into those details "
+"in this RFC."
+msgstr ""
+
+#: src/1210-impl-specialization.md:973
+msgid "Implications for coherence"
+msgstr ""
+
+#: src/1210-impl-specialization.md:975
+msgid ""
+"The coherence rules ensure that there is never an ambiguity about which impl "
+"to use when monomorphizing code. Today, the rules consist of the simple "
+"overlap check described earlier, and the \"orphan\" check which limits the "
+"crates in which impls are allowed to appear (\"orphan\" refers to an impl in "
+"a crate that defines neither the trait nor the types it applies to). The "
+"orphan check is needed, in particular, so that overlap cannot be created "
+"accidentally when linking crates together."
+msgstr ""
+
+#: src/1210-impl-specialization.md:983
+msgid ""
+"The design in this RFC heavily revises the overlap check, as described "
+"above, but does not propose any changes to the orphan check (which is "
+"described in [a blog post](http://smallcultfollowing.com/babysteps/"
+"blog/2015/01/14/little-orphan-impls/)). Basically, the change to the overlap "
+"check does not appear to change the cases in which orphan impls can cause "
+"trouble. And a moment's thought reveals why: if two sibling crates are "
+"unaware of each other, there's no way that they could each provide an impl "
+"overlapping with the other, yet be sure that one of those impls is more "
+"specific than the other in the overlapping region."
+msgstr ""
+
+#: src/1210-impl-specialization.md:992
+msgid "Interaction with lifetimes"
+msgstr ""
+
+#: src/1210-impl-specialization.md:994
+msgid ""
+"A hard constraint in the design of the trait system is that _dispatch cannot "
+"depend on lifetime information_. In particular, we both cannot, and should "
+"not allow specialization based on lifetimes:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:998
+msgid ""
+"We can't, because when the compiler goes to actually generate code "
+"(\"trans\"), lifetime information has been erased -- so we'd have no idea "
+"what specializations would soundly apply."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1002
+msgid ""
+"We shouldn't, because lifetime inference is subtle and would often lead to "
+"counterintuitive results. For example, you could easily fail to get "
+"`'static` even if it applies, because inference is choosing the smallest "
+"lifetime that matches the other constraints."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1007
+msgid ""
+"To be more concrete, here are some scenarios which should not be allowed:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1010
+msgid "// Not allowed: trans doesn't know if T: 'static:\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1014
+msgid "// Not allowed: trans doesn't know if two refs have equal lifetimes:\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1021
+msgid ""
+"But simply _naming_ a lifetime that must exist, without _constraining_ it, "
+"is fine:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1024
+msgid ""
+"// Allowed: specializes based on being *any* reference, regardless of "
+"lifetime\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1030
+msgid ""
+"In addition, it's okay for lifetime constraints to show up as long as they "
+"aren't part of specialization:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1034
+msgid ""
+"// Allowed: *all* impls impose the 'static requirement; the dispatch is "
+"happening\n"
+"// purely based on `Clone`\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1041
+msgid "Going down the rabbit hole"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1043
+msgid ""
+"Unfortunately, we cannot easily rule out the undesirable lifetime-dependent "
+"specializations, because they can be \"hidden\" behind innocent-looking "
+"trait bounds that can even cross crates:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1048
+msgid ""
+"////////////////////////////////////////////////////////////////////////////////\n"
+"// Crate marker\n"
+"////////////////////////////////////////////////////////////////////////////////\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1054
+msgid ""
+"////////////////////////////////////////////////////////////////////////////////\n"
+"// Crate foo\n"
+"////////////////////////////////////////////////////////////////////////////////\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1067 src/1210-impl-specialization.md:1159
+msgid "\"Default impl\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:1073
+msgid "\"Marker impl\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:1076
+msgid ""
+"////////////////////////////////////////////////////////////////////////////////\n"
+"// Crate bar\n"
+"////////////////////////////////////////////////////////////////////////////////\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1085
+msgid ""
+"////////////////////////////////////////////////////////////////////////////////\n"
+"// Crate client\n"
+"////////////////////////////////////////////////////////////////////////////////\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1094
+msgid "// prints: Marker impl\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1097
+msgid ""
+"// prints: ???\n"
+"    // the relevant specialization depends on the 'static lifetime\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1099 src/1210-impl-specialization.md:1189
+msgid "\"Activate the marker!\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:1103
+msgid ""
+"The problem here is that all of the crates in isolation look perfectly "
+"innocent. The code in `marker`, `bar` and `client` is accepted today. It's "
+"only when these crates are plugged together that a problem arises -- you end "
+"up with a specialization based on a `'static` lifetime. And the `client` "
+"crate may not even be aware of the existence of the `marker` crate."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1109
+msgid ""
+"If we make this kind of situation a hard error, we could easily end up with "
+"a scenario in which plugging together otherwise-unrelated crates is "
+"_impossible_."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1112
+msgid "Proposal: ask forgiveness, rather than permission"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1114
+msgid "So what do we do? There seem to be essentially two avenues:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1116
+msgid ""
+"Be maximally permissive in the impls you can write, and then just ignore "
+"lifetime information in dispatch. We can generate a warning when this is "
+"happening, though in cases like the above, it may be talking about traits "
+"that the client is not even aware of. The assumption here is that these "
+"\"missed specializations\" will be extremely rare, so better not to impose a "
+"burden on everyone to rule them out."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1123
+msgid ""
+"Try, somehow, to prevent you from writing impls that appear to dispatch "
+"based on lifetimes. The most likely way of doing that is to somehow flag a "
+"trait as \"lifetime-dependent\". If a trait is lifetime-dependent, it can "
+"have lifetime-sensitive impls (like ones that apply only to `'static` data), "
+"but it cannot be used when writing specialized impls of another trait."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1129
+msgid ""
+"The downside of (2) is that it's an additional knob that all trait authors "
+"have to think about. That approach is sketched in more detail in the "
+"Alternatives section."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1132
+msgid ""
+"What this RFC proposes is to follow approach (1), at least during the "
+"initial experimentation phase. That's the easiest way to gain experience "
+"with specialization and see to what extent lifetime-dependent "
+"specializations accidentally arise in practice. If they are indeed rare, it "
+"seems much better to catch them via a lint then to force the entire world of "
+"traits to be explicitly split in half."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1139
+msgid ""
+"To begin with, this lint should be an error by default; we want to get "
+"feedback as to how often this is happening before any stabilization."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1143
+msgid "What this means for the programmer"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1145
+msgid ""
+"Ultimately, the goal of the \"just ignore lifetimes for specialization\" "
+"approach is to reduce the number of knobs in play. The programmer gets to "
+"use both lifetime bounds and specialization freely."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1149
+msgid ""
+"The problem, of course, is that when using the two together you can get "
+"surprising dispatch results:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1165
+msgid "\"Static string slice: {}\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:1170
+msgid ""
+"// prints \"Default impl\", but generates a lint saying that\n"
+"    // a specialization was missed due to lifetime dependence.\n"
+"    \"Hello, world!\""
+msgstr ""
+
+#: src/1210-impl-specialization.md:1176
+msgid ""
+"Specialization is refusing to consider the second impl because it imposes "
+"lifetime constraints not present in the more general impl. We don't know "
+"whether these constraints hold when we need to generate the code, and we "
+"don't want to depend on them because of the subtleties of region inference. "
+"But we alert the programmer that this is happening via a lint."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1182
+msgid ""
+"Sidenote: for such simple intracrate cases, we could consider treating the "
+"impls themselves more aggressively, catching that the `&'static str` impl "
+"will never be used and refusing to compile it."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1186
+msgid "In the more complicated multi-crate example we saw above, the line"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1192
+msgid ""
+"would likewise print `Default impl` and generate a warning. In this case, "
+"the warning may be hard for the `client` crate author to understand, since "
+"the trait relevant for specialization -- `marker::Marker` -- belongs to a "
+"crate that hasn't even been imported in `client`. Nevertheless, this "
+"approach seems friendlier than the alternative (discussed in Alternatives)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1198
+msgid "An algorithm for ignoring lifetimes in dispatch"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1200
+msgid ""
+"Although approach (1) may seem simple, there are some subtleties in handling "
+"cases like the following:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1209
+msgid ""
+"In this \"ignore lifetimes for specialization\" approach, we still want the "
+"above specialization to work, because _all_ impls in the specialization "
+"family impose the same lifetime constraints. The dispatch here purely comes "
+"down to `T: Clone` or not. That's in contrast to something like this:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1220
+msgid ""
+"where the difference between the impls includes a nontrivial lifetime "
+"constraint (the `'static` bound on `T`). The second impl should effectively "
+"be dead code: we should never dispatch to it in favor of the first impl, "
+"because that depends on lifetime information that we don't have available in "
+"trans (and don't want to rely on in general, due to the way region inference "
+"works). We would instead lint against it (probably error by default)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1227
+msgid "So, how do we tell these two scenarios apart?"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1229
+msgid ""
+"First, we evaluate the impls normally, winnowing to a list of applicable "
+"impls."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1232
+msgid ""
+"Then, we attempt to determine specialization. For any pair of applicable "
+"impls `Parent` and `Child` (where `Child` specializes `Parent`), we do the "
+"following:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1236
+msgid "Introduce as assumptions all of the where clauses of `Parent`"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1238
+msgid ""
+"Attempt to prove that `Child` definitely applies, using these assumptions. "
+"**Crucially**, we do this test in a special mode: lifetime bounds are only "
+"considered to hold if they (1) follow from general well-formedness or (2) "
+"are directly assumed from `Parent`. That is, a constraint in `Child` that "
+"`T: 'static` has to follow either from some basic type assumption (like the "
+"type `&'static T`) or from a similar clause in `Parent`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1245
+msgid ""
+"If the `Child` impl cannot be shown to hold under these more stringent "
+"conditions, then we have discovered a lifetime-sensitive specialization, and "
+"can trigger the lint."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1249
+msgid "Otherwise, the specialization is valid."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1251
+msgid "Let's do this for the two examples above."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1253
+msgid "**Example 1**"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1261
+msgid ""
+"Here, if we think both impls apply, we'll start by assuming that `T: "
+"'static` holds, and then we'll evaluate whether `T: 'static` and `T: Clone` "
+"hold. The first evaluation succeeds trivially from our assumption. The "
+"second depends on `T`, as you'd expect."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1266
+msgid "**Example 2**"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1274
+msgid ""
+"Here, if we think both impls apply, we start with no assumption, and then "
+"evaluate `T: 'static` and `T: Clone`. We'll fail to show the former, because "
+"it's a lifetime-dependent predicate, and we don't have any assumption that "
+"immediately yields it."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1279
+msgid ""
+"This should scale to less obvious cases, e.g. using `T: Any` rather than `T: "
+"'static` -- because when trying to prove `T: Any`, we'll find we need to "
+"prove `T: 'static`, and then we'll end up using the same logic as above. It "
+"also works for cases like the following:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1295
+msgid ""
+"Using `Spec` on `i32` will not trigger the lint, because the specialization "
+"is justified without any lifetime constraints."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1298
+msgid "Default impls"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1300
+msgid ""
+"An interesting consequence of specialization is that impls need not (and in "
+"fact sometimes _cannot_) provide all of the items that a trait specifies. Of "
+"course, this is already the case with defaulted items in a trait -- but as "
+"we'll see, that mechanism can be seen as just a way of using specialization."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1305
+msgid "Let's start with a simple example:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1323
+msgid ""
+"Here, we're acknowledging that the blanket impl has already provided "
+"definitions for both methods, so the impl for `String` can opt to just re-"
+"use the earlier definition of `foo`. This is one reason for the choice of "
+"the keyword `default`. Viewed this way, items defined in a specialized impl "
+"are optional overrides of those in overlapping blanket impls."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1329
+msgid ""
+"And, in fact, if we'd written the blanket impl differently, we could _force_ "
+"the `String` impl to leave off `foo`:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1334
+msgid "// now `foo` is \"final\"\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1341
+msgid ""
+"Being able to leave off items that are covered by blanket impls means that "
+"specialization is close to providing a finer-grained version of defaulted "
+"items in traits -- one in which the defaults can become ever more refined as "
+"more is known about the input types to the traits (as described in the "
+"Motivation section). But to fully realize this goal, we need one other "
+"ingredient: the ability for the _blanket_ impl itself to leave off some "
+"items. We do this by using the `default` keyword at the `impl` level:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1364
+msgid ""
+"A subsequent overlapping impl of `Add` where `Self: Clone` can choose to "
+"leave off `add_assign`, \"inheriting\" it from the partial impl above."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1367
+msgid ""
+"A key point here is that, as the keyword suggests, a `partial` impl may be "
+"incomplete: from the above code, you _cannot_ assume that `T: Add<T>` for "
+"any `T: Clone`, because no such complete impl has been provided."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1371
+msgid "Defaulted items in traits are just sugar for a default blanket impl:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1383
+msgid "// desugars to:\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1401
+msgid ""
+"Default impls are somewhat akin to abstract base classes in object-oriented "
+"languages; they provide some, but not all, of the materials needed for a "
+"fully concrete implementation, and thus enable code reuse but cannot be used "
+"concretely."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1405
+msgid ""
+"Note that the semantics of `default impls` and defaulted items in traits is "
+"that both are implicitly marked `default` -- that is, both are considered "
+"specializable. This choice gives a coherent mental model: when you choose "
+"_not_ to employ a default, and instead provide your own definition, you are "
+"in effect overriding/specializing that code. (Put differently, you can think "
+"of default impls as abstract base classes)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1412
+msgid ""
+"There are a few important details to nail down with the design. This RFC "
+"proposes starting with the conservative approach of applying the general "
+"overlap rule to default impls, same as with complete ones. That ensures that "
+"there is always a clear definition to use when providing subsequent complete "
+"impls.  It would be possible, though, to relax this constraint and allow "
+"_arbitrary_ overlap between default impls, requiring then whenever a "
+"complete impl overlaps with them, _for each item_, there is either a unique "
+"\"most specific\" default impl that applies, or else the complete impl "
+"provides its own definition for that item. Such a relaxed approach is much "
+"more flexible, probably easier to work with, and can enable more code reuse "
+"-- but it's also more complicated, and backwards-compatible to add on top of "
+"the proposed conservative approach."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1424
+msgid "Limitations"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1426
+msgid ""
+"One frequent motivation for specialization is broader \"expressiveness\", in "
+"particular providing a larger set of trait implementations than is possible "
+"today."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1430
+msgid ""
+"For example, the standard library currently includes an `AsRef` trait for "
+"\"as-style\" conversions:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1439
+msgid "Currently, there is also a blanket implementation as follows:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1449
+msgid ""
+"which allows these conversions to \"lift\" over references, which is in turn "
+"important for making a number of standard library APIs ergonomic."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1452
+msgid ""
+"On the other hand, we'd also like to provide the following very simple "
+"blanket implementation:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1463
+msgid ""
+"The current coherence rules prevent having both impls, however, because they "
+"can in principle overlap:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1470
+msgid ""
+"Another examples comes from the `Option` type, which currently provides two "
+"methods for unwrapping while providing a default value for the `None` case:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1480
+msgid ""
+"The `unwrap_or` method is more ergonomic but `unwrap_or_else` is more "
+"efficient in the case that the default is expensive to compute. The original "
+"[collections reform RFC](https://github.com/rust-lang/rfcs/pull/235) "
+"proposed a `ByNeed` trait that was rendered unworkable after unboxed "
+"closures landed:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1508
+msgid ""
+"The trait represents any value that can produce a `T` on demand. But the "
+"above impls fail to compile in today's Rust, because they overlap: consider "
+"`ByNeed<F> for F` where `F: FnOnce() -> F`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1512
+msgid ""
+"There are also some trait hierarchies where a subtrait completely subsumes "
+"the functionality of a supertrait. For example, consider `PartialOrd` and "
+"`Ord`:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1525
+msgid ""
+"In cases like this, it's somewhat annoying to have to provide an impl for "
+"_both_ `Ord` and `PartialOrd`, since the latter can be trivially derived "
+"from the former. So you might want an impl like this:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1537
+msgid ""
+"But this blanket impl would conflict with a number of others that work to "
+"\"lift\" `PartialOrd` and `Ord` impls over various type constructors like "
+"references and tuples, e.g.:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1552
+msgid "The case where they overlap boils down to:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1559
+msgid "and there is no implication between either of the where clauses."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1561
+msgid "There are many other examples along these lines."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1563
+msgid ""
+"Unfortunately, _none_ of these examples are permitted by the revised overlap "
+"rule in this RFC, because in none of these cases is one of the impls fully a "
+"\"subset\" of the other; the overlap is always partial."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1567
+msgid ""
+"It's a shame to not be able to address these cases, but the benefit is a "
+"specialization rule that is very intuitive and accepts only very clear-cut "
+"cases. The Alternatives section sketches some different rules that are less "
+"intuitive but do manage to handle cases like those above."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1572
+msgid ""
+"If we allowed \"relaxed\" partial impls as described above, one could at "
+"least use that mechanism to avoid having to give a definition directly in "
+"most cases. (So if you had `T: Ord` you could write `impl PartialOrd for T {}"
+"`.)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1576
+msgid "Possible extensions"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1578
+msgid ""
+"It's worth briefly mentioning a couple of mechanisms that one could consider "
+"adding on top of specialization."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1581
+msgid "Inherent impls"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1583
+msgid ""
+"It has long been folklore that inherent impls can be thought of as special, "
+"anonymous traits that are:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1586
+msgid "Automatically in scope;"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1587
+msgid "Given higher dispatch priority than normal traits."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1589
+msgid ""
+"It is easiest to make this idea work out if you think of each inherent item "
+"as implicitly defining and implementing its own trait, so that you can "
+"account for examples like the following:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1605
+msgid ""
+"In this example, the availability of each inherent item is dependent on a "
+"distinct `where` clause. A reasonable \"desugaring\" would be:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1609
+msgid ""
+"// an imaginary attribute turning on the \"special\" treatment of inherent "
+"impls\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1628
+msgid ""
+"With this idea in mind, it is natural to expect specialization to work for "
+"inherent impls, e.g.:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1641
+msgid ""
+"We could permit such specialization at the inherent impl level. The "
+"semantics would be defined in terms of the folklore desugaring above."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1644
+msgid ""
+"(Note: this example was chosen purposefully: it's possible to use "
+"specialization at the inherent impl level to avoid refactoring the `Extend` "
+"trait as described in the Motivation section.)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1648
+msgid "There are more details about this idea in the appendix."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1650
+msgid "Super"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1652
+msgid ""
+"Continuing the analogy between specialization and inheritance, one could "
+"imagine a mechanism like `super` to access and reuse less specialized "
+"implementations when defining more specialized ones. While there's not a "
+"strong need for this mechanism as part of this RFC, it's worth checking that "
+"the specialization approach is at least compatible with `super`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1658
+msgid ""
+"Fortunately, it is. If we take `super` to mean \"the most specific impl "
+"overlapping with this one\", there is always a unique answer to that "
+"question, because all overlapping impls are totally ordered with respect to "
+"each other via specialization."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1663
+msgid "Extending HRTBs"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1665
+msgid ""
+"In the Motivation we mentioned the need to refactor the `Extend` trait to "
+"take advantage of specialization. It's possible to work around that need by "
+"using specialization on inherent impls (and having the trait impl defer to "
+"the inherent one), but of course that's a bit awkward."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1670
+msgid "For reference, here's the refactoring:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1673
+msgid "// Current definition\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1677
+msgid "// Refactored definition\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1684
+msgid ""
+"One problem with this kind of refactoring is that you _lose_ the ability to "
+"say that a type `T` is extendable _by an arbitrary iterator_, because every "
+"use of the `Extend` trait has to say precisely what iterator is supported. "
+"But the whole point of this exercise is to have a blanket impl of `Extend` "
+"for any iterator that is then specialized later."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1690
+msgid ""
+"This points to a longstanding limitation: the trait system makes it possible "
+"to ask for any number of specific impls to exist, but not to ask for a "
+"blanket impl to exist -- _except_ in the limited case of lifetimes, where "
+"higher-ranked trait bounds allow you to do this:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1702
+msgid ""
+"We could extend this mechanism to cover type parameters as well, so that you "
+"could write:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1708
+msgid "Such a mechanism is out of scope for this RFC."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1710
+msgid "Refining bounds on associated types"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1712
+msgid ""
+"The design with `default` makes specialization of associated types an all-or-"
+"nothing affair, but it would occasionally be useful to say that all further "
+"specializations will at least guarantee some additional trait bound on the "
+"associated type. This is particularly relevant for the \"efficient "
+"inheritance\" use case. Such a mechanism can likely be added, if needed, "
+"later on."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1719
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1721
+msgid ""
+"Many of the more minor tradeoffs have been discussed in detail throughout. "
+"We'll focus here on the big picture."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1724
+msgid ""
+"As with many new language features, the most obvious drawback of this "
+"proposal is the increased complexity of the language -- especially given the "
+"existing complexity of the trait system. Partly for that reason, the RFC "
+"errs on the side of simplicity in the design wherever possible."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1729
+msgid ""
+"One aspect of the design that mitigates its complexity somewhat is the fact "
+"that it is entirely opt in: you have to write `default` in an impl in order "
+"for specialization of that item to be possible. That means that all the ways "
+"we have of reasoning about existing code still hold good. When you do opt in "
+"to specialization, the \"obviousness\" of the specialization rule should "
+"mean that it's easy to tell at a glance which of two impls will be preferred."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1736
+msgid "On the other hand, the simplicity of this design has its own drawbacks:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1738
+msgid ""
+"You have to lift out trait parameters to enable specialization, as in the "
+"`Extend` example above. Of course, this lifting can be hidden behind an "
+"additional trait, so that the end-user interface remains idiomatic.  The RFC "
+"mentions a few other extensions for dealing with this limitation -- either "
+"by employing inherent item specialization, or by eventually generalizing "
+"HRTBs."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1745
+msgid ""
+"You can't use specialization to handle some of the more \"exotic\" cases of "
+"overlap, as described in the Limitations section above. This is a deliberate "
+"trade, favoring simple rules over maximal expressiveness."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1749
+msgid ""
+"Finally, if we take it as a given that we want to support some form of "
+"\"efficient inheritance\" as at least a programming pattern in Rust, the "
+"ability to use specialization to do so, while also getting all of its "
+"benefits, is a net simplifier. The full story there, of course, depends on "
+"the forthcoming companion RFC."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1754
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1210-impl-specialization.md:1756
+msgid "Alternatives to specialization"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1758
+msgid ""
+"The main alternative to specialization in general is an approach based on "
+"negative bounds, such as the one outlined in an [earlier RFC](https://github."
+"com/rust-lang/rfcs/pull/586). Negative bounds make it possible to handle "
+"many of the examples this proposal can't (the ones in the Limitations "
+"section). But negative bounds are also fundamentally _closed_: they make it "
+"possible to perform a certain amount of specialization up front when "
+"defining a trait, but don't easily support downstream crates further "
+"specializing the trait impls."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1767
+msgid "Alternative specialization designs"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1769
+msgid "The \"lattice\" rule"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1771
+msgid ""
+"The rule proposed in this RFC essentially says that overlapping impls must "
+"form _chains_, in which each one is strictly more specific than the last."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1775
+msgid ""
+"This approach can be generalized to _lattices_, in which partial overlap "
+"between impls is allowed, so long as there is an additional impl that covers "
+"precisely the area of overlap (the intersection). Such a generalization can "
+"support all of the examples mentioned in the Limitations section. Moving to "
+"the lattice rule is backwards compatible."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1781
+msgid ""
+"Unfortunately, the lattice rule (or really, any generalization beyond the "
+"proposed chain rule) runs into a nasty problem with our lifetime strategy. "
+"Consider the following:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1792
+msgid ""
+"The problem is, if we allow this situation to go through typeck, by the time "
+"we actually generate code in trans, _there is no possible impl to choose_. "
+"That is, we do not have enough information to specialize, but we also don't "
+"know which of the (overlapping) unspecialized impls actually applies. We can "
+"address this problem by making the \"lifetime dependent specialization\" "
+"lint issue a hard error for such intersection impls, but that means that "
+"certain compositions will simply not be allowed (and, as mentioned before, "
+"these compositions might involve traits, types, and impls that the "
+"programmer is not even aware of)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1803
+msgid ""
+"The limitations that the lattice rule addresses are fairly secondary to the "
+"main goals of specialization (as laid out in the Motivation), and so, since "
+"the lattice rule can be added later, the RFC sticks with the simple chain "
+"rule for now."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1808
+msgid "Explicit ordering"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1810
+msgid ""
+"Another, perhaps more palatable alternative would be to take the "
+"specialization rule proposed in this RFC, but have some other way of "
+"specifying precedence when that rule can't resolve it -- perhaps by explicit "
+"priority numbering. That kind of mechanism is usually noncompositional, but "
+"due to the orphan rule, it's a least a crate-local concern. Like the "
+"alternative rule above, it could be added backwards compatibly if needed, "
+"since it only enables new cases."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1817
+msgid "Singleton non-default wins"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1819
+msgid ""
+"@pnkfelix suggested the following rule, which allows overlap so long as "
+"there is a unique non-default item."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1822
+msgid "For any given type-based lookup, either:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1824
+msgid "There are no results (error)"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1826
+msgid ""
+"There is only one lookup result, in which case we're done (regardless of "
+"whether it is tagged as default or not),"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1829
+msgid ""
+"There is a non-empty set of results with defaults, where exactly one result "
+"is non-default -- and then that non-default result is the answer, _or_"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1833
+msgid ""
+"There is a non-empty set of results with defaults, where 0 or >1 results are "
+"non-default (and that is an error)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1836
+msgid ""
+"This rule is arguably simpler than the one proposed in this RFC, and can "
+"accommodate the examples we've presented throughout. It would also support "
+"some of the cases this RFC cannot, because the default/non-default "
+"distinction can be used to specify an ordering between impls when the subset "
+"ordering fails to do so. For that reason, it is not forward-compatible with "
+"the main proposal in this RFC."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1843
+msgid "The downsides are:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1845
+msgid ""
+"Because actual dispatch occurs at monomorphization, errors are generated "
+"quite late, and only at use sites, not impl sites. That moves traits much "
+"more in the direction of C++ templates."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1849
+msgid ""
+"It's less scalable/compositional: this alternative design forces the "
+"\"specialization hierarchy\" to be flat, in particular ruling out multiple "
+"levels of increasingly-specialized blanket impls."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1853
+msgid "Alternative handling of lifetimes"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1855
+msgid ""
+"This RFC proposes a _laissez faire_ approach to lifetimes: we let you write "
+"whatever impls you like, then warn you if some of them are being ignored "
+"because the specialization is based purely on lifetimes."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1859
+msgid ""
+"The main alternative approach is to make a more \"principled\" distinction "
+"between two kinds of traits: those that can be used as constraints in "
+"specialization, and those whose impls can be lifetime dependent. Concretely:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1867
+msgid ""
+"// Only allowed to use 'static here because of the lifetime_dependent "
+"attribute\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1873
+msgid "// Have to use `default` here to allow specialization\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1876
+msgid ""
+"// CANNOT write the following impl, because `Foo` is lifetime_dependent\n"
+"// and Bar is not.\n"
+"//\n"
+"// NOTE: this is what I mean by *using* a trait in specialization;\n"
+"// we are trying to say a specialization applies when T: Foo holds\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1885
+msgid ""
+"// CANNOT write the following impl, because `Bar` is not lifetime_dependent\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1892
+msgid "There are several downsides to this approach:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1894
+msgid ""
+"It forces trait authors to consider a rather subtle knob for every trait "
+"they write, choosing between two forms of expressiveness and dividing the "
+"world accordingly. The last thing the trait system needs is another knob."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1899
+msgid ""
+"Worse still, changing the knob in either direction is a breaking change:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1901
+msgid ""
+"If a trait gains a `lifetime_dependent` attribute, any impl of a different "
+"trait that used it to specialize would become illegal."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1904
+msgid ""
+"If a trait loses its `lifetime_dependent` attribute, any impl of that trait "
+"that was lifetime dependent would become illegal."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1907
+msgid "It hobbles specialization for some existing traits in `std`."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1909
+msgid ""
+"For the last point, consider `From` (which is tied to `Into`). In `std`, we "
+"have the following important \"boxing\" impl:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1916
+msgid ""
+"This impl would necessitate `From` (and therefore, `Into`) being marked "
+"`lifetime_dependent`. But these traits are very likely to be used to "
+"describe specializations (e.g., an impl that applies when `T: Into<MyType>`)."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1921
+msgid ""
+"There does not seem to be any way to consider such impls as lifetime-"
+"independent, either, because of examples like the following:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1925
+msgid "// If we consider this innocent...\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1928
+msgid "// ... we get into trouble here\n"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1935
+msgid ""
+"All told, the proposed _laissez faire_ seems a much better bet in practice, "
+"but only experience with the feature can tell us for sure."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1938
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1210-impl-specialization.md:1940
+msgid "All questions from the RFC discussion and prototype have been resolved."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1942
+msgid "Appendix"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1944
+msgid "More details on inherent impls"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1946
+msgid ""
+"One tricky aspect for specializing inherent impls is that, since there is no "
+"explicit trait definition, there is no general signature that each "
+"definition of an inherent item must match. Thinking about `Vec` above, for "
+"example, notice that the two signatures for `extend` look superficially "
+"different, although it's clear that the first impl is the more general of "
+"the two."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1952
+msgid ""
+"It's workable to use a very simple-minded conceptual desugaring: each item "
+"desugars into a distinct trait, with type parameters for e.g. each argument "
+"and the return type. All concrete type information then emerges from "
+"desugaring into impl blocks. Thus, for example:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1957
+msgid ""
+"```\n"
+"impl<T, I> Vec<T> where I: IntoIterator<Item = T> {\n"
+"    default fn extend(iter: I) { .. }\n"
+"}\n"
+"\n"
+"impl<T> Vec<T> {\n"
+"    fn extend(slice: &[T]) { .. }\n"
+"}\n"
+"\n"
+"// Desugars to:\n"
+"\n"
+"trait Vec_extend<Arg, Result> {\n"
+"    fn extend(Arg) -> Result;\n"
+"}\n"
+"\n"
+"impl<T, I> Vec_extend<I, ()> for Vec<T> where I: IntoIterator<Item = T> {\n"
+"    default fn extend(iter: I) { .. }\n"
+"}\n"
+"\n"
+"impl<T> Vec_extend<&[T], ()> for Vec<T> {\n"
+"    fn extend(slice: &[T]) { .. }\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/1210-impl-specialization.md:1981
+msgid ""
+"All items of a given name must desugar to the same trait, which means that "
+"the number of arguments must be consistent across all impl blocks for a "
+"given `Self` type. In addition, we'd require that _all of the impl blocks "
+"overlap_ (meaning that there is a single, most general impl). Without these "
+"constraints, we would implicitly be permitting full-blown overloading on "
+"both arity and type signatures. For the time being at least, we want to "
+"restrict overloading to explicit uses of the trait system, as it is today."
+msgstr ""
+
+#: src/1210-impl-specialization.md:1989
+msgid ""
+"This \"desugaring\" semantics has the benefits of allowing inherent item "
+"specialization, and also making it _actually_ be the case that inherent "
+"impls are really just implicit traits -- unifying the two forms of dispatch. "
+"Note that this is a breaking change, since examples like the following are "
+"(surprisingly!) allowed today:"
+msgstr ""
+
+#: src/1210-impl-specialization.md:2011
+msgid ""
+"As has been proposed [elsewhere](https://internals.rust-lang.org/t/pre-rfc-"
+"adjust-default-object-bounds/2199/), this \"breaking change\" could be made "
+"available through a feature flag that must be used even after stabilization "
+"(to opt in to specialization of inherent impls); the full details will "
+"depend on pending revisions to [RFC 1122](https://github.com/rust-lang/rfcs/"
+"pull/1122)."
+msgstr ""

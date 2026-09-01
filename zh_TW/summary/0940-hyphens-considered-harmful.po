@@ -1,0 +1,273 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0940-hyphens-considered-harmful.md:1
+msgid "Feature Name: `hyphens_considered_harmful`"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:2
+msgid "Start Date: 2015-03-05"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#940](https://github.com/rust-lang/rfcs/pull/940)"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#23533](https://github.com/rust-lang/rust/"
+"issues/23533)"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0940-hyphens-considered-harmful.md:8
+msgid ""
+"Disallow hyphens in Rust crate names, but continue allowing them in Cargo "
+"packages."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:10
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0940-hyphens-considered-harmful.md:12
+msgid "This RFC aims to reconcile two conflicting points of view."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:14
+msgid ""
+"First: hyphens in crate names are awkward to use, and inconsistent with the "
+"rest of the language. Anyone who uses such a crate must rename it on import:"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:17
+msgid "\"rustc-serialize\""
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:20
+msgid ""
+"An earlier version of this RFC aimed to solve this issue by removing hyphens "
+"entirely."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:22
+msgid ""
+"However, there is a large amount of precedent for keeping `-` in package "
+"names. Systems as varied as GitHub, npm, RubyGems and Debian all have an "
+"established convention of using hyphens. Disallowing them would go against "
+"this precedent, causing friction with the wider community."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:24
+msgid ""
+"Fortunately, Cargo presents us with a solution. It already separates the "
+"concepts of _package name_ (used by Cargo and crates.io) and _crate name_ "
+"(used by rustc and `extern crate`). We can disallow hyphens in the crate "
+"name only, while still accepting them in the outer package. This solves the "
+"usability problem, while keeping with the broader convention."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:26
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0940-hyphens-considered-harmful.md:28
+msgid "Disallow hyphens in crates (only)"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:30
+msgid "In **rustc**, enforce that all crate names are valid identifiers."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:32
+msgid "In **Cargo**, continue allowing hyphens in package names."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:34
+msgid ""
+"The difference will be in the crate name Cargo passes to the compiler. If "
+"the `Cargo.toml` does _not_ specify an explicit crate name, then Cargo will "
+"use the package name but with all `-` replaced by `_`."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:36
+msgid ""
+"For example, if I have a package named `apple-fritter`, Cargo will pass `--"
+"crate-name apple_fritter` to the compiler instead."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:38
+msgid ""
+"Since most packages do not set their own crate names, this mapping will "
+"ensure that the majority of hyphenated packages continue to build unchanged."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:40
+msgid "Identify `-` and `_` on crates.io"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:42
+msgid ""
+"Right now, crates.io compares package names case-insensitively. This means, "
+"for example, you cannot upload a new package named `RUSTC-SERIALIZE` because "
+"`rustc-serialize` already exists."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:44
+msgid ""
+"Under this proposal, we will extend this logic to identify `-` and `_` as "
+"well."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:46
+msgid "Remove the quotes from `extern crate`"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:48
+msgid ""
+"Change the syntax of `extern crate` so that the crate name is no longer in "
+"quotes (e.g. `extern crate photo_finish as photo;`). This is viable now that "
+"all crate names are valid identifiers."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:50
+msgid ""
+"To ease the transition, keep the old `extern crate` syntax around, "
+"transparently mapping any hyphens to underscores. For example, `extern crate "
+"\"silver-spoon\" as spoon;` will be desugared to `extern crate silver_spoon "
+"as spoon;`. This syntax will be deprecated, and removed before 1.0."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:52
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:54
+msgid "Inconsistency between packages and crates"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:56
+msgid ""
+"This proposal makes package and crate names inconsistent: the former will "
+"accept hyphens while the latter will not."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:58
+msgid ""
+"However, this drawback may not be an issue in practice. As hinted in the "
+"motivation, most other platforms have different syntaxes for packages and "
+"crates/modules anyway. Since the package system is orthogonal to the "
+"language itself, there is no need for consistency between the two."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:60
+msgid "Inconsistency between `-` and `_`"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:62
+msgid "Quoth @P1start:"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:64
+msgid ""
+"... it's also annoying to have to choose between `-` and `_` when choosing a "
+"crate name, and to remember which of `-` and `_` a particular crate uses."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:66
+msgid ""
+"I believe, like other naming issues, this problem can be addressed by "
+"conventions."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:68
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0940-hyphens-considered-harmful.md:70
+msgid "Do nothing"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:72
+msgid ""
+"As with any proposal, we can choose to do nothing. But given the reasons "
+"outlined above, the author believes it is important that we address the "
+"problem before the beta release."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:74
+msgid "Disallow hyphens in package names as well"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:76
+msgid ""
+"An earlier version of this RFC proposed to disallow hyphens in packages as "
+"well. The drawbacks of this idea are covered in the motivation."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:78
+msgid "Make `extern crate` match fuzzily"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:80
+msgid ""
+"Alternatively, we can have the compiler consider hyphens and underscores as "
+"equal while looking up a crate. In other words, the crate `flim-flam` would "
+"match both `extern crate flim_flam` and `extern crate \"flim-flam\" as "
+"flim_flam`."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:82
+msgid ""
+"This involves much more magic than the original proposal, and it is not "
+"clear what advantages it has over it."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:84
+msgid "Repurpose hyphens as namespace separators"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:86
+msgid "Alternatively, we can treat hyphens as path separators in Rust."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:88
+msgid "For example, the crate `hoity-toity` could be imported as"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:94
+msgid "which is desugared to:"
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:99
+msgid "\"hoity-toity\""
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:105
+msgid ""
+"However, on prototyping this proposal, the author found it too complex and "
+"fraught with edge cases. For these reasons the author chose not to push this "
+"solution."
+msgstr ""
+
+#: src/0940-hyphens-considered-harmful.md:107
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0940-hyphens-considered-harmful.md:109
+msgid "None so far."
+msgstr ""
