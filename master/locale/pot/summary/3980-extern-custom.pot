@@ -1,0 +1,416 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-09-01T13:43:08Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3980-extern-custom.md:1
+msgid "Feature Name: `abi_custom`"
+msgstr ""
+
+#: src/3980-extern-custom.md:2
+msgid "Start Date: 2026-07-01"
+msgstr ""
+
+#: src/3980-extern-custom.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3980](https://github.com/rust-lang/rfcs/pull/3980)"
+msgstr ""
+
+#: src/3980-extern-custom.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#140829](https://github.com/rust-lang/rust/"
+"issues/140829)"
+msgstr ""
+
+#: src/3980-extern-custom.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3980-extern-custom.md:9
+msgid ""
+"An `extern \"custom\" fn` is a function with a custom ABI that is unknown to "
+"Rust. Often these are low-level functions that pass arguments in different "
+"registers than any standard calling convention, so using `extern \"custom\"` "
+"helps rustc block you from using a function in a place where rustc would "
+"need to understand that calling convention."
+msgstr ""
+
+#: src/3980-extern-custom.md:13
+msgid ""
+"/// # SAFETY\n"
+"///\n"
+"/// - Expects the dividend and the divisor in r0 and r1.\n"
+"/// - Returns the quotient in r0 and the remainder in r1.\n"
+msgstr ""
+
+#: src/3980-extern-custom.md:18 src/3980-extern-custom.md:31
+msgid "\"custom\""
+msgstr ""
+
+#: src/3980-extern-custom.md:20
+msgid "\"push {{lr}}\""
+msgstr ""
+
+#: src/3980-extern-custom.md:21
+msgid "\"sub sp, sp, #4\""
+msgstr ""
+
+#: src/3980-extern-custom.md:22
+msgid "\"mov r2, sp\""
+msgstr ""
+
+#: src/3980-extern-custom.md:23
+msgid "\"bl {trampoline}\""
+msgstr ""
+
+#: src/3980-extern-custom.md:24
+msgid "\"ldr r1, [sp]\""
+msgstr ""
+
+#: src/3980-extern-custom.md:25
+msgid "\"add sp, sp, #4\""
+msgstr ""
+
+#: src/3980-extern-custom.md:26
+msgid "\"pop {{pc}}\""
+msgstr ""
+
+#: src/3980-extern-custom.md:36
+msgid "History"
+msgstr ""
+
+#: src/3980-extern-custom.md:38
+msgid "Proposal: https://github.com/rust-lang/rust/issues/140566"
+msgstr ""
+
+#: src/3980-extern-custom.md:39
+msgid "Tracking issue: https://github.com/rust-lang/rust/issues/140829"
+msgstr ""
+
+#: src/3980-extern-custom.md:40
+msgid "Implementation: https://github.com/rust-lang/rust/pull/140770"
+msgstr ""
+
+#: src/3980-extern-custom.md:41
+msgid ""
+"Restrictions on function pointer types: https://github.com/rust-lang/rust/"
+"pull/159780"
+msgstr ""
+
+#: src/3980-extern-custom.md:42
+msgid "Stabilization PR: https://github.com/rust-lang/rust/pull/158504"
+msgstr ""
+
+#: src/3980-extern-custom.md:44
+msgid "Motivation"
+msgstr ""
+
+#: src/3980-extern-custom.md:47
+msgid ""
+"In some low-level scenarios we must define naked functions with a custom "
+"ABI. This comes up in `rust-lang/compiler-builtins` (e.g. for "
+"`__rust_probestack` and `__aeabi_uidivmod`), and also in systems programming "
+"(e.g. when defining `__fentry__`, a symbol used the mcount mechanism)."
+msgstr ""
+
+#: src/3980-extern-custom.md:49
+msgid ""
+"The current solution is often to use `extern \"C\"`, but that is misleading: "
+"the function does not use the C calling convention, and calling it as if it "
+"were is almost certainly causing UB."
+msgstr ""
+
+#: src/3980-extern-custom.md:51
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3980-extern-custom.md:54
+msgid ""
+"Because Rust doesn't know what calling convention to use, an `extern "
+"\"custom\"` function can only be called via inline assembly or FFI."
+msgstr ""
+
+#: src/3980-extern-custom.md:56
+msgid ""
+"```\n"
+"error: functions with the \"custom\" ABI cannot be called\n"
+" --> <source>:5:5\n"
+"  |\n"
+"5 |     bar();\n"
+"  |     ^^^^^\n"
+"  |\n"
+"note: an `extern \"custom\"` function can only be called using inline "
+"assembly\n"
+"```"
+msgstr ""
+
+#: src/3980-extern-custom.md:66
+msgid "An `extern \"custom\"` function definition must be a naked function:"
+msgstr ""
+
+#: src/3980-extern-custom.md:68
+msgid ""
+"```\n"
+"error: items with the \"custom\" ABI can only be declared externally or "
+"defined via naked functions\n"
+"  --> <source>:10:1\n"
+"   |\n"
+"10 | unsafe extern \"custom\" fn bar() {\n"
+"   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+"   |\n"
+"help: convert this to an `#[unsafe(naked)]` function\n"
+"   |\n"
+"10 + #[unsafe(naked)]\n"
+"11 | unsafe extern \"custom\" fn bar() {\n"
+"   |\n"
+"```"
+msgstr ""
+
+#: src/3980-extern-custom.md:82
+msgid ""
+"An `extern \"custom\"` function definition must be unsafe. The intent here "
+"is that a safety comment is written on how this function may be called."
+msgstr ""
+
+#: src/3980-extern-custom.md:84
+msgid ""
+"```\n"
+"error: functions with the \"custom\" ABI must be unsafe\n"
+"  --> <source>:10:1\n"
+"   |\n"
+"10 | extern \"custom\" fn bar() {\n"
+"   | ^^^^^^^^^^^^^^^^^^^^^^^^\n"
+"   |\n"
+"help: add the `unsafe` keyword to this definition\n"
+"   |\n"
+"10 | unsafe extern \"custom\" fn bar() {\n"
+"   | ++++++\n"
+"```"
+msgstr ""
+
+#: src/3980-extern-custom.md:97
+msgid "In an `extern \"custom\"` block, functions cannot be marked as `safe`:"
+msgstr ""
+
+#: src/3980-extern-custom.md:99
+msgid ""
+"```\n"
+"error: foreign functions with the \"custom\" ABI cannot be safe\n"
+"  --> <source>:16:5\n"
+"   |\n"
+"16 |     safe fn foobar();\n"
+"   |     ^^^^^^^^^^^^^^^^^\n"
+"   |\n"
+"help: remove the `safe` keyword from this definition\n"
+"   |\n"
+"16 -     safe fn foobar();\n"
+"16 +     fn foobar();\n"
+"```"
+msgstr ""
+
+#: src/3980-extern-custom.md:112
+msgid ""
+"An `extern \"custom\"` function cannot have any arguments or a return type:"
+msgstr ""
+
+#: src/3980-extern-custom.md:114
+msgid ""
+"```\n"
+"error: invalid signature for `extern \"custom\"` function\n"
+" --> <source>:6:31\n"
+"  |\n"
+"6 | unsafe extern \"custom\" fn foo(a: i32) -> i32 {\n"
+"  |                               ^^^^^^     ^^^\n"
+"  |\n"
+"  = note: functions with the \"custom\" ABI cannot have any parameters or "
+"return type\n"
+"help: remove the parameters and return type\n"
+"  |\n"
+"6 - unsafe extern \"custom\" fn foo(a: i32) -> i32 {\n"
+"6 + unsafe extern \"custom\" fn foo() {\n"
+"  |\n"
+"```"
+msgstr ""
+
+#: src/3980-extern-custom.md:129
+msgid ""
+"We also error on missing `unsafe` or presence of argument and return types "
+"in `extern` blocks and function pointer types."
+msgstr ""
+
+#: src/3980-extern-custom.md:131
+msgid ""
+"```\n"
+"error: invalid signature for `extern \"custom\"` function\n"
+"  --> $DIR/bad-custom.rs:13:40\n"
+"   |\n"
+"LL | type MustbeUnsafe = extern \"custom\" fn(i64) -> i64;\n"
+"   |                                        ^^^     ^^^\n"
+"   |\n"
+"   = note: functions with the \"custom\" ABI cannot have any parameters or "
+"return type\n"
+"help: remove the parameters and return type\n"
+"   |\n"
+"LL - type MustbeUnsafe = extern \"custom\" fn(i64) -> i64;\n"
+"LL + type MustbeUnsafe = extern \"custom\" fn();\n"
+"   |\n"
+"```"
+msgstr ""
+
+#: src/3980-extern-custom.md:146
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3980-extern-custom.md:149
+msgid "See https://github.com/rust-lang/reference/pull/2300."
+msgstr ""
+
+#: src/3980-extern-custom.md:151
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3980-extern-custom.md:154
+msgid "No specific drawback."
+msgstr ""
+
+#: src/3980-extern-custom.md:156
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3980-extern-custom.md:159
+msgid "https://github.com/rust-lang/rust/issues/140566"
+msgstr ""
+
+#: src/3980-extern-custom.md:161
+msgid ""
+"The name has already been debated. The name `unknown` has been mentioned, "
+"but to write the implementation you really do need to know the ABI. It is "
+"custom in the sense that rustc does not know about it, but the author "
+"definitely does."
+msgstr ""
+
+#: src/3980-extern-custom.md:163
+msgid ""
+"Arguments and return types are forbidden because they are not consumed in "
+"any way. The compiler has no way of validating them against the function "
+"body, similar to other naked functions, but the functions can never be "
+"invoked directly so they serve no purpose when calling. The intent is that "
+"correct parameter passing and returning will be covered in documentation."
+msgstr ""
+
+#: src/3980-extern-custom.md:165
+msgid "Prior art"
+msgstr ""
+
+#: src/3980-extern-custom.md:168
+msgid "https://github.com/rust-lang/rust/issues/140566#issuecomment-2846205457"
+msgstr ""
+
+#: src/3980-extern-custom.md:170
+msgid ""
+"We do have some other calling conventions that cannot be called using Rust's "
+"function calling syntax:"
+msgstr ""
+
+#: src/3980-extern-custom.md:172
+msgid "extern \"\\*\\-interrupt\""
+msgstr ""
+
+#: src/3980-extern-custom.md:173
+msgid "extern \"gpu-kernel\""
+msgstr ""
+
+#: src/3980-extern-custom.md:175
+msgid ""
+"Those however do have a known ABI, it's just that semantically it does not "
+"make sense to call them from a Rust program."
+msgstr ""
+
+#: src/3980-extern-custom.md:177
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3980-extern-custom.md:180
+msgid "None currently."
+msgstr ""
+
+#: src/3980-extern-custom.md:182
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3980-extern-custom.md:185
+msgid "Support `Never` as a return type"
+msgstr ""
+
+#: src/3980-extern-custom.md:187
+msgid "A return type of `-> !` indicates that the function diverges."
+msgstr ""
+
+#: src/3980-extern-custom.md:189
+msgid ""
+"That a function diverges is useful to know, and relevant for the very low-"
+"level use cases for `extern \"custom\"`. However, like arbirary argument and "
+"return types (see below), the type is never actually validated, and the "
+"signature might go out of sync with the implementation."
+msgstr ""
+
+#: src/3980-extern-custom.md:193
+msgid ""
+"So far, no actual use of `-> !` has come up, so we leave it as a future "
+"possibility."
+msgstr ""
+
+#: src/3980-extern-custom.md:195
+msgid "Support argument and return types"
+msgstr ""
+
+#: src/3980-extern-custom.md:197
+msgid "Argument and return types are not validated by the compiler whatsoever:"
+msgstr ""
+
+#: src/3980-extern-custom.md:199
+msgid ""
+"Like any other `#[naked]` function, argument/return types are not validated "
+"against the body."
+msgstr ""
+
+#: src/3980-extern-custom.md:200
+msgid ""
+"Argument/return types are not validated at the call site (because inline "
+"assembly is used)."
+msgstr ""
+
+#: src/3980-extern-custom.md:202
+msgid ""
+"For those reasons, argument and return types are omitted in the current RFC."
+msgstr ""
+
+#: src/3980-extern-custom.md:204
+msgid ""
+"The only place where the argument/return types would be checked is when an "
+"`extern \"custom\"` function pointer is unified again another function "
+"pointer type. A newtype wrapper can be used to differentiate different "
+"`extern \"custom\"` function pointers that carry a particular semantic "
+"meaning."
+msgstr ""
+
+#: src/3980-extern-custom.md:208
+msgid ""
+"However, the point has been raised that the argument and return types can "
+"serve as documentation. On the other hand, the signature can be misleading: "
+"the whole point of `extern \"custom\"` is that no known ABI is followed."
+msgstr ""
+
+#: src/3980-extern-custom.md:211
+msgid ""
+"In summary, we leave space for argument and return types to be supported in "
+"the future when a compelling use case presents itself."
+msgstr ""
