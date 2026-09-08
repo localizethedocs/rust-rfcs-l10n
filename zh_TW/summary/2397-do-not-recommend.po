@@ -1,0 +1,368 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2397-do-not-recommend.md:1
+msgid "Feature Name: `do_not_recommend`"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:2
+msgid "Start Date: 2018-04-07"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2397](https://github.com/rust-lang/rfcs/pull/2397)"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#51992](https://github.com/rust-lang/rust/"
+"issues/51992)"
+msgstr ""
+"Rust 議題：[rust-lang/rust#51992](https://github.com/rust-lang/rust/"
+"issues/51992)"
+
+#: src/2397-do-not-recommend.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2397-do-not-recommend.md:9
+msgid ""
+"A new attribute can be placed on trait implementations: "
+"`#[do_not_recommend]`. This attribute will cause the compiler to never "
+"recommend this impl transitively as a way to implement another trait. For "
+"example, this would be placed on `impl<T: Iterator> IntoIterator for T`. The "
+"result of this is that when `T: IntoIterator` fails, the error message will "
+"only mention `IntoIterator`. It will not say \"perhaps `Iterator` should be "
+"implemented?\"."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:16
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2397-do-not-recommend.md:19
+msgid ""
+"When a type fails to implement a trait, Rust has the wonderful behavior of "
+"looking at possible _other_ trait impls which might cause the trait in "
+"question to be implemented. This is usually a good thing. For example, when "
+"using Diesel, this is why instead of telling you `SelectStatement<{30 page "
+"long type}>: ExecuteDsl is not satisfied`, it tells you `posts::id: "
+"SelectableExpression<users::table> is not satisfied`."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:26
+msgid ""
+"However, there are times where this behavior actually makes the resulting "
+"error more confusing. There are specific trait impls which almost always "
+"cause these error messages to be more confusing. These are usually (but not "
+"always) very broad blanket impls on traits with names like `IntoFoo` or "
+"`AsBar`. One such problem impl is `impl<T: Iterator> IntoIterator for T`."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:32
+msgid "`IntoIterator` confusion"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:34
+msgid ""
+"Let's look at the struggles of a hypothetical Python programmer who is "
+"getting into Rust for the first time. In Python, tuples are iterable. So our "
+"python programmer writes this code expecting it to work:"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:40
+msgid "\"{}\""
+msgstr ""
+
+#: src/2397-do-not-recommend.md:44
+msgid "They get the following error:"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:55
+msgid ""
+"This error message is particularly bad for a failed `IntoIterator` "
+"constraint. The only type in `std` which has a method called `iter` that "
+"doesn't implement `IntoIterator` is a fixed sized array. For all of those "
+"types, it's generally more idiomatic to just put an `&` in front of the "
+"value. And for this case, neither one would be helpful even if it worked, "
+"since our hero is likely expecting `x` to be `i32`, not `&i32`."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:62
+msgid ""
+"Following the advice of the error message, they try calling `.iter` on their "
+"tuple, and get a new error:"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:73
+msgid ""
+"At this point they remember a friend telling them they could see all of the "
+"types that implement some trait in the docs. Tuples clearly aren't the type "
+"we need, so let's see if we can find the type we _do_ need. The error has "
+"told us that we need to be looking at `Iterator`, so that's where we look in "
+"the docs."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:78
+msgid ""
+"The implementors section there is... less than helpful. Other than the type "
+"`Map` (which our Rust newbie might incorrectly assume is `HashMap`), nothing "
+"here looks helpful. It's mostly just weird types called `Iter` and weird "
+"nonsense like `RSplitN`. At this point there's no obvious path to resolution."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:83
+msgid ""
+"If we had pointed them at `IntoIterator` like we should have, then the "
+"implementors section... Well it actually wouldn't have been much more "
+"helpful, since it's mostly just spammed with every single possible size of "
+"fixed sized array. However, that's a completely separate problem, and at the "
+"very least vec and slice, the type they most likely needed to see, are at "
+"least _somewhere_ on that page."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:90
+msgid ""
+"If nothing else, _in this particular case_, there was at least a note saying "
+"\"required by `std::iter::IntoIterator::into_iter`\". However, the tiny "
+"footnote at the bottom is not where most people look, and as we'll see "
+"later, is also not always there or helpful."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:95
+msgid "Ecosystem Examples"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:97
+msgid ""
+"Let's look at another example from outside the standard library. This is a "
+"problem Diesel has run into numerous times. The most common is with our "
+"`AsExpression` trait. Diesel has a trait called `Expression`, which "
+"represents a fragment of SQL with a known type. There is also a trait called "
+"`AsExpression`, which is used to convert -- for example -- a Rust string "
+"into a data structure representing a `TEXT` SQL expression. Unlike "
+"`IntoIterator`, where `Item` is an associated type, in this case `SqlType` "
+"is a type parameter."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:105
+msgid ""
+"This gets represented in the type system to prevent things like accidentally "
+"trying to compare a string with a text column. Problem code might look like "
+"this: `a_table::id.eq(1)`. However, the error message they get is not so "
+"helpful:"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:110
+msgid ""
+"```\n"
+"error[E0277]: the trait bound `str: diesel::Expression` is not satisfied\n"
+"  --> src/lib.rs:14:17\n"
+"   |\n"
+"14 |     a_table::id.eq(\"1\");\n"
+"   |                 ^^ the trait `diesel::Expression` is not implemented "
+"for `str`\n"
+"   |\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"Expression` for `&str`\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"expression::AsExpression<diesel::sql_types::Integer>` for `&str`\n"
+"```"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:121
+msgid ""
+"Even worse, since the body of `impl<T: Expression> AsExpression<T::SqlType> "
+"for T` implies that the conversion returns `Self`, rust will continue on "
+"assuming that `&str` is a type that appears in the final AST. This results "
+"in our less than helpful message being even further behind 8 different trait "
+"impls that would never be implemented for `&str` in the first place."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:127
+msgid ""
+"Once again, we do have this little foot note with the information we care "
+"about, but as soon as we introduce one more layer of indirection, that gets "
+"completely lost. For example, if that code were instead written as `a_table::"
+"table.find(\"1\")`, the full output we see is going to be:"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:132
+msgid ""
+"```\n"
+"error[E0277]: the trait bound `str: diesel::Expression` is not satisfied\n"
+"  --> src/lib.rs:14:20\n"
+"   |\n"
+"14 |     a_table::table.find(\"1\");\n"
+"   |                    ^^^^ the trait `diesel::Expression` is not "
+"implemented for `str`\n"
+"   |\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"Expression` for `&str`\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"Expression` for `diesel::expression::operators::Eq<a_table::columns::id, "
+"&str>`\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"EqAll<&str>` for `a_table::columns::id`\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"query_dsl::filter_dsl::FindDsl<&str>` for `a_table::table`\n"
+"\n"
+"error[E0277]: the trait bound `str: diesel::expression::NonAggregate` is not "
+"satisfied\n"
+"  --> src/lib.rs:14:20\n"
+"   |\n"
+"14 |     a_table::table.find(\"1\");\n"
+"   |                    ^^^^ the trait `diesel::expression::NonAggregate` is "
+"not implemented for `str`\n"
+"   |\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"expression::NonAggregate` for `&str`\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"expression::NonAggregate` for `diesel::expression::operators::Eq<a_table::"
+"columns::id, &str>`\n"
+"   = note: required because of the requirements on the impl of `diesel::"
+"query_dsl::filter_dsl::FilterDsl<diesel::expression::operators::Eq<a_table::"
+"columns::id, &str>>` for `diesel::query_builder::SelectStatement<a_table::"
+"table>`\n"
+"```"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:155
+msgid ""
+"Nowhere in this output is the _actual_ missing trait (`AsExpression`) "
+"mentioned, nor is the type parameter we care about (`sql_types::Integer`), "
+"which is _the most important piece of information_ ever mentioned."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:159
+msgid ""
+"The final motivation for this attribute is actually to _help_ Rust give "
+"transitive impls when it currently isn't. The only time Rust will recommend "
+"implementing trait `T` in order to get an implementation of trait `U` is if "
+"there is only one such impl which could potentially apply to your type that "
+"would result in that behavior."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:165
+msgid ""
+"For example, Diesel has to provide a special impl to insert more than one "
+"row at a time on SQLite, which doesn't have the keywords needed to safely do "
+"this in a single query. However, on older versions of Diesel, if there is "
+"something missing that causes that insert statement to not be valid, Rust "
+"will just give up because it doesn't know if you wanted the \"normal way to "
+"insert a thing\" impl to apply, or the \"insert an iterator on SQLite\" impl "
+"to apply. In the best case this would result in \"`InsertStatement<{30 page "
+"type}>: ExecuteDsl<Sqlite>` is not satisfied\", which is not helpful, but at "
+"least it's not actively misleading. In the worst case it would result in "
+"\"`YourRandomStruct: Iterator` is not satisfied. Perhaps you need to "
+"implement it?\" which is just complete nonsense."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:176
+msgid ""
+"With this annotation, Rust would know that it should _never_ recommend the "
+"impl related to `Iterators`, and will always give diagnostics as if the "
+"\"normal way to insert a thing\" impl were the only one that existed."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:180
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:183
+msgid ""
+"Since the diagnostics around this RFC aren't ever mentioned in a guide, I'm "
+"not sure there would be a guide level explanation, but here goes:"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:186
+msgid "Let's imagine you have the following traits:"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:199
+msgid ""
+"If you tried to call a function that expects `T: Bar` with a type that does "
+"not implement `Bar`, Rust will helpfully notice that if `T` implemented "
+"`Foo`, it would also implement `Bar`. Because of that, it will recommend "
+"that you implement `Foo` instead of `Bar`."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:204
+msgid ""
+"This is usually the desired behavior, but in some cases it can result in "
+"confusing error messages. Perhaps when a function expects `Bar` and it's not "
+"implemented, it would never make sense to implement `Foo` for that type. In "
+"this case, we can put `#[do_not_recommend]` above our impl, and Rust will "
+"_never_ recommend implementing `Foo` as a way to get to `Bar`."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:210
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:213
+msgid ""
+"During trait resolution, Rust will attempt to lower a query like "
+"`IntoIterator(?T)` into a series of subqueries such as `IntoIterator(?T) :- "
+"Iterator(?T)`. If only one such subquery exists, it will be used for error "
+"diagnostics instead."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:218
+msgid ""
+"With this RFC, for the purposes of diagnostics only, impls annotated with "
+"`#[do_not_recommend]` will be treated as if they did not exist. This means "
+"that cases where there would have been one subquery will be treated as if "
+"there were 0, and cases where there were 2 will be treated as if there were "
+"1."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:223
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:226
+msgid ""
+"While this attribute only affects diagnostics, it is inherently tied to how "
+"trait resolution works. This could potentially complicate work happening on "
+"the trait system today (particularly with regards to chalk)."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:230
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:233
+msgid ""
+"The vast majority of cases where this would be used are for traits and impls "
+"that look very similar to `Iterator` and `impl<T: Iterator> IntoIterator for "
+"T`. We could potentially instead try to improve the compiler's diagnostics "
+"without this attribute, to detect those cases."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:238
+msgid "Prior art"
+msgstr ""
+
+#: src/2397-do-not-recommend.md:241
+msgid "The author is not aware of any prior art regarding this feature."
+msgstr ""
+
+#: src/2397-do-not-recommend.md:243
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2397-do-not-recommend.md:246
+msgid "What other names could we go with besides `#[do_not_recommend]`?"
+msgstr ""

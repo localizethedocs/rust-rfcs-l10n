@@ -1,0 +1,287 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1717-dllimport.md:1
+msgid "Feature Name: dllimport"
+msgstr ""
+
+#: src/1717-dllimport.md:2
+msgid "Start Date: 2016-08-13"
+msgstr ""
+
+#: src/1717-dllimport.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1717](https://github.com/rust-lang/rfcs/pull/1717)"
+msgstr ""
+
+#: src/1717-dllimport.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#37403](https://github.com/rust-lang/rust/"
+"issues/37403)"
+msgstr ""
+
+#: src/1717-dllimport.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1717-dllimport.md:9
+msgid ""
+"Make compiler aware of the association between library names adorning "
+"`extern` blocks and symbols defined within the block.  Add attributes and "
+"command line switches that leverage this association."
+msgstr ""
+
+#: src/1717-dllimport.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/1717-dllimport.md:16
+msgid ""
+"Most of the time a linkage directive is only needed to inform the linker "
+"about what native libraries need to be linked into a program. On some "
+"platforms, however, the compiler needs more detailed knowledge about what's "
+"being linked from where in order to ensure that symbols are wired up "
+"correctly."
+msgstr ""
+
+#: src/1717-dllimport.md:21
+msgid ""
+"On Windows, when a symbol is imported from a dynamic library, the code that "
+"accesses this symbol must be generated differently than for symbols imported "
+"from a static library."
+msgstr ""
+
+#: src/1717-dllimport.md:24
+msgid ""
+"Currently the compiler is not aware of associations between the libraries "
+"and symbols imported from them, so it cannot alter code generation based on "
+"library kind."
+msgstr ""
+
+#: src/1717-dllimport.md:27
+msgid "Detailed design"
+msgstr ""
+
+#: src/1717-dllimport.md:30
+msgid "Library \\<\\-> symbol association"
+msgstr ""
+
+#: src/1717-dllimport.md:32
+msgid ""
+"The compiler shall assume that symbols defined within extern block are "
+"imported from the library mentioned in the `#[link]` attribute adorning the "
+"block."
+msgstr ""
+
+#: src/1717-dllimport.md:35
+msgid "Changes to code generation"
+msgstr ""
+
+#: src/1717-dllimport.md:37
+msgid ""
+"On platforms other than Windows the above association will have no effect. "
+"On Windows, however, `#[link(..., kind=\"dylib\")` shall be presumed to mean "
+"linking to a dll, whereas `#[link(..., kind=\"static\")` shall mean static "
+"linking.  In the former case, all symbols associated with that library will "
+"be marked with LLVM [dllimport](http://llvm.org/docs/LangRef.html#dll-"
+"storage-classes) storage class."
+msgstr ""
+
+#: src/1717-dllimport.md:44
+msgid "Library name and kind variance"
+msgstr ""
+
+#: src/1717-dllimport.md:46
+msgid ""
+"Many native libraries are linked via the command line via `-l` which is "
+"passed in through Cargo build scripts instead of being written in the source "
+"code itself. As a recap, a native library may change names across platforms "
+"or distributions or it may be linked dynamically in some situations and "
+"statically in others which is why build scripts are leveraged to make these "
+"dynamic decisions. In order to support this kind of dynamism, the following "
+"modifications are proposed:"
+msgstr ""
+
+#: src/1717-dllimport.md:54
+msgid ""
+"Extend syntax of the `-l` flag to `-l [KIND=]lib[:NEWNAME]`.  The `NEWNAME` "
+"part may be used to override name of a library specified in the source."
+msgstr ""
+
+#: src/1717-dllimport.md:56
+msgid ""
+"Add new meaning to the `KIND` part: if \"lib\" is already specified in the "
+"source, this will override its kind with KIND.  Note that this override is "
+"possible only for libraries defined in the current crate."
+msgstr ""
+
+#: src/1717-dllimport.md:60
+msgid "Example:"
+msgstr ""
+
+#: src/1717-dllimport.md:63
+msgid "// mylib.rs\n"
+msgstr ""
+
+#: src/1717-dllimport.md:64
+msgid "\"foo\""
+msgstr ""
+
+#: src/1717-dllimport.md:64
+msgid "\"dylib\""
+msgstr ""
+
+#: src/1717-dllimport.md:66
+msgid "// dllimport applied\n"
+msgstr ""
+
+#: src/1717-dllimport.md:69
+msgid "\"bar\""
+msgstr ""
+
+#: src/1717-dllimport.md:69
+msgid "\"static\""
+msgstr ""
+
+#: src/1717-dllimport.md:71
+msgid "// dllimport not applied\n"
+msgstr ""
+
+#: src/1717-dllimport.md:74
+msgid "\"baz\""
+msgstr ""
+
+#: src/1717-dllimport.md:76
+msgid "// kind defaults to \"dylib\", dllimport applied\n"
+msgstr ""
+
+#: src/1717-dllimport.md:81
+msgid "# change foo's kind to \"static\", dllimport will not be applied\n"
+msgstr ""
+
+#: src/1717-dllimport.md:82
+msgid "# link newfoo instead of foo, keeping foo's kind as \"dylib\"\n"
+msgstr ""
+
+#: src/1717-dllimport.md:83
+msgid "# change bar's kind to \"dylib\", dllimport will be applied\n"
+msgstr ""
+
+#: src/1717-dllimport.md:86
+msgid "Unbundled static libs (optional)"
+msgstr ""
+
+#: src/1717-dllimport.md:88
+msgid ""
+"It had been pointed out that sometimes one may wish to link to a static "
+"system library (i.e. one that is always available to the linker) without "
+"bundling it into .lib's and .rlib's. For this use case we'll introduce "
+"another library \"kind\", \"static-nobundle\". Such libraries would be "
+"treated in the same way as \"static\", except they will not be bundled into "
+"the target .lib/.rlib."
+msgstr ""
+
+#: src/1717-dllimport.md:94
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1717-dllimport.md:97
+msgid ""
+"For libraries to work robustly on MSVC, the correct `#[link]` annotation "
+"will be required. Most cases will \"just work\" on MSVC due to the compiler "
+"strongly favoring static linkage, but any symbols imported from a dynamic "
+"library or exported as a Rust dynamic library will need to be tagged "
+"appropriately to ensure that they work in all situations. Worse still, the "
+"`#[link]` annotations on an `extern` block are not required on any other "
+"platform to work correctly, meaning that it will be common that these "
+"attributes are left off by accident."
+msgstr ""
+
+#: src/1717-dllimport.md:106
+msgid "Alternatives"
+msgstr ""
+
+#: src/1717-dllimport.md:109
+msgid ""
+"Instead of enhancing `#[link]`, a `#[linked_from = \"foo\"]` annotation "
+"could be added. This has the drawback of not being able to handle native "
+"libraries whose name is unpredictable across platforms in an easy fashion, "
+"however. Additionally, it adds an extra attribute to the compiler that "
+"wasn't known previously."
+msgstr ""
+
+#: src/1717-dllimport.md:115
+msgid ""
+"Support a `#[dllimport]` on extern blocks (or individual symbols, or both). "
+"This has the following drawbacks, however:"
+msgstr ""
+
+#: src/1717-dllimport.md:117
+msgid ""
+"This attribute would duplicate the information already provided by "
+"`#[link(kind=\"...\")]`."
+msgstr ""
+
+#: src/1717-dllimport.md:119
+msgid ""
+"It is not always known whether `#[dllimport]` is needed. Native libraries "
+"are not always known whether they're linked dynamically or statically (e.g. "
+"that's what a build script decides), so `dllimport` will need to be guarded "
+"by `cfg_attr`."
+msgstr ""
+
+#: src/1717-dllimport.md:124
+msgid ""
+"When linking native libraries, the compiler could attempt to locate each "
+"library on the filesystem and probe the contents for what symbol names are "
+"exported from the native library. This list could then be cross-referenced "
+"with all symbols declared in the program locally to understand which symbols "
+"are coming from a dylib and which are being linked statically. Some "
+"downsides of this approach may include:"
+msgstr ""
+
+#: src/1717-dllimport.md:131
+msgid ""
+"It's unclear whether this will be a performant operation and not cause undue "
+"runtime overhead during compiles."
+msgstr ""
+
+#: src/1717-dllimport.md:134
+msgid ""
+"On Windows linking to a DLL involves linking to its \"import library\", so "
+"it may be difficult to know whether a symbol truly comes from a DLL or not."
+msgstr ""
+
+#: src/1717-dllimport.md:138
+msgid ""
+"Locating libraries on the system may be difficult as the system linker often "
+"has search paths baked in that the compiler does not know about."
+msgstr ""
+
+#: src/1717-dllimport.md:141
+msgid ""
+"As was already mentioned, \"kind\" override can affect codegen of the "
+"current crate only. This overloading the `-l` flag for this purpose may be "
+"confusinfg to developers. A new codegen flag might be a better fit for this, "
+"for example `-C libkind=KIND=LIB`."
+msgstr ""
+
+#: src/1717-dllimport.md:145
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1717-dllimport.md:148
+msgid ""
+"Should we allow dropping a library specified in the source from linking via "
+"`-l lib:` (i.e. \"rename to empty\")?"
+msgstr ""

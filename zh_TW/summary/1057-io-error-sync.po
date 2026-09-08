@@ -1,0 +1,161 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1057-io-error-sync.md:1
+msgid "Feature Name: `io_error_sync`"
+msgstr ""
+
+#: src/1057-io-error-sync.md:2
+msgid "Start Date: 2015-04-11"
+msgstr ""
+
+#: src/1057-io-error-sync.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1057](https://github.com/rust-lang/rfcs/pull/1057)"
+msgstr ""
+
+#: src/1057-io-error-sync.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#24133](https://github.com/rust-lang/rust/"
+"pull/24133)"
+msgstr ""
+
+#: src/1057-io-error-sync.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1057-io-error-sync.md:8
+msgid ""
+"Add the `Sync` bound to `io::Error` by requiring that any wrapped custom "
+"errors also conform to `Sync` in addition to `error::Error + Send`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1057-io-error-sync.md:13
+msgid "Adding the `Sync` bound to `io::Error` has 3 primary benefits:"
+msgstr ""
+
+#: src/1057-io-error-sync.md:15
+msgid "Values that contain `io::Error`s will be able to be `Sync`"
+msgstr ""
+
+#: src/1057-io-error-sync.md:16
+msgid ""
+"Perhaps more importantly, `io::Error` will be able to be stored in an `Arc`"
+msgstr ""
+
+#: src/1057-io-error-sync.md:17
+msgid ""
+"By using the above, a cloneable wrapper can be created that shares an `io::"
+"Error` using an `Arc` in order to simulate the old behavior of being able to "
+"clone an `io::Error`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:21
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1057-io-error-sync.md:23
+msgid ""
+"The only thing keeping `io::Error` from being `Sync` today is the wrapped "
+"custom error type `Box<error::Error+Send>`. Changing this to `Box<error::"
+"Error+Send+Sync>` and adding the `Sync` bound to `io::Error::new()` is "
+"sufficient to make `io::Error` be `Sync`. In addition, the relevant "
+"`convert::From` impls that convert to `Box<error::Error+Send>` will be "
+"updated to convert to `Box<error::Error+Send+Sync>` instead."
+msgstr ""
+
+#: src/1057-io-error-sync.md:30
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1057-io-error-sync.md:32
+msgid ""
+"The only downside to this change is it means any types that conform to "
+"`error::Error` and are `Send` but not `Sync` will no longer be able to be "
+"wrapped in an `io::Error`. It's unclear if there's any types in the standard "
+"library that will be impacted by this. Looking through the [list of "
+"implementors](http://doc.rust-lang.org/nightly/std/error/trait.Error.html) "
+"for `error::Error`, here's all of the types that may be affected:"
+msgstr ""
+
+#: src/1057-io-error-sync.md:39
+msgid ""
+"`io::IntoInnerError`: This type is only `Sync` if the underlying buffered "
+"writer instance is `Sync`. I can't be sure, but I don't believe we have any "
+"writers that are `Send` but not `Sync`. In addition, this type has a `From` "
+"impl that converts it to `io::Error` even if the writer is not `Send`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:43
+msgid ""
+"`sync::mpsc::SendError`: This type is only `Sync` if the wrapped value `T` "
+"is `Sync`. This is of course also true for `Send`. I'm not sure if anyone is "
+"relying on the ability to wrap a `SendError` in an `io::Error`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:46
+msgid "`sync::mpsc::TrySendError`: Same situation as `SendError`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:47
+msgid ""
+"`sync::PoisonError`: This type is already not compatible with `io::Error` "
+"because it wraps mutex guards (such as `sync::MutexGuard`) which are not "
+"`Send`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:50
+msgid "`sync::TryLockError`: Same situation as `PoisonError`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:52
+msgid ""
+"So the only real question is about `sync::mpsc::SendError`. If anyone is "
+"relying on the ability to convert that into an `io::Error` a `From` impl "
+"could be added that returns an `io::Error` that is indistinguishable from a "
+"wrapped `SendError`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:59
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1057-io-error-sync.md:61
+msgid ""
+"Don't do this. Not adding the `Sync` bound to `io::Error` means `io::Error`s "
+"cannot be stored in an `Arc` and types that contain an `io::Error` cannot be "
+"`Sync`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:65
+msgid ""
+"We should also consider whether we should go a step further and change `io::"
+"Error` to use `Arc` instead of `Box` internally. This would let us restore "
+"the `Clone` impl for `io::Error`."
+msgstr ""
+
+#: src/1057-io-error-sync.md:69
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1057-io-error-sync.md:71
+msgid ""
+"Should we add the `From` impl for `SendError`? There is no code in the rust "
+"project that relies on `SendError` being converted to `io::Error`, and I'm "
+"inclined to think it's unlikely for anyone to be relying on that, but I "
+"don't know if there are any third-party crates that will be affected."
+msgstr ""

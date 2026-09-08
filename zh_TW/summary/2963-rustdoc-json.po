@@ -1,0 +1,2509 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2963-rustdoc-json.md:1
+msgid "Feature Name: `rustdoc_json`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:2
+msgid "Start Date: 2020-06-26"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2963](https://github.com/rust-lang/rfcs/pull/2963)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#76578](https://github.com/rust-lang/rust/"
+"issues/76578)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2963-rustdoc-json.md:9
+msgid ""
+"This RFC describes the design of a JSON output for the tool `rustdoc`, to "
+"allow tools to lean on its data collection and refinement but provide a "
+"different front-end."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:12
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2963-rustdoc-json.md:15
+msgid ""
+"The current HTML output of `rustdoc` is often lauded as a key selling point "
+"of Rust. It's a ubiquitous tool, that you can use to easily find nearly "
+"anything you need to know about a crate. However, despite its versatility, "
+"its output format has some drawbacks:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:19
+msgid ""
+"Viewing this output requires a web browser, with (for some features of the "
+"output) a JavaScript interpreter."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:21
+msgid ""
+"The HTML output of `rustdoc` is explicitly not stabilized, to allow "
+"`rustdoc` developers the option to tweak the display of information, add new "
+"information, etc. In addition it's not generated  with the intent of being "
+"scraped by users which makes converting this HTML into a different format "
+"impractical. People are still able to build [cool stuff](https://crates.io/"
+"crates/rocdoc) on top of it, but it's unwieldy and limiting to parse the "
+"HTML like that. For use cases like this, a stable, well documented, easily "
+"parsable format with semantic information accessible would be far more "
+"useful."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:28
+msgid ""
+"As the HTML is the only available output of `rustdoc`, its integration into "
+"centralized, multi-language, documentation browsers is difficult."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:31
+msgid ""
+"In addition, `rustdoc` had JSON output in the past, but it failed to keep up "
+"with the changing language and [was taken out](https://github.com/rust-lang/"
+"rust/pull/32773) in 2016. With `rustdoc` in a more stable position, it's "
+"possible to re-introduce this feature and ensure its stability. This [was "
+"brought up in 2018](https://internals.rust-lang.org/t/design-discussion-json-"
+"output-for-rustdoc/8271/6) with a positive response and there are [several]"
+"(https://github.com/rust-lang/rust/issues/44136#issuecomment-467144974) "
+"[recent](https://internals.rust-lang.org/t/current-state-of-rustdoc-and-"
+"cargo/11721) discussions indicating that it would be a useful feature."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:37
+msgid ""
+"In [the draft RFC from 2018](https://github.com/QuietMisdreavus/rfcs/blob/"
+"rustdoc-json/text/0000-rustdoc-json.md#unresolved-questions) there was some "
+"discussion of utilizing `save-analysis` to provide this information, but "
+"with [RLS being replaced by rust-analyzer](https://github.com/rust-lang/rfcs/"
+"pull/2912) it's possible that the feature will be eventually removed from "
+"the compiler. In addition `save-analysis` output is just as unstable as the "
+"current HTML output of `rustdoc`, so a separate format is preferable."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:49
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:52
+msgid ""
+"(_Upon successful implementation/stabilization, this documentation should "
+"live in The Rustdoc Book._)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:55
+msgid ""
+"In addition to generating the regular HTML, `rustdoc` can create a JSON file "
+"based on your crate. These can be used by other tools to take information "
+"about your crate and convert it into other output formats, insert into "
+"centralized documentation systems, create language bindings, etc."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:59
+msgid "To get this output, pass the `--output-format json` flag to `rustdoc`:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:65
+msgid ""
+"This will output a JSON file in the current directory (by default). For "
+"example, say you have the following crate:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:69
+msgid "//! Here are some crate-level docs!\n"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:70
+msgid "/// Here are some docs for `some_fn`!\n"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:73
+msgid "/// Here are some docs for `SomeStruct`!\n"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:78
+msgid ""
+"After running the above command, you should get a `lib.json` file like the "
+"following:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:82
+msgid "\"root\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:82 src/2963-rustdoc-json.md:129
+msgid "\"0:0\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:83
+msgid "\"version\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:84
+msgid "\"includes_private\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:85
+msgid "\"index\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:86 src/2963-rustdoc-json.md:145
+#: src/2963-rustdoc-json.md:151
+msgid "\"0:3\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:87 src/2963-rustdoc-json.md:110
+#: src/2963-rustdoc-json.md:130 src/2963-rustdoc-json.md:152
+#: src/2963-rustdoc-json.md:157
+msgid "\"crate_id\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:88 src/2963-rustdoc-json.md:111
+#: src/2963-rustdoc-json.md:131 src/2963-rustdoc-json.md:165
+#: src/2963-rustdoc-json.md:169 src/2963-rustdoc-json.md:173
+#: src/2963-rustdoc-json.md:514 src/2963-rustdoc-json.md:518
+#: src/2963-rustdoc-json.md:522 src/2963-rustdoc-json.md:557
+#: src/2963-rustdoc-json.md:566 src/2963-rustdoc-json.md:880
+#: src/2963-rustdoc-json.md:920 src/2963-rustdoc-json.md:927
+#: src/2963-rustdoc-json.md:979 src/2963-rustdoc-json.md:996
+#: src/2963-rustdoc-json.md:1005
+msgid "\"name\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:88 src/2963-rustdoc-json.md:153
+msgid "\"some_fn\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:89 src/2963-rustdoc-json.md:112
+#: src/2963-rustdoc-json.md:132
+msgid "\"source\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:90 src/2963-rustdoc-json.md:113
+#: src/2963-rustdoc-json.md:133
+msgid "\"filename\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:90 src/2963-rustdoc-json.md:113
+#: src/2963-rustdoc-json.md:133
+msgid "\"lib.rs\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:91 src/2963-rustdoc-json.md:114
+#: src/2963-rustdoc-json.md:134
+msgid "\"begin\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:92 src/2963-rustdoc-json.md:115
+#: src/2963-rustdoc-json.md:135
+msgid "\"end\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:94 src/2963-rustdoc-json.md:117
+#: src/2963-rustdoc-json.md:137
+msgid "\"visibility\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:94 src/2963-rustdoc-json.md:117
+#: src/2963-rustdoc-json.md:137
+msgid "\"public\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:95 src/2963-rustdoc-json.md:118
+#: src/2963-rustdoc-json.md:138
+msgid "\"docs\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:95
+msgid "\"Here are some docs for `some_fn`!\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:96 src/2963-rustdoc-json.md:119
+#: src/2963-rustdoc-json.md:139
+msgid "\"attrs\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:97 src/2963-rustdoc-json.md:120
+#: src/2963-rustdoc-json.md:140 src/2963-rustdoc-json.md:154
+#: src/2963-rustdoc-json.md:159 src/2963-rustdoc-json.md:515
+#: src/2963-rustdoc-json.md:519 src/2963-rustdoc-json.md:523
+#: src/2963-rustdoc-json.md:558 src/2963-rustdoc-json.md:567
+#: src/2963-rustdoc-json.md:793 src/2963-rustdoc-json.md:800
+#: src/2963-rustdoc-json.md:803 src/2963-rustdoc-json.md:807
+#: src/2963-rustdoc-json.md:816 src/2963-rustdoc-json.md:818
+#: src/2963-rustdoc-json.md:826 src/2963-rustdoc-json.md:829
+#: src/2963-rustdoc-json.md:838 src/2963-rustdoc-json.md:842
+#: src/2963-rustdoc-json.md:860 src/2963-rustdoc-json.md:865
+#: src/2963-rustdoc-json.md:873 src/2963-rustdoc-json.md:878
+#: src/2963-rustdoc-json.md:906 src/2963-rustdoc-json.md:913
+#: src/2963-rustdoc-json.md:918 src/2963-rustdoc-json.md:930
+#: src/2963-rustdoc-json.md:950 src/2963-rustdoc-json.md:972
+#: src/2963-rustdoc-json.md:977 src/2963-rustdoc-json.md:989
+#: src/2963-rustdoc-json.md:999 src/2963-rustdoc-json.md:1008
+msgid "\"kind\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:97 src/2963-rustdoc-json.md:154
+msgid "\"function\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:98 src/2963-rustdoc-json.md:121
+#: src/2963-rustdoc-json.md:141 src/2963-rustdoc-json.md:794
+#: src/2963-rustdoc-json.md:801 src/2963-rustdoc-json.md:804
+#: src/2963-rustdoc-json.md:808 src/2963-rustdoc-json.md:817
+#: src/2963-rustdoc-json.md:819 src/2963-rustdoc-json.md:827
+#: src/2963-rustdoc-json.md:830 src/2963-rustdoc-json.md:839
+#: src/2963-rustdoc-json.md:843 src/2963-rustdoc-json.md:861
+#: src/2963-rustdoc-json.md:866 src/2963-rustdoc-json.md:874
+#: src/2963-rustdoc-json.md:879 src/2963-rustdoc-json.md:907
+#: src/2963-rustdoc-json.md:914 src/2963-rustdoc-json.md:919
+#: src/2963-rustdoc-json.md:931 src/2963-rustdoc-json.md:973
+#: src/2963-rustdoc-json.md:978 src/2963-rustdoc-json.md:990
+#: src/2963-rustdoc-json.md:1000 src/2963-rustdoc-json.md:1009
+msgid "\"inner\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:99 src/2963-rustdoc-json.md:788
+#: src/2963-rustdoc-json.md:855 src/2963-rustdoc-json.md:901
+#: src/2963-rustdoc-json.md:967
+msgid "\"decl\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:100 src/2963-rustdoc-json.md:789
+#: src/2963-rustdoc-json.md:856 src/2963-rustdoc-json.md:902
+#: src/2963-rustdoc-json.md:968
+msgid "\"inputs\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:101 src/2963-rustdoc-json.md:837
+#: src/2963-rustdoc-json.md:872 src/2963-rustdoc-json.md:949
+#: src/2963-rustdoc-json.md:1027
+msgid "\"output\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:102
+msgid "\"c_variadic\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:104 src/2963-rustdoc-json.md:123
+#: src/2963-rustdoc-json.md:511 src/2963-rustdoc-json.md:554
+msgid "\"generics\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:105
+msgid "\"header\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:105
+msgid "\"\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:106
+msgid "\"abi\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:106
+msgid "\"\\\"Rust\\\"\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:109 src/2963-rustdoc-json.md:144
+#: src/2963-rustdoc-json.md:156
+msgid "\"0:4\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:111 src/2963-rustdoc-json.md:158
+msgid "\"SomeStruct\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:118
+msgid "\"Here are some docs for `SomeStruct`!\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:120 src/2963-rustdoc-json.md:159
+msgid "\"struct\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:122
+msgid "\"struct_type\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:122
+msgid "\"unit\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:124
+msgid "\"fields_stripped\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:125
+msgid "\"fields\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:126
+msgid "\"impls\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:131 src/2963-rustdoc-json.md:153
+#: src/2963-rustdoc-json.md:158
+msgid "\"lib\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:138
+msgid "\"Here are some crate-level docs!\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:140
+msgid "\"module\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:142
+msgid "\"is_crate\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:143
+msgid "\"items\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:150
+msgid "\"paths\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:153 src/2963-rustdoc-json.md:158
+msgid "\"path\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:163
+msgid "\"extern_crates\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:164
+msgid "\"9\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:165
+msgid "\"backtrace\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:166 src/2963-rustdoc-json.md:170
+#: src/2963-rustdoc-json.md:174
+msgid "\"html_root_url\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:166
+msgid "\"https://docs.rs/backtrace/\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:168
+msgid "\"2\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:169
+msgid "\"core\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:170 src/2963-rustdoc-json.md:174
+msgid "\"https://doc.rust-lang.org/nightly/\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:172
+msgid "\"1\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:173
+msgid "\"std\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:181
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:184
+msgid ""
+"(_Upon successful implementation/stabilization, this documentation should "
+"live in The Rustdoc Book and/or an external crate's Rustdoc._)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:187
+msgid ""
+"(_Given that the JSON output will be implemented as a set of Rust types with "
+"serde serialization, the most useful docs for them would be the 40 or so "
+"types themselves. By writing docs on those types the Rustdoc page for that "
+"module would become a good reference. It may be helpful to provide some sort "
+"of [schema](http://json-schema.org/) for use with other languages_)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:192
+msgid ""
+"When you request JSON output from `rustdoc`, you're getting a version of the "
+"Rust abstract syntax tree (AST), so you could see anything that you could "
+"export from a valid Rust crate. The following types can appear in the output:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:196
+msgid "ID"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:198
+msgid ""
+"To provide various maps/references to items, the JSON output uses unique "
+"strings as IDs for each item. They happen to be the compiler internal DefId "
+"for that item, but in the JSON blob they should be treated as opaque as they "
+"aren't guaranteed to be stable across compiler invocations. IDs are only "
+"valid/consistent within a single JSON blob. They cannot be used to resolve "
+"references between the JSON output of different crates (see [the Resolving "
+"IDs section](#resolving-ids))."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:204
+msgid "Crate"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:206
+msgid ""
+"A Crate is the root of the outputted JSON blob. It contains all doc-relevant "
+"information about the local crate, as well as some information about "
+"external items that are referred to locally."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:209 src/2963-rustdoc-json.md:235
+#: src/2963-rustdoc-json.md:242 src/2963-rustdoc-json.md:254
+#: src/2963-rustdoc-json.md:272 src/2963-rustdoc-json.md:279
+#: src/2963-rustdoc-json.md:285 src/2963-rustdoc-json.md:294
+#: src/2963-rustdoc-json.md:304 src/2963-rustdoc-json.md:310
+#: src/2963-rustdoc-json.md:328 src/2963-rustdoc-json.md:342
+#: src/2963-rustdoc-json.md:349 src/2963-rustdoc-json.md:360
+#: src/2963-rustdoc-json.md:369 src/2963-rustdoc-json.md:376
+#: src/2963-rustdoc-json.md:390 src/2963-rustdoc-json.md:399
+#: src/2963-rustdoc-json.md:407 src/2963-rustdoc-json.md:421
+#: src/2963-rustdoc-json.md:439 src/2963-rustdoc-json.md:446
+#: src/2963-rustdoc-json.md:470 src/2963-rustdoc-json.md:478
+#: src/2963-rustdoc-json.md:485 src/2963-rustdoc-json.md:493
+#: src/2963-rustdoc-json.md:636 src/2963-rustdoc-json.md:641
+#: src/2963-rustdoc-json.md:657 src/2963-rustdoc-json.md:673
+#: src/2963-rustdoc-json.md:684 src/2963-rustdoc-json.md:691
+#: src/2963-rustdoc-json.md:706 src/2963-rustdoc-json.md:726
+#: src/2963-rustdoc-json.md:745 src/2963-rustdoc-json.md:754
+#: src/2963-rustdoc-json.md:761 src/2963-rustdoc-json.md:772
+msgid "Name"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:209 src/2963-rustdoc-json.md:235
+#: src/2963-rustdoc-json.md:242 src/2963-rustdoc-json.md:254
+#: src/2963-rustdoc-json.md:272 src/2963-rustdoc-json.md:279
+#: src/2963-rustdoc-json.md:285 src/2963-rustdoc-json.md:294
+#: src/2963-rustdoc-json.md:304 src/2963-rustdoc-json.md:310
+#: src/2963-rustdoc-json.md:328 src/2963-rustdoc-json.md:342
+#: src/2963-rustdoc-json.md:349 src/2963-rustdoc-json.md:360
+#: src/2963-rustdoc-json.md:369 src/2963-rustdoc-json.md:376
+#: src/2963-rustdoc-json.md:390 src/2963-rustdoc-json.md:399
+#: src/2963-rustdoc-json.md:407 src/2963-rustdoc-json.md:421
+#: src/2963-rustdoc-json.md:439 src/2963-rustdoc-json.md:446
+#: src/2963-rustdoc-json.md:470 src/2963-rustdoc-json.md:478
+#: src/2963-rustdoc-json.md:485 src/2963-rustdoc-json.md:493
+#: src/2963-rustdoc-json.md:636 src/2963-rustdoc-json.md:641
+#: src/2963-rustdoc-json.md:657 src/2963-rustdoc-json.md:663
+#: src/2963-rustdoc-json.md:673 src/2963-rustdoc-json.md:684
+#: src/2963-rustdoc-json.md:691 src/2963-rustdoc-json.md:706
+#: src/2963-rustdoc-json.md:726 src/2963-rustdoc-json.md:745
+#: src/2963-rustdoc-json.md:754 src/2963-rustdoc-json.md:761
+#: src/2963-rustdoc-json.md:772
+msgid "Type"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:209 src/2963-rustdoc-json.md:235
+#: src/2963-rustdoc-json.md:242 src/2963-rustdoc-json.md:254
+#: src/2963-rustdoc-json.md:272 src/2963-rustdoc-json.md:279
+#: src/2963-rustdoc-json.md:285 src/2963-rustdoc-json.md:294
+#: src/2963-rustdoc-json.md:304 src/2963-rustdoc-json.md:310
+#: src/2963-rustdoc-json.md:328 src/2963-rustdoc-json.md:342
+#: src/2963-rustdoc-json.md:349 src/2963-rustdoc-json.md:360
+#: src/2963-rustdoc-json.md:369 src/2963-rustdoc-json.md:376
+#: src/2963-rustdoc-json.md:390 src/2963-rustdoc-json.md:399
+#: src/2963-rustdoc-json.md:407 src/2963-rustdoc-json.md:421
+#: src/2963-rustdoc-json.md:439 src/2963-rustdoc-json.md:446
+#: src/2963-rustdoc-json.md:470 src/2963-rustdoc-json.md:478
+#: src/2963-rustdoc-json.md:485 src/2963-rustdoc-json.md:493
+#: src/2963-rustdoc-json.md:636 src/2963-rustdoc-json.md:641
+#: src/2963-rustdoc-json.md:657 src/2963-rustdoc-json.md:673
+#: src/2963-rustdoc-json.md:684 src/2963-rustdoc-json.md:691
+#: src/2963-rustdoc-json.md:706 src/2963-rustdoc-json.md:726
+#: src/2963-rustdoc-json.md:745 src/2963-rustdoc-json.md:754
+#: src/2963-rustdoc-json.md:761 src/2963-rustdoc-json.md:772
+msgid "Description"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:211 src/2963-rustdoc-json.md:237
+#: src/2963-rustdoc-json.md:257 src/2963-rustdoc-json.md:441
+#: src/2963-rustdoc-json.md:449 src/2963-rustdoc-json.md:638
+#: src/2963-rustdoc-json.md:675 src/2963-rustdoc-json.md:708
+#: src/2963-rustdoc-json.md:774
+msgid "`name`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:211 src/2963-rustdoc-json.md:212
+#: src/2963-rustdoc-json.md:237 src/2963-rustdoc-json.md:238
+#: src/2963-rustdoc-json.md:246 src/2963-rustdoc-json.md:257
+#: src/2963-rustdoc-json.md:259 src/2963-rustdoc-json.md:260
+#: src/2963-rustdoc-json.md:264 src/2963-rustdoc-json.md:275
+#: src/2963-rustdoc-json.md:289 src/2963-rustdoc-json.md:290
+#: src/2963-rustdoc-json.md:296 src/2963-rustdoc-json.md:353
+#: src/2963-rustdoc-json.md:363 src/2963-rustdoc-json.md:386
+#: src/2963-rustdoc-json.md:393 src/2963-rustdoc-json.md:394
+#: src/2963-rustdoc-json.md:402 src/2963-rustdoc-json.md:441
+#: src/2963-rustdoc-json.md:442 src/2963-rustdoc-json.md:448
+#: src/2963-rustdoc-json.md:449 src/2963-rustdoc-json.md:472
+#: src/2963-rustdoc-json.md:480 src/2963-rustdoc-json.md:481
+#: src/2963-rustdoc-json.md:638 src/2963-rustdoc-json.md:660
+#: src/2963-rustdoc-json.md:675 src/2963-rustdoc-json.md:708
+#: src/2963-rustdoc-json.md:729 src/2963-rustdoc-json.md:750
+#: src/2963-rustdoc-json.md:763 src/2963-rustdoc-json.md:774
+msgid "String"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:211
+msgid ""
+"The name of the crate. If `--crate-name` is not given, the filename is used."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:212
+msgid "`version`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:212
+msgid "(_Optional_) The version string given to `--crate-version`, if any."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:213
+msgid "`includes_private`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:213 src/2963-rustdoc-json.md:298
+#: src/2963-rustdoc-json.md:314 src/2963-rustdoc-json.md:330
+#: src/2963-rustdoc-json.md:331 src/2963-rustdoc-json.md:354
+#: src/2963-rustdoc-json.md:378 src/2963-rustdoc-json.md:384
+#: src/2963-rustdoc-json.md:385 src/2963-rustdoc-json.md:395
+#: src/2963-rustdoc-json.md:403 src/2963-rustdoc-json.md:451
+#: src/2963-rustdoc-json.md:489 src/2963-rustdoc-json.md:747
+#: src/2963-rustdoc-json.md:756 src/2963-rustdoc-json.md:764
+msgid "bool"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:213
+msgid "Whether or not the output includes private items."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:214
+msgid "`root`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:214 src/2963-rustdoc-json.md:274
+#: src/2963-rustdoc-json.md:450 src/2963-rustdoc-json.md:677
+msgid "[ID](#ID)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:214
+msgid "The ID of the root module Item."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:215
+msgid "`index`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:215
+msgid "Map\\<[ID](#ID), [Item](#Item)\\>"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:215
+msgid "A collection of all Items in the crate[\\*](#resolving-ids)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:216
+msgid "`paths`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:216
+msgid "Map\\<[ID](#ID), [ItemSummary](#ItemSummary)\\>"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:216
+msgid ""
+"Maps all IDs (even external ones[\\*](#resolving-ids)) to a brief "
+"description including their name, crate of origin, and kind."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:217
+msgid "`extern_crates`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:217
+msgid "Map\\<int, [ExternalCrate](#ExternalCrate)\\>"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:217
+msgid "A map of \"crate numbers\" to metadata about that crate."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:218
+msgid "`format_version`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:218 src/2963-rustdoc-json.md:244
+#: src/2963-rustdoc-json.md:256
+msgid "int"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:218
+msgid ""
+"The version of the structure of this blob. The structure described by this "
+"RFC will be version `1`, and it will be changed if incompatible changes are "
+"ever made."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:220
+msgid "Resolving IDs"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:222
+msgid ""
+"The crate's `index` contains mostly local items, which includes impls of "
+"external traits on local types or local traits on external types. The "
+"exception to this is that external trait definitions and their associated "
+"items are also included in the `index` because this information is useful "
+"when generating the comprehensive list of methods for a type."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:227
+msgid ""
+"This means that many IDs aren't included in the `index` (any reference to a "
+"struct, macro, etc. from a different crate). In these cases the fallback is "
+"to look up the ID in the crate's `paths`. That gives [enough information]"
+"(#ItemSummary) about the item to create cross references or simply provide a "
+"name without copying all of the information about external items into the "
+"local crate's JSON output."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:233
+msgid "ExternalCrate"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:237
+msgid "The name of the crate."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:238
+msgid "`html_root_url`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:238
+msgid "(_Optional_) The `html_root_url` for that crate if they specify one."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:240
+msgid "ItemSummary"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:244 src/2963-rustdoc-json.md:256
+msgid "`crate_id`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:244 src/2963-rustdoc-json.md:256
+msgid ""
+"A number corresponding to the crate this Item is from. Used as an key to the "
+"`extern_crates` map in [Crate](#Crate). A value of zero represents an Item "
+"from the local crate, any other number means that this Item is external."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:245 src/2963-rustdoc-json.md:275
+msgid "`path`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:245 src/2963-rustdoc-json.md:262
+#: src/2963-rustdoc-json.md:380
+msgid "\\[String\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:245
+msgid ""
+"The fully qualified path (e.g. `[\"std\", \"io\", \"lazy\", \"Lazy\"]` for "
+"`std::io::lazy::Lazy`) of this Item."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:246 src/2963-rustdoc-json.md:264
+#: src/2963-rustdoc-json.md:639
+msgid "`kind`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:246
+msgid "What type of Item this is (see [Item](#Item))."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:248
+msgid "Item"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:250
+msgid ""
+"An Item represents anything that can hold documentation - modules, structs, "
+"enums, functions, traits, type aliases, and more. The Item data type holds "
+"fields that can apply to any of these, and leaves kind-specific details "
+"(like function args or enum variants) to the `inner` field."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:257
+msgid ""
+"The name of the Item, if present. Some Items, like impl blocks, do not have "
+"names."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:258
+msgid "`span`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:258
+msgid "[Span](#Span)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:258
+msgid "(_Optional_) The source location of this Item."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:259
+msgid "`visibility`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:259
+msgid ""
+"`\"default\"`, `\"public\"`, or `\"crate\"`[\\*](#restricted-visibility)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:260
+msgid "`docs`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:260
+msgid "The extracted documentation text from the Item."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:261
+msgid "`links`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:261
+msgid "Map\\<String, [ID](#ID)\\>"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:261
+msgid ""
+"A map of intra-doc link names to the IDs of the items they resolve to. For "
+"example if the `docs` string contained `\"see [HashMap][std::collections::"
+"HashMap] for more details\"` then `links` would have `\"std::collections::"
+"HashMap\": \"<some id>\"`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:262
+msgid "`attrs`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:262
+msgid ""
+"The [unstable](#Unstable) stringified attributes (other than doc comments) "
+"on the Item (e.g. `[\"#[inline]\", \"#[test]\"]`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:263
+msgid "`deprecation`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:263
+msgid "[Deprecation](#Deprecation)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:263
+msgid "(_Optional_) Information about the Item's deprecation, if present."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:264
+msgid "The kind of Item this is. Determines what fields are in `inner`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:265
+msgid "`inner`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:265 src/2963-rustdoc-json.md:639
+#: src/2963-rustdoc-json.md:709
+msgid "Object"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:265
+msgid ""
+"The type-specific fields describing this Item. Check the `kind` field to "
+"determine what's available."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:267
+msgid "Restricted visibility"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:268
+msgid ""
+"When using `--document-private-items`, `pub(in path)` items can appear in "
+"the output in which case the visibility field will be an Object instead of a "
+"string. It will contain the single key `\"restricted\"` with the following "
+"values:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:274
+msgid "`parent`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:274
+msgid "The ID of the module that this items visibility is restricted to."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:275
+msgid ""
+"How that module path was referenced in the code (like `\"super::super\"`, or "
+"`\"crate::foo\"`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:277
+msgid "`kind == \"module\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:281 src/2963-rustdoc-json.md:332
+#: src/2963-rustdoc-json.md:383
+msgid "`items`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:281 src/2963-rustdoc-json.md:299
+#: src/2963-rustdoc-json.md:300 src/2963-rustdoc-json.md:313
+#: src/2963-rustdoc-json.md:315 src/2963-rustdoc-json.md:332
+#: src/2963-rustdoc-json.md:383
+msgid "\\[[ID](#ID)\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:281
+msgid ""
+"The list of Items contained within this module. The order of definitions is "
+"preserved."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:283
+msgid "`kind == \"function\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:287 src/2963-rustdoc-json.md:351
+#: src/2963-rustdoc-json.md:748
+msgid "`decl`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:287 src/2963-rustdoc-json.md:351
+#: src/2963-rustdoc-json.md:748
+msgid "[FnDecl](#FnDecl)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:287 src/2963-rustdoc-json.md:748
+msgid "Information about the function signature, or declaration."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:288 src/2963-rustdoc-json.md:297
+#: src/2963-rustdoc-json.md:312 src/2963-rustdoc-json.md:333
+#: src/2963-rustdoc-json.md:344 src/2963-rustdoc-json.md:352
+#: src/2963-rustdoc-json.md:379 src/2963-rustdoc-json.md:410
+#: src/2963-rustdoc-json.md:424
+msgid "`generics`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:288 src/2963-rustdoc-json.md:297
+#: src/2963-rustdoc-json.md:312 src/2963-rustdoc-json.md:333
+#: src/2963-rustdoc-json.md:344 src/2963-rustdoc-json.md:352
+#: src/2963-rustdoc-json.md:379 src/2963-rustdoc-json.md:410
+#: src/2963-rustdoc-json.md:424
+msgid "[Generics](#Generics)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:288
+msgid "Information about the function's type parameters and `where` clauses."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:289 src/2963-rustdoc-json.md:353
+msgid "`header`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:289 src/2963-rustdoc-json.md:353
+msgid ""
+"`\"const\"`, `\"async\"`, `\"unsafe\"`, or a space separated combination of "
+"those modifiers."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:290 src/2963-rustdoc-json.md:750
+msgid "`abi`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:290
+msgid ""
+"The ABI string on the function. Non-`extern` functions have a `\"Rust\"` "
+"ABI, whereas `extern` functions without an explicit ABI are `\"C\"`. See "
+"[the reference](https://doc.rust-lang.org/reference/items/external-blocks."
+"html#abi) for more details."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:292
+msgid "`kind == \"struct\" || \"union\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:296
+msgid "`struct_type`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:296
+msgid ""
+"Either `\"plain\"` for braced structs, `\"tuple\"` for tuple structs, or "
+"`\"unit\"` for unit structs."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:297
+msgid "Information about the struct's type parameters and `where` clauses."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:298 src/2963-rustdoc-json.md:314
+msgid "`fields_stripped`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:298
+msgid ""
+"Whether any fields have been removed from the result, due to being private "
+"or hidden."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:299 src/2963-rustdoc-json.md:313
+msgid "`fields`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:299
+msgid ""
+"The list of fields in the struct. All of the corresponding Items have `kind "
+"== \"struct_field\"`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:300 src/2963-rustdoc-json.md:315
+msgid "`impls`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:300 src/2963-rustdoc-json.md:315
+msgid ""
+"All impls (both trait and inherent) for this type. All of the corresponding "
+"Items have `kind = \"impl\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:302
+msgid "`kind == \"struct_field\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:306 src/2963-rustdoc-json.md:362
+#: src/2963-rustdoc-json.md:392 src/2963-rustdoc-json.md:401
+#: src/2963-rustdoc-json.md:409 src/2963-rustdoc-json.md:728
+#: src/2963-rustdoc-json.md:757 src/2963-rustdoc-json.md:765
+msgid "`type`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:306 src/2963-rustdoc-json.md:362
+#: src/2963-rustdoc-json.md:372 src/2963-rustdoc-json.md:381
+#: src/2963-rustdoc-json.md:382 src/2963-rustdoc-json.md:392
+#: src/2963-rustdoc-json.md:401 src/2963-rustdoc-json.md:409
+#: src/2963-rustdoc-json.md:488 src/2963-rustdoc-json.md:644
+#: src/2963-rustdoc-json.md:659 src/2963-rustdoc-json.md:694
+#: src/2963-rustdoc-json.md:728 src/2963-rustdoc-json.md:757
+#: src/2963-rustdoc-json.md:765 src/2963-rustdoc-json.md:775
+#: src/2963-rustdoc-json.md:776
+msgid "[Type](#Type)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:306
+msgid "The type of this field."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:308
+msgid "`kind == \"enum\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:312
+msgid "Information about the enum's type parameters and `where` clauses."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:313
+msgid ""
+"The list of variants in the enum. All of the corresponding Items have `kind "
+"== \"variant\"`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:314
+msgid ""
+"Whether any variants have been removed from the result, due to being private "
+"or hidden."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:317
+msgid "`kind == \"variant\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:319
+msgid ""
+"Has a `variant_kind` field with 3 possible values and an `variant_inner` "
+"field with more info if necessary:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:321
+msgid "`\"plain\"` (e.g. `Enum::Variant`) with no `variant_inner` value."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:322
+msgid ""
+"`\"tuple\"` (e.g. `Enum::Variant(u32, String)`) with `\"variant_inner\": "
+"[Type]`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:323
+msgid ""
+"`\"struct\"` (e.g. `Enum::Variant{foo: u32, bar: String}`) with "
+"`\"variant_inner\": [ID]` which is a list of this variant's \"struct_field\" "
+"items."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:326
+msgid "`kind == \"trait\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:330
+msgid "`is_auto`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:330
+msgid "Whether this trait is an autotrait like `Sync`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:331 src/2963-rustdoc-json.md:378
+#: src/2963-rustdoc-json.md:747
+msgid "`is_unsafe`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:331
+msgid "Whether this is an `unsafe trait` such as `GlobalAlloc`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:332
+msgid "The list of associated items contained in this trait definition."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:333
+msgid "Information about the trait's type parameters and `where` clauses."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:334 src/2963-rustdoc-json.md:345
+#: src/2963-rustdoc-json.md:371 src/2963-rustdoc-json.md:423
+#: src/2963-rustdoc-json.md:643
+msgid "`bounds`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:334 src/2963-rustdoc-json.md:345
+#: src/2963-rustdoc-json.md:371 src/2963-rustdoc-json.md:423
+#: src/2963-rustdoc-json.md:643
+msgid "\\[[GenericBound](#GenericBound)\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:334
+msgid ""
+"Trait bounds for this trait definition (e.g.  `trait Foo: Bar<T> + Clone`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:336
+msgid "`kind == \"trait_alias\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:338
+msgid ""
+"An [unstable feature](https://doc.rust-lang.org/beta/unstable-book/language-"
+"features/trait-alias.html) which allows writing aliases like `trait Foo = "
+"std::fmt::Debug + Send` and then using `Foo` in bounds rather than writing "
+"out the individual traits."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:344
+msgid "Any type parameters that the trait alias takes."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:345
+msgid "The list of traits after the equals."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:347
+msgid "`kind == \"method\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:351
+msgid "Information about the method signature, or declaration."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:352
+msgid "Information about the method's type parameters and `where` clauses."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:354
+msgid "`has_body`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:354
+msgid ""
+"Whether this is just a method signature (in a trait definition) or a method "
+"with an actual body."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:356
+msgid "`kind == \"assoc_const\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:358
+msgid ""
+"These items only show up in trait _definitions_. When looking at a trait "
+"impl item, the item where the associated constant is defined is a "
+"`\"constant\"` item."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:362
+msgid "The type of this associated const."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:363 src/2963-rustdoc-json.md:372
+#: src/2963-rustdoc-json.md:644
+msgid "`default`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:363
+msgid ""
+"(_Optional_) The stringified expression for the default value, if provided."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:365
+msgid "`kind == \"assoc_type\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:367
+msgid ""
+"These items only show up in trait _definitions_. When looking at a trait "
+"impl item, the item where the associated type is defined is a `\"typedef\"` "
+"item."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:371
+msgid "The bounds for this associated type."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:372
+msgid "(_Optional_) The default for this type, if provided."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:374
+msgid "`kind == \"impl\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:378
+msgid "Whether this impl is for an unsafe trait."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:379
+msgid "Information about the impl's type parameters and `where` clauses."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:380
+msgid "`provided_trait_methods`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:380
+msgid ""
+"The list of names for all provided methods in this impl block. This is "
+"provided for ease of access if you don't need more information from the "
+"`items` field."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:381 src/2963-rustdoc-json.md:659
+#: src/2963-rustdoc-json.md:776
+msgid "`trait`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:381
+msgid ""
+"(_Optional_) The trait being implemented or `null` if the impl is "
+"\"inherent\", which means `impl Struct {}` as opposed to `impl Trait for "
+"Struct {}`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:382
+msgid "`for`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:382
+msgid "The type that the impl block is for."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:383
+msgid "The list of associated items contained in this impl block."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:384
+msgid "`negative`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:384
+msgid "Whether this is a negative impl (e.g. `!Sized` or `!Send`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:385
+msgid "`synthetic`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:385
+msgid ""
+"Whether this is an impl that's implied by the compiler (for autotraits, e.g. "
+"`Send` or `Sync`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:386
+msgid "`blanket_impl`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:386
+msgid ""
+"(_Optional_) The name of the generic parameter used for the blanket impl, if "
+"this impl was produced by one. For example `impl<T, U> Into<U> for T` would "
+"result in `blanket_impl == \"T\"`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:388
+msgid "`kind == \"constant\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:392
+msgid "The type of this constant."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:393 src/2963-rustdoc-json.md:402
+msgid "`expr`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:393
+msgid "The [unstable](#Unstable) stringified expression of this constant."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:394
+msgid "`value`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:394
+msgid ""
+"(_Optional_) The value of the evaluated expression for this constant, which "
+"is only computed for numeric types."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:395
+msgid "`is_literal`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:395
+msgid "Whether this constant is a bool, numeric, string, or char literal."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:397
+msgid "`kind == \"static\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:401
+msgid "The type of this static."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:402
+msgid ""
+"The [unstable](#Unstable) stringified expression that this static is "
+"assigned to."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:403 src/2963-rustdoc-json.md:756
+#: src/2963-rustdoc-json.md:764
+msgid "`mutable`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:403
+msgid "Whether this static is mutable."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:405
+msgid "`kind == \"typedef\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:409
+msgid "The type on the right hand side of this definition."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:410
+msgid "Any generic parameters on the left hand side of this definition."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:412
+msgid "`kind == \"opaque_ty\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:414
+msgid ""
+"Represents [trait aliases](https://doc.rust-lang.org/beta/unstable-book/"
+"language-features/trait-alias.html) of the form:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:423
+msgid "The trait bounds on the right hand side."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:424
+msgid "Any generic parameters on the type itself."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:426
+msgid "`kind == \"foreign_type\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:428
+msgid ""
+"`inner` contains no fields. This item represents a type declaration in an "
+"extern block (see [here](https://github.com/rust-lang/rfcs/blob/master/"
+"text/1861-extern-types.md) for more details):"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:437
+msgid "`kind == \"extern_crate\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:441
+msgid "The name of the extern crate."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:442
+msgid "`rename`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:442
+msgid "(_Optional_) The renaming of this crate with `extern crate foo as bar`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:444
+msgid "`kind == \"import\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:448
+msgid "`source`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:448
+msgid ""
+"The full path being imported (e.g. `\"super::some_mod::other_mod::Struct\"`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:449
+msgid ""
+"The name of the imported item (may be different from the last segment of "
+"`source` due to import renaming: `use source as name`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:450 src/2963-rustdoc-json.md:677
+msgid "`id`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:450
+msgid "(_Optional_) The ID of the item being imported."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:451
+msgid "`glob`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:451
+msgid "Whether this import ends in a glob: `use source::*`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:453
+msgid "`kind == \"macro\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:455
+msgid ""
+"A `macro_rules!` declarative macro. Contains a single string with the source "
+"representation of the macro with the patterns stripped, for example:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:466
+msgid "TODO: proc macros"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:468
+msgid "Span"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:472
+msgid "`filename`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:472
+msgid "The path to the source file for this span relative to the crate root."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:473
+msgid "`begin`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:473 src/2963-rustdoc-json.md:474
+msgid "(int, int)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:473
+msgid "The zero indexed line and column of the first character in this span."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:474
+msgid "`end`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:474
+msgid "The zero indexed line and column of the last character in this span."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:476
+msgid "Deprecation"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:480
+msgid "`since`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:480
+msgid ""
+"(_Optional_) Usually a version number when this Item first became deprecated."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:481
+msgid "`note`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:481
+msgid ""
+"(_Optional_) The reason for deprecation and/or what alternatives to use."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:483
+msgid "FnDecl"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:487 src/2963-rustdoc-json.md:693
+msgid "`inputs`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:487
+msgid "\\[(String, [Type](#Type))\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:487
+msgid ""
+"A list of parameter names and their types. The names are [unstable]"
+"(#Unstable) because arbitrary patterns can be used as parameters, in which "
+"case the name is a pretty printed version of it. For example `fn foo((_, x): "
+"(u32, u32)){…}` would have an parameter with the name `\"(_, x)\"` and `fn "
+"foo(MyStruct {some_field: u32, ..}: MyStruct){…}`) would have one called "
+"`\"MyStruct {some_field, ..}\"`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:488 src/2963-rustdoc-json.md:694
+msgid "`output`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:488
+msgid "(_Optional_) Output type."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:489
+msgid "`c_variadic`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:489
+msgid ""
+"Whether this function uses [an unstable feature](https://doc.rust-lang.org/"
+"beta/unstable-book/language-features/c-variadic.html) for variadic FFI "
+"functions."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:491 src/2963-rustdoc-json.md:895
+msgid "Generics"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:495 src/2963-rustdoc-json.md:749
+msgid "`params`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:495 src/2963-rustdoc-json.md:661
+#: src/2963-rustdoc-json.md:749
+msgid "\\[[GenericParamDef](#GenericParamDef)\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:495 src/2963-rustdoc-json.md:749
+msgid ""
+"A list of generic parameter definitions (e.g.  `<T: Clone + Hash, U: Copy>`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:496
+msgid "`where_predicates`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:496
+msgid "\\[[WherePredicate](#WherePredicate)\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:496
+msgid "A list of where predicates (e.g.  `where T: Iterator, T::Item: Copy`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:498 src/2963-rustdoc-json.md:778
+msgid "Examples"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:500
+msgid ""
+"Here are a few full examples of the Generics fields for different rust code:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:502
+msgid "Lifetime bounds"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:512 src/2963-rustdoc-json.md:555
+msgid "\"params\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:514 src/2963-rustdoc-json.md:529
+#: src/2963-rustdoc-json.md:862 src/2963-rustdoc-json.md:985
+msgid "\"'a\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:515 src/2963-rustdoc-json.md:519
+#: src/2963-rustdoc-json.md:523 src/2963-rustdoc-json.md:529
+#: src/2963-rustdoc-json.md:862 src/2963-rustdoc-json.md:875
+#: src/2963-rustdoc-json.md:985
+msgid "\"lifetime\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:518 src/2963-rustdoc-json.md:532
+msgid "\"'b\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:522 src/2963-rustdoc-json.md:535
+msgid "\"'c\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:526 src/2963-rustdoc-json.md:583
+msgid "\"where_predicates\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:528
+msgid "\"region_predicate\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:530 src/2963-rustdoc-json.md:560
+#: src/2963-rustdoc-json.md:569 src/2963-rustdoc-json.md:589
+#: src/2963-rustdoc-json.md:619
+msgid "\"bounds\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:532 src/2963-rustdoc-json.md:535
+msgid "\"outlives\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:543
+msgid "Trait bounds"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:557 src/2963-rustdoc-json.md:587
+#: src/2963-rustdoc-json.md:907
+msgid "\"T\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:559 src/2963-rustdoc-json.md:568
+#: src/2963-rustdoc-json.md:828 src/2963-rustdoc-json.md:841
+#: src/2963-rustdoc-json.md:864 src/2963-rustdoc-json.md:877
+#: src/2963-rustdoc-json.md:988
+msgid "\"type\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:561 src/2963-rustdoc-json.md:578
+msgid "\"synthetic\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:566 src/2963-rustdoc-json.md:617
+msgid "\"U\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:571 src/2963-rustdoc-json.md:591
+#: src/2963-rustdoc-json.md:621 src/2963-rustdoc-json.md:916
+#: src/2963-rustdoc-json.md:975
+msgid "\"trait_bound\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:572 src/2963-rustdoc-json.md:592
+#: src/2963-rustdoc-json.md:622 src/2963-rustdoc-json.md:917
+#: src/2963-rustdoc-json.md:976
+msgid "\"trait\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:572
+msgid "/* `Type` representation for `Clone`*/"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:573 src/2963-rustdoc-json.md:593
+#: src/2963-rustdoc-json.md:607 src/2963-rustdoc-json.md:623
+#: src/2963-rustdoc-json.md:941 src/2963-rustdoc-json.md:1019
+msgid "\"generic_params\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:574 src/2963-rustdoc-json.md:594
+#: src/2963-rustdoc-json.md:608 src/2963-rustdoc-json.md:624
+#: src/2963-rustdoc-json.md:942 src/2963-rustdoc-json.md:1020
+msgid "\"modifier\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:574 src/2963-rustdoc-json.md:594
+#: src/2963-rustdoc-json.md:608 src/2963-rustdoc-json.md:624
+#: src/2963-rustdoc-json.md:942 src/2963-rustdoc-json.md:1020
+msgid "\"none\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:585 src/2963-rustdoc-json.md:601
+#: src/2963-rustdoc-json.md:615
+msgid "\"bound_predicate\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:586 src/2963-rustdoc-json.md:602
+#: src/2963-rustdoc-json.md:616
+msgid "\"ty\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:587 src/2963-rustdoc-json.md:617
+#: src/2963-rustdoc-json.md:906
+msgid "\"generic\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:592
+msgid "/* `Type` representation for `Iterator`*/"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:602
+msgid ""
+"/* `Type` representation for `Iterator::Item`},\n"
+"        \"bounds\": [\n"
+"          {\n"
+"            \"trait_bound\": {\n"
+"              \"trait\": {/* `Type` representation for `Copy`*/"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:622
+msgid "/* `Type` representation for `Iterator<Item=u32>`*/"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:634
+msgid "GenericParamDef"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:638
+msgid ""
+"The name of the type variable of a generic parameter (e.g `T` or `'static`)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:639
+msgid ""
+"Either `\"lifetime\"`, `\"const\": Type`, or `\"type: Object\"` with the "
+"following fields:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:643
+msgid "The bounds on this parameter."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:644
+msgid ""
+"(_Optional_) The default type for this parameter (e.g `PartialEq<Rhs = "
+"Self>`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:646
+msgid "WherePredicate"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:648 src/2963-rustdoc-json.md:698
+msgid "Can be one of the 3 following objects:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:649
+msgid ""
+"`\"bound_predicate\": {\"ty\": Type, \"bounds\": [GenericBound]}` for `T::"
+"Item: Copy + Clone`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:650
+msgid ""
+"`\"region_predicate\": {\"lifetime\": String, \"bounds\": [GenericBound]}` "
+"for `'a: 'b`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:651
+msgid "`\"eq_predicate\": {\"lhs\": Type, \"rhs\": Type}`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:653
+msgid "GenericBound"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:655
+msgid "Can be either `\"trait_bound\"` with the following fields:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:659
+msgid "The trait for this bound."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:660
+msgid "`modifier`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:660
+msgid "Either `\"none\"`, `\"maybe\"`, or `\"maybe_const\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:661
+msgid "`generic_params`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:661
+msgid ""
+"`for<>` parameters used for [HRTBs](https://doc.rust-lang.org/nomicon/hrtb."
+"html)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:665
+msgid ""
+"Rustdoc's representation of types is fairly involved. Like Items, they are "
+"represented by a `\"kind\"` field and an `\"inner\"` field with the related "
+"information. Here are the possible contents of that inner Object:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:669
+msgid "`kind = \"resolved_path\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:671
+msgid "This is the main kind that represents all user defined types."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:675
+msgid ""
+"The path of this type as written in the code (`\"std::iter::Iterator\"`, "
+"`\"::module::Struct\"`, etc.)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:676 src/2963-rustdoc-json.md:686
+msgid "`args`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:676
+msgid "[GenericArgs](#GenericArgs)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:676
+msgid ""
+"(_Optional_) Any arguments on this type such as `Vec<i32>` or "
+"`SomeStruct<'a, 5, u8, B: Copy, C = 'static str>`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:677
+msgid "The ID of the trait/struct/enum/etc. that this type refers to."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:678
+msgid "`param_names`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:678
+msgid "[GenericBound](#GenericBound)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:678
+msgid ""
+"If this type is of the form `dyn Foo + Bar + ...` then this field contains "
+"those trait bounds."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:680
+msgid "GenericArgs"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:682
+msgid "Can be either `\"angle_bracketed\"` with the following fields:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:686
+msgid "\\[[GenericArg](#GenericArg)\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:686
+msgid "The list of each argument on this type."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:687
+msgid "`bindings`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:687
+msgid "[TypeBinding](#TypeBinding)"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:687
+msgid ""
+"Associated type or constant bindings (e.g. `Item=i32` or `Item: Clone`) for "
+"this type."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:689
+msgid ""
+"or `\"parenthesized\"` (for `Fn(A, B) -> C` arg syntax) with the following "
+"fields:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:693
+msgid "\\[[Type](#Type)\\]"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:693 src/2963-rustdoc-json.md:708
+msgid "The `Fn`'s parameter types for this argument."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:694
+msgid "(_Optional_) The return type of this argument."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:696
+msgid "GenericArg"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:699
+msgid "`\"lifetime\": String`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:700
+msgid "`\"type\": Type`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:701
+msgid ""
+"`\"const\": Object` where the object has a single key `\"constant\"` with "
+"value that's the same object as the `inner` field of `Item` when `kind == "
+"\"constant\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:704
+msgid "TypeBinding"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:709
+msgid "`binding`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:709
+msgid "Either `\"equality\": Type` or `\"constraint\": [GenericBound]`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:712
+msgid "`kind = \"generic\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:714
+msgid "`\"inner\"'` is a String which is simply the name of a type parameter."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:716
+msgid "`kind = \"tuple\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:718
+msgid "`\"inner\"` is a single list with the Types of each tuple item."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:720
+msgid "`kind = \"slice\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:722
+msgid "`\"inner\"` is the Type the elements in the slice."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:724
+msgid "`kind = \"array\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:728
+msgid "The Type of the elements in the array"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:729
+msgid "`len`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:729
+msgid ""
+"The length of the array as an [unstable](#Unstable) stringified expression."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:731
+msgid "`kind = \"impl_trait\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:733
+msgid ""
+"`\"inner\"` is a single list of the [GenericBounds](#GenericBound) for this "
+"type."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:735
+msgid "`kind = \"never\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:737
+msgid "Used to represent the `!` type, has no fields."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:739
+msgid "`kind = \"infer\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:741
+msgid "Used to represent `_` in type parameters, has no fields."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:743
+msgid "`kind = \"function_pointer\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:747
+msgid "Whether this is an `unsafe fn`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:750
+msgid "The ABI string on the function."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:752
+msgid "`kind = \"raw_pointer\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:756
+msgid "Whether this is a `*mut` or just a `*`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:757
+msgid "The Type that this pointer points at."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:759
+msgid "`kind = \"borrowed_ref\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:763
+msgid "`lifetime`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:763
+msgid ""
+"(_Optional_) The name of the lifetime parameter on this reference, if any."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:764
+msgid "Whether this is a `&mut` or just a `&`."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:765
+msgid "The Type that this reference references."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:767
+msgid "`kind = \"qualified_path\"`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:769
+msgid ""
+"Used when a type is qualified by a trait (`<Type as Trait>::Name`) or "
+"associated type (`T::Item` where `T: Iterator`)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:774
+msgid ""
+"The name at the end of the path (`\"Name\"` and `\"Item\"` in the examples "
+"above)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:775
+msgid "`self_type`"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:775
+msgid "The type being used as a trait (`Type` and `T` in the examples above)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:776
+msgid ""
+"The trait that the path is on (`Trait` and `Iterator` in the examples above)."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:780
+msgid ""
+"Here are some function signatures with various types and their respective "
+"JSON representations:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:782
+msgid "Primitives"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:791 src/2963-rustdoc-json.md:858
+#: src/2963-rustdoc-json.md:904
+msgid "\"a\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:793 src/2963-rustdoc-json.md:803
+#: src/2963-rustdoc-json.md:807 src/2963-rustdoc-json.md:818
+#: src/2963-rustdoc-json.md:829 src/2963-rustdoc-json.md:842
+#: src/2963-rustdoc-json.md:865 src/2963-rustdoc-json.md:930
+#: src/2963-rustdoc-json.md:989 src/2963-rustdoc-json.md:999
+#: src/2963-rustdoc-json.md:1008
+msgid "\"primitive\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:794 src/2963-rustdoc-json.md:804
+#: src/2963-rustdoc-json.md:808 src/2963-rustdoc-json.md:819
+#: src/2963-rustdoc-json.md:830 src/2963-rustdoc-json.md:843
+msgid "\"u32\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:798 src/2963-rustdoc-json.md:911
+msgid "\"b\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:800
+msgid "\"tuple\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:814
+msgid "\"c\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:816
+msgid "\"slice\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:824
+msgid "\"d\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:826
+msgid "\"array\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:832
+msgid "\"len\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:832
+msgid "\"5\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:838
+msgid "\"raw_pointer\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:840 src/2963-rustdoc-json.md:863
+#: src/2963-rustdoc-json.md:876
+msgid "\"mutable\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:849
+msgid "References"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:860 src/2963-rustdoc-json.md:873
+msgid "\"borrowed_ref\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:866
+msgid "\"str\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:875
+msgid "\"'static\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:878 src/2963-rustdoc-json.md:918
+#: src/2963-rustdoc-json.md:977
+msgid "\"resolved_path\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:880
+msgid "\"MyType\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:881 src/2963-rustdoc-json.md:921
+#: src/2963-rustdoc-json.md:980
+msgid "\"id\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:881
+msgid "\"5:4936\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:882 src/2963-rustdoc-json.md:884
+#: src/2963-rustdoc-json.md:922 src/2963-rustdoc-json.md:924
+#: src/2963-rustdoc-json.md:981 src/2963-rustdoc-json.md:983
+msgid "\"args\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:883 src/2963-rustdoc-json.md:923
+#: src/2963-rustdoc-json.md:982
+msgid "\"angle_bracketed\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:885 src/2963-rustdoc-json.md:925
+#: src/2963-rustdoc-json.md:994
+msgid "\"bindings\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:888 src/2963-rustdoc-json.md:938
+#: src/2963-rustdoc-json.md:1016
+msgid "\"param_names\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:913 src/2963-rustdoc-json.md:972
+msgid "\"impl_trait\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:920
+msgid "\"Iterator\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:921
+msgid "\"2:5000\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:927 src/2963-rustdoc-json.md:996
+msgid "\"Item\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:928 src/2963-rustdoc-json.md:997
+#: src/2963-rustdoc-json.md:1006
+msgid "\"binding\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:929 src/2963-rustdoc-json.md:998
+#: src/2963-rustdoc-json.md:1007
+msgid "\"equality\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:931
+msgid "\"bool\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:950
+msgid "\"never\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:954
+msgid "Generic Args"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:970
+msgid "\"x\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:979
+msgid "\"MyTrait\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:980
+msgid "\"0:11\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:990
+msgid "\"i32\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1000
+msgid "\"u8\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1005
+msgid "\"Other\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1009
+msgid "\"f32\""
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1031
+msgid "Unstable"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1033
+msgid ""
+"Fields marked as unstable have contents that are subject to change. They can "
+"be displayed to users, but tools shouldn't rely on being able to parse their "
+"output or they will be broken by internal compiler changes."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1037
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1040
+msgid ""
+"By supporting JSON output for `rustdoc`, we should consider how much it "
+"should mirror the internal structures used in `rustdoc` and in the compiler. "
+"Depending on how much we want to stabilize, we could accidentally stabilize "
+"the internal structures of `rustdoc`. We have tried to avoid this by "
+"introducing a mirror of `rustdoc`'s AST types which exposes as few compiler "
+"internals as possible by stringifying or not including certain fields."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1045
+msgid ""
+"Adding JSON output adds _another_ thing that must be kept up to date with "
+"language changes, and another thing for compiler contributors to potentially "
+"break with their changes. Hopefully this friction will be kept to the "
+"minimum because the JSON output doesn't need any complex rendering logic "
+"like the HTML one. All that is required for a new language item is adding an "
+"additional field to a struct."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1051
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/2963-rustdoc-json.md:1054
+msgid ""
+"**Status quo.** Keep the HTML the way it is, and make users who want a "
+"machine-readable version of a crate parse it themselves. In the absence of "
+"an accepted JSON output, the `--output-format` flag in rustdoc remains "
+"deprecated and unused."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1057
+msgid ""
+"**Alternate data format (XML, Bincode, CapnProto, etc).** JSON was selected "
+"for its ubiquity in available parsers, but selecting a different data format "
+"may provide benefits for file size, compressibility, speed of conversion, "
+"etc. Since the implementation will lean on serde then this may be a non-"
+"issue as it would be trivial to switch serialization formats."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1061
+msgid ""
+"**Alternate data structure.** The proposed output very closely mirrors the "
+"internal `clean` AST types in rustdoc. This simplifies the implementation "
+"but may not be the optimal structure for users. If there are significant "
+"improvements then a future RFC could provide the necessary refinements, "
+"potentially as another alternative output format if necessary."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1066
+msgid "Prior art"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1069
+msgid ""
+"A handful of other languages and systems have documentation tools that "
+"output an intermediate representation separate from the human-readable "
+"outputs:"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1072
+msgid ""
+"[ClangDoc](https://clang.llvm.org/extra/clang-doc.html/) has the ability to "
+"output either rendered HTML, or tool consumable YAML."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1073
+msgid ""
+"[PureScript](http://www.purescript.org/) uses an intermediate JSON "
+"representation when publishing package information to their [Pursuit]"
+"(https://pursuit.purescript.org/) directory. It's primarily used to generate "
+"documentation, but can also be used to generate `etags` files."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1076
+msgid ""
+"[DartDoc](https://dart.dev/tools/dartdoc/) is in the process of implementing "
+"a JSON output."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1077
+msgid ""
+"[Doxygen](https://www.doxygen.nl/) has an option to generate an XML file "
+"with the code's information."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1078
+msgid ""
+"[Haskell](https://www.haskell.org/)'s documentation tool, [Haddock](https://"
+"www.haskell.org/haddock/), can generate an intermediate representation used "
+"by the type search engine [Hoogle](https://www.haskell.org/hoogle/) to "
+"integrate documentation of several packages."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1080
+msgid ""
+"[Kythe](http://kythe.io/) is a \"(mostly) language-agnostic\" system for "
+"integrating documentation across several languages. It features its own "
+"schema that code information can be translated into, that services can use "
+"to aggregate information about projects that span multiple languages."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1083
+msgid ""
+"[GObject Introspection](https://gi.readthedocs.io/en/latest/) has an "
+"intermediate XML representation called GIR that's used to create language "
+"bindings for GObject-based C libraries. While (at the time of this writing) "
+"it's not currently used to create documentation, it is a stated goal to use "
+"this information to document these libraries."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1099
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2963-rustdoc-json.md:1102
+msgid ""
+"What is the stabilization story? As language features are added, this "
+"representation will need to be extended to accommodate it. As this will "
+"change the structure of the data, what does that mean for its consumers?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1105
+msgid ""
+"How will users be able to manipulate the data? Is it a good idea to host a "
+"crate outside the compiler that contains the struct definitions for all the "
+"types that get serialized so that people could easily hack on the data "
+"without the compiler? Should that crate be the source of truth for those "
+"types and be depended on by librustdoc, or should it be a mirror that gets "
+"updated externally to reflect the changes to the copy in the compiler?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1110
+msgid "How will intra-doc links be handled?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1111
+msgid ""
+"Supporting `struct.SomeStruct.html` style links seems infeasible since it "
+"would tie alternative front-ends to `rustdoc`'s file/folder format."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1113
+msgid ""
+"With the nightly [intra-rustdoc link syntax](https://github.com/rust-lang/"
+"rust/pull/47046) it's debatable whether we should resolve those to HTML "
+"links or leave that up to whatever consumes the JSON. Leaving them "
+"unresolved seems preferable but it would mean that consumers have to do "
+"markdown parsing to replace them with actual links."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1117
+msgid ""
+"In the case of items from the local crate vs external crates should the "
+"behavior be different?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1118
+msgid ""
+"If there's an `html_root_url` attribute/argument for an external crate "
+"should the behavior be different?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1121
+msgid "Output structure questions"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1123
+msgid ""
+"These aren't essential and could be deferred to a later RFC. The current "
+"implementation does include spans, but doesn't do any of the other things "
+"mentioned here."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1126
+msgid ""
+"Should we store `Span`s in the output even though we're not exporting the "
+"source itself like the HTML output does? If so is there a simple way to "
+"sanitize relative links to the files to avoid inconsistent output based on "
+"where `rustdoc` is invoked from. For example `rustdoc --output-format json /"
+"home/user/Downloads/project/crate/src/lib.rs` would include that absolute "
+"path in the spans, but it's probably preferable to have it just list the "
+"filename for single files or the path from the crate root for cargo projects."
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1132
+msgid ""
+"The proposed implementation exposes a strict subset of the information "
+"available to the HTML, backend: the `clean` types for Items and some "
+"mappings from the `Cache`. Are there other mappings/info from elsewhere that "
+"would be helpful to expose to users?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1135
+msgid ""
+"There are some items such as attributes that defer to compiler internal "
+"symbols in their `clean` representations which would make them problematic "
+"to represent faithfully. Is it OK to simply stringify these and leave their "
+"handling up to the user?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1138
+msgid ""
+"Should we specially handle `Deref` trait impls to make it easier for a "
+"struct to find the methods they can access from their deref target?"
+msgstr ""
+
+#: src/2963-rustdoc-json.md:1140
+msgid ""
+"Should we specially handle auto-traits? They can be included in the normal "
+"set of trait impls for each type but it clutters the output. Every time a "
+"user goes through the impls for a type they need to filter out those "
+"synthetic impls."
+msgstr ""

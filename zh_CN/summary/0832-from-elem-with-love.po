@@ -1,0 +1,200 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0832-from-elem-with-love.md:1
+msgid "Feature Name: direct to stable, because it modifies a stable macro"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:2
+msgid "Start Date: 2015-02-11"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#832](https://github.com/rust-lang/rfcs/pull/832)"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#22414](https://github.com/rust-lang/rust/"
+"issues/22414)"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:8
+msgid ""
+"Add back the functionality of `Vec::from_elem` by improving the `vec![x; n]` "
+"sugar to work with Clone `x` and runtime `n`."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:10
+msgid "Motivation"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:12
+msgid ""
+"High demand, mostly. There are currently a few ways to achieve the behaviour "
+"of `Vec::from_elem(elem, n)`:"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:14
+msgid ""
+"```\n"
+"// #1\n"
+"let vec = Vec::new();\n"
+"for i in range(0, n) {\n"
+"    vec.push(elem.clone())\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:22
+msgid ""
+"```\n"
+"// #2\n"
+"let vec = vec![elem; n]\n"
+"```"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:27
+msgid ""
+"```\n"
+"// #3\n"
+"let vec = Vec::new();\n"
+"vec.resize(elem, n);\n"
+"```"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:33
+msgid ""
+"```\n"
+"// #4\n"
+"let vec: Vec<_> = (0..n).map(|_| elem.clone()).collect()\n"
+"```"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:38
+msgid ""
+"```\n"
+"// #5\n"
+"let vec: Vec<_> = iter::repeat(elem).take(n).collect();\n"
+"```"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:43
+msgid "None of these quite match the convenience, power, and performance of:"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:49
+msgid ""
+"`#1` is verbose _and_ slow, because each `push` requires a capacity check."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:50
+msgid "`#2` only works for a Copy `elem` and const `n`."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:51
+msgid ""
+"`#3` needs a temporary, but should be otherwise identical performance-wise."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:52
+msgid ""
+"`#4` and `#5` are considered verbose and noisy. They also need to clone one "
+"more time than other methods _strictly_ need to."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:55
+msgid ""
+"However the issues for `#2` are _entirely_ artificial. It's simply a side-"
+"effect of forwarding the impl to the identical array syntax. We can just "
+"make the code in the `vec!` macro better. This naturally extends the compile-"
+"timey `[x; n]` array sugar to the more runtimey semantics of Vec, without "
+"introducing \"another way to do it\"."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:60
+msgid ""
+"`vec![100; 10]` is also _slightly_ less ambiguous than `from_elem(100, 10)`, "
+"because the `[T; n]` syntax is part of the language that developers should "
+"be familiar with, while `from_elem` is just a function with arbitrary "
+"argument order."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:64
+msgid ""
+"`vec![x; n]` is also known to be 47% more sick-rad than `from_elem`, which "
+"was of course deprecated to due its lack of sick-radness."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:67
+msgid "Detailed design"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:69
+msgid "Upgrade the current `vec!` macro to have the following definition:"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:88
+msgid "// No needless clones\n"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:105
+msgid "(note: only the `[x; n]` branch is changed)"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:107
+msgid "Which allows all of the following to work:"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:109
+msgid ""
+"```\n"
+"fn main() {\n"
+"    println!(\"{:?}\", vec![1; 10]);\n"
+"    println!(\"{:?}\", vec![Box::new(1); 10]);\n"
+"    let n = 10;\n"
+"    println!(\"{:?}\", vec![1; n]);\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:118
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:120
+msgid ""
+"Less discoverable than from_elem. All the problems that macros have relative "
+"to static methods."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:122
+msgid "Alternatives"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:124
+msgid "Just un-delete from_elem as it was."
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:126
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0832-from-elem-with-love.md:128
+msgid "No."
+msgstr ""

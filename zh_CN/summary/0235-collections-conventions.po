@@ -1,0 +1,2372 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0235-collections-conventions.md:1
+msgid "Start Date: 2014-10-29"
+msgstr ""
+
+#: src/0235-collections-conventions.md:2
+msgid ""
+"RFC PR #: [rust-lang/rfcs#235](https://github.com/rust-lang/rfcs/pull/235)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:3
+msgid ""
+"Rust Issue #: [rust-lang/rust#18424](https://github.com/rust-lang/rust/"
+"issues/18424)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0235-collections-conventions.md:7
+msgid ""
+"This is a combined _conventions_ and _library stabilization_ RFC. The goal "
+"is to establish a set of naming and signature conventions for `std::"
+"collections`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:10
+msgid "The major components of the RFC include:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:12
+msgid "Removing most of the traits in `collections`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:14
+msgid ""
+"A general proposal for solving the \"equiv\" problem, as well as improving "
+"`MaybeOwned`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:17
+msgid "Patterns for overloading on by-need values and predicates."
+msgstr ""
+
+#: src/0235-collections-conventions.md:19
+msgid "Initial, forwards-compatible steps toward `Iterable`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:21
+msgid ""
+"A coherent set of API conventions across the full variety of collections."
+msgstr ""
+
+#: src/0235-collections-conventions.md:23
+msgid ""
+"_A big thank-you to @Gankro, who helped collect API information and worked "
+"through an initial pass of some of the proposals here._"
+msgstr ""
+
+#: src/0235-collections-conventions.md:26
+msgid "Motivation"
+msgstr ""
+
+#: src/0235-collections-conventions.md:28
+msgid ""
+"This RFC aims to improve the design of the `std::collections` module in "
+"preparation for API stabilization. There are a number of problems that need "
+"to be addressed, as spelled out in the subsections below."
+msgstr ""
+
+#: src/0235-collections-conventions.md:32
+msgid "Collection traits"
+msgstr ""
+
+#: src/0235-collections-conventions.md:34
+msgid "The `collections` module defines several traits:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:36
+msgid "Collection"
+msgstr ""
+
+#: src/0235-collections-conventions.md:37
+msgid "Mutable"
+msgstr ""
+
+#: src/0235-collections-conventions.md:38
+msgid "MutableSeq"
+msgstr ""
+
+#: src/0235-collections-conventions.md:39
+msgid "Deque"
+msgstr ""
+
+#: src/0235-collections-conventions.md:40
+msgid "Map, MutableMap"
+msgstr ""
+
+#: src/0235-collections-conventions.md:41
+msgid "Set, MutableSet"
+msgstr ""
+
+#: src/0235-collections-conventions.md:43
+msgid "There are several problems with the current trait design:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:45
+msgid ""
+"Most important: the traits do not provide iterator methods like `iter`. It "
+"is not possible to do so in a clean way without higher-kinded types, as the "
+"RFC explains in more detail below."
+msgstr ""
+
+#: src/0235-collections-conventions.md:49
+msgid ""
+"The split between mutable and immutable traits is not well-motivated by any "
+"of the existing collections."
+msgstr ""
+
+#: src/0235-collections-conventions.md:52
+msgid ""
+"The methods defined in these traits are somewhat anemic compared to the "
+"suite of methods provided on the concrete collections that implement them."
+msgstr ""
+
+#: src/0235-collections-conventions.md:55
+msgid "Divergent APIs"
+msgstr ""
+
+#: src/0235-collections-conventions.md:57
+msgid ""
+"Despite the current collection traits, the APIs of various concrete "
+"collections has diverged; there is not a globally coherent design, and there "
+"are many inconsistencies."
+msgstr ""
+
+#: src/0235-collections-conventions.md:61
+msgid ""
+"One problem in particular is the lack of clear guiding principles for the "
+"API design. This RFC proposes a few along the way."
+msgstr ""
+
+#: src/0235-collections-conventions.md:64
+msgid "Providing slice APIs on `Vec` and `String`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:66
+msgid ""
+"The `String` and `Vec` types each provide a limited subset of the methods "
+"provides on string and vector slices, but there is not a clear reason to "
+"limit the API in this way. Today, one has to write things like `some_str."
+"as_slice().contains(...)`, which is not ergonomic or intuitive."
+msgstr ""
+
+#: src/0235-collections-conventions.md:71
+msgid "The `Equiv` problem"
+msgstr ""
+
+#: src/0235-collections-conventions.md:73
+msgid ""
+"There is a more subtle problem related to slices. It's common to use a "
+"`HashMap` with owned `String` keys, but then the natural API for things like "
+"lookup is not very usable:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:81
+msgid ""
+"The problem is that, since `K` will be `String`, the `find` function "
+"requests a `&String` value -- whereas one typically wants to work with the "
+"more flexible `&str` slices. In particular, using `find` with a literal "
+"string requires something like:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:87
+msgid "\"some literal\""
+msgstr ""
+
+#: src/0235-collections-conventions.md:90
+msgid ""
+"which is unergonomic and requires an extra allocation just to get a borrow "
+"that, in some sense, was already available."
+msgstr ""
+
+#: src/0235-collections-conventions.md:93
+msgid ""
+"The current `HashMap` API works around this problem by providing an "
+"_additional_ set of methods that uses a generic notion of \"equivalence\" of "
+"values that have different types:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:111
+msgid "There are a few downsides to this approach:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:113
+msgid ""
+"It requires a duplicated `_equiv` variant of each method taking a reference "
+"to the key. (This downside could likely be mitigated using [multidispatch]"
+"(https://github.com/rust-lang/rfcs/pull/195).)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:117
+msgid ""
+"Its correctness depends on equivalent values producing the same hash, which "
+"is not checked."
+msgstr ""
+
+#: src/0235-collections-conventions.md:120
+msgid ""
+"`String`\\-keyed hash maps are very common, so newcomers are likely to run "
+"headlong into the problem. First, `find` will fail to work in the expected "
+"way. But the signature of `find_equiv` is more difficult to understand than "
+"`find`, and it it's not immediately obvious that it solves the problem."
+msgstr ""
+
+#: src/0235-collections-conventions.md:125
+msgid ""
+"It is the right API for `HashMap`, but not helpful for e.g. `TreeMap`, which "
+"would want an analog for `Ord`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:128
+msgid ""
+"The `TreeMap` API currently deals with this problem in an entirely different "
+"way:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:132
+msgid ""
+"/// Returns the value for which f(key) returns Equal.\n"
+"/// f is invoked with current key and guides tree navigation.\n"
+"/// That means f should be aware of natural ordering of the tree.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:138
+msgid ""
+"Besides being less convenient -- you cannot write `map.find_with(\"some "
+"literal\")` -- this function navigates the tree according to an ordering "
+"that may have no relationship to the actual ordering of the tree."
+msgstr ""
+
+#: src/0235-collections-conventions.md:142
+msgid "`MaybeOwned`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:144
+msgid ""
+"Sometimes a function does not know in advance whether it will need or "
+"produce an owned copy of some data, or whether a borrow suffices. A typical "
+"example is the `from_utf8_lossy` function:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:152
+msgid ""
+"This function will return a string slice if the input was correctly utf8 "
+"encoded \\-- without any allocation. But if the input has invalid utf8 "
+"characters, the function allocates a new `String` and inserts utf8 "
+"\"replacement characters\" instead. Hence, the return type is an `enum`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:164
+msgid ""
+"This interface makes it possible to allocate only when necessary, but the "
+"`MaybeOwned` type (and connected machinery) are somewhat ad hoc -- and "
+"specialized to `String`/`str`. It would be somewhat more palatable if there "
+"were a single \"maybe owned\" abstraction usable across a wide range of "
+"types."
+msgstr ""
+
+#: src/0235-collections-conventions.md:169
+msgid "`Iterable`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:171
+msgid ""
+"A frequently-requested feature for the `collections` module is an `Iterable` "
+"trait for \"values that can be iterated over\". There are two main "
+"motivations:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:174
+msgid ""
+"_Abstraction_. Today, you can write a function that takes a single "
+"`Iterator`, but you cannot write a function that takes a container and then "
+"iterates over it multiple times (perhaps with differing mutability levels). "
+"An `Iterable` trait could allow that."
+msgstr ""
+
+#: src/0235-collections-conventions.md:179
+msgid "_Ergonomics_. You'd be able to write"
+msgstr ""
+
+#: src/0235-collections-conventions.md:185
+msgid "rather than"
+msgstr ""
+
+#: src/0235-collections-conventions.md:191
+msgid ""
+"and `consume_iter(some_vec)` rather than `consume_iter(some_vec.iter())`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:193
+msgid "Detailed design"
+msgstr ""
+
+#: src/0235-collections-conventions.md:195
+msgid "The collections today"
+msgstr ""
+
+#: src/0235-collections-conventions.md:197
+msgid ""
+"The concrete collections currently available in `std` fall into roughly "
+"three categories:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:199
+msgid "Sequences"
+msgstr ""
+
+#: src/0235-collections-conventions.md:200
+msgid "Vec"
+msgstr ""
+
+#: src/0235-collections-conventions.md:201
+msgid "String"
+msgstr ""
+
+#: src/0235-collections-conventions.md:202
+msgid "Slices"
+msgstr ""
+
+#: src/0235-collections-conventions.md:203
+msgid "Bitv"
+msgstr ""
+
+#: src/0235-collections-conventions.md:204
+msgid "DList"
+msgstr ""
+
+#: src/0235-collections-conventions.md:205
+msgid "RingBuf"
+msgstr ""
+
+#: src/0235-collections-conventions.md:206
+msgid "PriorityQueue"
+msgstr ""
+
+#: src/0235-collections-conventions.md:208
+msgid "Sets"
+msgstr ""
+
+#: src/0235-collections-conventions.md:209
+msgid "HashSet"
+msgstr ""
+
+#: src/0235-collections-conventions.md:210
+msgid "TreeSet"
+msgstr ""
+
+#: src/0235-collections-conventions.md:211
+msgid "TrieSet"
+msgstr ""
+
+#: src/0235-collections-conventions.md:212
+msgid "EnumSet"
+msgstr ""
+
+#: src/0235-collections-conventions.md:213
+msgid "BitvSet"
+msgstr ""
+
+#: src/0235-collections-conventions.md:215
+msgid "Maps"
+msgstr ""
+
+#: src/0235-collections-conventions.md:216
+msgid "HashMap"
+msgstr ""
+
+#: src/0235-collections-conventions.md:217
+msgid "TreeMap"
+msgstr ""
+
+#: src/0235-collections-conventions.md:218
+msgid "TrieMap"
+msgstr ""
+
+#: src/0235-collections-conventions.md:219
+msgid "LruCache"
+msgstr ""
+
+#: src/0235-collections-conventions.md:220
+msgid "SmallIntMap"
+msgstr ""
+
+#: src/0235-collections-conventions.md:222
+msgid ""
+"The primary goal of this RFC is to establish clean and consistent APIs that "
+"apply across each group of collections."
+msgstr ""
+
+#: src/0235-collections-conventions.md:225
+msgid ""
+"Before diving into the details, there is one high-level changes that should "
+"be made to these collections. The `PriorityQueue` collection should be "
+"renamed to `BinaryHeap`, following the convention that concrete collections "
+"are named according to their implementation strategy, not the abstract "
+"semantics they implement. We may eventually want `PriorityQueue` to be a "
+"_trait_ that's implemented by multiple concrete collections."
+msgstr ""
+
+#: src/0235-collections-conventions.md:232
+msgid ""
+"The `LruCache` could be renamed for a similar reason (it uses a `HashMap` in "
+"its implementation), However, the implementation is actually generic with "
+"respect to this underlying map, and so in the long run (with HKT and other "
+"language changes) `LruCache` should probably add a type parameter for the "
+"underlying map, defaulted to `HashMap`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:238
+msgid "Design principles"
+msgstr ""
+
+#: src/0235-collections-conventions.md:240
+msgid ""
+"_Centering on `Iterator`s_. The `Iterator` trait is a strength of Rust's "
+"collections library. Because so many APIs can produce iterators, adding an "
+"API that consumes one is very powerful -- and conversely as well.  Moreover, "
+"iterators are highly efficient, since you can chain several layers of "
+"modification without having to materialize intermediate results.  Thus, "
+"whenever possible, collection APIs should strive to work with iterators."
+msgstr ""
+
+#: src/0235-collections-conventions.md:247
+msgid ""
+"In particular, some existing convenience methods avoid iterators for either "
+"performance or ergonomic reasons. We should instead improve the ergonomics "
+"and performance of iterators, so that these extra convenience methods are "
+"not necessary and so that _all_ collections can benefit."
+msgstr ""
+
+#: src/0235-collections-conventions.md:252
+msgid ""
+"_Minimizing method variants_. One problem with some of the current "
+"collection APIs is the proliferation of method variants. For example, "
+"`HashMap` include _seven_ methods that begin with the name `find`! While "
+"each method has a motivation, the API as a whole can be bewildering, "
+"especially to newcomers."
+msgstr ""
+
+#: src/0235-collections-conventions.md:257
+msgid ""
+"When possible, we should leverage the trait system, or find other "
+"abstractions, to reduce the need for method variants while retaining their "
+"ergonomics and power."
+msgstr ""
+
+#: src/0235-collections-conventions.md:261
+msgid ""
+"_Conservatism_. It is easier to add APIs than to take them away.  This RFC "
+"takes a fairly conservative stance on what should be included in the "
+"collections APIs. In general, APIs should be very clearly motivated by a "
+"wide variety of use cases, either for expressiveness, performance, or "
+"ergonomics."
+msgstr ""
+
+#: src/0235-collections-conventions.md:266
+msgid "Removing the traits"
+msgstr ""
+
+#: src/0235-collections-conventions.md:268
+msgid ""
+"This RFC proposes a somewhat radical step for the collections traits: rather "
+"than reform them, we should eliminate them altogether -- _for now_."
+msgstr ""
+
+#: src/0235-collections-conventions.md:271
+msgid ""
+"Unlike inherent methods, which can easily be added and deprecated over time, "
+"a trait is \"forever\": there are very few backwards-compatible "
+"modifications to traits. Thus, for something as fundamental as collections, "
+"it is prudent to take our time to get the traits right."
+msgstr ""
+
+#: src/0235-collections-conventions.md:276
+msgid "Lack of iterator methods"
+msgstr ""
+
+#: src/0235-collections-conventions.md:278
+msgid ""
+"In particular, there is one way in which the current traits are clearly "
+"_wrong_: they do not provide standard methods like `iter`, despite these "
+"being fundamental to working with collections in Rust. Sadly, this gap is "
+"due to inexpressiveness in the language, which makes directly defining "
+"iterator methods in a trait impossible:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:287
+msgid "// what is the lifetime here?\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:288
+msgid "// and how to connect it to self?\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:292
+msgid ""
+"The problem is that, when implementing this trait, the return type `I` of "
+"`iter` should depend on the _lifetime_ of self. For example, the "
+"corresponding method in `Vec` looks like the following:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:302
+msgid ""
+"This means that, given a `Vec<T>`, there isn't a _single_ type `Items<T>` "
+"for iteration -- rather, there is a _family_ of types, one for each input "
+"lifetime. In other words, the associated type `I` in the `Iter` needs to be "
+"\"higher-kinded\": not just a single type, but rather a family:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:315
+msgid ""
+"In this case, `I` is parameterized by a lifetime, but in other cases (like "
+"`map`) an associated type needs to be parameterized by a type."
+msgstr ""
+
+#: src/0235-collections-conventions.md:318
+msgid ""
+"In general, such higher-kinded types (HKTs) are a much-requested feature for "
+"Rust. But the design and implementation of higher-kinded types is, by "
+"itself, a significant investment."
+msgstr ""
+
+#: src/0235-collections-conventions.md:322
+msgid ""
+"HKT would also allow for parameterization over smart pointer types, which "
+"has many potential use cases in the context of collections."
+msgstr ""
+
+#: src/0235-collections-conventions.md:325
+msgid ""
+"Thus, the goal in this RFC is to do the best we can without HKT _for now_, "
+"while allowing a graceful migration if or when HKT is added."
+msgstr ""
+
+#: src/0235-collections-conventions.md:328
+msgid "Persistent/immutable collections"
+msgstr ""
+
+#: src/0235-collections-conventions.md:330
+msgid ""
+"Another problem with the current collection traits is the split between "
+"immutable and mutable versions. In the long run, we will probably want to "
+"provide _persistent_ collections (which allow non-destructive \"updates\" "
+"that create new collections that share most of their data with the old ones)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:335
+msgid ""
+"However, persistent collection APIs have not been thoroughly explored in "
+"Rust; it would be hasty to standardize on a set of traits until we have more "
+"experience."
+msgstr ""
+
+#: src/0235-collections-conventions.md:339
+msgid "Downsides of removal"
+msgstr ""
+
+#: src/0235-collections-conventions.md:341
+msgid ""
+"There are two main downsides to removing the traits without a replacement:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:343
+msgid ""
+"It becomes impossible to write code using generics over a \"kind\" of "
+"collection (like `Map`)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:346
+msgid ""
+"It becomes more difficult to ensure that the collections share a common API."
+msgstr ""
+
+#: src/0235-collections-conventions.md:348
+msgid ""
+"For point (1), first, if the APIs are sufficiently consistent it should be "
+"possible to transition code from e.g. a `TreeMap` to a `HashMap` by changing "
+"very few lines of code. Second, generic programming is currently quite "
+"limited, given the inability to iterate. Finally, generic programming over "
+"collections is a large design space (with much precedent in C++, for "
+"example), and we should take our time and gain more experience with a "
+"variety of concrete collections before settling on a design."
+msgstr ""
+
+#: src/0235-collections-conventions.md:356
+msgid ""
+"For point (2), first, the current traits have failed to keep the APIs in "
+"line, as we will see below. Second, this RFC is the antidote: we establish a "
+"clear set of conventions and APIs for concrete collections up front, and "
+"stabilize on those, which should make it easy to add traits later on."
+msgstr ""
+
+#: src/0235-collections-conventions.md:361
+msgid "Why not leave the traits as \"experimental\"?"
+msgstr ""
+
+#: src/0235-collections-conventions.md:363
+msgid ""
+"An alternative to removal would be to leave the traits intact, but marked as "
+"experimental, with the intent to radically change them later."
+msgstr ""
+
+#: src/0235-collections-conventions.md:366
+msgid ""
+"Such a strategy doesn't buy much relative to removal (given the arguments "
+"above), but risks the traits becoming \"de facto\" stable if people begin "
+"using them en masse."
+msgstr ""
+
+#: src/0235-collections-conventions.md:370
+msgid "Solving the `_equiv` and `MaybeOwned` problems"
+msgstr ""
+
+#: src/0235-collections-conventions.md:372
+msgid "The basic problem that leads to `_equiv` methods is that:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:374
+msgid "`&String` and `&str` are not the same type."
+msgstr ""
+
+#: src/0235-collections-conventions.md:375
+msgid "The `&str` type is more flexible and hence more widely used."
+msgstr ""
+
+#: src/0235-collections-conventions.md:376
+msgid ""
+"Code written for a generic type `T` that takes a reference `&T` will "
+"therefore not be suitable when `T` is instantiated with `String`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:379
+msgid ""
+"A similar story plays out for `&Vec<T>` and `&[T]`, and with DST and custom "
+"slice types the same problem will arise elsewhere."
+msgstr ""
+
+#: src/0235-collections-conventions.md:382
+msgid "The `Borrow` trait"
+msgstr ""
+
+#: src/0235-collections-conventions.md:384
+msgid ""
+"This RFC proposes to use a _trait_, `Borrow` to connect borrowed and owned "
+"data in a generic fashion:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:388
+msgid "/// A trait for borrowing.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:390
+#: src/0235-collections-conventions.md:1516
+msgid "/// Immutably borrow from an owned value.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:393
+#: src/0235-collections-conventions.md:1519
+msgid "/// Mutably borrow from an owned value.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:396
+msgid ""
+"// The Sized bound means that this impl does not overlap with the impls "
+"below.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:426
+msgid ""
+"_(Note: thanks to @epdtry for [suggesting this variation](https://github.com/"
+"rust-lang/rfcs/pull/235#issuecomment-55337168)! The original proposal is "
+"listed [in the Alternatives](#variants-of-borrow).)_"
+msgstr ""
+
+#: src/0235-collections-conventions.md:429
+msgid ""
+"A primary goal of the design is allowing a _blanket_ `impl` for non-"
+"sliceable types (the first `impl` above). This blanket `impl` ensures that "
+"all new sized, cloneable types are automatically borrowable; new `impl`s are "
+"required only for new _unsized_ types, which are rare. The `Sized` bound on "
+"the initial impl means that we can freely add impls for unsized types (like "
+"`str` and `[T]`) without running afoul of coherence."
+msgstr ""
+
+#: src/0235-collections-conventions.md:436
+msgid ""
+"Because of the blanket `impl`, the `Borrow` trait can largely be ignored "
+"except when it is actually used -- which we describe next."
+msgstr ""
+
+#: src/0235-collections-conventions.md:439
+msgid "Using `Borrow` to replace `_equiv` methods"
+msgstr ""
+
+#: src/0235-collections-conventions.md:441
+msgid ""
+"With the `Borrow` trait in place, we can eliminate the `_equiv` method "
+"variants by asking map keys to be `Borrow`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:454
+msgid "The benefits of this approach over `_equiv` are:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:456
+msgid ""
+"The `Borrow` trait captures the borrowing relationship between an owned data "
+"structure and both references to it and slices from it -- once and for all. "
+"This means that it can be used _anywhere_ we need to program generically "
+"over \"borrowed\" data. In particular, the single trait works for both "
+"`HashMap` and `TreeMap`, and should work for other kinds of data structures "
+"as well. It also helps generalize `MaybeOwned`, for similar reasons (see "
+"below.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:463
+msgid ""
+"A _very important_ consequence is that the map methods using `Borrow` can "
+"potentially be put into a common `Map` trait that's implemented by "
+"`HashMap`, `TreeMap`, and others. While we do not propose to do so now, we "
+"definitely want to do so later on."
+msgstr ""
+
+#: src/0235-collections-conventions.md:468
+msgid ""
+"When using a `HashMap<String, T>`, all of the basic methods like `find`, "
+"`contains_key` and `insert` \"just work\", without forcing you to think "
+"about `&String` vs `&str`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:472
+msgid ""
+"We don't need separate `_equiv` variants of methods. (However, this could "
+"probably be addressed with [multidispatch](https://github.com/rust-lang/rfcs/"
+"pull/195) by providing a blanket `Equiv` implementation.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:477
+msgid ""
+"On the other hand, this approach retains some of the downsides of `_equiv`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:479
+msgid ""
+"The signature for methods like `find` and `contains_key` is more complex "
+"than their current signatures. There are two counterpoints. First, over time "
+"the `Borrow` trait is likely to become a well-known concept, so the "
+"signature will not appear completely alien. Second, what is perhaps more "
+"important than the signature is that, when using `find` on `HashMap<String, "
+"T>`, various method arguments _just work_ as expected."
+msgstr ""
+
+#: src/0235-collections-conventions.md:486
+msgid ""
+"The API does not guarantee \"coherence\": the `Hash` and `Eq` (or `Ord`, for "
+"`TreeMap`) implementations for the owned and borrowed keys might differ, "
+"breaking key invariants of the data structure. This is already the case with "
+"`_equiv`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:491
+msgid ""
+"The [Alternatives section](#variants-of-borrow) includes a variant of "
+"`Borrow` that doesn't suffer from these downsides, but has some downsides of "
+"its own."
+msgstr ""
+
+#: src/0235-collections-conventions.md:494
+msgid "Clone-on-write (`Cow`) pointers"
+msgstr ""
+
+#: src/0235-collections-conventions.md:496
+msgid ""
+"A side-benefit of the `Borrow` trait is that we can give a more general "
+"version of the `MaybeOwned` as a \"clone-on-write\" smart pointer:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:500
+msgid "/// A generalization of Clone.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:504
+msgid "/// A clone-on-write smart pointer\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:561
+msgid ""
+"The type `Cow<'a, String, str>` is roughly equivalent to today's "
+"`MaybeOwned<'a>` (and `Cow<'a, Vec<T>, [T]>` to `MaybeOwnedVector<'a, T>`)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:564
+msgid ""
+"By implementing `Deref` and `DerefMut`, the `Cow` type acts as a smart "
+"pointer \\-- but in particular, the `mut` variant actually _clones_ if the "
+"pointed-to value is not currently owned. Hence \"clone on write\"."
+msgstr ""
+
+#: src/0235-collections-conventions.md:568
+msgid ""
+"One slight gotcha with the design is that `&mut str` is not very useful, "
+"while `&mut String` is (since it allows extending the string, for example). "
+"On the other hand, `Deref` and `DerefMut` must deref to the _same_ "
+"underlying type, and for `Deref` to not require cloning, it must yield a "
+"`&str` value."
+msgstr ""
+
+#: src/0235-collections-conventions.md:573
+msgid ""
+"Thus, the `Cow` pointer offers a separate `to_owned_mut` method that yields "
+"a mutable reference to the _owned_ version of the type."
+msgstr ""
+
+#: src/0235-collections-conventions.md:576
+msgid ""
+"Note that, by not using `into_owned`, the `Cow` pointer itself may be owned "
+"by some other data structure (perhaps as part of a collection) and will "
+"internally track whether an owned copy is available."
+msgstr ""
+
+#: src/0235-collections-conventions.md:580
+msgid ""
+"Altogether, this RFC proposes to introduce `Borrow` and `Cow` as above, and "
+"to deprecate `MaybeOwned` and `MaybeOwnedVector`. The API changes for the "
+"collections are discussed [below](#the-apis)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:584
+msgid "`IntoIterator` (and `Iterable`)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:586
+msgid ""
+"As discussed in [earlier](#iterable), some form of an `Iterable` trait is "
+"desirable for both expressiveness and ergonomics. Unfortunately, a full "
+"treatment of `Iterable` requires HKT for similar reasons to [the collection "
+"traits](#lack-of-iterator-methods). However, it's possible to get some of "
+"the way there in a forwards-compatible fashion."
+msgstr ""
+
+#: src/0235-collections-conventions.md:592
+msgid ""
+"In particular, the following two traits work fine (with [associated items]"
+"(https://github.com/rust-lang/rfcs/pull/195)):"
+msgstr ""
+
+#: src/0235-collections-conventions.md:610
+msgid "Because `IntoIterator` consumes `self`, lifetimes are not an issue."
+msgstr ""
+
+#: src/0235-collections-conventions.md:612
+msgid "It's tempting to also define a trait like:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:623
+msgid ""
+"(along the lines of those proposed by [an earlier RFC](https://github.com/"
+"rust-lang/rfcs/pull/17))."
+msgstr ""
+
+#: src/0235-collections-conventions.md:626
+msgid ""
+"The problem with `Iterable` as defined above is that it's locked to a "
+"particular lifetime up front. But in many cases, the needed lifetime is not "
+"even nameable in advance:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:632
+msgid ""
+"// the lifetime of the borrow is established here,\n"
+"    // so cannot even be named in the function signature\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:635
+msgid "// ...\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:640
+msgid ""
+"To make this kind of example work, you'd need to be able to say something "
+"like:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:646
+msgid ""
+"that is, that `I` implements `Iterable` for _every_ lifetime `'a`. While "
+"such a feature is feasible to add to `where` clauses, the HKT solution is "
+"undoubtedly cleaner."
+msgstr ""
+
+#: src/0235-collections-conventions.md:650
+msgid ""
+"Fortunately, we can have our cake and eat it too. This RFC proposes the "
+"`IntoIterator` trait above, together with the following blanket `impl`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:663
+msgid ""
+"which means that taking `IntoIterator` is strictly more flexible than taking "
+"`Iterator`. Note that in other languages (like Java), iterators are _not_ "
+"iterable because the latter implies an unlimited number of iterations. But "
+"because `IntoIterator` consumes `self`, it yields only a single iteration, "
+"so all is good."
+msgstr ""
+
+#: src/0235-collections-conventions.md:669
+msgid ""
+"For individual collections, one can then implement `IntoIterator` on both "
+"the collection and borrows of it:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:692
+msgid ""
+"If/when HKT is added later on, we can add an `Iterable` trait and a blanket "
+"`impl` like the following:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:696
+msgid "// the HKT version\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:712
+msgid ""
+"This gives a clean migration path: once `Vec` implements `Iterable`, it can "
+"drop the `IntoIterator` `impl`s for borrowed vectors, since they will be "
+"covered by the blanket implementation. No code should break."
+msgstr ""
+
+#: src/0235-collections-conventions.md:716
+msgid ""
+"Likewise, if we add a feature like the \"universal\" `where` clause "
+"mentioned above, it can be used to deal with embedded lifetimes as in the "
+"`iter_through_rc` example; and if the HKT version of `Iterable` is later "
+"added, thanks to the suggested blanket `impl` for `IntoIterator` that "
+"`where` clause could be changed to use `Iterable` instead, again without "
+"breakage."
+msgstr ""
+
+#: src/0235-collections-conventions.md:722
+msgid "Benefits of `IntoIterator`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:724
+msgid "What do we gain by incorporating `IntoIterator` today?"
+msgstr ""
+
+#: src/0235-collections-conventions.md:726
+msgid ""
+"This RFC proposes that `for` loops should use `IntoIterator` rather than "
+"`Iterator`. With the blanket `impl` of `IntoIterator` for any `Iterator`, "
+"this is not a breaking change. However, given the `IntoIterator` `impl`s for "
+"`Vec` above, we would be able to write:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:734
+msgid "// iterate over &Foo\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:735
+msgid "// iterate over &mut Foo\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:736
+msgid "// iterate over Foo\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:739
+msgid ""
+"Similarly, methods that currently take slices or iterators can be changed to "
+"take `IntoIterator` instead, immediately becoming more general and more "
+"ergonomic."
+msgstr ""
+
+#: src/0235-collections-conventions.md:743
+msgid ""
+"In general, `IntoIterator` will allow us to move toward more `Iterator`\\-"
+"centric APIs today, in a way that's compatible with HKT tomorrow."
+msgstr ""
+
+#: src/0235-collections-conventions.md:746
+msgid "Additional methods"
+msgstr ""
+
+#: src/0235-collections-conventions.md:748
+msgid ""
+"Another typical desire for an `Iterable` trait is to offer defaulted "
+"versions of methods that basically re-export iterator methods on containers "
+"(see [the earlier RFC](https://github.com/rust-lang/rfcs/pull/17)). Usually "
+"these methods would go through a reference iterator (i.e. the `iter` method) "
+"rather than a moving iterator."
+msgstr ""
+
+#: src/0235-collections-conventions.md:754
+msgid ""
+"It is possible to add such methods using the design proposed above, but "
+"there are some drawbacks. For example, should `Vec::map` produce an "
+"iterator, or a new vector?  It would be possible to do the latter "
+"generically, but only with HKT. (See [this discussion](https://github.com/"
+"rust-lang/rfcs/pull/17#issuecomment-43817453).)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:760
+msgid ""
+"This RFC only proposes to add the following method via `IntoIterator`, as a "
+"convenience for a common pattern:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:777
+msgid ""
+"(The `iter_cloned` method will help reduce the number of method variants in "
+"general for collections, as we will see below)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:780
+msgid ""
+"We will leave to later RFCs the incorporation of additional methods. Notice, "
+"in particular, that such methods can wait until we introduce an `Iterable` "
+"trait via HKT without breaking backwards compatibility."
+msgstr ""
+
+#: src/0235-collections-conventions.md:784
+msgid "Minimizing variants: `ByNeed` and `Predicate` traits"
+msgstr ""
+
+#: src/0235-collections-conventions.md:786
+msgid ""
+"There are several kinds of methods that, in their most general form take "
+"closures, but for which convenience variants taking simpler data are common:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:789
+msgid ""
+"_Taking values by need_. For example, consider the `unwrap_or` and "
+"`unwrap_or_else` methods in `Option`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:797
+msgid ""
+"The `unwrap_or_else` method is the most general: it invokes the closure to "
+"compute a default value _only when `self` is `None`_. When the default value "
+"is expensive to compute, this by-need approach helps. But often the default "
+"value is cheap, and closures are somewhat annoying to write, so `unwrap_or` "
+"provides a convenience wrapper."
+msgstr ""
+
+#: src/0235-collections-conventions.md:803
+msgid ""
+"_Taking predicates_. For example, a method like `contains` often shows up "
+"(inconsistently!) in two variants:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:807
+msgid "// where T: PartialEq\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:811
+msgid ""
+"Again, the `contains_fn` version is the more general, but it's convenient to "
+"provide a specialized variant when the element type can be compared for "
+"equality, to avoid writing explicit closures."
+msgstr ""
+
+#: src/0235-collections-conventions.md:815
+msgid ""
+"As it turns out, with [multidispatch](https://github.com/rust-lang/rfcs/"
+"pull/195)) it is possible to use a _trait_ to express these variants through "
+"overloading:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:829
+msgid ""
+"// Due to multidispatch, this impl does NOT overlap with the above one\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:866
+msgid ""
+"Since these two patterns are particularly common throughout `std`, this RFC "
+"proposes adding both of the above traits, and using them to cut down on the "
+"number of method variants."
+msgstr ""
+
+#: src/0235-collections-conventions.md:870
+msgid ""
+"In particular, some methods on string slices currently work with `CharEq`, "
+"which is similar to `Predicate<char>`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:880
+msgid ""
+"The difference is the `only_ascii` method, which is used to optimize certain "
+"operations when the predicate only holds for characters in the ASCII range."
+msgstr ""
+
+#: src/0235-collections-conventions.md:883
+msgid ""
+"To keep these optimizations intact while connecting to `Predicate`, this RFC "
+"proposes the following restructuring of `CharEq`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:894
+msgid "Why not leverage unboxed closures?"
+msgstr ""
+
+#: src/0235-collections-conventions.md:896
+msgid ""
+"A natural question is: why not use the traits for unboxed closures to "
+"achieve a similar effect? For example, you could imagine writing a blanket "
+"`impl` for `Fn(&T) -> bool` for any `T: PartialEq`, which would allow "
+"`PartialEq` values to be used anywhere a predicate-like closure was "
+"requested."
+msgstr ""
+
+#: src/0235-collections-conventions.md:901
+msgid ""
+"The problem is that these blanket `impl`s will often conflict. In "
+"particular, _any_ type `T` could implement `Fn() -> T`, and that single "
+"blanket `impl` would preclude any others (at least, assuming that unboxed "
+"closure traits treat the argument and return types as associated (output) "
+"types)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:906
+msgid ""
+"In addition, the explicit use of traits like `Predicate` makes the intended "
+"semantics more clear, and the overloading less surprising."
+msgstr ""
+
+#: src/0235-collections-conventions.md:909
+msgid "The APIs"
+msgstr ""
+
+#: src/0235-collections-conventions.md:911
+msgid ""
+"Now we'll delve into the detailed APIs for the various concrete collections. "
+"These APIs will often be given in tabular form, grouping together common "
+"APIs across multiple collections. When writing these function signatures:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:915
+msgid ""
+"We will assume a type parameter `T` for `Vec`, `BinaryHeap`, `DList` and "
+"`RingBuf`; we will also use this parameter for APIs on `String`, where it "
+"should be understood as `char`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:919
+msgid ""
+"We will assume type parameters `K: Borrow` and `V` for `HashMap` and "
+"`TreeMap`; for `TrieMap` and `SmallIntMap` the `K` is assumed to be `uint`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:922
+msgid ""
+"We will assume a type parameter `K: Borrow` for `HashSet` and `TreeSet`; for "
+"`BitvSet` it is assumed to be `uint`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:925
+msgid ""
+"We will begin by outlining the most widespread APIs in tables, making it "
+"easy to compare names and signatures across different kinds of collections. "
+"Then we will focus on some APIs specific to particular classes of "
+"collections -- e.g. sets and maps.  Finally, we will briefly discuss APIs "
+"that are specific to a single concrete collection."
+msgstr ""
+
+#: src/0235-collections-conventions.md:931
+msgid "Construction"
+msgstr ""
+
+#: src/0235-collections-conventions.md:933
+msgid "All of the collections should support a static function:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:939
+msgid ""
+"that creates an empty version of the collection; the constructor may take "
+"arguments needed to set up the collection, e.g. the capacity for `LruCache`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:942
+msgid ""
+"Several collections also support separate constructors for providing "
+"capacities in advance; these are discussed [below](#capacity-management)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:945
+msgid "The `FromIterator` trait"
+msgstr ""
+
+#: src/0235-collections-conventions.md:947
+msgid "All of the collections should implement the `FromIterator` trait:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:956
+msgid ""
+"Note that this varies from today's `FromIterator` by consuming an "
+"`IntoIterator` rather than `Iterator`. As explained [above](#intoiterator-"
+"and-iterable), this choice is strictly more general and will not break any "
+"existing code."
+msgstr ""
+
+#: src/0235-collections-conventions.md:960
+msgid ""
+"This constructor initializes the collection with the contents of the "
+"iterator. For maps, the iterator is over key/value pairs, and the semantics "
+"is equivalent to inserting those pairs in order; if keys are repeated, the "
+"last value is the one left in the map."
+msgstr ""
+
+#: src/0235-collections-conventions.md:965
+msgid "Insertion"
+msgstr ""
+
+#: src/0235-collections-conventions.md:967
+msgid ""
+"The table below gives methods for inserting items into various concrete "
+"collections:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:969
+#: src/0235-collections-conventions.md:1020
+#: src/0235-collections-conventions.md:1053
+msgid "Operation"
+msgstr ""
+
+#: src/0235-collections-conventions.md:969
+#: src/0235-collections-conventions.md:1020
+#: src/0235-collections-conventions.md:1053
+msgid "Collections"
+msgstr ""
+
+#: src/0235-collections-conventions.md:971
+msgid "`fn push(&mut self, T)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:971
+#: src/0235-collections-conventions.md:1023
+msgid "`Vec`, `BinaryHeap`, `String`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:972
+msgid "`fn push_front(&mut self, T)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:972
+#: src/0235-collections-conventions.md:973
+#: src/0235-collections-conventions.md:1024
+#: src/0235-collections-conventions.md:1025
+msgid "`DList`, `RingBuf`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:973
+msgid "`fn push_back(&mut self, T)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:974
+msgid "`fn insert(&mut self, uint, T)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:974
+#: src/0235-collections-conventions.md:1026
+msgid "`Vec`, `RingBuf`, `String`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:975
+msgid "`fn insert(&mut self, K::Owned) -> bool`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:975
+#: src/0235-collections-conventions.md:1027
+msgid "`HashSet`, `TreeSet`, `TrieSet`, `BitvSet`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:976
+msgid "`fn insert(&mut self, K::Owned, V) -> Option<V>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:976
+#: src/0235-collections-conventions.md:1028
+#: src/0235-collections-conventions.md:1059
+#: src/0235-collections-conventions.md:1060
+#: src/0235-collections-conventions.md:1063
+msgid "`HashMap`, `TreeMap`, `TrieMap`, `SmallIntMap`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:977
+msgid "`fn append(&mut self, Self)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:977
+#: src/0235-collections-conventions.md:978
+#: src/0235-collections-conventions.md:1340
+msgid "`DList`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:978
+msgid "`fn prepend(&mut self, Self)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:980
+msgid "There are a few changes here from the current state of affairs:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:982
+msgid ""
+"The `DList` and `RingBuf` data structures no longer provide `push`, but "
+"rather `push_front` and `push_back`. This change is based on (1) viewing "
+"them as deques and (2) not giving priority to the \"front\" or the \"back\"."
+msgstr ""
+
+#: src/0235-collections-conventions.md:986
+msgid ""
+"The `insert` method on maps returns the value previously associated with the "
+"key, if any. Previously, this functionality was provided by a `swap` method, "
+"which has been dropped (consolidating needless method variants.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:990
+msgid ""
+"Aside from these changes, a number of insertion methods will be deprecated "
+"(e.g. the `append` and `append_one` methods on `Vec`). These are discussed "
+"further in the section on \"specialized operations\" [below](#specialized-"
+"operations)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:995
+msgid "The `Extend` trait (was: `Extendable`)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:997
+msgid ""
+"In addition to the standard insertion operations above, _all_ collections "
+"will implement the `Extend` trait. This trait was previously called "
+"`Extendable`, but in general we [prefer to avoid](http://aturon.github.io/"
+"style/naming/README.html) `-able` suffixes and instead name the trait using "
+"a verb (or, especially, the key method offered by the trait.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1004
+msgid ""
+"The `Extend` trait allows data from an arbitrary iterator to be inserted "
+"into a collection, and will be defined as follows:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1013
+msgid ""
+"As with `FromIterator`, this trait has been modified to take an "
+"`IntoIterator` value."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1016
+msgid "Deletion"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1018
+msgid ""
+"The table below gives methods for removing items into various concrete "
+"collections:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1022
+msgid "`fn clear(&mut self)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1022
+#: src/0235-collections-conventions.md:1055
+#: src/0235-collections-conventions.md:1056
+msgid "_all_"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1023
+msgid "`fn pop(&mut self) -> Option<T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1024
+msgid "`fn pop_front(&mut self) -> Option<T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1025
+msgid "`fn pop_back(&mut self) -> Option<T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1026
+msgid "`fn remove(&mut self, uint) -> Option<T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1027
+msgid "`fn remove(&mut self, &K) -> bool`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1028
+msgid "`fn remove(&mut self, &K) -> Option<V>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1029
+msgid "`fn truncate(&mut self, len: uint)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1029
+msgid "`Vec`, `String`, `Bitv`, `DList`, `RingBuf`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1030
+msgid "`fn retain<P>(&mut self, f: P) where P: Predicate<T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1030
+msgid "`Vec`, `DList`, `RingBuf`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1031
+msgid "`fn dedup(&mut self)`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1031
+msgid "`Vec`, `DList`, `RingBuf` where `T: PartialEq`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1033
+msgid ""
+"As with the insertion methods, there are some differences from today's API:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1035
+msgid ""
+"The `DList` and `RingBuf` data structures no longer provide `pop`, but "
+"rather `pop_front` and `pop_back` -- similarly to the `push` methods."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1038
+msgid ""
+"The `remove` method on maps returns the value previously associated with the "
+"key, if any. Previously, this functionality was provided by a separate `pop` "
+"method, which has been dropped (consolidating needless method variants.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1042
+msgid "The `retain` method takes a `Predicate`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1044
+msgid "The `truncate`, `retain` and `dedup` methods are offered more widely."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1046
+msgid ""
+"Again, some of the more specialized methods are not discussed here; see "
+"\"specialized operations\" [below](#specialized-operations)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1049
+msgid "Inspection/mutation"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1051
+msgid ""
+"The next table gives methods for inspection and mutation of existing items "
+"in collections:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1055
+msgid "`fn len(&self) -> uint`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1056
+msgid "`fn is_empty(&self) -> bool`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1057
+msgid "`fn get(&self, uint) -> Option<&T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1057
+#: src/0235-collections-conventions.md:1058
+msgid "`[T]`, `Vec`, `RingBuf`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1058
+msgid "`fn get_mut(&mut self, uint) -> Option<&mut T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1059
+msgid "`fn get(&self, &K) -> Option<&V>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1060
+msgid "`fn get_mut(&mut self, &K) -> Option<&mut V>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1061
+msgid "`fn contains<P>(&self, P) where P: Predicate<T>`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1061
+msgid "`[T]`, `str`, `Vec`, `String`, `DList`, `RingBuf`, `BinaryHeap`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1062
+msgid "`fn contains(&self, &K) -> bool`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1062
+msgid "`HashSet`, `TreeSet`, `TrieSet`, `EnumSet`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1063
+msgid "`fn contains_key(&self, &K) -> bool`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1065
+msgid "The biggest changes from the current APIs are:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1067
+msgid ""
+"The `find` and `find_mut` methods have been renamed to `get` and `get_mut`. "
+"Further, all `get` methods return `Option` values and do not invoke `fail!`. "
+"This is part of a general convention described in the next section (on the "
+"`Index` traits)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1072
+msgid "The `contains` method is offered more widely."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1074
+msgid ""
+"There is no longer an equivalent of `find_copy` (which should be called "
+"`find_clone`). Instead, we propose to add the following method to the "
+"`Option<&'a T>` type where `T: Clone`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1084
+msgid ""
+"so that `some_map.find_copy(key)` will instead be written `some_map."
+"find(key).cloned()`. This method chain is slightly longer, but is more clear "
+"and allows us to drop the `_copy` variants. Moreover, _all_ users of "
+"`Option` benefit from the new convenience method."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1089
+msgid "The `Index` trait"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1091
+msgid ""
+"The `Index` and `IndexMut` traits provide indexing notation like `v[0]`:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1107
+msgid ""
+"These traits will be implemented for: `[T]`, `Vec`, `RingBuf`, `HashMap`, "
+"`TreeMap`, `TrieMap`, `SmallIntMap`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1109
+msgid ""
+"As a general convention, implementation of the `Index` traits will _fail the "
+"task_ if the index is invalid (out of bounds or key not found); they will "
+"therefore return direct references to values. Any collection implementing "
+"`Index` (resp. `IndexMut`) should also provide a `get` method (resp. "
+"`get_mut`) as a non-failing variant that returns an `Option` value."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1115
+msgid ""
+"This allows us to keep indexing notation maximally concise, while still "
+"providing convenient non-failing variants (which can be used to provide a "
+"check for index validity)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1119
+msgid "Iteration"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1121
+msgid "Every collection should provide the standard trio of iteration methods:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1129
+msgid ""
+"and in particular implement the `IntoIterator` trait on both the collection "
+"type and on (mutable) references to it."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1132
+msgid "Capacity management"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1134
+msgid ""
+"many of the collections have some notion of \"capacity\", which may be "
+"fixed, grow explicitly, or grow implicitly:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1137
+msgid ""
+"No capacity/fixed capacity: `DList`, `TreeMap`, `TreeSet`, `TrieMap`, "
+"`TrieSet`, slices, `EnumSet`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1138
+msgid "Explicit growth: `LruCache`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1139
+msgid ""
+"Implicit growth: `Vec`, `RingBuf`, `HashMap`, `HashSet`, `BitvSet`, "
+"`BinaryHeap`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1141
+msgid ""
+"Growable collections provide functions for capacity management, as follows."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1143
+msgid "Explicit growth"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1145
+msgid ""
+"For explicitly-grown collections, the normal constructor (`new`) takes a "
+"capacity argument. Capacity can later be inspected or updated as follows:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1153
+msgid ""
+"(Note, this renames `LruCache::change_capacity` to `set_capacity`, the "
+"prevailing style for setter method.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1156
+msgid "Implicit growth"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1158
+msgid ""
+"For implicitly-grown collections, the normal constructor (`new`) does not "
+"take a capacity, but there is an explicit `with_capacity` constructor, along "
+"with other functions to work with the capacity later on:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1170
+msgid "There are some important changes from the current APIs:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1172
+msgid ""
+"The `reserve` and `reserve_exact` methods now take as an argument the "
+"_extra_ space to reserve, rather than the final desired capacity, as this "
+"usage is vastly more common. The `reserve` function may grow the capacity by "
+"a larger amount than requested, to ensure amortization, while "
+"`reserve_exact` will reserve exactly the requested additional capacity. The "
+"`reserve_additional` methods are deprecated."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1179
+msgid ""
+"The `with_capacity` constructor does _not_ take any additional arguments, "
+"for uniformity with `new`. This change affects `Bitv` in particular."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1182
+msgid "Bounded iterators"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1184
+msgid ""
+"Some of the maps (e.g. `TreeMap`) currently offer specialized iterators over "
+"their entries starting at a given key (called `lower_bound`) and above a "
+"given key (called `upper_bound`), along with `_mut` variants. While the "
+"functionality is worthwhile, the names are not very clear, so this RFC "
+"proposes the following replacement API (thanks to [@Gankro for the "
+"suggestion](https://github.com/rust-lang/rfcs/"
+"pull/235#issuecomment-55512788)):"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1192
+msgid "/// An inclusive bound\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1195
+msgid "/// An exclusive bound\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1200
+msgid ""
+"/// Creates a double-ended iterator over a sub-range of the collection's "
+"items,\n"
+"/// starting at min, and ending at max. If min is `Unbounded`, then it will\n"
+"/// be treated as \"negative infinity\", and if max is `Unbounded`, then it "
+"will\n"
+"/// be treated as \"positive infinity\". Thus range(Unbounded, Unbounded) "
+"will yield\n"
+"/// the whole collection.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1211
+msgid ""
+"These iterators should be provided for any maps over ordered keys "
+"(`TreeMap`, `TrieMap` and `SmallIntMap`)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1214
+msgid ""
+"In addition, analogous methods should be provided for sets over ordered keys "
+"(`TreeSet`, `TrieSet`, `BitvSet`)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1217
+msgid "Set operations"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1219
+msgid "Comparisons"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1221
+msgid "All sets should offer the following methods, as they do today:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1229
+msgid "Combinations"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1231
+msgid ""
+"Sets can also be combined using the standard operations -- union, "
+"intersection, difference and symmetric difference (exclusive or). Today's "
+"APIs for doing so look like this:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1242
+msgid ""
+"where the `I` type is an iterator over keys that varies by concrete set. "
+"Working with these iterators avoids materializing intermediate sets when "
+"they're not needed; the `collect` method can be used to create sets when "
+"they are. This RFC proposes to keep these names intact, following the [RFC]"
+"(https://github.com/rust-lang/rfcs/pull/344) on iterator conventions."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1250
+msgid ""
+"Sets should also implement the `BitOr`, `BitAnd`, `BitXor` and `Sub` traits "
+"from `std::ops`, allowing overloaded notation `|`, `&`, `|^` and `-` to be "
+"used with sets. These are equivalent to invoking the corresponding `iter_` "
+"method and then calling `collect`, but for some sets (notably `BitvSet`) a "
+"more efficient direct implementation is possible."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1256
+msgid ""
+"Unfortunately, we do not yet have a set of traits corresponding to "
+"operations `|=`, `&=`, etc, but again in some cases doing the update in "
+"place may be more efficient. Right now, `BitvSet` is the only concrete set "
+"offering such operations:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1267
+msgid ""
+"This RFC punts on the question of naming here: it does _not_ propose a new "
+"set of names. Ideally, we would add operations like `|=` in a separate RFC, "
+"and use those conventionally for sets. If not, we will choose fallback names "
+"during the stabilization of `BitvSet`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1272
+msgid "Map operations"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1274
+msgid "Combined methods"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1276
+msgid ""
+"The `HashMap` type currently provides a somewhat bewildering set of `find`/"
+"`insert` variants:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1285
+msgid ""
+"These methods are used to couple together lookup and insertion/update "
+"operations, thereby avoiding an extra lookup step. However, the current set "
+"of method variants seems overly complex."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1289
+msgid ""
+"There is [another RFC](https://github.com/rust-lang/rfcs/pull/216) already "
+"in the queue addressing this problem in a very nice way, and this RFC defers "
+"to that one"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1293
+msgid "Key and value iterators"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1295
+msgid ""
+"In addition to the standard iterators, maps should provide by-reference "
+"convenience iterators over keys and values:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1303
+msgid ""
+"While these iterators are easy to define in terms of the main `iter` method, "
+"they are used often enough to warrant including convenience methods."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1306
+msgid "Specialized operations"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1308
+msgid ""
+"Many concrete collections offer specialized operations beyond the ones given "
+"above. These will largely be addressed through the API stabilization process "
+"(which focuses on local API issues, as opposed to general conventions), but "
+"a few broad points are addressed below."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1313
+msgid "Relating `Vec` and `String` to slices"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1315
+msgid ""
+"One goal of this RFC is to supply all of the methods on (mutable) slices on "
+"`Vec` and `String`. There are a few ways to achieve this, so concretely the "
+"proposal is for `Vec<T>` to implement `Deref<[T]>` and `DerefMut<[T]>`, and "
+"`String` to implement `Deref<str>`. This will automatically allow all slice "
+"methods to be invoked from vectors and strings, and will allow writing `&*v` "
+"rather than `v.as_slice()`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1322
+msgid ""
+"In this scheme, `Vec` and `String` are really \"smart pointers\" around the "
+"corresponding slice types. While counterintuitive at first, this perspective "
+"actually makes a fair amount of sense, especially with DST."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1326
+msgid ""
+"(Initially, it was unclear whether this strategy would play well with method "
+"resolution, but the planned resolution rules should work fine.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1329
+msgid "`String` API"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1331
+msgid ""
+"One of the key difficulties with the `String` API is that strings use utf8 "
+"encoding, and some operations are only efficient when working at the byte "
+"level (and thus taking this encoding into account)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1335
+msgid ""
+"As a general principle, we will move the API toward the following "
+"convention: index-related operations always work in terms of bytes, other "
+"operations deal with chars by default (but can have suffixed variants for "
+"working at other granularities when appropriate.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1342
+msgid "The `DList` type offers a number of specialized methods:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1348
+msgid ""
+"Prior to stabilizing the `DList` API, we will attempt to simplify its API "
+"surface, possibly by using idea from the [collection views RFC](https://"
+"github.com/rust-lang/rfcs/pull/216)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1352
+msgid "Minimizing method variants via iterators"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1354
+msgid "Partitioning via `FromIterator`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1356
+msgid ""
+"One place we can move toward iterators is functions like `partition` and "
+"`partitioned` on vectors and slices:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1360
+msgid "// on Vec<T>\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1362
+msgid "// on [T] where T: Clone\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1367
+msgid ""
+"These two functions transform a vector/slice into a pair of vectors, based "
+"on a \"partitioning\" function that says which of the two vectors to place "
+"elements into. The `partition` variant works by moving elements of the "
+"vector, while `partitioned` clones elements."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1372
+msgid "There are a few unfortunate aspects of an API like this one:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1374
+msgid ""
+"It's specific to vectors/slices, although in principle both the source and "
+"target containers could be more general."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1377
+msgid ""
+"The fact that two variants have to be exposed, for owned versus clones, is "
+"somewhat unfortunate."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1380
+msgid "This RFC proposes the following alternative design:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1408
+msgid "// where Partitioned<A>: Iterator<A = Either<A, A>>\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1412
+msgid ""
+"This design drastically generalizes the partitioning functionality, allowing "
+"it be used with arbitrary collections and iterators, while removing the by-"
+"reference and by-value distinction."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1416
+msgid "Using this design, you have:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1419
+#: src/0235-collections-conventions.md:1422
+msgid "// The following two lines are equivalent:\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1428
+msgid ""
+"There is some extra verbosity, mainly due to the type annotations for "
+"`collect`, but the API is much more flexible, since the partitioned data can "
+"now be collected into other collections (or even differing collections). In "
+"addition, partitioning is supported for _any_ iterator."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1433
+msgid "Removing methods like `from_elem`, `from_fn`, `grow`, and `grow_fn`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1435
+msgid ""
+"Vectors and some other collections offer constructors and growth functions "
+"like the following:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1445
+msgid ""
+"These extra variants can easily be dropped in favor of iterators, and this "
+"RFC proposes to do so."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1448
+msgid ""
+"The `iter` module already contains a `Repeat` iterator; this RFC proposes to "
+"add a free function `repeat` to `iter` as a convenience for `iter::Repeat::"
+"new`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1451
+msgid "With that in place, we have:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1454
+#: src/0235-collections-conventions.md:1457
+#: src/0235-collections-conventions.md:1461
+#: src/0235-collections-conventions.md:1465
+msgid "// Equivalent:\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1471
+msgid ""
+"While these replacements are slightly longer, an important aspect of "
+"ergonomics is _memorability_: by placing greater emphasis on iterators, "
+"programmers will quickly learn the iterator APIs and have those at their "
+"fingertips, while remembering ad hoc method variants like `grow_fn` is more "
+"difficult."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1476
+msgid "Long-term: removing `push_all` and `push_all_move`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1478
+msgid ""
+"The `push_all` and `push_all_move` methods on vectors are yet more API "
+"variants that could, in principle, go through iterators:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1482
+#: src/0235-collections-conventions.md:1485
+msgid "// The following are *semantically* equivalent\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1491
+msgid ""
+"However, currently the `push_all` and `push_all_move` methods can rely on "
+"the _exact_ size of the container being pushed, in order to elide bounds "
+"checks. We do not currently have a way to \"trust\" methods like `len` on "
+"iterators to elide bounds checks. A separate RFC will introduce the notion "
+"of a \"trusted\" method which should support such optimization and allow us "
+"to deprecate the `push_all` and `push_all_move` variants. (This is unlikely "
+"to happen before 1.0, so the methods will probably still be included with "
+"\"experimental\" status, and likely with different names.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1501
+msgid "Alternatives"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1503
+msgid "`Borrow` and the `Equiv` problem"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1505
+msgid "Variants of `Borrow`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1507
+msgid "The original version of `Borrow` was somewhat more subtle:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1510
+msgid ""
+"/// A trait for borrowing.\n"
+"/// If `T: Borrow` then `&T` represents data borrowed from `T::Owned`.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1513
+msgid "/// The type being borrowed from.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1524
+msgid "/// Produce a new owned value, usually by cloning.\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1588
+msgid ""
+"This approach ties `Borrow` directly to the borrowed data, and uses an "
+"associated type to _uniquely determine_ the corresponding owned data type."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1591
+msgid ""
+"For string keys, we would use `HashMap<str, V>`. Then, the `find` method "
+"would take an `&str` key argument, while `insert` would take an owned "
+"`String`. On the other hand, for some other type `Foo` a `HashMap<Foo, V>` "
+"would take `&Foo` for `find` and `Foo` for `insert`. (More discussion on the "
+"choice of ownership is given in the [alternatives section](#ownership-"
+"management-for-keys)."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1597
+msgid "**Benefits of this alternative**:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1599
+msgid ""
+"Unlike the current `_equiv` or `find_with` methods, or the proposal in the "
+"RFC, this approach guarantees coherence about hashing or ordering. For "
+"example, `HashMap` above requires that `K` (the borrowed key type) is "
+"`Hash`, and will produce hashes from owned keys by first borrowing from them."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1604
+msgid ""
+"Unlike the proposal in this RFC, the signature of the methods for maps is "
+"_very simple_ -- essentially the same as the current `find`, `insert`, etc."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1607
+msgid ""
+"Like the proposal in this RFC, there is only a single `Borrow` trait, so it "
+"would be possible to standardize on a `Map` trait later on and include these "
+"APIs. The trait could be made somewhat simpler with this alternative form of "
+"`Borrow`, but can be provided in either case; see [these](https://github.com/"
+"rust-lang/rfcs/pull/235#issuecomment-55976755) [comments](https://github.com/"
+"rust-lang/rfcs/pull/235#issuecomment-56070223) for details."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1616
+msgid ""
+"The `Cow` data type is simpler than in the RFC's proposal, since it does not "
+"need a type parameter for the owned data."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1619
+msgid "**Drawbacks of this alternative**:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1621
+msgid ""
+"It's quite subtle that you want to use `HashMap<str, T>` rather than "
+"`HashMap<String, T>`. That is, if you try to use a map in the \"obvious "
+"way\" you will not be able to use string slices for lookup, which is part of "
+"what this RFC is trying to achieve. The same applies to `Cow`."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1626
+msgid ""
+"The design is somewhat less flexible than the one in the RFC, because (1) "
+"there is a fixed choice of owned type corresponding to each borrowed type "
+"and (2) you cannot use multiple borrow types for lookups at different types "
+"(e.g. using `&String` sometimes and `&str` other times). On the other hand, "
+"these restrictions guarantee coherence of hashing/equality/comparison."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1632
+msgid ""
+"This version of `Borrow`, mapping from borrowed to owned data, is somewhat "
+"less intuitive."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1635
+msgid ""
+"On the balance, the approach proposed in the RFC seems better, because using "
+"the map APIs in the obvious ways works by default."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1638
+msgid "The `HashMapKey` trait and friends"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1640
+msgid ""
+"An earlier proposal for solving the `_equiv` problem was given in the "
+"[associated items RFC](https://github.com/rust-lang/rfcs/pull/195)):"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1665
+msgid "This solution has several drawbacks, however:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1667
+msgid ""
+"It requires a separate trait for different kinds of maps -- one for "
+"`HashMap`, one for `TreeMap`, etc."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1670
+msgid ""
+"It requires that a trait be implemented on a given key without providing a "
+"blanket implementation. Since you also need different traits for different "
+"maps, it's easy to imagine cases where a out-of-crate type you want to use "
+"as a key doesn't implement the key trait, forcing you to newtype."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1675
+#: src/0235-collections-conventions.md:1695
+msgid "It doesn't help with the `MaybeOwned` problem."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1677
+msgid "Daniel Micay's hack"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1679
+msgid ""
+"@strcat has a [PR](https://github.com/rust-lang/rust/pull/16713) that makes "
+"it possible to, for example, coerce a `&str` to an `&String` value."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1682
+msgid ""
+"This provides some help for the `_equiv` problem, since the `_equiv` methods "
+"could potentially be dropped. However, there are a few downsides:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1685
+msgid "Using a map with string keys is still a bit more verbose:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1688
+#: src/0235-collections-conventions.md:1689
+msgid "\"some static string\""
+msgstr ""
+
+#: src/0235-collections-conventions.md:1688
+msgid "// with the hack\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1689
+msgid "// with this RFC\n"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1692
+msgid ""
+"The solution is specialized to strings and vectors, and does not necessarily "
+"support user-defined unsized types or slices."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1697
+msgid ""
+"It exposes some representation interplay between slices and references to "
+"owned values, which we may not want to commit to or reveal."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1700
+msgid "For `IntoIterator`"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1702
+msgid "Handling of `for` loops"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1704
+msgid ""
+"The fact that `for x in v` moves elements from `v`, while `for x in v."
+"iter()` yields references, may be a bit surprising. On the other hand, "
+"moving is the default almost everywhere in Rust, and with the proposed "
+"approach you get to use `&` and `&mut` to easily select other forms of "
+"iteration."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1709
+msgid ""
+"(See [@huon's comment](https://github.com/rust-lang/rfcs/pull/235/"
+"files#r17697796) for additional drawbacks.)"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1713
+msgid ""
+"Unfortunately, it's a bit tricky to make for use by-ref iterators instead. "
+"The problem is that an iterator is `IntoIterator`, but it is not `Iterable` "
+"(or whatever we call the by-reference trait). Why? Because `IntoIterator` "
+"gives you an iterator that can be used only _once_, while `Iterable` allows "
+"you to ask for iterators repeatedly."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1719
+msgid ""
+"If `for` demanded an `Iterable`, then `for x in v.iter()` and `for x in v."
+"iter_mut()` would cease to work -- we'd have to find some other approach. It "
+"might be doable, but it's not obvious how to do it."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1723
+msgid "Input versus output type parameters"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1725
+msgid ""
+"An important aspect of the `IntoIterator` design is that the element type is "
+"an associated type, _not_ an input type."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1728
+msgid "This is a tradeoff:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1730
+msgid ""
+"Making it an associated type means that the `for` examples work, because the "
+"type of `Self` uniquely determines the element type for iteration, aiding "
+"type inference."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1734
+msgid ""
+"Making it an input type would forgo those benefits, but would allow some "
+"additional flexibility. For example, you could implement `IntoIterator<A>` "
+"for an iterator on `&A` when `A` is cloned, therefore _implicitly_ cloning "
+"as needed to make the ownership work out (and obviating the need for "
+"`iter_cloned`). However, we have generally kept away from this kind of "
+"implicit magic, _especially_ when it can involve hidden costs like cloning, "
+"so the more explicit design given in this RFC seems best."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1742
+msgid "Downsides"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1744
+msgid "Design tradeoffs were discussed inline."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1746
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1748
+msgid "Unresolved conventions/APIs"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1750
+msgid ""
+"As mentioned [above](#combinations), this RFC does not resolve the question "
+"of what to call set operations that update the set in place."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1753
+msgid ""
+"It likewise does not settle the APIs that appear in only single concrete "
+"collections. These will largely be handled through the API stabilization "
+"process, unless radical changes are proposed."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1757
+msgid ""
+"Finally, additional methods provided via the `IntoIterator` API are left for "
+"future consideration."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1760
+msgid "Coercions"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1762
+msgid ""
+"Using the `Borrow` trait, it might be possible to safely add a coercion for "
+"auto-slicing:"
+msgstr ""
+
+#: src/0235-collections-conventions.md:1770
+msgid ""
+"For sized types, this coercion is _forced_ to be trivial, so the only time "
+"it would involve running user code is for unsized values."
+msgstr ""
+
+#: src/0235-collections-conventions.md:1773
+msgid ""
+"A general story about such coercions will be left to a [follow-up RFC]"
+"(https://github.com/rust-lang/rfcs/pull/241)."
+msgstr ""

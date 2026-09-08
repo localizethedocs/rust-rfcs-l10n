@@ -1,0 +1,655 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2909-destructuring-assignment.md:1
+msgid "Feature Name: `destructuring_assignment`"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:2
+msgid "Start Date: 2020-04-17"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2909](https://github.com/rust-lang/rfcs/pull/2909)"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#71126](https://github.com/rust-lang/rust/"
+"issues/71126)"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:5
+msgid ""
+"Proof-of-concept: [rust-lang/rust#71156](https://github.com/rust-lang/rust/"
+"pull/71156)"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:10
+msgid ""
+"We allow destructuring on assignment, as in `let` declarations. For "
+"instance, the following are now accepted:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:17
+msgid "'a'"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:17
+msgid "'w'"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:17
+msgid "'e'"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:17
+msgid "'s'"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:17
+msgid "'o'"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:17
+msgid "'m'"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:17
+msgid "'!'"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:22
+msgid ""
+"This brings assignment in line with `let` declaration, in which "
+"destructuring is permitted. This will simplify and improve idiomatic code "
+"involving mutability."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:25
+msgid "Motivation"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:28
+msgid ""
+"Destructuring assignment increases the consistency of the language, in which "
+"assignment is typically expected to behave similarly to variable "
+"declarations. The aim is that this feature will increase the clarity and "
+"concision of idiomatic Rust, primarily in code that makes use of mutability. "
+"This feature is [highly desired among Rust developers](https://github.com/"
+"rust-lang/rfcs/issues/372)."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:33
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:36
+msgid ""
+"You may destructure a value when making an assignment, just as when you "
+"declare variables. See the [Summary](#Summary) for examples. The following "
+"structures may be destructured:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:39
+#: src/2909-destructuring-assignment.md:121
+msgid "Tuples."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:40
+#: src/2909-destructuring-assignment.md:122
+msgid "Slices."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:41
+#: src/2909-destructuring-assignment.md:123
+msgid "Structs (including unit and tuple structs)."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:42
+#: src/2909-destructuring-assignment.md:124
+msgid "Unique variants of enums."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:44
+msgid ""
+"You may use `_` and `..` as in a normal declaration pattern to ignore "
+"certain values."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:46
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:49
+msgid ""
+"The feature as described here has been implemented as a proof-of-concept "
+"(https://github.com/rust-lang/rust/pull/71156). It follows essentially the "
+"[suggestions of @Kimundi](https://github.com/rust-lang/rfcs/"
+"issues/372#issuecomment-214022963) and [of @drunwald](https://github.com/"
+"rust-lang/rfcs/issues/372#issuecomment-262519146)."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:54
+msgid ""
+"The Rust compiler already parses complex expressions on the left-hand side "
+"of an assignment, but does not handle them other than emitting an error "
+"later in compilation. We propose to add special-casing for several classes "
+"of expressions on the left-hand side of an assignment, which act in "
+"accordance with destructuring assignment: i.e. as if the left-hand side were "
+"actually a pattern. Actually supporting patterns directly on the left-hand "
+"side of an assignment significantly complicates Rust's grammar and it is not "
+"clear that it is even technically feasible. Conversely, handling some "
+"classes of expressions is much simpler, and is indistinguishable to users, "
+"who will receive pattern-oriented diagnostics due to the desugaring of "
+"expressions into patterns."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:63
+msgid ""
+"To describe the context of destructuring assignments more precisely, we add "
+"a new class of expressions, which we call \"assignee expressions\". Assignee "
+"expressions are analogous to [place expressions](https://doc.rust-lang.org/"
+"reference/expressions.html#place-expressions-and-value-expressions) (also "
+"called \"lvalues\") in that they refer to expressions representing a memory "
+"location, but may only appear on the left-hand side of an assignment (unlike "
+"place expressions). Every place expression is also an assignee expression."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:71
+msgid "The class of assignee expressions is defined inductively:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:73
+msgid "Place: `place`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:74
+msgid "Underscore: `_`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:75
+msgid ""
+"Tuples: `(assignee, assignee, assignee)`, `(assignee, .., assignee)`, `(.., "
+"assignee, assignee)`, `(assignee, assignee, ..)`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:76
+msgid ""
+"Slices: `[assignee, assignee, assignee]`, `[assignee, .., assignee]`, `[.., "
+"assignee, assignee]`, `[assignee, assignee, ..]`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:77
+msgid ""
+"Tuple structs: `path(assignee, assignee, assignee)`, `path(assignee, .., "
+"assignee)`, `path(.., assignee, assignee)`, `path(assignee, assignee, ..)`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:79
+msgid ""
+"Structs: `path { field: assignee, field: assignee }`, `path { field: "
+"assignee, field: assignee, .. }`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:80
+msgid "Unit structs: `path`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:82
+msgid ""
+"The place expression \"The left operand of an assignment or compound "
+"assignment expression.\" ibid. is changed to \"The left operand of a "
+"compound assignment expression.\", while \"The left operand of an assignment "
+"expression.\" is now an assignee expression."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:86
+msgid ""
+"The general idea is that we will desugar the following complex assignments "
+"as demonstrated."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:94
+#: src/2909-destructuring-assignment.md:136
+#: src/2909-destructuring-assignment.md:201
+msgid "// desugars to:\n"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:116
+msgid ""
+"Note that the desugaring ensures that destructuring assignment, like normal "
+"assignment, is an expression."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:119
+msgid "We support the following classes of expressions:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:126
+msgid ""
+"In the desugaring, we convert the expression `(a, b)` into an analogous "
+"pattern `(_a, _b)` (whose identifiers are fresh and thus do not conflict "
+"with existing variables). A nice side-effect is that we inherit the "
+"diagnostics for normal pattern-matching, so users benefit from existing "
+"diagnostics for destructuring declarations."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:131
+msgid "Nested structures may be destructured, for instance:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:148
+msgid ""
+"We also allow arbitrary parenthesisation, as with patterns, although "
+"unnecessary parentheses will trigger the `unused_parens` lint."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:151
+msgid ""
+"Note that `#[non_exhaustive]` must be taken into account properly: enums "
+"marked `#[non_exhaustive]` may not have their variants destructured, and "
+"structs marked `#[non_exhaustive]` may only be destructured using `..`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:155
+msgid ""
+"Patterns must be irrefutable. In particular, only slice patterns whose "
+"length is known at compile- time, and the trivial slice `[..]` may be used "
+"for destructuring assignment."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:158
+msgid ""
+"Unlike in usual `let` bindings, default binding modes do _not_ apply for the "
+"desugared destructuring assignments, as this leads to counterintuitive "
+"behaviour since the desugaring is an implementation detail."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:162
+msgid "Diagnostics"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:164
+msgid ""
+"It is worth being explicit that, in the implementation, the diagnostics that "
+"are reported are pattern diagnostics: that is, because the desugaring occurs "
+"regardless, the messages will imply that the left-hand side of an assignment "
+"is a true pattern (the one the expression has been converted to). For "
+"example:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:170
+msgid "// error: pattern requires 1 element but array has 2\n"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:173
+msgid ""
+"Whilst `[*a]` is not strictly speaking a pattern, it behaves similarly to "
+"one in this context. We think that this results in a better user experience, "
+"as intuitively the left-hand side of a destructuring assignment acts like a "
+"pattern \"in spirit\", but this is technically false: we should be careful "
+"that this does not result in misleading diagnostics."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:178
+msgid "Underscores and ellipses"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:180
+msgid ""
+"In patterns, we may use `_` and `..` to ignore certain values, without "
+"binding them. While range patterns already have analogues in terms of range "
+"expressions, the underscore wildcard pattern currently has no analogous "
+"expression. We thus add one, which is only permitted in the left-hand side "
+"of an assignment: any other use results in the same \"reserved identifier\" "
+"error that currently occurs for invalid uses of `_` as an expression. A "
+"consequence is that the following becomes valid:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:190
+msgid ""
+"Functional record update syntax (i.e. `..x`) is forbidden in destructuring "
+"assignment, as we believe there is no sensible and clear semantics for it in "
+"this setting. This restriction could be relaxed in the future if a use-case "
+"is found."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:194
+msgid ""
+"The desugaring treats the `_` expression as an `_` pattern and the fully "
+"empty range `..` as a `..` pattern. No corresponding assignments are "
+"generated. For example:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:215
+msgid "and similarly for slices and structs."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:217
+msgid "Unsupported patterns"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:219
+msgid ""
+"We do not support the following \"patterns\" in destructuring assignment:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:221
+msgid "`&x = foo();`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:222
+msgid "`&mut x = foo();`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:223
+msgid "`ref x = foo();`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:224
+msgid "`x @ y = foo()`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:225
+msgid "(`box` patterns, which are deprecated.)"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:227
+msgid ""
+"This is primarily for learnability: the behaviour of `&` can already be "
+"slightly confusing to newcomers, as it has different meanings depending on "
+"whether it is used in an expression or pattern. In destructuring assignment, "
+"the left-hand side of an assignment consists of sub_expressions_, but which "
+"act intuitively like patterns, so it is not clear what `&` and friends "
+"should mean. We feel it is more confusing than helpful to allow these cases. "
+"Similarly, although coming up with a sensible meaning for `@`\\-bindings in "
+"destructuring assignment is not inconceivable, we believe they would be "
+"confusing at best in this context. Conversely, destructuring tuples, slices "
+"or structs is very natural and we do not foresee confusion with allowing "
+"these."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:236
+msgid ""
+"Our implementation is forwards-compatible with allowing these patterns in "
+"destructuring assignment, in any case, so we lose nothing by not allowing "
+"them from the start."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:239
+msgid ""
+"Additionally, we do not give analogues for any of the following, which make "
+"little sense in this context:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:242
+msgid "Literal patterns."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:243
+msgid "Range patterns."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:244
+msgid "Or patterns."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:246
+msgid ""
+"Therefore, literals, bitwise OR, and range expressions (`..`, `..=`) are not "
+"permitted on the left-hand side of a destructuring assignment."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:249
+msgid "Compound destructuring assignment"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:251
+msgid ""
+"We forbid destructuring compound assignment, i.e. destructuring for "
+"operators like `+=`, `*=` and so on. This is both for the sake of simplicity "
+"and since there are relevant design questions that do not have obvious "
+"answers, e.g. how this could interact with custom implementations of the "
+"operators."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:255
+msgid "Order-of-assignment"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:257
+msgid ""
+"The right-hand side of the assignment is always evaluated first. Then, "
+"assignments are performed left-to-right. Note that component expressions in "
+"the left-hand side may be complex, and not simply identifiers."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:261
+msgid ""
+"In a declaration, each identifier may be bound at most once. That is, the "
+"following is invalid:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:267
+msgid ""
+"For destructuring assignments, we currently permit assignments containing "
+"identical identifiers. However, these trigger an \"unused assignment\" "
+"warning."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:271
+msgid "// warning: value assigned to `a` is never read\n"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:275
+msgid ""
+"We could try to explicitly forbid this. However, the chosen behaviour is "
+"justified in two ways:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:276
+msgid ""
+"A destructuring assignment can always be written as a series of assignments, "
+"so this behaviour matches its expansion."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:279
+msgid ""
+"In general, we are not able to tell when overlapping assignments are made, "
+"so the error would be fallible. This is illustrated by the following example:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:289
+msgid ""
+"// We cannot tell that the same variable is being assigned to\n"
+"    // in this instance.\n"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:296
+msgid "We thus feel that a lint is more appropriate."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:298
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:301
+msgid ""
+"It could be argued that this feature increases the surface area of the "
+"language and thus complexity. However, we feel that by decreasing surprise, "
+"it actually makes the language less complex for users."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:304
+msgid ""
+"It is possible that these changes could result in some confusing "
+"diagnostics. However, we have not found any during testing, and these could "
+"in any case be ironed out before stabilisation."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:307
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:310
+msgid ""
+"As we argue above, we believe this change increases the perceived "
+"consistency of Rust and improves idiomatic code in the presence of "
+"mutability, and that the implementation is simple and intuitive."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:314
+msgid ""
+"One potential alternative that has been put forth in the past is to allow "
+"arbitrary patterns on the left-hand side of an assignment, but as discussed "
+"above and [extensively in this thread](https://github.com/rust-lang/rfcs/"
+"issues/372), it is difficult to see how this could work in practice "
+"(especially with complex left-hand sides that do not simply involve "
+"identifiers) and it is not clear that this would have any advantages."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:320
+msgid ""
+"Another suggested alternative is to introduce a new keyword for indicating "
+"an assignment to an existing expression during a `let` variable declaration. "
+"For example, something like the following:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:327
+msgid ""
+"This has the advantage that we can reuse the existing infrastructure for "
+"patterns. However, it has the following disadvantages, which we believe make "
+"it less suitable than our proposal:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:330
+msgid ""
+"It requires a new keyword or overloading an existing one, both of which have "
+"syntactic and semantic overhead."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:332
+msgid ""
+"It is something that needs to be learnt by users: conversely, we maintain "
+"that it is natural to attempt destructuring assignment with the syntax we "
+"propose already, so does not need to be learnt."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:335
+msgid ""
+"It changes the meaning of `let` (which has previously been associated only "
+"with binding new variables)."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:337
+msgid ""
+"To be consistent, we ought to allow `let reassign x = value;`, which "
+"introduces another way to simply write `x = value;`."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:339
+msgid "It is longer and no more readable than the proposed syntax."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:341
+msgid "Prior art"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:344
+msgid ""
+"The most persuasive prior art is Rust itself, which already permits "
+"destructuring declarations. Intuitively, a declaration is an assignment that "
+"also introduces a new binding. Therefore, it seems clear that assignments "
+"should act similarly to declarations where possible. However, it is also the "
+"case that destructuring assignments are present in many languages that "
+"permit destructuring declarations."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:350
+msgid ""
+"JavaScript [supports destructuring assignment](https://developer.mozilla.org/"
+"en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment)."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:352
+msgid ""
+"Python [supports destructuring assignment](https://blog.tecladocode.com/"
+"destructuring-in-python/)."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:353
+msgid ""
+"Perl [supports destructuring assignment](https://perl6advent.wordpress."
+"com/2017/12/05/day-5-destructure-your-arguments-with-perl-6-signatures/)."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:355
+msgid "And so on..."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:357
+msgid ""
+"It is a general pattern that languages support destructuring assignment when "
+"they support destructuring declarations."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:360
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:363
+msgid "None."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:365
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:368
+msgid ""
+"The implementation already supports destructuring of every class of "
+"expressions that currently make sense in Rust. This feature naturally should "
+"be extended to any new class of expressions for which it makes sense."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:371
+msgid ""
+"It could make sense to permit [destructuring compound assignments](#Compound-"
+"destructuring-assignment) in the future, though we defer this question for "
+"later discussions."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:374
+msgid ""
+"It could make sense to permit [`ref` and `&`](#Unsupported-patterns) in the "
+"future."
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:375
+msgid ""
+"It [has been suggested](https://github.com/rust-lang/rfcs/"
+"issues/372#issuecomment-365606878) that mixed declarations and assignments "
+"could be permitted, as in the following:"
+msgstr ""
+
+#: src/2909-destructuring-assignment.md:384
+msgid ""
+"We do not pursue this here, but note that it would be compatible with our "
+"desugaring."
+msgstr ""

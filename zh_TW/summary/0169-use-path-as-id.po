@@ -1,0 +1,303 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0169-use-path-as-id.md:1
+msgid "Start Date: 2014-07-16"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:2
+msgid "RFC PR #: [\\#169](https://github.com/rust-lang/rfcs/pull/169)"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:3
+msgid "Rust Issue #: https://github.com/rust-lang/rust/issues/16461"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:5
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0169-use-path-as-id.md:7
+msgid ""
+"Change the rebinding syntax from `use ID = PATH` to `use PATH as ID`, so "
+"that paths all line up on the left side, and imported identifiers are all on "
+"the right side.  Also modify `extern crate` syntax analogously, for "
+"consistency."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:12
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0169-use-path-as-id.md:14
+msgid ""
+"Currently, the view items at the start of a module look something like this:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:26
+msgid ""
+"This means that if you want to see what identifiers have been imported, your "
+"eyes need to scan back and forth on both the left-hand side (immediately "
+"beside the `use`) and the right-hand side (at the end of each line).  In "
+"particular, note that `yummy` is _not_ in scope within the body of `old_code`"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:32
+msgid ""
+"This RFC proposes changing the grammar of Rust so that the example above "
+"would look like this:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:44
+msgid ""
+"There are two benefits we can see by comparing `mod old_code` and `mod "
+"new_code`:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:47
+msgid ""
+"As alluded to above, now all of the imported identifiers are on the right-"
+"hand side of the block of view items."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:50
+msgid ""
+"Additionally, the left-hand side looks much more regular, since one sees the "
+"straight lines of `a::b::` characters all the way down, which makes the "
+"_actual_ differences between the different paths more visually apparent."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:55
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0169-use-path-as-id.md:57
+msgid "Currently, the grammar for use statements is something like:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:59
+msgid ""
+"```\n"
+"  use_decl : \"pub\" ? \"use\" [ ident '=' path\n"
+"                            | path_glob ] ;\n"
+"```"
+msgstr ""
+"```\n"
+"  use_decl : \"pub\" ? \"use\" [ ident '=' path\n"
+"                            | path_glob ] ;\n"
+"```"
+
+#: src/0169-use-path-as-id.md:64
+msgid "Likewise, the grammar for extern crate declarations is something like:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:66
+msgid ""
+"```\n"
+"  extern_crate_decl : \"extern\" \"crate\" ident [ '(' link_attrs ')' ] ? "
+"[ '=' string_lit ] ? ;\n"
+"```"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:70
+msgid ""
+"This RFC proposes changing the grammar for use statements to something like:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:72
+msgid ""
+"```\n"
+"  use_decl : \"pub\" ? \"use\" [ path \"as\" ident\n"
+"                            | path_glob ] ;\n"
+"```"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:77
+msgid "and the grammar for extern crate declarations to something like:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:79
+msgid ""
+"```\n"
+"  extern_crate_decl : \"extern\" \"crate\" [ string_lit \"as\" ] ? ident "
+"[ '(' link_attrs ')' ] ? ;\n"
+"```"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:83
+msgid ""
+"Both `use` and `pub use` forms are changed to use `path as ident` instead of "
+"`ident = path`.  The form `use path as ident` has the same constraints and "
+"meaning that `use ident = path` has today."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:87
+msgid ""
+"Nothing about path globs is changed; the view items that use `ident = path` "
+"are disjoint from the view items that use path globs, and that continues to "
+"be the case under `path as ident`."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:91
+msgid ""
+"The old syntaxes `\"use\" ident '=' path` and `\"extern\" \"crate\" ident "
+"'=' string_lit` are removed (or at least deprecated)."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:97
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:99
+msgid ""
+"`pub use export = import_path` may be preferred over `pub use import_path as "
+"export` since people are used to seeing the name exported by a `pub` item on "
+"the left-hand side of an `=` sign. (See \"Have distinct rebinding syntaxes "
+"for `use` and `pub use`\" below.)"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:105
+msgid ""
+"The 'as' keyword is not currently used for any binding form in Rust. "
+"Adopting this RFC would change that precedent. (See \"Change the signaling "
+"token\" below.)"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:109
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0169-use-path-as-id.md:111
+msgid "Keep things as they are"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:113
+msgid ""
+"This just has the drawbacks outlined in the motivation: the left-hand side "
+"of the view items are less regular, and one needs to scan both the left- and "
+"right-hand sides to see all the imported identifiers."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:117
+msgid "Change the signaling token"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:119
+msgid ""
+"Go ahead with switch, so imported identifier is on the left-hand side, but "
+"use a different token than `as` to signal a rebinding."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:122
+msgid ""
+"For example, we could use `@`, as an analogy with its use as a binding "
+"operator in match expressions:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:133
+msgid ""
+"(I do not object to `path @ ident`, though I find it somehow more \"line-"
+"noisy\" than `as` in this context.)"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:136
+msgid "Or, we could use `=`:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:146
+msgid ""
+"(I _do_ object to `path = ident`, since typically when `=` is used to bind, "
+"the identifier being bound occurs on the left-hand side.)"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:149
+msgid "Or, we could use `:`, by (weak) analogy with struct pattern syntax:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:158
+msgid ""
+"(I cannot figure out if this is genius or madness.  Probably madness, "
+"especially if one is allowed to omit the whitespace around the `:`)"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:161
+msgid "Have distinct rebinding syntaxes for `use` and `pub use`"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:163
+msgid ""
+"If people really like having `ident = path` for `pub use`, by the reasoning "
+"presented above that people are used to seeing the name exported by a `pub` "
+"item on the left-hand side of an `=` sign, then we could support that by "
+"continuing to support `pub use ident = path`."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:168
+msgid ""
+"If we were to go down that route, I would prefer to have distinct notions of "
+"the exported name and imported name, so that:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:171
+msgid ""
+"`pub use a = foo::bar;` would actually _import_ `bar` (and `a` would just be "
+"visible as an _export_), and then one could rebind for export and import "
+"simultaneously, like so: `pub use exported_bar = foo::bar as imported_bar;`"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:176
+msgid "But really, is `pub use foo::bar as a` all that bad?"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:178
+msgid "Allow `extern crate ident as ident`"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:180
+msgid "As written, this RFC allows for two variants of `extern_crate_decl`:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:184
+msgid "\"old_name\""
+msgstr ""
+
+#: src/0169-use-path-as-id.md:187
+msgid ""
+"These are just analogous to the current options that use `=` instead of `as`."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:189
+msgid ""
+"However, the RFC comment dialogue suggested also allowing a renaming form "
+"that does not use a string literal:"
+msgstr ""
+
+#: src/0169-use-path-as-id.md:196
+msgid ""
+"I have no opinion on whether this should be added or not.  Arguably this "
+"choice is orthogonal to the goals of this RFC (since, if this is a good "
+"idea, it could just as well be implemented with the `=` syntax). Perhaps it "
+"should just be filed as a separate RFC on its own."
+msgstr ""
+
+#: src/0169-use-path-as-id.md:201
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0169-use-path-as-id.md:203
+msgid ""
+"In the revised `extern crate` form, is it best to put the `link_attrs` after "
+"the identifier, as written above?  Or would it be better for them to come "
+"after the `string_literal` when using the `extern crate string_literal as "
+"ident` form?"
+msgstr ""
