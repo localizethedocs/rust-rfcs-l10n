@@ -1,0 +1,1081 @@
+<!DOCTYPE HTML>
+<html lang="en_US" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3458-unsafe-fields - The Rust RFC Book</title>
+
+
+        <!-- Custom HTML head -->
+        <script type="text/javascript" src="ltd-provenance.js"></script>
+        <script type="text/javascript" src="ltd-current.js"></script>
+        <script type="text/javascript" src="../../ltd-config.js"></script>
+        <script type="text/javascript" src="../../ltd-flyout.js"></script>
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-d7d89c51.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-92d3b1a0.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Rust RFC Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/rust-lang/rfcs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <ul>
+<li>Feature Name: <code>unsafe_fields</code></li>
+<li>Start Date: 2023-07-13</li>
+<li>RFC PR: <a href="https://github.com/rust-lang/rfcs/pull/3458">rust-lang/rfcs#3458</a></li>
+<li>Rust Issue: <a href="https://github.com/rust-lang/rust/issues/132922">rust-lang/rust#132922</a></li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>This RFC proposes extending Rust’s tooling support for safety hygiene to named fields that carry
+library safety invariants. Consequently, Rust programmers will be able to use the <code>unsafe</code> keyword
+to denote when a named field carries a library safety invariant; e.g.:</p>
+<pre><code class="language-rust">struct UnalignedRef&lt;'a, T&gt; {
+    /// # Safety
+    ///
+    /// `ptr` is a shared reference to a valid-but-unaligned instance of `T`.
+    unsafe ptr: *const T,
+    _lifetime: PhantomData&lt;&amp;'a T&gt;,
+}</code></pre>
+<p>Rust will enforce that potentially-invalidating uses of such fields only occur in the context of an
+<code>unsafe</code> block, and Clippy’s <a href="https://rust-lang.github.io/rust-clippy/master/index.html#missing_safety_doc"><code>missing_safety_doc</code></a> lint will check that such fields have
+accompanying safety documentation.</p>
+<h2 id="motivation"><a class="header" href="#motivation">Motivation</a></h2>
+<p>Safety hygiene is the practice of denoting and documenting where memory safety obligations arise
+and where they are discharged. Rust provides some tooling support for this practice. For example,
+if a function has safety obligations that must be discharged by its callers, that function <em>should</em>
+be marked <code>unsafe</code> and documentation about its invariants <em>should</em> be provided (this is optionally
+enforced by Clippy via the <a href="https://rust-lang.github.io/rust-clippy/master/index.html#missing_safety_doc"><code>missing_safety_doc</code></a> lint). Consumers, then, <em>must</em> use the <code>unsafe</code>
+keyword to call it (this is enforced by rustc), and <em>should</em> explain why its safety obligations are
+discharged (again, optionally enforced by Clippy).</p>
+<p>Functions are often marked <code>unsafe</code> because they concern the safety invariants of fields. For
+example, <a href="https://doc.rust-lang.org/std/vec/struct.Vec.html#method.set_len"><code>Vec::set_len</code></a> is <code>unsafe</code>, because it directly manipulates its <code>Vec</code>’s length field,
+that carries the invariants that it is less than the capacity of the <code>Vec</code> and that all elements
+in the <code>Vec&lt;T&gt;</code> between 0 and <code>len</code> are valid <code>T</code>. It is critical that these invariants are upheld;
+if they are violated, invoking most of <code>Vec</code>’s other methods will induce undefined behavior.</p>
+<p>To help ensure such invariants are upheld, programmers may apply safety hygiene techniques to
+fields, denoting when they carry invariants and documenting why their uses satisfy their
+invariants. For example, the <code>zerocopy</code> crate maintains the policy that fields with safety
+invariants have <code># Safety</code> documentation, and that uses of those fields occur in the lexical
+context of an <code>unsafe</code> block with a suitable <code>// SAFETY</code> comment.</p>
+<p>Unfortunately, Rust does not yet provide tooling support for field safety hygiene. Since the
+<code>unsafe</code> keyword cannot be applied to field definitions, Rust cannot enforce that
+potentially-invalidating uses of fields occur in the context of <code>unsafe</code> blocks, and Clippy cannot
+enforce that safety comments are present either at definition or use sites. This RFC is motivated
+by the benefits of closing this tooling gap.</p>
+<h3 id="benefit-improving-field-safety-hygiene"><a class="header" href="#benefit-improving-field-safety-hygiene">Benefit: Improving Field Safety Hygiene</a></h3>
+<p>The absence of tooling support for field safety hygiene makes its practice entirely a matter of
+programmer discipline, and, consequently, rare in the Rust ecosystem. Field safety invariants
+within the standard library are sparingly and inconsistently documented; for example, at the time
+of writing, <code>Vec</code>’s capacity invariant is internally documented, but its length invariant is not.</p>
+<p>The practice of using <code>unsafe</code> blocks to denote dangerous uses of fields with safety invariants is
+exceedingly rare, since Rust actively lints against the practice with the <code>unused_unsafe</code> lint.</p>
+<p>Alternatively, Rust’s visibility mechanisms can be (ab)used to help enforce that dangerous uses
+occur in <code>unsafe</code> blocks, by wrapping type definitions in an enclosing <code>def</code> module that mediates
+construction and access through <code>unsafe</code> functions; e.g.:</p>
+<pre><code class="language-rust">/// Used to mediate access to `UnalignedRef`'s conceptually-unsafe fields.
+///
+/// No additional items should be placed in this module. Impl's outside of this module should
+/// construct and destruct `UnalignedRef` solely through `from_raw` and `into_raw`.
+mod def {
+    pub struct UnalignedRef&lt;'a, T&gt; {
+        /// # Safety
+        ///
+        /// `ptr` is a shared reference to a valid-but-unaligned instance of `T`.
+        pub(self) unsafe ptr: *const T,
+        pub(self) _lifetime: PhantomData&lt;&amp;'a T&gt;,
+    }
+
+    impl&lt;'a, T&gt; UnalignedRef&lt;'a, T&gt; {
+        /// # Safety
+        ///
+        /// `ptr` is a shared reference to a valid-but-unaligned instance of `T`.
+        pub(super) unsafe fn from_raw(ptr: *const T) -&gt; Self {
+            Self { ptr, _lifetime: PhantomData }
+        }
+
+        pub(super) fn into_raw(self) -&gt; *const T {
+            self.ptr
+        }
+    }
+}
+
+pub use def::UnalignedRef;</code></pre>
+<p>This technique poses significant linguistic friction and may be untenable when split borrows are
+required. Consequently, this approach is uncommon in the Rust ecosystem.</p>
+<p>We hope that tooling that supports and rewards good field safety hygiene will make the practice
+more common in the Rust ecosystem.</p>
+<h3 id="benefit-improving-function-safety-hygiene"><a class="header" href="#benefit-improving-function-safety-hygiene">Benefit: Improving Function Safety Hygiene</a></h3>
+<p>Rust’s safety tooling ensures that <code>unsafe</code> operations may only occur in the lexical context of an
+<code>unsafe</code> block or <code>unsafe</code> function. When the safety obligations of an operation cannot be
+discharged entirely prior to entering the <code>unsafe</code> block, the surrounding function must, itself, be
+<code>unsafe</code>. This tooling cue nudges programmers towards good function safety hygiene.</p>
+<p>The absence of tooling for field safety hygiene undermines this cue. The <a href="https://doc.rust-lang.org/std/vec/struct.Vec.html#method.set_len"><code>Vec::set_len</code></a> method
+<em>must</em> be marked <code>unsafe</code> because it delegates the responsibility of maintaining <code>Vec</code>’s safety
+invariants to its callers. However, the implementation of <a href="https://doc.rust-lang.org/std/vec/struct.Vec.html#method.set_len"><code>Vec::set_len</code></a> does not contain any
+explicitly <code>unsafe</code> operations. Consequently, there is no tooling cue that suggests this function
+should be unsafe — doing so is entirely a matter of programmer discipline.</p>
+<p>Providing tooling support for field safety hygiene will close this gap in the tooling for function
+safety hygiene.</p>
+<h3 id="benefit-making-unsafe-rust-easier-to-audit"><a class="header" href="#benefit-making-unsafe-rust-easier-to-audit">Benefit: Making Unsafe Rust Easier to Audit</a></h3>
+<p>As a consequence of improving function and field safety hygiene, the process of auditing internally
+<code>unsafe</code> abstractions will be made easier in at least two ways. First, as previously discussed, we
+anticipate that tooling support for field safety hygiene will encourage programmers to document
+when their fields carry safety invariants.</p>
+<p>Second, we anticipate that good field safety hygiene will narrow the scope of safety audits.
+Currently, to evaluate the soundness of an <code>unsafe</code> block, it is not enough for reviewers to <em>only</em>
+examine <code>unsafe</code> code; the invariants upon which <code>unsafe</code> code depends may also be violated in safe
+code. If <code>unsafe</code> code depends on field safety invariants, those invariants can currently be
+violated in any safe (or unsafe) context in which those fields are visible. So long as Rust permits
+safety invariants to be violated at-a-distance in safe code, audits of unsafe code must necessarily
+consider distant safe code. (See <a href="https://www.ralfj.de/blog/2016/01/09/the-scope-of-unsafe.html"><em>The Scope of Unsafe</em></a>.)</p>
+<p>For crates that practice good safety hygiene, reviewers will mostly be able to limit their review
+of distant routines to only <code>unsafe</code> code.</p>
+<h2 id="guide-level-explanation"><a class="header" href="#guide-level-explanation">Guide-level explanation</a></h2>
+<p>A safety invariant is any boolean statement about the computer at a time <em>t</em>, which should remain
+true or else undefined behavior may arise. Language safety invariants are imposed by Rust
+itself and must never be violated; e.g., a <code>NonZeroU8</code> must <em>never</em> be 0.</p>
+<p>Library safety invariants, by contrast, are imposed by an API. For example, <code>str</code> encapsulates
+valid UTF-8 bytes, and much of its API assumes this to be true. This invariant may be temporarily
+violated, so long as no code that assumes this safety invariant holds is invoked.</p>
+<p>Safety hygiene is the practice of denoting and documenting where memory safety obligations arise
+and where they are discharged. To denote that a field carries a library safety invariant, use the
+<code>unsafe</code> keyword in its declaration and document its invariant; e.g.:</p>
+<pre><code class="language-rust">pub struct UnalignedRef&lt;'a, T&gt; {
+    /// # Safety
+    ///
+    /// `ptr` is a shared reference to a valid-but-unaligned instance of `T`.
+    unsafe ptr: *const T,
+    _lifetime: PhantomData&lt;&amp;'a T&gt;,
+}</code></pre>
+<p>You should use the <code>unsafe</code> keyword on any field that carries a library safety invariant that
+differs from the invariant provided by its type.</p>
+<p>The <code>unsafe</code> field modifier is only applicable to named fields. You should avoid attaching library
+safety invariants to unnamed fields.</p>
+<p>Rust provides tooling to help you maintain good field safety hygiene. Clippy’s
+<a href="https://rust-lang.github.io/rust-clippy/master/index.html#missing_safety_doc"><code>missing_safety_doc</code></a> lint checks that <code>unsafe</code> fields have accompanying safety documentation.</p>
+<p>The Rust compiler enforces that uses of <code>unsafe</code> fields that could violate its invariant — i.e.,
+initializations, writes, references, and copies — must occur within the context of an <code>unsafe</code>
+block. For example, compiling this program:</p>
+<pre><code class="language-rust">#![forbid(unsafe_op_in_unsafe_fn)]
+
+pub struct Alignment {
+    /// SAFETY: `pow` must be between 0 and 29 (inclusive).
+    pub unsafe pow: u8,
+}
+
+impl Alignment {
+    pub fn new(pow: u8) -&gt; Option&lt;Self&gt; {
+        if pow &gt; 29 {
+            return None;
+        }
+
+        Some(Self { pow })
+    }
+
+    pub fn as_log(self) -&gt; u8 {
+        self.pow
+    }
+
+    /// # Safety
+    ///
+    /// The caller promises to not write a value greater than 29 into the returned reference.
+    pub unsafe fn as_mut_log(&amp;mut self) -&gt; &amp;mut u8 {
+        &amp;mut self.pow
+    }
+}</code></pre>
+<p>…emits the errors:</p>
+<pre><code>error[E0133]: initializing type with an unsafe field is unsafe and requires unsafe block
+  --&gt; src/lib.rs:14:14
+   |
+14 |         Some(Self { pow })
+   |              ^^^^^^^^^^^^ initialization of struct with unsafe field
+   |
+   = note: unsafe fields may carry library invariants
+
+error[E0133]: use of unsafe field is unsafe and requires unsafe block
+  --&gt; src/lib.rs:18:9
+   |
+18 |         self.pow
+   |         ^^^^^^^^ use of unsafe field
+   |
+   = note: unsafe fields may carry library invariants
+
+error[E0133]: use of unsafe field is unsafe and requires unsafe block
+  --&gt; src/lib.rs:25:14
+   |
+25 |         &amp;mut self.pow
+   |              ^^^^^^^^ use of unsafe field
+   |
+   = note: for more information, see &lt;https://doc.rust-lang.org/nightly/edition-guide/rust-2024/unsafe-op-in-unsafe-fn.html&gt;
+   = note: unsafe fields may carry library invariants
+note: an unsafe function restricts its caller, but its body is safe by default
+  --&gt; src/lib.rs:24:5
+   |
+24 |     pub unsafe fn as_mut_log(&amp;mut self) -&gt; &amp;mut u8 {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: the lint level is defined here
+  --&gt; src/lib.rs:1:38
+   |
+1  | #![forbid(unsafe_op_in_unsafe_fn)]
+   |           ^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0133`.
+</code></pre>
+<p>…which may be resolved by wrapping the use-sites in <code>unsafe { ... }</code> blocks; e.g.:</p>
+<pre><code class="language-diff">  #![forbid(unsafe_op_in_unsafe_fn)]
+
+  pub struct Alignment {
+      /// SAFETY: `pow` must be between 0 and 29 (inclusive).
+      pub unsafe pow: u8,
+  }
+
+  impl Alignment {
+      pub fn new(pow: u8) -&gt; Option&lt;Self&gt; {
+          if pow &gt; 29 {
+              return None;
+          }
+-         Some(Self { pow })
++         // SAFETY: We have ensured that `pow &lt;= 29`.
++         Some(unsafe { Self { pow } })
+      }
+
+      pub fn as_log(self) -&gt; u8 {
+-         self.pow
++         // SAFETY: Copying `pow` does not violate its invariant.
++         unsafe { self.pow }
+      }
+
+      /// # Safety
+      ///
+      /// The caller promises to not write a value greater than 29 into the returned reference.
+      pub unsafe fn as_mut_log(&amp;mut self) -&gt; &amp;mut u8 {
+-         &amp;mut self.pow
++         // SAFETY: The caller promises not to violate `pow`'s invariant.
++         unsafe { &amp;mut self.pow }
+      }
+  }
+</code></pre>
+<p>You may use <code>unsafe</code> to denote that a type relaxes its type’s library safety invariant; e.g.:</p>
+<pre><code class="language-rust">struct MaybeInvalidStr {
+    /// SAFETY: `maybe_invalid` may not contain valid UTF-8. Nonetheless, it MUST always contain
+    /// initialized bytes (per language safety invariant on `str`).
+    unsafe maybe_invalid: str
+}</code></pre>
+<p>…but you <em>must</em> ensure that the field is soundly droppable before it is dropped. A <code>str</code> is bound
+by the library safety invariant that it contains valid UTF-8, but because it is trivially
+destructible, no special action needs to be taken to ensure it is in a safe-to-drop state.</p>
+<p>By contrast, <code>Box</code> has a nontrivial destructor that requires that its referent has the same size
+and alignment that the referent was allocated with. Merely adding the <code>unsafe</code> modifier to a <code>Box</code>
+field, e.g.:</p>
+<pre><code class="language-rust">struct BoxedErased {
+    /// SAFETY: `data`'s logical type has `type_id`.
+    unsafe data: Box&lt;[MaybeUninit&lt;u8&gt;]&gt;,
+    /// SAFETY: See [`BoxErased::data`].
+    unsafe type_id: TypeId,
+}
+
+impl BoxedErased {
+    fn new&lt;T: 'static&gt;(src: Box&lt;T&gt;) -&gt; Self {
+        let data = …; // cast `Box&lt;T&gt;` to `Box&lt;[MaybeUninit&lt;u8&gt;]&gt;`
+        let type_id = TypeId::of::&lt;T&gt;();
+        // SAFETY: …
+        unsafe {
+            BoxedErased {
+                data,
+                type_id,
+            }
+        }
+    }
+}</code></pre>
+<p>…does not ensure that using <code>BoxedErased</code> or its <code>data</code> field in safe contexts cannot lead to
+undefined behavior: namely, if <code>BoxedErased</code> or its <code>data</code> field is dropped, its destructor may induce UB.</p>
+<p>In such situations, you may avert the potential for undefined behavior by wrapping the problematic
+field in <code>ManuallyDrop</code>; e.g.:</p>
+<pre><code class="language-diff">  struct BoxedErased {
+      /// SAFETY: `data`'s logical type has `type_id`.
+-     unsafe data: Box&lt;[MaybeUninit&lt;u8&gt;]&gt;,
+    /// SAFETY: See [`BoxedErased::data`].
++     unsafe data: ManuallyDrop&lt;Box&lt;[MaybeUninit&lt;u8&gt;]&gt;&gt;,
+      unsafe type_id: TypeId,
+  }
+</code></pre>
+<h3 id="when-not-to-use-unsafe-fields"><a class="header" href="#when-not-to-use-unsafe-fields">When <em>Not</em> To Use Unsafe Fields</a></h3>
+<h4 id="relaxing-a-language-invariant"><a class="header" href="#relaxing-a-language-invariant">Relaxing a Language Invariant</a></h4>
+<p>The <code>unsafe</code> modifier is appropriate only for denoting <em>library</em> safety invariants. It has no impact
+on <em>language</em> safety invariants, which must <em>never</em> be violated. This, for example, is an unsound
+API:</p>
+<pre><code class="language-rust">struct Zeroed&lt;T&gt; {
+    // SAFETY: The value of `zeroed` consists only of bytes initialized to `0`.
+    unsafe zeroed: T,
+}
+
+impl&lt;T&gt; Zeroed&lt;T&gt; {
+    pub fn zeroed() -&gt; Self {
+        unsafe { Self { zeroed: core::mem::zeroed() }}
+    }
+}</code></pre>
+<p>…because <code>Zeroed::&lt;NonZeroU8&gt;::zeroed()</code> induces undefined behavior.</p>
+<h4 id="denoting-a-correctness-invariant"><a class="header" href="#denoting-a-correctness-invariant">Denoting a Correctness Invariant</a></h4>
+<p>A library <em>correctness</em> invariant is an invariant imposed by an API whose violation must not result
+in undefined behavior. In the below example, unsafe code may rely on <code>alignment_pow</code>s invariant,
+but not <code>size</code>’s invariant:</p>
+<pre><code class="language-rust">struct Layout {
+    /// The size of a type.
+    ///
+    /// # Invariants
+    ///
+    /// For well-formed layouts, this value is less than `isize::MAX` and is a multiple of the alignment.
+    /// To accommodate incomplete layouts (i.e., those missing trailing padding), this is not a safety invariant.
+    pub size: usize,
+    /// The log₂(alignment) of a type.
+    ///
+    /// # Safety
+    ///
+    /// `alignment_pow` must be between 0 and 29.
+    pub unsafe alignment_pow: u8,
+}</code></pre>
+<p>The <code>unsafe</code> modifier should only be used on fields with <em>safety</em> invariants, not merely correctness
+invariants.</p>
+<p>We might also imagine a variant of the above example where <code>alignment_pow</code>, like <code>size</code>, doesn’t
+carry a safety invariant. Ultimately, whether or not it makes sense for a field to be <code>unsafe</code> is a
+function of programmer preference and API requirements.</p>
+<h3 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h3>
+<p>The below example demonstrates how field safety support can be applied to build a practical
+abstraction with small safety boundaries
+(<a href="https://play.rust-lang.org/?version=nightly&amp;mode=debug&amp;edition=2024&amp;gist=e8aa2af933f5bf4892d1be951062538d">playground</a>):</p>
+<pre><code class="language-rust">#![deny(
+    unfulfilled_lint_expectations,
+    clippy::missing_safety_doc,
+    clippy::undocumented_unsafe_blocks,
+)]
+
+use std::{
+    cell::UnsafeCell,
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
+
+/// An `Arc` that provides exclusive access to its referent.
+///
+/// A `UniqueArc` may have any number of `KeepAlive` handles which ensure that
+/// the inner value is not dropped. These handles only control dropping, and do
+/// not provide read or write access to the value.
+pub struct UniqueArc&lt;T: 'static&gt; {
+    /// # Safety
+    ///
+    /// While this `UniqueArc` exists, the value pointed by this `arc` may not
+    /// be accessed (read or written) other than via this `UniqueArc`.
+    unsafe arc: Arc&lt;UnsafeCell&lt;T&gt;&gt;,
+}
+
+/// Keeps the parent [`UniqueArc`] alive without providing read or write access
+/// to its value.
+pub struct KeepAlive&lt;T&gt; {
+    /// # Safety
+    ///
+    /// `T` may not be accessed (read or written) via this `Arc`.
+    #[expect(unused)]
+    unsafe arc: Arc&lt;UnsafeCell&lt;T&gt;&gt;,
+}
+
+impl&lt;T&gt; UniqueArc&lt;T&gt; {
+    /// Constructs a new `UniqueArc` from a value.
+    pub fn new(val: T) -&gt; Self {
+        let arc = Arc::new(UnsafeCell::new(val));
+        // SAFETY: Since we have just created `arc` and have neither cloned it
+        // nor leaked a reference to it, we can be sure `T` cannot be read or
+        // accessed other than via this particular `arc`.
+        unsafe { Self { arc } }
+    }
+
+    /// Releases ownership of the enclosed value.
+    ///
+    /// Returns `None` if any `KeepAlive`s were created but not destroyed.
+    pub fn into_inner(self) -&gt; Option&lt;T&gt; {
+        // SAFETY: Moving `arc` out of `Self` releases it from its safety
+        // invariant.
+        let arc = unsafe { self.arc };
+        Arc::into_inner(arc).map(UnsafeCell::into_inner)
+    }
+
+    /// Produces a `KeepAlive` handle, which defers the destruction
+    /// of the enclosed value.
+    pub fn keep_alive(&amp;self) -&gt; KeepAlive&lt;T&gt; {
+        // SAFETY: By invariant on `KeepAlive::arc`, this clone will never be
+        // used for accessing `T`, as required by `UniqueArc::arc`. The one
+        // exception is that, if a `KeepAlive` is the last reference to be
+        // dropped, then it will drop the inner `T`. However, if this happens,
+        // it means that the `UniqueArc` has already been dropped, and so its
+        // invariant will not be violated.
+        unsafe {
+            KeepAlive {
+                arc: self.arc.clone(),
+            }
+        }
+    }
+}
+
+impl&lt;T&gt; Deref for UniqueArc&lt;T&gt; {
+    type Target = T;
+
+    fn deref(&amp;self) -&gt; &amp;T {
+        // SAFETY: We do not create any other owning references to `arc` - we
+        // only dereference it below, but do not clone it.
+        let arc = unsafe { &amp;self.arc };
+        let ptr = UnsafeCell::get(arc);
+        // SAFETY: We satisfy all requirements for pointer-to-reference
+        // conversions [1]:
+        // - By invariant on `&amp;UnsafeCell&lt;T&gt;`, `ptr` is well-aligned, non-null,
+        //   dereferenceable, and points to a valid `T`.
+        // - By invariant on `Self::arc`, no other `Arc` references exist to
+        //   this value which will be used for reading or writing. Thus, we
+        //   satisfy the aliasing invariant of `&amp;` references.
+        //
+        // [1] https://doc.rust-lang.org/1.85.0/std/ptr/index.html#pointer-to-reference-conversion
+        unsafe { &amp;*ptr }
+    }
+}
+
+impl&lt;T&gt; DerefMut for UniqueArc&lt;T&gt; {
+    fn deref_mut(&amp;mut self) -&gt; &amp;mut T {
+        // SAFETY: We do not create any other owning references to `arc` - we
+        // only dereference it below, but do not clone it.
+        let arc = unsafe { &amp;mut self.arc };
+        let val = UnsafeCell::get(arc);
+        // SAFETY: We satisfy all requirements for pointer-to-reference
+        // conversions [1]:
+        // - By invariant on `&amp;mut UnsafeCell&lt;T&gt;`, `ptr` is well-aligned,
+        //   non-null, dereferenceable, and points to a valid `T`.
+        // - By invariant on `Self::arc`, no other `Arc` references exist to
+        //   this value which will be used for reading or writing. Thus, we
+        //   satisfy the aliasing invariant of `&amp;mut` references.
+        //
+        // [1] https://doc.rust-lang.org/1.85.0/std/ptr/index.html#pointer-to-reference-conversion
+        unsafe { &amp;mut *val }
+    }
+}</code></pre>
+<h2 id="reference-level-explanation"><a class="header" href="#reference-level-explanation">Reference-level explanation</a></h2>
+<h3 id="syntax"><a class="header" href="#syntax">Syntax</a></h3>
+<p>The <a href="https://doc.rust-lang.org/stable/reference/items/structs.html#structs"><code>StructField</code> syntax</a>, used for the named fields of structs, enums, and unions,
+shall be updated to accommodate an optional <code>unsafe</code> keyword just before the field <code>IDENTIFIER</code>:</p>
+<pre><code class="language-diff">StructField :
+   OuterAttribute*
+   Visibility?
++  unsafe?
+   IDENTIFIER : Type
+</code></pre>
+<p>The use of unsafe fields on unions shall remain forbidden while the <a href="#safe-unions">impact of this feature on
+unions</a> is decided.</p>
+<h3 id="semantics"><a class="header" href="#semantics">Semantics</a></h3>
+<p>Projections of fields marked <code>unsafe</code> must occur within the context of <code>unsafe</code>.</p>
+<p>Clippy’s <a href="https://rust-lang.github.io/rust-clippy/master/index.html#missing_safety_doc"><code>missing_safety_doc</code></a> lint ensures such fields have accompanying safety documentation.</p>
+<h2 id="rationale-and-alternatives"><a class="header" href="#rationale-and-alternatives">Rationale and Alternatives</a></h2>
+<p>The design of this proposal is primarily guided by three tenets:</p>
+<ol>
+<li><a href="#tenet-unsafe-fields-denote-safety-invariants"><strong>Unsafe Fields Denote Safety Invariants</strong></a>
+A field <em>should</em> be marked <code>unsafe</code> if it carries arbitrary library safety invariants with
+respect to its enclosing type.</li>
+<li><a href="#tenet-unsafe-usage-is-always-unsafe"><strong>Unsafe Usage is Always Unsafe</strong></a>
+Uses of <code>unsafe</code> fields that could violate their invariants <em>must</em> occur in the scope of an
+<code>unsafe</code> block.</li>
+<li><a href="#tenet-safe-usage-is-usually-safe"><strong>Safe Usage is Usually Safe</strong></a>
+Uses of <code>unsafe</code> fields that cannot violate their invariants <em>should not</em> require an unsafe
+block.</li>
+</ol>
+<p>This RFC prioritizes the first two tenets before the third. We believe that the benefits of doing so —
+broader utility, more consistent tooling, and a simplified safety hygiene story — outweigh its
+cost, <a href="#alarm-fatigue">alarm fatigue</a>. The third tenet implores us to weigh this cost.</p>
+<h3 id="tenet-unsafe-fields-denote-safety-invariants"><a class="header" href="#tenet-unsafe-fields-denote-safety-invariants">Tenet: Unsafe Fields Denote Safety Invariants</a></h3>
+<blockquote>
+<p>A field <em>should</em> be marked <code>unsafe</code> if it carries library safety invariants.</p>
+</blockquote>
+<p>We adopt this tenet because it is consistent with the purpose of the <code>unsafe</code> keyword in other
+declaration positions, where it signals to consumers of the <code>unsafe</code> item that their use is
+conditional on upholding safety invariants; for example:</p>
+<ul>
+<li>An <code>unsafe</code> trait denotes that it carries safety invariants that must be upheld by implementors.</li>
+<li>An <code>unsafe</code> function denotes that it carries safety invariants that must be upheld by callers.</li>
+</ul>
+<h3 id="tenet-unsafe-usage-is-always-unsafe"><a class="header" href="#tenet-unsafe-usage-is-always-unsafe">Tenet: Unsafe Usage is Always Unsafe</a></h3>
+<blockquote>
+<p>Uses of <code>unsafe</code> fields that could violate their invariants <em>must</em> occur in the scope of an
+<code>unsafe</code> block.</p>
+</blockquote>
+<p>We adopt this tenet because it is consistent with the requirements the <code>unsafe</code> keyword
+imposes when applied to other declarations; for example:</p>
+<ul>
+<li>An <code>unsafe</code> trait may only be implemented with an <code>unsafe impl</code>.</li>
+<li>An <code>unsafe</code> function is only callable in the scope of an <code>unsafe</code> block.</li>
+</ul>
+<h3 id="tenet-safe-usage-is-usually-safe"><a class="header" href="#tenet-safe-usage-is-usually-safe">Tenet: Safe Usage is Usually Safe</a></h3>
+<blockquote>
+<p>Uses of <code>unsafe</code> fields that cannot violate their invariants <em>should not</em> require an unsafe block.</p>
+</blockquote>
+<p>Good safety hygiene is a social contract and adherence to that contract will depend on the user
+experience of practicing it. We adopt this tenet as a forcing function between designs that satisfy
+our first two tenets. All else being equal, we give priority to designs that minimize the needless
+use of <code>unsafe</code>.</p>
+<h3 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h3>
+<p>These tenets effectively constrain the design space of tooling for field safety hygiene; the
+alternatives we have considered conflict with one or more of these tenets.</p>
+<h4 id="unsafe-variants"><a class="header" href="#unsafe-variants">Unsafe Variants</a></h4>
+<p>We propose that the <code>unsafe</code> keyword be applicable on a per-field basis. Alternatively, we can
+imagine it being applied on a per-constructor basis; e.g.:</p>
+<pre><code class="language-rust">// SAFETY: ...
+unsafe struct Example {
+    foo: X,
+    bar: Y,
+    baz: Z,
+}
+
+enum Example {
+    Foo,
+    // SAFETY: ...
+    unsafe Bar(baz)
+}</code></pre>
+<p>For structs and enum variants with multiple unsafe fields, this alternative has a syntactic
+advantage: the <code>unsafe</code> keyword need only be typed once per enum variant or struct with safety
+invariant.</p>
+<p>However, in structs and enum variants with mixed safe and unsafe fields, this alternative denies
+programmers a mechanism for distinguishing between conceptually safe and unsafe fields.
+Consequently, any safety tooling built upon this mechanism must presume that <em>all</em> fields of such
+variants are conceptually unsafe, requiring the programmer to use <code>unsafe</code> even for the consumption
+of ‘safe’ fields. This violates <a href="#tenet-safe-usage-is-usually-safe"><em>Tenet: Safe Usage is Usually
+Safe</em></a>.</p>
+<h4 id="field-moving-is-safe"><a class="header" href="#field-moving-is-safe">Field Moving is Safe</a></h4>
+<p>We propose that all uses of <code>unsafe</code> fields require <code>unsafe</code>, including reading. Alternatively, we
+might consider making reads safe. However, a field may carry an invariant that would be violated by
+a read. In the <a href="#complete-example"><em>Complete Example</em></a>, <code>KeepAlive&lt;T&gt;::arc</code> is marked <code>unsafe</code>
+because it carries such an invariant:</p>
+<pre><code class="language-rust">/// Keeps the parent [`UniqueArc`] alive without providing read or write access
+/// to its value.
+pub struct KeepAlive&lt;T&gt; {
+    /// # Safety
+    ///
+    /// `T` may not be accessed (read or written) via this `Arc`.
+    unsafe arc: Arc&lt;UnsafeCell&lt;T&gt;&gt;,
+}</code></pre>
+<p>Allowing <code>arc</code> to be safely moved out of <code>KeepAlive&lt;T&gt;</code> would create the false impression that it is
+safe to use <code>arc</code> — it is not. By requiring <code>unsafe</code> to read <code>arc</code>, Rust’s safety tooling ensures a
+narrow safety boundary: the user is forced to justify their actions when accessing <code>arc</code> (which
+documents its safety conditions as they relate to <code>KeepAlive</code>), rather than in downstream
+interactions with <code>UnsafeCell&lt;T&gt;</code> (whose methods necessarily provide only general guidance).
+Consequently, we require that moving unsafe fields out of their enclosing type requires <code>unsafe</code>.</p>
+<h4 id="field-copying-is-safe"><a class="header" href="#field-copying-is-safe">Field Copying is Safe</a></h4>
+<p>We propose that all uses of unsafe fields require <code>unsafe</code>, including copying. Alternatively, we
+might consider making field copies safe. However, a field may carry an invariant that could be
+violated as a consequence of a copy. For example, consider a field of type <code>&amp;'static RefCell&lt;T&gt;</code> that
+imposes an invariant on the value of <code>T</code>. In this alternative proposal, such a field could be safely
+copiable out of its enclosing type, then safely mutated via the API of <code>RefCell</code>. Consequently, we
+require that copying unsafe fields out of their enclosing type requires <code>unsafe</code>.</p>
+<h4 id="copy-is-safe-to-implement"><a class="header" href="#copy-is-safe-to-implement">Copy Is Safe To Implement</a></h4>
+<p>We propose that <code>Copy</code> is conditionally unsafe to implement; i.e., that the <code>unsafe</code> modifier is
+required to implement <code>Copy</code> for types that have unsafe fields. Alternatively, we can imagine
+permitting retaining Rust’s present behavior that <code>Copy</code> is unconditionally safe to implement for
+all types; e.g.:</p>
+<pre><code class="language-rust">struct UnalignedMut&lt;'a, T&gt; {
+    /// # Safety
+    ///
+    /// `ptr` is an exclusive reference to a valid-but-unaligned instance of `T`.
+    unsafe ptr: *mut T,
+    _lifetime: PhantomData&lt;&amp;'a T&gt;,
+}
+
+impl&lt;'a, T&gt; Copy for UnalignedMut&lt;'a, T&gt; {}
+
+impl&lt;'a, T&gt; Clone for UnalignedMut&lt;'a, T&gt; {
+    fn clone(&amp;self) -&gt; Self {
+        *self
+    }
+}</code></pre>
+<p>However, the <code>ptr</code> field introduces a declaration-site safety obligation that is not discharged
+with <code>unsafe</code> at any use site; this violates <a href="#tenet-unsafe-usage-is-always-unsafe"><strong>Tenet: Unsafe Usage is Always
+Unsafe</strong></a>.</p>
+<h4 id="nontrivial-destructors-are-prohibited"><a class="header" href="#nontrivial-destructors-are-prohibited">Nontrivial Destructors are Prohibited</a></h4>
+<p>If a programmer applies the <code>unsafe</code> modifier to a field with a nontrivial destructor and relaxes
+its invariant beyond that required by the field’s destructor, Rust cannot prevent the
+unsound use of that field in safe contexts. This is, seemingly, a soft violation of <a href="#tenet-unsafe-usage-is-always-unsafe"><strong>Tenet: Unsafe
+Usage is Always Unsafe</strong></a>. We resolve this by documenting that
+such fields are a serious violation of good safety hygiene, and accept the risk that this
+documentation is ignored. This risk is minimized by prevalence: we feel that relaxing a field’s
+invariant beyond that of its destructor is a rare subset of the cases in which a field carries a
+relaxed invariant, which is itself a rare subset of the cases in which a field carries a safety
+invariant.</p>
+<p>Alternatively, we previously considered that this risk might be averted by requiring that <code>unsafe</code>
+fields have trivial destructors, à la union fields, by requiring that <code>unsafe</code> field types be either
+<code>Copy</code> or <code>ManuallyDrop</code>.</p>
+<p>Unfortunately, we discovered that adopting this approach would contradict our design tenets and
+place library authors in an impossible dilemma. To illustrate, let’s say a library author currently
+provides an API of this shape:</p>
+<pre><code class="language-rust">pub struct SafeAbstraction {
+    pub safe_field: NotCopy,
+    // SAFETY: [some additive invariant]
+    unsafe_field: Box&lt;NotCopy&gt;,
+}</code></pre>
+<p>…and a downstream user currently consumes this API like so:</p>
+<pre><code class="language-rust">let val = SafeAbstraction::default();
+let SafeAbstraction { safe_field, .. } = val;</code></pre>
+<p>Then, <code>unsafe</code> fields are stabilized and the library author attempts to refactor their crate to use
+them. They mark <code>unsafe_field</code> as <code>unsafe</code> and — dutifully following the advice of a rustc
+diagnostic — wrap the field in <code>ManuallyDrop</code>:</p>
+<pre><code class="language-rust">pub struct SafeAbstraction {
+    pub safe_field: NotCopy,
+    // SAFETY: [some additive invariant]
+    unsafe unsafe_field: ManuallyDrop&lt;Box&lt;NotCopy&gt;&gt;,
+}</code></pre>
+<p>But, to avoid a memory leak, they must also now provide a <code>Drop</code> impl; e.g.:</p>
+<pre><code class="language-rust">impl Drop for SafeAbstraction {
+    fn drop(&amp;mut self) {
+        // SAFETY: `unsafe_field` is in a library-valid
+        // state for its type.
+        unsafe { ManuallyDrop::drop(&amp;mut self.unsafe_field) }
+    }
+}</code></pre>
+<p>This is a SemVer-breaking change. If the library author goes though with this, the aforementioned
+downstream code will no longer compile. In this scenario, the library author cannot use <code>unsafe</code> to
+denote that this field carries a safety invariant; this is <em>both</em> a hard violation of <a href="#tenet-unsafe-fields-denote-safety-invariants"><strong>Tenet:
+Unsafe Fields Denote Safety Invariants</strong></a>, and (in
+requiring trivially <code>unsafe</code> drop glue), a violation of <a href="#tenet-safe-usage-is-usually-safe"><strong>Tenet: Safe Usage is Usually
+Safe</strong></a>.</p>
+<h4 id="unsafe-wrapper-type"><a class="header" href="#unsafe-wrapper-type">Unsafe Wrapper Type</a></h4>
+<p>This RFC proposes extending the Rust language with first-class support for field (un)safety.
+Alternatively, we could attempt to achieve the same effects by leveraging Rust’s existing visibility
+and safety affordances. At first blush, this seems plausible; it’s trivial to define a wrapper that
+only provides unsafe initialization and access to its value:</p>
+<pre><code class="language-rust">#[repr(transparent)]
+pub struct Unsafe&lt;T: ?Sized&gt;(T);
+
+impl&lt;T: ?Sized&gt; Unsafe&lt;T&gt; {
+
+    pub fn new(val: T) -&gt; Self
+    where
+        T: Sized
+    {
+        Self(val)
+    }
+
+    pub unsafe fn as_ref(&amp;self) -&gt; &amp;T {
+        &amp;self.0
+    }
+
+    pub unsafe fn as_mut(&amp;mut self) -&gt; &amp;mut T {
+        &amp;mut self.0
+    }
+
+    pub unsafe fn into_inner(self) -&gt; T
+    where
+        T: Sized
+    {
+        self.0
+    }
+}</code></pre>
+<p>However, this falls short of the assurances provided by first-class support for field safety.
+The safety conditions of its accessors inherit the safety conditions of the field that the <code>Unsafe</code>
+was read or referenced from. Consequently, what safety proofs one must write when using such a
+wrapper depend on the dataflow of the program.</p>
+<p>And worse, certain dangerous flows do not require <code>unsafe</code> at all. For instance, unsafe fields of
+the same type can be laundered between fields with different invariants; safe code could exchange
+<code>Even</code> and <code>Odd</code>s’ <code>val</code>s:</p>
+<pre><code class="language-rust">struct Even {
+    val: Unsafe&lt;usize&gt;,
+}
+
+struct Odd {
+    val: Unsafe&lt;usize&gt;,
+}</code></pre>
+<p>We can plug this particular hole by adding a type parameter to <code>Unsafe</code> that encodes the type of the
+outer datatype, <code>O</code>; e.g.:</p>
+<pre><code class="language-rust">#[repr(transparent)]
+pub struct Unsafe&lt;O: ?Sized, T: ?Sized&gt;(PhantomData&lt;O&gt;, T);</code></pre>
+<p>However, it remains possible to exchange unsafe fields within the same type; for example, safe code
+can freely exchange the values of <code>len</code> and <code>cap</code> of this hypothetical vector:</p>
+<pre><code class="language-rust">struct Vec&lt;T&gt; {
+    alloc: Unsafe&lt;Self, *mut T&gt;,
+    len: Unsafe&lt;Self, usize&gt;,
+    cap: Unsafe&lt;Self, usize&gt;,
+}</code></pre>
+<p>The <a href="https://crates.io/crates/unsafe-fields"><code>unsafe-fields</code></a> crate plugs this hole by extending
+<code>Unsafe</code> with a const generic that holds a hash of the field name. Even so, it remains possible for
+safe code to exchange the same unsafe field between different instances of the same type (e.g.,
+exchanging the <code>len</code>s of two instances of the aforementioned <code>Vec</code>).</p>
+<p>These challenges motivate first-class support for field safety tooling.</p>
+<h4 id="more-syntactic-granularity"><a class="header" href="#more-syntactic-granularity">More Syntactic Granularity</a></h4>
+<p>This RFC proposes the rule that <em>a field marked <code>unsafe</code> is unsafe to use</em>. This rule is flexible
+enough to handle arbitrary field invariants, but — in some scenarios — requires that the user write
+trivial safety comments. For example, in some scenarios, an unsafe field is trivially sound to read:</p>
+<pre><code class="language-rust">struct Even {
+    /// # Safety
+    ///
+    /// `val` is an even number.
+    val: u8,
+}
+
+impl Into&lt;u8&gt; for Even {
+    fn into(self) -&gt; u8 {
+        // SAFETY: Reading this `val` cannot
+        // violate its invariant.
+        unsafe { self.val }
+    }
+}</code></pre>
+<p>In other scenarios, an unsafe field is trivially sound to <code>&amp;</code>-reference (but not <code>&amp;mut</code>-reference).</p>
+<p>Since it is impossible for the compiler to precisely determine the safety requirements of an unsafe
+field from a type-directed analysis, we must <em>either</em> choose a usage rule that fits all scenarios
+(i.e., the approach adopted by this RFC) <em>or</em> provide the user with a mechanism to signal their
+requirements to the compiler. Here, we explore this alternative.</p>
+<p>The design space of syntactic knobs is vast. For instance, we could require that the user enumerate
+the operations that require <code>unsafe</code>; e.g.:</p>
+<ul>
+<li><code>unsafe(init,&amp;mut,&amp;,read)</code> (everything is unsafe)</li>
+<li><code>unsafe(init,&amp;mut,&amp;)</code> (everything except reading unsafe)</li>
+<li><code>unsafe(init,&amp;mut)</code> (everything except reading and <code>&amp;</code>-referencing unsafe)</li>
+<li>etc.</li>
+</ul>
+<p>Besides the unclear semantics of an unparameterized <code>unsafe()</code>, this design has the disadvantage
+that the most permissive (and thus dangerous) semantics are the cheapest to type. To mitigate this,
+we might instead imagine reversing the polarity of the modifier:</p>
+<ul>
+<li><code>safe(read)</code> all operations except reading are safe</li>
+<li><code>safe(read,&amp;)</code> all operations except reading and <code>&amp;</code>-referencing are safe</li>
+<li>etc.</li>
+</ul>
+<p>…but using <code>safe</code> to denote the presence of a safety invariant is probably too surprising in the
+context of Rust’s existing safety tooling.</p>
+<p>Alternatively, if we are confident that a hierarchy of operations exists, the brevity of the API can
+be improved by having the presence of one modifier imply others (e.g., <code>unsafe(&amp;mut)</code> could denote
+that initialization, mutation and <code>&amp;mut</code>-referencing) are unsafe. However, this requires that the
+user internalize this hierarchy, or else risk selecting the wrong modifier for their invariant.</p>
+<p>Although we cannot explore the entire design space of syntactic modifiers here, we broadly feel that
+their additional complexity exceeds that of our proposed design. Our proposed rule that <em>a field
+marked <code>unsafe</code> is unsafe to use</em> is both pedagogically simple and failsafe; i.e., so long as a
+field is marked <code>unsafe</code>, it cannot be misused in such a way that its invariant is violated in safe
+code.</p>
+<h4 id="mixing-syntactic-knobs-with-a-wrapper-type"><a class="header" href="#mixing-syntactic-knobs-with-a-wrapper-type">Mixing Syntactic Knobs with a Wrapper Type</a></h4>
+<p>One alternative proposed in this RFC’s discussion recommends a combination of syntactic knobs and a
+wrapper type. In brief, a simple <a href="#unsafe-wrapper-type"><code>Unsafe</code> wrapper type</a> would be provided,
+along with two field safety modifiers:</p>
+<ul>
+<li><code>unsafe</code>
+All uses except reading are <code>unsafe</code>.</li>
+<li><code>unsafe(mut)</code>
+All uses except reading and <code>&amp;</code>-referencing are <code>unsafe</code>.</li>
+</ul>
+<p>Under this proposal, a programmer would use some combination of <code>unsafe</code>, <code>unsafe(mut)</code> and <code>Unsafe</code>
+to precisely tune Rust’s safety tooling protections, depending on the hazards of their invariant.</p>
+<p>The primary advantage of this approach is that it results in comparatively fewer instances in which
+<a href="#trivial-safety-proofs">the programmer must write a ‘trivial’ safety proof</a>. However, it achieves
+this by front-loading the requirement that the programmer imagine all possible safety hazards of
+their field. A mistake, here, may lead to a false sense of security if Rust fails to require
+<code>unsafe</code> for uses that are, in fact, dangerous. By contrast, this RFC requires that programmers
+resolve these questions only on an as-needed basis; e.g., until you need to <code>&amp;</code>-reference a field,
+you do not need to confront whether doing so is <em>always</em> a safe operation.</p>
+<p>This alternative also inherits some of the disadvantages of <a href="#unsafe-wrapper-type"><code>Unsafe</code> wrapper
+types</a>; namely that the safety proofs needed to operate on an <code>Unsafe</code> wrapper
+value depend on the dataflow of the program; the wrapper value must be traced to its originating
+field so that field’s safety documentation may be examined.</p>
+<p>Comparatively, we believe that this RFC’s proposal is both pedagogically simpler and less prone to
+misuse, and that these benefits outweigh its <a href="#drawbacks">drawbacks</a>.</p>
+<h2 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h2>
+<h3 id="trivial-safety-proofs"><a class="header" href="#trivial-safety-proofs">Trivial Safety Proofs</a></h3>
+<p>The primary drawback of this proposal is that it — in some scenarios — necessitates writing
+‘trivial’ safety proofs. For example, merely reading <code>Vec</code>’s <code>len</code> field obviously cannot invalidate
+its invariant; nonetheless, this field, if marked <code>unsafe</code>, would be <code>unsafe</code> to read. An <code>unsafe</code>
+block and attendant <code>SAFETY</code> comment is required. In most cases, this is a one-time chore: the
+maintainer can define a <em>safe</em> accessor (i.e.,
+<a href="https://doc.rust-lang.org/std/vec/struct.Vec.html#method.len"><code>Vec::len</code></a>) that encapsulates this
+proof. However, in cases where multiple, partial field borrows are required, such an accessor cannot
+be invoked. <a href="#partial-borrows">Future language extensions that permit partial borrows may resolve this
+drawback.</a>.</p>
+<p>At the extreme, a programmer frustrated with field safety tooling might opt to continue with the
+status quo approach for maintaining field invariants. Such rebuttals of safety tooling are not
+unprecedented in the Rust ecosystem. Even among prominent projects, it is not rare to find a
+conceptually unsafe function or impl that is not marked unsafe. The discovery of such functions by
+the broader Rust community has, occasionally, provoked controversy.</p>
+<p>This RFC takes care not to fuel such flames; e.g., <a href="#tenet-unsafe-fields-denote-safety-invariants"><strong>Tenet: Unsafe Fields Denote Safety
+Invariants</strong></a> admonishes that programmers <em>should</em> —
+but <strong>not</strong> <em>must</em> — denote field safety invariants with the <code>unsafe</code> keyword. It is neither a
+soundness nor security issue to continue to adhere to the current convention of using visibility to
+enforce field safety invariants.</p>
+<h2 id="prior-art"><a class="header" href="#prior-art">Prior art</a></h2>
+<p>Some items in the Rust standard library have <code>#[rustc_layout_scalar_valid_range_start]</code>,
+<code>#[rustc_layout_scalar_valid_range_end]</code>, or both. These items have identical behavior to that of
+unsafe fields described here. It is likely (though not required by this RFC) that these items will
+be required to use unsafe fields, which would reduce special-casing of the standard library.</p>
+<h2 id="unresolved-questions"><a class="header" href="#unresolved-questions">Unresolved questions</a></h2>
+<ul>
+<li>If the syntax for restrictions does not change, what is the ordering of keywords on a field that
+is both unsafe and mut-restricted?</li>
+</ul>
+<h3 id="terminology"><a class="header" href="#terminology">Terminology</a></h3>
+<p>This RFC defines three terms of art: <em>safety invariant</em>, <em>library safety invariant</em>, and <em>language
+safety invariant</em>. The meanings of these terms are not original to this RFC, and the question of
+which terms should be assigned to these meanings <a href="https://github.com/rust-lang/unsafe-code-guidelines/issues/539">is being hotly
+debated</a>. This RFC does not
+prescribe its terminology. Documentation of the unsafe fields tooling should reflect broader
+consensus, once that consensus is reached.</p>
+<h2 id="future-possibilities"><a class="header" href="#future-possibilities">Future possibilities</a></h2>
+<h3 id="partial-borrows"><a class="header" href="#partial-borrows">Partial Borrows</a></h3>
+<p>The primary drawback of this proposal is that it — in some scenarios — necessitates writing
+‘trivial’ safety proofs. For example, merely reading <code>Vec</code>’s <code>len</code> field obviously cannot invalidate
+its invariant; nonetheless, this field, if marked <code>unsafe</code>, would be <code>unsafe</code> to read. An <code>unsafe</code>
+block and attendant <code>SAFETY</code> comment is required. In most cases, this is a one-time chore: the
+maintainer can define a <em>safe</em> accessor (i.e.,
+<a href="https://doc.rust-lang.org/std/vec/struct.Vec.html#method.len"><code>Vec::len</code></a>) that encapsulates this
+proof. However, in cases where multiple, partial field borrows are required, such an accessor cannot
+be invoked. Future language extensions that permit partial borrows will resolve this drawback.</p>
+<h3 id="syntactic-knobs-and-wrapper-types"><a class="header" href="#syntactic-knobs-and-wrapper-types">Syntactic Knobs and Wrapper Types</a></h3>
+<p>While we are confident that this RFC has the best tradeoffs among the alternatives in the design
+space, it is not a one-way door. Changes to the default semantics of <code>unsafe</code> could be realized over
+an edition boundary. This RFC is also forward-compatible with some future additions of some
+<a href="#mixing-syntactic-knobs-with-a-wrapper-type">combinations</a> of <a href="#more-syntactic-granularity">syntactic
+knobs</a> and <a href="#unsafe-wrapper-type">wrapper types</a>. For example, in
+addition to this RFC’s <code>unsafe</code> modifier, additional variants in the form <code>unsafe(&lt;modifiers&gt;)</code>
+(e.g., <code>unsafe(mut)</code>) could be added to denote that some subset of uses is always safe.</p>
+<h3 id="safe-unions"><a class="header" href="#safe-unions">Safe Unions</a></h3>
+<p>Today, unions provide language support for fields with subtractive <em>language</em> invariants. Unions may
+be safely defined, constructed and mutated — but require unsafe to read. Consequently, it is
+possible to place a union into a state where its fields cannot be soundly read, using only safe
+code; e.g.
+(<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=1d816399559950ccae810c4a41fab4e9">playground</a>):</p>
+<pre><code class="language-rust">#[derive(Copy, Clone)] #[repr(u8)] enum Zero { V = 0 }
+#[derive(Copy, Clone)] #[repr(u8)] enum One  { V = 1 }
+
+union Tricky {
+    a: (Zero, One),
+    b: (One, Zero),
+}
+
+let mut tricky = Tricky { a: (Zero::V, One::V) };
+tricky.b.0 = One::V;
+
+// Now, neither `tricky.a` nor `tricky.b` are in a valid state.</code></pre>
+<p>The possibility of such unions makes it tricky to retrofit a mechanism for safe access: Because
+unsafe was not required to define or mutate this union, the invariant that makes reading sound is
+entirely implicit.</p>
+<p>Speculatively, it might be possible to make the subtractive language invariant of union fields
+<em>explicit</em>; e.g.:</p>
+<pre><code class="language-rust">union MaybeUninit&lt;T&gt; {
+    uninit: (),
+    unsafe(invalid) value: ManuallyDrop&lt;T&gt;,
+}</code></pre>
+<p>Migrating today’s implicitly-unsafe unions to tomorrow’s explicitly-unsafe unions over an edition
+boundary would free up the syntactic space for safe unions.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="3455-t-test.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="3463-crates-io-policy-update.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="3455-t-test.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="3463-crates-io-policy-update.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
