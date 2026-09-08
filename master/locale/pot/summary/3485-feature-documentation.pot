@@ -1,0 +1,373 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-09-08T13:22:37Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3485-feature-documentation.md:1
+msgid "Feature Name: feature-documentation"
+msgstr ""
+
+#: src/3485-feature-documentation.md:2
+msgid "Start Date: 2023-09-09"
+msgstr ""
+
+#: src/3485-feature-documentation.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3485](https://github.com/rust-lang/rfcs/pull/3485)"
+msgstr ""
+
+#: src/3485-feature-documentation.md:4
+msgid ""
+"Rust Issue: [rust-lang/cargo#17445](https://github.com/rust-lang/cargo/"
+"issues/17445)"
+msgstr ""
+
+#: src/3485-feature-documentation.md:7
+msgid "Summary"
+msgstr ""
+
+#: src/3485-feature-documentation.md:11
+msgid ""
+"This RFC describes a new key under `features` in `Cargo.toml` for "
+"documentation. This will allow Cargo to display this information to the user "
+"and provide a way for `rustdoc` to eventually render this data (how this is "
+"rendered is outside the scope of this RFC)."
+msgstr ""
+
+#: src/3485-feature-documentation.md:16
+msgid "Example:"
+msgstr ""
+
+#: src/3485-feature-documentation.md:18
+msgid ""
+"```toml\n"
+"[features.serde]\n"
+"enables = []\n"
+"doc = \"enable support for serialization and deserialization via serde\"\n"
+"```"
+msgstr ""
+
+#: src/3485-feature-documentation.md:24
+msgid ""
+"Please see the parent meta RFC for background information: [`feature-"
+"metadata`](https://github.com/rust-lang/rfcs/pull/3416)."
+msgstr ""
+
+#: src/3485-feature-documentation.md:26
+msgid "Motivation"
+msgstr ""
+
+#: src/3485-feature-documentation.md:30
+msgid ""
+"Cargo features have become extremely widely used, with many crates having at "
+"least some level of configuration and larger crates winding up with tens of "
+"gates. Despite being a first class component of crate structure, they suffer "
+"from a documentation problem: users need to maintain documentation separate "
+"from feature definition, typically a manually-created table within API docs."
+msgstr ""
+
+#: src/3485-feature-documentation.md:36
+msgid ""
+"This RFC proposes adding feature documentation to `Cargo.toml`, which will "
+"allow for keeping feature definitions and documentation together."
+msgstr ""
+
+#: src/3485-feature-documentation.md:39
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3485-feature-documentation.md:43
+msgid ""
+"A new `doc` key will be allowed within a feature's table. This key provides "
+"a markdown docstring describing the feature. The first paragraph will be "
+"treated as a summary, and should be suitable to display standalone without "
+"the rest of the description."
+msgstr ""
+
+#: src/3485-feature-documentation.md:48
+msgid ""
+"Don't include the name of the feature in the summary; tools will typically "
+"already display this documentation alongside the name of the feature."
+msgstr ""
+
+#: src/3485-feature-documentation.md:51
+msgid ""
+"```toml\n"
+"[features]\n"
+"# Feature without documentation\n"
+"foo = []\n"
+"\n"
+"# Short documentation comment\n"
+"bar = { enables = [\"foo\"], doc = \"simple docstring here\"}\n"
+"\n"
+"# Tables are preferred for longer descriptions\n"
+"[features.corge]\n"
+"enables = [\"bar\", \"baz\"]\n"
+"doc = \"\"\"\n"
+"The first paragraph is a short summary, which might be displayed "
+"standalone.\n"
+"This could be a longer description of this feature\n"
+"\"\"\"\n"
+"```"
+msgstr ""
+
+#: src/3485-feature-documentation.md:68
+msgid ""
+"See [`feature-metadata`](https://github.com/rust-lang/rfcs/pull/3416) for "
+"information about `enables`."
+msgstr ""
+
+#: src/3485-feature-documentation.md:70
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3485-feature-documentation.md:74
+msgid ""
+"The new `doc` key accepts markdown-flavored text, and should be thought of "
+"as the equivalent to a `#[doc(...)]` attribute. Like doc comments, the first "
+"paragraph should be treated as a summary. Intra-doc link support is not "
+"included in this RFC, so they should not be used."
+msgstr ""
+
+#: src/3485-feature-documentation.md:79
+msgid ""
+"There is nothing in this RFC that cargo **must** do with this action, since "
+"it is mainly intended for the consumption of `rustdoc` or `docs.rs`. "
+"However, it can be used for general diagnostic information such as during "
+"`cargo add` or a possible `cargo info` command. A sample application with "
+"`cargo add`:"
+msgstr ""
+
+#: src/3485-feature-documentation.md:102
+msgid ""
+"_(features like `aho-corasick`, `memchr`, or `use_std` would likely be "
+"`public = false` since they aren't listed on the crate landing page)_"
+msgstr ""
+
+#: src/3485-feature-documentation.md:105
+msgid ""
+"Any tools that want the information in `doc` will require access to the "
+"manifest. Adding this information to the index was decided against due to "
+"concerns about bloat, but this is further discussed in [future possibilities]"
+"(#future-possibilities)."
+msgstr ""
+
+#: src/3485-feature-documentation.md:110
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3485-feature-documentation.md:114
+msgid "Added complexity to Cargo."
+msgstr ""
+
+#: src/3485-feature-documentation.md:115
+msgid "Exact implementation details do add test surface area"
+msgstr ""
+
+#: src/3485-feature-documentation.md:116
+msgid "A markdown parser is required to properly parse the `doc` field."
+msgstr ""
+
+#: src/3485-feature-documentation.md:117
+msgid ""
+"Docstrings can be lengthy, adding noise to `Cargo.toml`. This could "
+"potentially be solved with the below mentioned `doc-file` key."
+msgstr ""
+
+#: src/3485-feature-documentation.md:119
+msgid ""
+"When rendering features in documentation, this RFC does not specify any way "
+"for `rustdoc` to get the information it requires. This will require separate "
+"design work."
+msgstr ""
+
+#: src/3485-feature-documentation.md:122
+msgid ""
+"Unlike with the [`document-features`](https://crates.io/crates/document-"
+"features) crate there is no way to group features into sections or have a "
+"user-specified layout"
+msgstr ""
+
+#: src/3485-feature-documentation.md:125
+msgid ""
+"Users cannot control features ordering in documentation since the TOML "
+"specification defines table keys as unordered."
+msgstr ""
+
+#: src/3485-feature-documentation.md:128
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3485-feature-documentation.md:132
+msgid ""
+"To avoid increasing the size of the registry index, this does not add `doc` "
+"to a package's index entry. This means a `.crate` file must be downloaded "
+"and extracted to access the features."
+msgstr ""
+
+#: src/3485-feature-documentation.md:135
+msgid ""
+"Feature descriptions could be specified somewhere in Rust source files. This "
+"has the downside of creating multiple sources of truth on features."
+msgstr ""
+
+#: src/3485-feature-documentation.md:137
+msgid ""
+"Cargo could parse doc comments in `Cargo.toml`, like the `document-features` "
+"crate (linked below)."
+msgstr ""
+
+#: src/3485-feature-documentation.md:140
+msgid ""
+"```toml\n"
+"# RFC proposal\n"
+"foo = { enables = [], doc = \"foo feature\" }\n"
+"\n"
+"# Alternative equivalent using doc comments\n"
+"## foo feature\n"
+"foo = []\n"
+"```"
+msgstr ""
+
+#: src/3485-feature-documentation.md:149
+msgid ""
+"This was decided against as part of this RFC because it would mean that TOML-"
+"compliant parsers (including anything `serde`\\-based) would be insufficient "
+"to extract all information in the manifest, requiring custom deserialization "
+"of the fields via a format-preserving parser. This differs from "
+"documentation in Rust source as the doc-comment behavior is described "
+"specified within the grammar with parsers supporting extracting those "
+"elements."
+msgstr ""
+
+#: src/3485-feature-documentation.md:157
+msgid "Prior art"
+msgstr ""
+
+#: src/3485-feature-documentation.md:161
+msgid ""
+"There is an existing crate that uses TOML comments to create a features "
+"table: <https://docs.rs/document-features/latest/document_features/>"
+msgstr ""
+
+#: src/3485-feature-documentation.md:163
+msgid ""
+"`docs.rs` displays a feature table, but it is fairly limited. If features "
+"start with `_`, they are hidden from this table ([example](https://docs.rs/"
+"crate/regex/latest/features))."
+msgstr ""
+
+#: src/3485-feature-documentation.md:166
+msgid ""
+"`lib.rs` extracts feature documentation from `Cargo.toml` and source "
+"([example](https://lib.rs/crates/regex/features))"
+msgstr ""
+
+#: src/3485-feature-documentation.md:169
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3485-feature-documentation.md:173
+msgid ""
+"What is the best name for the manifest key? `doc` was chosen for consistency "
+"with `#[doc(...)]`, but `package.description` and `package.documentation` (a "
+"URL) also exist as precedent."
+msgstr ""
+
+#: src/3485-feature-documentation.md:176
+msgid ""
+"How should this be exposed in `cargo metadata` output? One possibility is to "
+"extend the existing `features` entry with a parallel structure:"
+msgstr ""
+
+#: src/3485-feature-documentation.md:180
+msgid "\"features\""
+msgstr ""
+
+#: src/3485-feature-documentation.md:181 src/3485-feature-documentation.md:182
+#: src/3485-feature-documentation.md:185 src/3485-feature-documentation.md:186
+msgid "\"foo\""
+msgstr ""
+
+#: src/3485-feature-documentation.md:182 src/3485-feature-documentation.md:186
+msgid "\"bar\""
+msgstr ""
+
+#: src/3485-feature-documentation.md:184
+msgid "\"features_v2\""
+msgstr ""
+
+#: src/3485-feature-documentation.md:186
+msgid "\"enables\""
+msgstr ""
+
+#: src/3485-feature-documentation.md:186
+msgid "\"doc\""
+msgstr ""
+
+#: src/3485-feature-documentation.md:186
+msgid "\"simple docstring for bar\""
+msgstr ""
+
+#: src/3485-feature-documentation.md:190
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3485-feature-documentation.md:194
+msgid "Rustdoc can build on this to show feature documentation."
+msgstr ""
+
+#: src/3485-feature-documentation.md:196
+msgid ""
+"If this RFC gets stabilized before any corresponding change in rustdoc, its "
+"documentation should highlight that rustdoc may parse the description and "
+"support intra-doc links in the future, but not at the current time. Users "
+"need to be aware of this potential incompatibility."
+msgstr ""
+
+#: src/3485-feature-documentation.md:200
+msgid ""
+"At some point, the decision to not include `doc` in the index could be "
+"reevaluated. Including only the first (summary) line of `doc` could be a "
+"possibility."
+msgstr ""
+
+#: src/3485-feature-documentation.md:203
+msgid ""
+"`cargo add` can show the `doc` and `deprecated` summary with the listed "
+"features."
+msgstr ""
+
+#: src/3485-feature-documentation.md:205
+msgid ""
+"[`cargo-info`](https://github.com/rust-lang/cargo/issues/948) can use this "
+"information to provide feature descriptions."
+msgstr ""
+
+#: src/3485-feature-documentation.md:206
+msgid "crates-io could be updated to render feature documentation"
+msgstr ""
+
+#: src/3485-feature-documentation.md:207
+msgid ""
+"Feature documentation could be allowed in a separate markdown file. For "
+"convenience, markdown anchors could be used to specify a section, so "
+"multiple features can share the same file. This could be a good option for "
+"features requiring long descriptions."
+msgstr ""
+
+#: src/3485-feature-documentation.md:212
+msgid ""
+"```toml\n"
+"foo = { enables = [], doc-file = \"features.md#foo\" }\n"
+"bar = { enables = [], doc-file = \"features.md#bar\" }\n"
+"```"
+msgstr ""
