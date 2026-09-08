@@ -1,0 +1,798 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2026-09-08T13:22:37Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3958-rustdoc-texmath.md:1
+msgid "Feature Name: `rustdoc_texmath`"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:2
+msgid "Start Date: 2026-04-30"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3958](https://github.com/rust-lang/rfcs/pull/3958)"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#162365](https://github.com/rust-lang/rust/"
+"issues/162365)"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:9
+msgid ""
+"Add support for the de facto standard TeX-math-in-markdown syntax to "
+"Rustdoc. It’s currently implemented using the [math-core](https://docs.rs/"
+"math-core/latest/math_core/) library, which generates MathML Core and is "
+"restricted to the subset of LaTeX that can be implemented that way. If you "
+"use unsupported syntax, you get a compiler warning from rustdoc."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:13
+msgid "Motivation"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:16
+msgid ""
+"It would be nice if we could write complex equations in our docs. We know "
+"that there's demand for this feature, first of all because people have "
+"[asked for it](https://internals.rust-lang.org/t/adding-latex-support-to-"
+"rustdoc/23858), but mostly because of [crates that did it themselves]"
+"(https://github.com/search?q=rustdoc-args+%3D+%5B%22--html-in-header%22%2C+"
+"%22katex-header.html%22%2C+%22--cfg%22%2C+"
+"%22docsrs%22%5D+language%3Atoml&type=code) by loading [katex.js](https://"
+"katex.org/) with inline HTML."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:21
+msgid "As far as I know, the most popular ways of doing that are:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:23
+msgid ""
+"    # Cargo.toml\n"
+"    [package.metadata.docs.rs]\n"
+"    rustdoc-args = [\"--html-in-header\", \"katex-header.html\", \"--cfg\", "
+"\"docsrs\"]\n"
+"    "
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:29
+msgid ""
+"    # .cargo/config.toml\n"
+"    [build]\n"
+"    rustdocflags = [ \"--html-in-header\", \"./src/docs-header.html\" ]\n"
+"    "
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:33
+msgid ""
+"Because the first one is only read by docs.rs, and the second one is only "
+"read when cargo is run from within the project itself, neither of them work "
+"when you use `cargo doc` to browse the docs of your dependencies."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:35
+msgid ""
+"There is a way to make it work in `cargo doc`, but it [seems to be less "
+"popular](https://github.com/search?q=%23%21%5Bdoc+"
+"%3D+include_str%21%28%22katex.html%22%29%5D+language%3Arust&type=code)."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:38
+msgid ""
+"Providing an easy way to build self-contained docs that work for non-docs.rs "
+"readers is the main motivation for adding built-in support for math syntax "
+"to Rustdoc, but there are a few other quality of life improvements that come "
+"with this feature:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:42
+msgid ""
+"We can report math syntax errors on the CLI, just like we do for intra-doc "
+"links."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:43
+msgid ""
+"We can render math in the resulting web page without JavaScript. No flash of "
+"unstyled content or blocking scripts."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:45
+msgid ""
+"Built-in TeX math doesn't require double-escaping, because the Markdown "
+"parser knows about math, and lets you backslash escape the dollar sign to "
+"disable it."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:47
+msgid "Cross-crate inlining works."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:54
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:57
+msgid "How to enable"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:59
+msgid ""
+"To enable `$\\TeX$` math syntax in rustdoc, add this line to your crate root."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:63
+msgid ""
+"In a future edition, we may enable it by default. If you need to turn it "
+"off, add this line to your crate root."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:67
+msgid ""
+"The only supported params for `doc(syntax)` are `enable(tex_math_dollars)` "
+"and `disable(tex_math_dollars)`, but we left the option open for future "
+"extensions."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:70
+msgid ""
+"When this feature is enabled, equations are wrapped in single or double `$` "
+"dollar signs."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:74
+msgid "The result looks like this:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:76
+msgid "$$\\sum\\_{i=0}^N x_i$$"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:78
+msgid ""
+"A detailed comparison between our syntax and KaTeX's can be found [here]"
+"(https://tmke8.github.io/math-core/comparison.html)."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:81
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:84
+msgid "Disabling and enabling math syntax"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:86
+msgid ""
+"The `doc(syntax(enable|disable(tex_math_dollars)))` attribute enables and "
+"disables support for parsing `$`\\-delimited TeX math in Rustdoc's Markdown."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:89
+msgid ""
+"Obviously, you can't set both of them at the same time on a single item. If "
+"neither of them are set, rustdoc will use the edition-specific default "
+"(which is currently to disable it)."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:93
+msgid ""
+"This attribute can be set on any item that accepts doc comments. The syntax "
+"is inherited from the syntactic parent item. So, to list a few examples:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:98
+msgid "// lib.rs\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:99
+msgid "//! This is *not* math syntax: $x$\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:107 src/3958-rustdoc-texmath.md:118
+#: src/3958-rustdoc-texmath.md:130
+msgid "/// This *is* math syntax: $x$\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:112 src/3958-rustdoc-texmath.md:126
+msgid "/// This is *not* math syntax: $x$\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:122
+msgid ""
+"/// <https://github.com/rust-lang/rust/pull/158514#issuecomment-4825510621>\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:137
+msgid "// bar.rs\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:138
+msgid "//~ ERROR only one doc syntax can be declared on a single item\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:142
+msgid ""
+"// baz.rs\n"
+"//! This *is* math syntax\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:146
+msgid "Writing math code in markdown"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:148
+msgid ""
+"Math expressions are wrapped in `$` signs. One dollar sign means \"inline\" "
+"math, and two means \"display\" math."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:151
+msgid ""
+"Inline math cannot have any whitespace at the start or end of its contents, "
+"so `$1$` is a math span, but `$ 1 $` is not. Inline math spans also can't be "
+"empty."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:155
+msgid ""
+"Display math is allowed to have space at the start, so `$$ 1 $$` is a "
+"display math span."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:158
+msgid ""
+"Unescaped curly braces within math spans must balance, and unescaped dollar "
+"signs can only appear between unescaped curly braces, so `$$ 1 {$} 2 $$` is "
+"parsed as a display math span, but `$$ 1 $ 2 $$` and `$$ { $$` are not."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:163
+msgid "Math syntax"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:165
+msgid ""
+"Within a math span, whitespaces are used for grouping and formatting. But "
+"you can't have more than one line break in a row within a math span, because "
+"that ends the paragraph that contains it."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:169
+msgid "Other characters are usually rendered literally, except for"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:171
+msgid "backslashes, `\\`, which are the sigil for commands"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:172
+msgid "curly braces, `{` and `}`, which are used for command arguments"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:173
+msgid "dollar signs, `$`, which delimit math spans"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:174
+msgid "number signs, `#`, which are reserved for use in a future macro system"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:175
+msgid "ampersands, `&`, which are used for writing matrices and tables"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:176
+msgid "circumflex, `^`, which is used for exponents"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:177
+msgid "underscore, `_`, which is used for subscript"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:178
+msgid "single quote, `'`, which becomes the prime symbol"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:179
+msgid ""
+"tilde, `~`, which becomes a rendered, non-breaking space (since ordinary "
+"spaces are used for grouping)"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:180
+msgid "percent, `%`, which mark line comments"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:181
+msgid "NUL, which is not allowed"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:183
+msgid ""
+"Commands are used to write things that can't easily be typed on a keyboard, "
+"and for complex layouts like fractions and matrices. The math-core parser "
+"that we use implements hundreds of commands."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:187
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:190
+msgid "There is no such thing as invalid Markdown"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:192
+msgid ""
+"Adding new syntax to Rustdoc's Markdown is rough, because it's so difficult "
+"to do without causing widespread breakage. As spelled out in the [CommonMark "
+"spec](https://spec.commonmark.org/0.31.2/#characters-and-lines), \"any "
+"sequence of characters is a valid CommonMark document,\" so changing "
+"anything so that it acts like a metacharacter where it didn't used to "
+"changes the behavior of already-valid documents; a _breaking change._"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:200
+msgid ""
+"And, unlike when GitHub redesigned their Markdown as a CommonMark dialect, "
+"we can't run a [one-time batch converter job](https://github.blog/"
+"engineering/a-formal-spec-for-github-markdown/#the-migration) over old "
+"crates.io crates."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:203
+msgid ""
+"This class of problem has come up when [intra-doc links were designed]"
+"(https://github.com/rust-lang/rust/issues/54191), when [pulldown-cmark was "
+"last updated](https://github.com/rust-lang/rust/"
+"pull/121659#issuecomment-1992752820), when [hoedown was replaced with "
+"pulldown-cmark in the first place](https://internals.rust-lang.org/t/what-to-"
+"do-about-pulldown-and-commonmark/5115), and when [anyone proposes replacing "
+"Markdown with something else](https://internals.rust-lang.org/t/rustdoc-"
+"restructuredtext-vs-markdown/356) that has a \"principled extension\" system."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:216
+msgid "Verbosity or breakage as side effect"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:218
+msgid ""
+"From the perspective of 99% of doc authors who didn't want to write a math "
+"span in the first place, false positives that mangle their generated docs "
+"are a nasty papercut. Having to read English text without any spaces caused "
+"by failing to escape the dollar signs sucks (though not as bad as "
+"[accidentally triggering a link refdef](https://github.com/rust-lang/rust/"
+"issues/133150), as [the result](https://tmke8.github.io/math-core/#input:"
+"H4sIAAAAAAAAEwXBwQ0AIQgEwFa2guvCQvaBSoJIhETLv5n2uMIEu6P5MM2JODsF92iVONRBGEseFmsig_79a-7ZDjYAAAA=) "
+"might still be legible). The LaTeX math syntax is forgiving enough that "
+"English prose is often syntactically valid LaTeX, so Rustdoc invalid LaTeX "
+"warnings can't catch every unescaped dollar sign."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:226
+msgid ""
+"But if we assume that every doc author adds the escapes that they need, this "
+"forces doc comments to have more escaped metacharacters than they used to. "
+"This makes doc comments less easily readable in their source form, imposing "
+"a cost on the 99% that don't want the feature in favor of the 1% who do."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:231
+msgid ""
+"This argument, if taken to its logical extreme, would imply that we should "
+"use plain text doc comments with no extra formatting features. The downside "
+"of doing that is similar to the downside of not offering TeX math: users who "
+"_really_ want bold text deploy [unicode crimes](https://ux.stackexchange.com/"
+"questions/118149/can-screen-readers-interpret-unicode-styles-fonts-such-as-"
+"bold-and-italics) and pictures of text, which create accessibility problems."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:240
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:243
+msgid "Why LaTeX math in markdown, specifically?"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:245
+msgid ""
+"I would like to avoid the annoying scenario where Rustdoc deploys a "
+"complicated, special purpose language, then the community moves on to some "
+"new, incompatible language, and we’re stuck maintaining it ourselves because "
+"of the stability promise."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:249
+msgid ""
+"There are a lot of special-purpose technical notations that we might "
+"theoretically want to support, but LaTeX-math-in-markdown is special, for "
+"two reasons:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:252
+msgid ""
+"[Lindy effect](https://en.wikipedia.org/wiki/Lindy_effect): LaTeX is an "
+"established standard that is not going anywhere any time soon."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:253
+msgid ""
+"There is more than one implementation of the subset of LaTeX that we need."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:255
+msgid ""
+"The pull request I've been working on uses [math-core](https://docs.rs/math-"
+"core/latest/math_core/), but, if that implementation turns out to be "
+"problematic, we could pivot to another one, like [pulldown-latex](https://"
+"github.com/carloskiki/pulldown-latex), or [katex run in quick-js](https://"
+"docs.rs/katex/latest/katex/) [^1]."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:318
+msgid "Why use a Rust library, specifically, for the implementation?"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:320
+msgid ""
+"If your LaTeX syntax doesn't parse, you'll get a warning at Rustdoc compile "
+"time, just like you do with broken intra-doc links:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:324
+msgid ""
+"    error: unknown command \"\\frobnicate\"\n"
+"      --> $DIR/basic.rs:6:5\n"
+"       |\n"
+"    LL | //! $\\frobnicate{2}$\n"
+"       |     ^^^^^^^^^^^^^^^^\n"
+"       |\n"
+"    note: the lint level is defined here\n"
+"      --> $DIR/basic.rs:2:9\n"
+"       |\n"
+"    LL | #![deny(rustdoc::invalid_math)]\n"
+"       |         ^^^^^^^^^^^^^^^^^^^^^\n"
+"    \n"
+"    error: aborting due to 1 previous error\n"
+"    "
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:338
+msgid ""
+"That's harder if the engine is written in a different language than the "
+"compiler."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:341
+msgid "Why target MathML"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:343
+msgid ""
+"[MathML Core](https://www.w3.org/TR/mathml-core/) is supported by [most "
+"browsers](https://caniuse.com/mathml), but with a [few known bugs](https://"
+"github.com/tmke8/math-core/issues/209) that the math-core library tries to "
+"work around. It is a strict accessibility improvement over rendering SVG, "
+"for example."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:351
+msgid "Prior art"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:354
+msgid "<https://github.com/cben/mathdown/wiki/math-in-markdown>"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:355
+msgid "<https://en.wikibooks.org/wiki/LaTeX/Mathematics>"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:356
+msgid ""
+"The span parsing is based on the [math spec for commonmark-hs](https://"
+"github.com/jgm/commonmark-hs/blob/master/commonmark-extensions/test/math."
+"md), which is the parser used if you run `pandoc` in `gfm` mode."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:358
+msgid ""
+"Span parsing is documented in more detail in the [math spec for pulldown-"
+"cmark](https://pulldown-cmark.github.io/pulldown-cmark/specs/math.html)."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:363
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:366
+msgid "Avoiding Hyrum's Law"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:368
+msgid ""
+"There are a lot of \\commands in [math-core](https://docs.rs/math-core/"
+"latest/math_core/), and some of them are known buggy, meaning they don't "
+"match LaTeX itself. We don't want authors to rely on those bugs, either "
+"accidentally or in a workaround."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:373
+msgid ""
+"Normally, we might \"phase in\" new commands by making them unstable first, "
+"letting more risk-tolerant authors try it out, then make it available to "
+"everyone else. But math-core doesn't have an API for that."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:378
+msgid "Font"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:380
+msgid "Right now, math formulas default to Noto Sans Math."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:382
+msgid ""
+"This was chosen because it's inoffensive and fine. But it is a sans serif "
+"font face, that will usually be surrounded by serif text."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:384
+msgid ""
+"We should also look into [subsetting](https://github.com/tmke8/math-"
+"core#font-subsetting) the font."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:387
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:390
+msgid "Extending `doc(syntax)`"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:392
+msgid ""
+"The name `tex_math_dollars` is deliberately the same [name and syntax used "
+"by Pandoc](https://pandoc.org/MANUAL.html#extension-tex_math_dollars) for "
+"this feature. If we add more syntactic features, we can follow the same "
+"pattern. An example of how to build on this:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:395
+msgid ""
+"```ebnf\n"
+"(* if no language is supplied, the default is \"rustdoc_markdown\", so "
+"\"enable(tex_math_dollars)\" is synonymous with \"rustdoc_markdown, "
+"enable(tex_math_dollars)\" *)\n"
+"doc syntax = [ language ], {\",\", extension list }, [ \",\" ];\n"
+"extension list = (\"enable\" | \"disable\"), \"(\", [ extension ], { \",\", "
+"extension }, [ \",\" ], \")\" ;\n"
+"(* \"commonmark\" enables no extensions (you can, of course, add them)\n"
+"  \"rustdoc_markdown\" is synonymous with "
+"`commonmark+intra_doc_links+doctests+smart+pipe_tables+strikeout+footnotes+task_lists\"\n"
+"  \"gfm\" is synonymous with "
+"`commonmark+smart+tex_math_dollars+pipe_tables+strikeout+footnotes+task_lists+emoji+tex_math_gfm+alerts+autolink_bare_uris+yaml_metadata_block\"\n"
+"  \"typst\" doesn't support any extensions except \"intra_doc_links\" and "
+"\"doctests\", so, for example, `doc(syntax=\"typst+pipe_tables\")` is an "
+"error *)\n"
+"language = \"commonmark\" | \"rustdoc_markdown\" | \"gfm\" | \"typst\" ;\n"
+"extension = \n"
+"   \"intra_doc_links\"\n"
+" | \"doctests\"\n"
+" | \"smart\"\n"
+" | \"pipe_tables\"\n"
+" | \"strikeout\"\n"
+" | \"footnotes\"\n"
+" | \"task_lists\"\n"
+" | \"tex_math_dollars\"\n"
+" | \"emoji\"\n"
+" | \"tex_math_gfm\"\n"
+" | \"alerts\"\n"
+" | \"autolink_bare_uris\"\n"
+" | \"yaml_metadata_block\" ;\n"
+"```"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:420
+msgid ""
+"If a parent and child element both have `doc(syntax)` attributes, they "
+"aren't merged. The child just overrides the parent."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:422
+msgid "Undelimited environments"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:424
+msgid ""
+"It's a relatively rare feature, but Jupyter Notebook and a few others "
+"support LaTeX environments introduced with the `\\begin{foo}` / `\\end{foo}` "
+"syntax without wrapping dollar signs. Since backslashes in Markdown only "
+"have meaning when followed by punctuation, the false positives shouldn't be "
+"that common. Since we don't have to worry about false positives, we can "
+"treat it like a CommonMark block construct and allow blank lines in it."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:432
+msgid ""
+"    /// Computes sum from `start` to `end` of the given function.\n"
+"    ///\n"
+"    /// \\begin{equation}\n"
+"    /// \\sum_{i=start}^{end}{f(i)}\n"
+"    /// \\end{equation}\n"
+"    fn sum(f: impl FnMut(usize) -> usize, start: usize, end: usize) -> usize "
+"{\n"
+"        let mut result = 0;\n"
+"        for i in start..=end {\n"
+"            result += f(i);\n"
+"        }\n"
+"        result\n"
+"    }\n"
+"    "
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:445
+msgid "Custom macros"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:447
+msgid ""
+"Some implementations, such as [Pandoc's `latex_macros` extension](https://"
+"pandoc.org/MANUAL.html#extension-latex_macros), let you write LaTeX macro "
+"definitions directly in Markdown. For example, these two doc comments are "
+"equivalent:"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:452
+msgid ""
+"/// \\newcommand{\\tuple}[1]{\\langle #1 \\rangle}\n"
+"///\n"
+"/// $\\tuple{a, b, c}$\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:458
+msgid "/// $\\langle a, b, c \\rangle$\n"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:463
+msgid ""
+"Existing users of rustdoc and katex already write custom functions. This "
+"isn't a niche feature."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:468
+msgid "Drawing and charting syntax"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:470
+msgid ""
+"There are a lot of different chart formats we _could_ try to support. The "
+"tough part is that we want to support it long-term, give error messages at "
+"compile time (if the language has a concept of errors), and, ideally, have a "
+"specification without much churn."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:475
+msgid ""
+"[PlantUML](https://github.com/plantuml/plantuml) is pretty much exactly what "
+"we would want. But we can't run it (and show error messages) at compile time "
+"without bundling a JRE or a JS engine."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:478
+msgid ""
+"The other obvious choice is [Mermaid](https://github.com/mermaid-js/"
+"mermaid), because GitHub supports it. It implements special notations and "
+"layout algorithms for commonplace chart notations, so Mermaid syntax is "
+"terse and easy to edit. There is also [Merman](https://github.com/Latias94/"
+"merman), which implements the same language in Rust. Like Typst, the biggest "
+"downside is that they're new and unproven: Mermaid 11.0.0, the most recent "
+"breaking change, came out in [August 2024](https://github.com/mermaid-js/"
+"mermaid/releases/tag/v11.0.0)."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:484
+msgid ""
+"[Svgbob](https://github.com/ivanceras/svgbob) actually has a Rust "
+"implementation. Ironic, since Svgbob has no syntax errors, it's actually "
+"less important to have a Rust implementation than it is for the others, "
+"which have the possibility of an \"invalid document\" with errors that we "
+"would want to report at compile time. We could fall back to displaying the "
+"original ASCII, and the result would still be legible."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:489
+msgid ""
+"[GraphViz DOT](https://en.wikipedia.org/wiki/"
+"DOT_(graph_description_language)) has a Rust [implementation](https://docs."
+"rs/layout-rs/latest/layout/), too. Like LaTeX, DOT is popular, stable, and "
+"has multiple third-party reimplementations. However, it is _not_ terse "
+"unless its layout algorithm does what you need."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:492
+msgid ""
+"[PIC](https://en.wikipedia.org/wiki/PIC_(markup_language)) is a generic "
+"diagram language invented at AT&T Bell Labs in the 80's. The example below "
+"was tested in [dpic](https://gitlab.com/aplevich/dpic) and [pikchr](https://"
+"pikchr.org/), both maintained implementations of this language."
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:495
+msgid "A simple sequence diagram, in each language"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:524
+msgid ""
+"```graphviz\n"
+"digraph SEQ_DIAGRAM {\n"
+"    graph [overlap=true, splines=line, nodesep=1.0, ordering=out];\n"
+"    node [shape=none, width=0, height=0, label=\"\"];\n"
+"\n"
+"    // Draw actors\n"
+"    {\n"
+"        rank=same;\n"
+"        node[shape=rectangle, height=0.7, width=2];\n"
+"        Actor1 [label=\"Actor1\"];\n"
+"        Actor2 [label=\"Actor1\"];\n"
+"        Actor3 [label=\"Actor1\"];\n"
+"    }\n"
+"    // Draw vertical lines\n"
+"    {\n"
+"        edge [style=dashed, weight=6, arrowhead=none];\n"
+"        Actor1 -> a1 -> a2 -> a3;\n"
+"        Actor2 -> b1 -> b2 -> b3;\n"
+"        Actor3 -> c1 -> c2 -> c3;\n"
+"    }\n"
+"    // Draws activations\n"
+"    { rank=same; a1 -> b1 [label=\"Start\", arrowhead=normal]; b1 -> c1 "
+"[style=invis]; }\n"
+"    { rank=same; a2 -> b2 [style=invis]; b2 -> c2 [label=\"Do something\", "
+"arrowhead=normal]; }\n"
+"    { rank=same; a3 -> b3 [arrowhead=normal, dir=back, label=\"Return\"]; b3 "
+"-> c3; }\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/3958-rustdoc-texmath.md:551
+msgid ""
+"```pic\n"
+"# dpic requires `.PS` here\n"
+"# pikchr doesn't\n"
+"Actor1: box \"Actor 1\"; move\n"
+"Actor2: box \"Actor 2\"; move\n"
+"Actor3: box \"Actor 3\"\n"
+"\n"
+"line dotted from Actor1.s down 3\n"
+"line dotted from Actor2.s down 3\n"
+"line dotted from Actor3.s down 3\n"
+"\n"
+"arrow \"Start\" above from Actor1.s - (0, 1) to Actor2.s - (0, 1)\n"
+"arrow \"Do something\" above from Actor2.s - (0, 2) to Actor3.s - (0, 2)\n"
+"arrow \"Return\" above from Actor3.s - (0, 3) to Actor1.s - (0, 3)\n"
+"# dpic requires `.PE` here\n"
+"```"
+msgstr ""
