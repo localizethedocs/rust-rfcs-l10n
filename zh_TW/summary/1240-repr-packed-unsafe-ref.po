@@ -1,0 +1,941 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1240-repr-packed-unsafe-ref.md:1
+msgid "Feature Name: NA"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:2
+msgid "Start Date: 2015-08-06"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1240](https://github.com/rust-lang/rfcs/pull/1240)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#27060](https://github.com/rust-lang/rust/"
+"issues/27060)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1240-repr-packed-unsafe-ref.md:8
+msgid ""
+"Taking a reference into a struct marked `repr(packed)` should become "
+"`unsafe`, because it can lead to undefined behaviour. `repr(packed)` structs "
+"need to be banned from storing `Drop` types for this reason."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:12
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1240-repr-packed-unsafe-ref.md:14
+msgid ""
+"Issue [\\#27060](https://github.com/rust-lang/rust/issues/27060) noticed "
+"that it was possible to trigger undefined behaviour in safe code via "
+"`repr(packed)`, by creating references `&T` which don't satisfy the expected "
+"alignment requirements for `T`."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:19
+msgid ""
+"Concretely, the compiler assumes that any reference (or raw pointer, in "
+"fact) will be aligned to at least `align_of::<T>()`, i.e. the following "
+"snippet should run successfully:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:24
+msgid "/* arbitrary code */"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:32
+msgid ""
+"However, `repr(packed)` allows on to violate this, by creating values of "
+"arbitrary types that are stored at \"random\" byte addresses, by removing "
+"the padding normally inserted to maintain alignment in `struct`s. E.g. "
+"suppose there's a struct `Foo` defined like `#[repr(packed, C)] struct Foo "
+"{ x: u8, y: u32 }`, and there's an instance of `Foo` allocated at a 0x1000, "
+"the `u32` will be placed at `0x1001`, which isn't 4-byte aligned (the "
+"alignment of `u32`)."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:40
+msgid ""
+"Issue #27060 has a snippet which crashes at runtime on at least two x86-64 "
+"CPUs (the author's and the one playpen runs on) and almost certainly most "
+"other platforms."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:48
+msgid "// simd types require high alignment or the CPU faults\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:68
+msgid "\"before\""
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:73
+msgid "\"middle\""
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:78
+msgid "\"after\""
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:82
+msgid "On playpen, it prints:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:90
+msgid ""
+"That is, the `bad` variable is causing the CPU to fault. The `let` statement "
+"is (in pseudo-Rust) behaving like `let bad = load_with_alignment(&val.y.0, "
+"align_of::<f32x4>());`, but the alignment isn't satisfied. (The `ok` line is "
+"compiled to a `movupd` instruction, while the `bad` is compiled to a "
+"`movapd`: `u` == unaligned, `a` == aligned.)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:97
+msgid ""
+"(NB. The use of SIMD types in the example is just to be able to demonstrate "
+"the problem on x86. That platform is generally fairly relaxed about pointer "
+"alignments and so SIMD & its specialised `mov` instructions are the easiest "
+"way to demonstrate the violated assumptions at runtime. Other platforms may "
+"fault on other types.)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:103
+msgid ""
+"Being able to assume that accesses are aligned is useful, for performance, "
+"and almost all references will be correctly aligned anyway (`repr(packed)` "
+"types and internal references into them are quite rare)."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:108
+msgid ""
+"The problems with unaligned accesses can be avoided by ensuring that the "
+"accesses are actually aligned (e.g. via runtime checks, or other external "
+"constraints the compiler cannot understand directly). For example, consider "
+"the following"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:123
+msgid ""
+"Taking a reference to some of those fields may cause undefined behaviour, "
+"but not always. It is always correct to take a reference to `x` or `z` since "
+"`u8` has alignment 1. If the struct value itself is 4-byte aligned (which is "
+"not guaranteed), `w` will also be 4-byte aligned since the `u8, u16, u8` "
+"take up 4 bytes, hence it is correct to take a reference to `w` in this case "
+"(and only that case). Similarly, it is only correct to take a reference to "
+"`y` if the struct is at an odd address, so that the `u16` starts at an even "
+"one (i.e. is 2-byte aligned)."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:133
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1240-repr-packed-unsafe-ref.md:135
+msgid ""
+"It is `unsafe` to take a reference to the field of a `repr(packed)` struct. "
+"It is still possible, but it is up to the programmer to ensure that the "
+"alignment requirements are satisfied. Referencing (by-reference, or by-"
+"value) a subfield of a struct (including indexing elements of a fixed-length "
+"array) stored inside a `repr(packed)` struct counts as taking a reference to "
+"the `packed` field and hence is unsafe."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:143
+msgid ""
+"It is still legal to manipulate the fields of a `packed` struct by value, e."
+"g. the following is correct (and not `unsafe`), no matter the alignment of "
+"`bar`:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:154
+msgid ""
+"It is illegal to store a type `T` implementing `Drop` (including a generic "
+"type) in a `repr(packed)` type, since the destructor of `T` is passed a "
+"reference to that `T`. The crater run (see appendix) found no crate that "
+"needs to use `repr(packed)` to store a `Drop` type (or a generic type). The "
+"generic type rule is conservatively approximated by disallowing generic "
+"`repr(packed)` structs altogether, but this can be relaxed (see "
+"Alternatives)."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:162
+msgid ""
+"Concretely, this RFC is proposing the introduction of the `// error`s in the "
+"following code."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:171
+msgid "// error: generic repr(packed) struct\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:174
+msgid "// error: storing a Drop type in a repr(packed) struct\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:179
+msgid "// all ok:\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:187
+msgid "// new errors:\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:190
+msgid ""
+"// error: taking a reference to a field of a repr(packed) struct is unsafe\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:191
+#: src/1240-repr-packed-unsafe-ref.md:192
+#: src/1240-repr-packed-unsafe-ref.md:193
+#: src/1240-repr-packed-unsafe-ref.md:196
+#: src/1240-repr-packed-unsafe-ref.md:197
+#: src/1240-repr-packed-unsafe-ref.md:200
+#: src/1240-repr-packed-unsafe-ref.md:201
+msgid "// ditto\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:195
+msgid ""
+"// error: directly using a subfield of a field of a repr(packed) struct is "
+"unsafe\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:199
+msgid ""
+"// error: directly indexing an array in a field of a repr(packed) struct is "
+"unsafe\n"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:204
+msgid ""
+"(NB. the subfield and indexing cases can be resolved by first copying the "
+"packed field's value onto the stack, and then accessing the desired value.)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:208
+msgid "Staging"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:210
+msgid ""
+"This change will first land as warnings indicating that code will be broken, "
+"with the warnings switched to the intended errors after one release cycle."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:214
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:216
+msgid ""
+"This will cause some functionality to stop working in possibly-surprising "
+"ways (NB. the drawback here is mainly the \"possibly-surprising\", since the "
+"functionality is broken with general `packed` types.). For example, "
+"`#[derive]` usually takes references to the fields of structs, and so "
+"`#[derive(Clone)]` will generate errors. However, this use of derive is "
+"incorrect in general (no guarantee that the fields are aligned), and, one "
+"can easily replace it by:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:233
+msgid ""
+"Similarly, `println!(\"{}\", foo.bar)` will be an error despite there not "
+"being a visible reference (`println!` takes one internally), however, this "
+"can be resolved by, for instance, assigning to a temporary."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:238
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1240-repr-packed-unsafe-ref.md:240
+msgid ""
+"A short-term solution would be to feature gate `repr(packed)` while the "
+"kinks are worked out of it"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:242
+msgid ""
+"Taking an internal reference could be made flat-out illegal, and the times "
+"when it is correct simulated by manual raw-pointer manipulation."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:245
+msgid ""
+"The rules could be made less conservative in several cases, however the "
+"crater run didn't indicate any need for this:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:247
+msgid ""
+"a generic `repr(packed)` struct can use the generic in ways that avoids "
+"problems with `Drop`, e.g. if the generic is bounded by `Copy`, or if the "
+"type is only used in ways that are `Copy` such as behind a `*const T`."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:251
+msgid ""
+"using a subfield of a field of a `repr(packed)` struct by-value could be OK."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:254
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1240-repr-packed-unsafe-ref.md:256
+msgid "None."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:258
+msgid "Appendix"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:260
+msgid "Crater analysis"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:262
+msgid ""
+"Crater was run on 2015/07/23 with a patch that feature gated `repr(packed)`."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:264
+msgid "High-level summary:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:266
+msgid ""
+"several unnecessary uses of `repr(packed)` (patches have been submitted and "
+"merged to remove all of these)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:268
+msgid "most necessary ones are to match the declaration of a struct in C"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:269
+msgid ""
+"many \"necessary\" uses can be replaced by byte arrays/arrays of smaller "
+"types"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:270
+msgid ""
+"8 crates are currently on stable themselves (unsure about deps), 4 are "
+"already on nightly"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:271
+msgid ""
+"1 of the 8, http2parse, is essentially only used by a nightly-only crate "
+"(tendril)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:272
+msgid ""
+"4 of the stable and 1 of the nightly crates don't need `repr(packed)` at all"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:274
+msgid "stable"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:274
+msgid "needed"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:274
+msgid "FFI only"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:276
+msgid "image"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:276
+#: src/1240-repr-packed-unsafe-ref.md:277
+#: src/1240-repr-packed-unsafe-ref.md:278
+#: src/1240-repr-packed-unsafe-ref.md:279
+#: src/1240-repr-packed-unsafe-ref.md:280
+#: src/1240-repr-packed-unsafe-ref.md:281
+#: src/1240-repr-packed-unsafe-ref.md:282
+#: src/1240-repr-packed-unsafe-ref.md:283
+#: src/1240-repr-packed-unsafe-ref.md:284
+#: src/1240-repr-packed-unsafe-ref.md:285
+#: src/1240-repr-packed-unsafe-ref.md:286
+#: src/1240-repr-packed-unsafe-ref.md:287
+msgid "✓"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:277
+msgid "nix"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:278
+msgid "tendril"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:279
+msgid "assimp-sys"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:280
+msgid "stemmer"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:281
+msgid "x86"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:282
+msgid "http2parse"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:283
+msgid "nl80211rs"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:284
+msgid "openal"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:285
+msgid "elfloader"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:286
+msgid "x11"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:287
+msgid "kiss3d"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:289
+msgid ""
+"More detailed analysis inline with broken crates. (Don't miss `kiss3d` in "
+"the non-root section.)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:291
+msgid ""
+"Regression report c85ba3e9cb4620c6ec8273a34cce6707e91778cb vs. "
+"7a265c6d1280932ba1b881f31f04b03b20c258e5"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:293
+msgid "From: c85ba3e9cb4620c6ec8273a34cce6707e91778cb"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:294
+msgid "To: 7a265c6d1280932ba1b881f31f04b03b20c258e5"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:296
+msgid "Coverage"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:298
+msgid ""
+"2617 crates tested: 1404 working / 1151 broken / 40 regressed / 0 fixed / 22 "
+"unknown."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:300
+msgid "Regressions"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:302
+msgid "There are 11 root regressions"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:303
+msgid "There are 40 regressions"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:305
+msgid "Root regressions, sorted by rank:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:307
+msgid ""
+"[image-0.3.11](https://crates.io/crates/image) ([before](https://tools."
+"taskcluster.net/task-inspector/#V6QBA9LfTT6mhFJ0Yo7nJg)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#QU9d4XEPSWOg7CIGFpATDg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:310
+msgid ""
+"[use](https://github.com/PistonDevelopers/image/"
+"blob/8e64e0d78e465ddfa13cd6627dede5fd258386f6/src/tga/decoder.rs#L75) seems "
+"entirely unnecessary (no raw bytewise operations on the struct itself)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:314
+#: src/1240-repr-packed-unsafe-ref.md:322
+#: src/1240-repr-packed-unsafe-ref.md:343
+#: src/1240-repr-packed-unsafe-ref.md:347
+#: src/1240-repr-packed-unsafe-ref.md:386
+#: src/1240-repr-packed-unsafe-ref.md:394
+#: src/1240-repr-packed-unsafe-ref.md:426
+msgid "On stable."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:315
+msgid ""
+"[nix-0.3.9](https://crates.io/crates/nix) ([before](https://tools."
+"taskcluster.net/task-inspector/#X3HMXrq4S_GMNbeeAY8i6w)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#kz0vDaAhRRuKww2l-FvYpQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:318
+msgid ""
+"[use](https://github.com/carllerche/nix-rust/"
+"blob/5801318c0c4c6eeb3431144a89496830f55d6628/src/sys/epoll.rs#L98) required "
+"to match [C struct](https://github.com/torvalds/linux/blob/"
+"de182468d1bb726198abaab315820542425270b7/include/uapi/linux/eventpoll.h#L53-"
+"L62)"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:323
+msgid ""
+"[tendril-0.1.2](https://crates.io/crates/tendril) ([before](https://tools."
+"taskcluster.net/task-inspector/#zQH7ShADR5O9eQe1mg3e6A)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#zI-PoIZHTm-7Urq3CLsXeg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:326
+msgid ""
+"[use 1](https://github.com/servo/tendril/blob/"
+"faf97ded26213e561f8ad2768113cc05b6424748/src/buf32.rs#L19) not strictly "
+"necessary?"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:328
+msgid ""
+"[use 2](https://github.com/servo/tendril/blob/"
+"faf97ded26213e561f8ad2768113cc05b6424748/src/tendril.rs#L43) required on 64-"
+"bit platforms to get size_of::\\<Header>() == 12 rather than 16."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:331
+msgid ""
+"[use 3](https://github.com/servo/tendril/blob/"
+"faf97ded26213e561f8ad2768113cc05b6424748/src/tendril.rs#L91), as above, does "
+"some precise tricks with the layout for optimisation."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:334
+#: src/1240-repr-packed-unsafe-ref.md:352
+#: src/1240-repr-packed-unsafe-ref.md:399
+#: src/1240-repr-packed-unsafe-ref.md:403
+msgid "Requires nightly."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:335
+msgid ""
+"[assimp-sys-0.0.3](https://crates.io/crates/assimp-sys) ([before](https://"
+"tools.taskcluster.net/task-inspector/#rTrUh0VQR2uWXMQw14kRIA)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#AR36o35FRV-mVInHKWFDrg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:336
+msgid ""
+"[many uses](https://github.com/Eljay/assimp-sys/search?"
+"utf8=%E2%9C%93&q=packed), required to match [C structs](https://github.com/"
+"assimp/assimp/blob/f3d418a199cfb7864c826665016e11c65ddd7aa9/include/assimp/"
+"types.h#L227) (one example). In author's words:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:341
+msgid ""
+"\\[11:36:15\\] \\<eljay> huon: well my assimp binding is basically abandoned "
+"for now if you are just worried about breaking things, and seems unlikely "
+"anyone is using it :P"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:344
+msgid ""
+"[stemmer-0.1.1](https://crates.io/crates/stemmer) ([before](https://tools."
+"taskcluster.net/task-inspector/#0Affr5PrTnGoBukeRwuiKw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#8xGRmPxOQS2NHbvgXMvmWQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:345
+msgid ""
+"[use](https://github.com/lady-segfault/stemmer-rs/"
+"blob/4090dcf7a258df5031c10754c8de118e0ca93512/src/stemmer.rs#L7), completely "
+"unnecessary"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:348
+msgid ""
+"[x86-0.2.0](https://crates.io/crates/x86) ([before](https://tools."
+"taskcluster.net/task-inspector/#__VYVs6QSYm4JF68fSXibw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#xj8paeiaR0OGkK1v2raHYg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:349
+msgid ""
+"[several similar uses](https://github.com/gz/rust-x86/search?"
+"utf8=%E2%9C%93&q=packed), specific layout necessary for raw interaction with "
+"CPU features"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:353
+msgid ""
+"[http2parse-0.0.3](https://crates.io/crates/http2parse) ([before](https://"
+"tools.taskcluster.net/task-inspector/#CUr_5dfgQMywZmG_ER7ZGQ)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#rQO3m_8iQQapN2l-PvGrRw))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:354
+msgid ""
+"[use](https://github.com/reem/rust-http2parse/blob/"
+"b363139ac2f81fa25db504a9256face9f8c799b6/src/payload.rs#L206), used to get "
+"super-fast \"parsing\" of headers, by transmuting `&[u8]` to `&[Setting]`."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:358
+msgid "On stable, however:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:360
+msgid ""
+"```irc\n"
+"[11:30:38] <huon> reem: why is https://github.com/reem/rust-http2parse/blob/"
+"b363139ac2f81fa25db504a9256face9f8c799b6/src/payload.rs#L208 packed?\n"
+"[11:31:59] <reem> huon: I transmute from & [u8] to & [Setting]\n"
+"[11:32:35] <reem> So repr packed gets me the layout I need\n"
+"[11:32:47] <reem> With no padding between the u8 and u16\n"
+"[11:33:11] <reem> and between Settings\n"
+"[11:33:17] <huon> ok\n"
+"[11:33:22] <huon> (stop doing bad things :P )\n"
+"[11:34:00] <huon> (there's some problems with repr(packed) https://github."
+"com/rust-lang/rust/issues/27060 and we may be feature gating it)\n"
+"[11:35:02] <huon> reem: wait, aren't there endianness problems?\n"
+"[11:36:16] <reem> Ah yes, looks like I forgot to finish the Setting "
+"interface\n"
+"[11:36:27] <reem> The identifier and value methods take care of converting "
+"to types values\n"
+"[11:36:39] <reem> The goal is just to avoid copying the whole buffer and "
+"requiring an allocation\n"
+"[11:37:01] <reem> Right now the whole parser takes like 9 ns to parse a "
+"frame\n"
+"[11:39:11] <huon> would you be sunk if repr(packed) was feature gated?\n"
+"[11:40:17] <huon> or, is maybe something like `struct SettingsRaw "
+"{ identifier:  [u8; 2], value:  [u8; 4] }` OK (possibly with conversion "
+"functions etc.)?\n"
+"[11:40:46] <reem> Yea, I could get around it if I needed to\n"
+"[11:40:58] <reem> Anyway the primary consumer is transfer and I'm running on "
+"nightly there\n"
+"[11:41:05] <reem> So it doesn't matter too much\n"
+"```"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:381
+msgid ""
+"[nl80211rs-0.1.0](https://crates.io/crates/nl80211rs) ([before](https://"
+"tools.taskcluster.net/task-inspector/#rhEG57vQQHWiVCcS3kIWrA)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#s97ED8oXQ4WN-Pbm3ZsFJQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:382
+msgid ""
+"[three similar uses](https://github.com/carrotsrc/nl80211rs/search?"
+"utf8=%E2%9C%93&q=packed) to match [C struct](http://lxr.free-electrons.com/"
+"source/include/uapi/linux/nl80211.h#L2288)."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:387
+msgid ""
+"[openal-0.2.1](https://crates.io/crates/openal) ([before](https://tools."
+"taskcluster.net/task-inspector/#XUvl-638T82xgGwkrxpz5g)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#Oc9wEFpbQM2Tja9sv0qt4g))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:388
+msgid ""
+"[several similar uses](https://github.com/meh/rust-openal/"
+"blob/9e35fd284f25da7fe90a8307de85a6ec6d392ea1/src/util.rs#L6), probably "
+"unnecessary, just need the struct to behave like `[f32; 3]`: pointers to it "
+"[are passed](https://github.com/meh/rust-openal/"
+"blob/9e35fd284f25da7fe90a8307de85a6ec6d392ea1/src/listener/listener.rs#L204-"
+"L205) to [functions expecting `*mut f32`](https://github.com/meh/rust-openal-"
+"sys/blob/master/src/al.rs#L146) pointers."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:395
+msgid ""
+"[elfloader-0.0.1](https://crates.io/crates/elfloader) ([before](https://"
+"tools.taskcluster.net/task-inspector/#ssE4lk0xR3q1qYZBXK24aA)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#SAH7AAVIToKkhf7QRK4C1g))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:396
+msgid ""
+"[two similar uses](https://github.com/gz/rust-elfloader/blob/"
+"d61db7c83d66ce65da92aed5e33a4baf35f4c1e7/src/elf.rs#L362), required to match "
+"file headers/formats exactly."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:400
+msgid ""
+"[x11cap-0.1.0](https://crates.io/crates/x11cap) ([before](https://tools."
+"taskcluster.net/task-inspector/#7wn8cjqXSOaZfpekKRY-yw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#bA6LwPreTMa8R_zYNt8Z3w))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:401
+msgid ""
+"[use](https://github.com/bryal/X11Cap/blob/"
+"d11b7170e6fa7c1ab370c69887b9ce71a542335d/src/lib.rs#L41) unnecessary."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:405
+msgid "Non-root regressions, sorted by rank:"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:407
+msgid ""
+"[glium-0.8.0](https://crates.io/crates/glium) ([before](https://tools."
+"taskcluster.net/task-inspector/#m5yEIEu-QEeM_2t4_11Opg)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#Wztxoh9SQ-GqA4F3inaR9Q))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:408
+msgid ""
+"[mio-0.4.1](https://crates.io/crates/mio) ([before](https://tools."
+"taskcluster.net/task-inspector/#RtT-HmwbTYuG0djpAkVLvA)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#Lx1d3ukPSGyRIwIDt_w0gw))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:409
+msgid ""
+"[piston_window-0.11.0](https://crates.io/crates/piston_window) ([before]"
+"(https://tools.taskcluster.net/task-inspector/#QE421inlRgShgoXKcUkEEA)) "
+"([after](https://tools.taskcluster.net/task-inspector/"
+"#wIKQPW_7TjmrztHQ4Kk3hw))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:410
+msgid ""
+"[piston2d-gfx_graphics-0.4.0](https://crates.io/crates/piston2d-"
+"gfx_graphics) ([before](https://tools.taskcluster.net/task-inspector/"
+"#hIUDm8m6QrCdOpSF30aPjQ)) ([after](https://tools.taskcluster.net/task-"
+"inspector/#HOw14MCoQxGj7GjYIy-Lng))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:411
+msgid ""
+"[piston-gfx_texture-0.2.0](https://crates.io/crates/piston-gfx_texture) "
+"([before](https://tools.taskcluster.net/task-inspector/#om-wlRW-"
+"Tm65MTlrpa8u7Q)) ([after](https://tools.taskcluster.net/task-inspector/"
+"#m9e9Vx58RA6KhCljujzzMQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:412
+msgid ""
+"[piston2d-glium_graphics-0.3.0](https://crates.io/crates/piston2d-"
+"glium_graphics) ([before](https://tools.taskcluster.net/task-inspector/"
+"#vHeYcL2gRT2aIz9JeksAfw)) ([after](https://tools.taskcluster.net/task-"
+"inspector/#yEKBSm1BQ_C0O-4GKhQgUQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:413
+msgid ""
+"[html5ever-0.2.0](https://crates.io/crates/html5ever) ([before](https://"
+"tools.taskcluster.net/task-inspector/#C0yCazihTWa4x2GxCUxasQ)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#Vbl4HjqcQlq4-sJ2m1yBnQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:414
+msgid ""
+"[caribon-0.6.2](https://crates.io/crates/caribon) ([before](https://tools."
+"taskcluster.net/task-inspector/#AJZzG5gLSY-WVMKc-MoV5w)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#ornLa3ZaSC-Zbz7ICg33Tg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:415
+msgid ""
+"[gj-0.0.2](https://crates.io/crates/gj) ([before](https://tools.taskcluster."
+"net/task-inspector/#xhaiB76FQAKCEsmBkQtp1A)) ([after](https://tools."
+"taskcluster.net/task-inspector/#rBJke3wpQqaq7wmEiQtLJA))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:416
+msgid ""
+"[glium_text-0.5.0](https://crates.io/crates/glium_text) ([before](https://"
+"tools.taskcluster.net/task-inspector/#IMdXVtTYSIaDrCRQ6SbLTA)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#t322h_mzQGarVmsf5MHqKA))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:417
+msgid ""
+"[glyph_packer-0.0.0](https://crates.io/crates/glyph_packer) ([before]"
+"(https://tools.taskcluster.net/task-inspector/#JmIVzau8RyOhnlTvdsRIHQ)) "
+"([after](https://tools.taskcluster.net/task-inspector/"
+"#7k9GF09SQPya4ZrLuR6cJw))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:418
+msgid ""
+"[html5ever_dom_sink-0.2.0](https://crates.io/crates/html5ever_dom_sink) "
+"([before](https://tools.taskcluster.net/task-inspector/"
+"#7GJmaAYKS9WNqnbCx5XMrw)) ([after](https://tools.taskcluster.net/task-"
+"inspector/#pHotnKLkTAqK4-LP-n2MUQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:419
+msgid ""
+"[identicon-0.1.0](https://crates.io/crates/identicon) ([before](https://"
+"tools.taskcluster.net/task-inspector/#15nnASVgStmrwqdCS1q8Rg)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#WgJb_jEMQIebNgb_D2uq7Q))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:420
+msgid ""
+"[assimp-0.0.4](https://crates.io/crates/assimp) ([before](https://tools."
+"taskcluster.net/task-inspector/#-i-FYpJ2Rz-bcmxGVmxoOQ)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#HXR8V8NeRMyOxF0Nnhdl0w))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:421
+msgid ""
+"[jamkit-0.2.4](https://crates.io/crates/jamkit) ([before](https://tools."
+"taskcluster.net/task-inspector/#mcpl8Z62Td-DFfoi9AqRnw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#XGOIXxqpRbCMy5bZ42GV5w))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:422
+msgid ""
+"[coap-0.1.0](https://crates.io/crates/coap) ([before](https://tools."
+"taskcluster.net/task-inspector/#SI137HlpRsSuQrlhxlRHpQ)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#dT3pt46pQtmy3CvIaC_71Q))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:423
+msgid ""
+"[kiss3d-0.1.2](https://crates.io/crates/kiss3d) ([before](https://tools."
+"taskcluster.net/task-inspector/#2Bbro6uZQQCudv2ClalFTw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#9vRbugDKTDm94fjw6BcS6A))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:424
+msgid ""
+"[use](https://github.com/sebcrozet/kiss3d/"
+"blob/1c1d39d5f8a428609b2f7809c7237e8853ac24e9/src/text/glyph.rs#L7) seems to "
+"be unnecessary: semantically useless, just a space \"optimisation\", which "
+"actually makes no difference because the Vec field will be appropriately "
+"aligned always."
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:427
+msgid ""
+"[compass-sprite-0.0.3](https://crates.io/crates/compass-sprite) ([before]"
+"(https://tools.taskcluster.net/task-inspector/#dTcfDsk1QYKWtK7EH5gnwg)) "
+"([after](https://tools.taskcluster.net/task-inspector/#rElhdv9GS8-"
+"Zi14LSL-6Ng))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:428
+msgid ""
+"[dcpu16-gui-0.0.3](https://crates.io/crates/dcpu16-gui) ([before](https://"
+"tools.taskcluster.net/task-inspector/#mtbOQfFUTDiZcMUc65LD3w)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#co31ZVgNQ1mYyDCnSwBxJg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:429
+msgid ""
+"[piston3d-gfx_voxel-0.1.1](https://crates.io/crates/piston3d-gfx_voxel) "
+"([before](https://tools.taskcluster.net/task-inspector/#2nZmq4zORIOdJ-"
+"ErCOCmww)) ([after](https://tools.taskcluster.net/task-inspector/"
+"#epzWs2zuSiWxfoWyMCv0Kw))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:430
+msgid ""
+"[dev-0.0.7](https://crates.io/crates/dev) ([before](https://tools."
+"taskcluster.net/task-inspector/#5hSafPV2RlKlubg7WHniPw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#ITQ6zXYpSAC3_AtmMe4xRw))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:431
+msgid ""
+"[rustty-0.1.3](https://crates.io/crates/rustty) ([before](https://tools."
+"taskcluster.net/task-inspector/#jlstxp6mSPqzQ1n3FgHSRA)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#HgrQz6UVQ5yCkVX25Py-2w))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:432
+msgid ""
+"[skeletal_animation-0.1.1](https://crates.io/crates/skeletal_animation) "
+"([before](https://tools.taskcluster.net/task-inspector/"
+"#nyMUzqs6RZKIZJ1v1xcglA)) ([after](https://tools.taskcluster.net/task-"
+"inspector/#10lM9Vh5SBa7YD3swbm6pw))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:433
+msgid ""
+"[slabmalloc-0.0.1](https://crates.io/crates/slabmalloc) ([before](https://"
+"tools.taskcluster.net/task-inspector/#li_vsJY8S9-OKEP_KIzEyQ)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#1lcKVbKVQNqkKSfwEKIvkg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:434
+msgid ""
+"[spidev-0.1.0](https://crates.io/crates/spidev) ([before](https://tools."
+"taskcluster.net/task-inspector/#5YidcvWyQ0KSmX_9yHjL5A)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#mmDafSdlSIS-xfDvyeIckQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:435
+msgid ""
+"[sysfs_gpio-0.3.2](https://crates.io/crates/sysfs_gpio) ([before](https://"
+"tools.taskcluster.net/task-inspector/#KEO87BJHSB-9wNHvTGgEiQ)) ([after]"
+"(https://tools.taskcluster.net/task-inspector/#44Qnzq6CSBSrMti4utYEZQ))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:436
+msgid ""
+"[texture_packer-0.0.1](https://crates.io/crates/texture_packer) ([before]"
+"(https://tools.taskcluster.net/task-inspector/#-yNhXPaFSBK59eEPRBChVw)) "
+"([after](https://tools.taskcluster.net/task-inspector/#dY5YnW-"
+"uTRuCAxxh93_P1w))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:437
+msgid ""
+"[falcon-0.0.1](https://crates.io/crates/falcon) ([before](https://tools."
+"taskcluster.net/task-inspector/#hsFGvgrWTL6yY5JVjm20Sw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#YMYfL2KkTH2fct8CD9nqUg))"
+msgstr ""
+
+#: src/1240-repr-packed-unsafe-ref.md:438
+msgid ""
+"[filetype-0.2.0](https://crates.io/crates/filetype) ([before](https://tools."
+"taskcluster.net/task-inspector/#bCC3ps_gT6m05BNm5lEnFw)) ([after](https://"
+"tools.taskcluster.net/task-inspector/#trGw9uPMTgiuxp-w821ZgA))"
+msgstr ""

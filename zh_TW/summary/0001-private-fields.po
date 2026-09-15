@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0001-private-fields.md:1
+msgid "Start Date: 2014-03-11"
+msgstr ""
+
+#: src/0001-private-fields.md:2
+msgid "RFC PR: [rust-lang/rfcs#1](https://github.com/rust-lang/rfcs/pull/1)"
+msgstr ""
+
+#: src/0001-private-fields.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#8122](https://github.com/rust-lang/rust/"
+"issues/8122)"
+msgstr ""
+"Rust 議題：[rust-lang/rust#8122](https://github.com/rust-lang/rust/"
+"issues/8122)"
+
+#: src/0001-private-fields.md:5
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0001-private-fields.md:7
+msgid ""
+"This is an RFC to make all struct fields private by default. This includes "
+"both tuple structs and structural structs."
+msgstr ""
+
+#: src/0001-private-fields.md:10
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0001-private-fields.md:12
+msgid "Reasons for default private visibility"
+msgstr ""
+
+#: src/0001-private-fields.md:14
+msgid ""
+"Visibility is often how soundness is achieved for many types in rust. These "
+"types are normally wrapping unsafe behavior of an FFI type or some other "
+"rust-specific behavior under the hood (such as the standard `Vec` type). "
+"Requiring these types to opt-in to being sound is unfortunate."
+msgstr ""
+
+#: src/0001-private-fields.md:19
+msgid ""
+"Forcing tuple struct fields to have non-overridable public visibility "
+"greatly reduces the utility of such types. Tuple structs cannot be used to "
+"create abstraction barriers as they can always be easily destructed."
+msgstr ""
+
+#: src/0001-private-fields.md:23
+msgid ""
+"Private-by-default is more consistent with the rest of the Rust language. "
+"All other aspects of privacy are private-by-default except for enum "
+"variants. Enum variants, however, are a special case in that they are "
+"inserted into the parent namespace, and hence naturally inherit privacy."
+msgstr ""
+
+#: src/0001-private-fields.md:28
+msgid ""
+"Public fields of a `struct` must be considered as part of the API of the "
+"type. This means that the exact definition of all structs is _by default_ "
+"the API of the type. Structs must opt-out of this behavior if the `priv` "
+"keyword is required. By requiring the `pub` keyword, structs must opt-in to "
+"exposing more surface area to their API."
+msgstr ""
+
+#: src/0001-private-fields.md:34
+msgid "Reasons for inherited visibility (today's design)"
+msgstr ""
+
+#: src/0001-private-fields.md:36
+msgid ""
+"Public definitions like `pub struct Point { x: int, y: int }` are concise "
+"and easy to read."
+msgstr ""
+
+#: src/0001-private-fields.md:38
+msgid ""
+"Private definitions certainly want private fields (to hide implementation "
+"details)."
+msgstr ""
+
+#: src/0001-private-fields.md:41
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0001-private-fields.md:43
+msgid ""
+"Currently, rustc has two policies for dealing with the privacy of struct "
+"fields:"
+msgstr ""
+
+#: src/0001-private-fields.md:45
+msgid ""
+"Tuple structs have public fields by default (including \"newtype structs\")"
+msgstr ""
+
+#: src/0001-private-fields.md:46
+msgid ""
+"Fields of structural structs (`struct Foo { ... }`) inherit the same privacy "
+"of the enclosing struct."
+msgstr ""
+
+#: src/0001-private-fields.md:49
+msgid ""
+"This RFC is a proposal to unify the privacy of struct fields with the rest "
+"of the language by making them private by default. This means that both "
+"tuple variants and structural variants of structs would have private fields "
+"by default. For example, the program below is accepted today, but would be "
+"rejected with this RFC."
+msgstr ""
+
+#: src/0001-private-fields.md:67
+msgid "Refinements to structural structs"
+msgstr ""
+
+#: src/0001-private-fields.md:69
+msgid ""
+"Public fields are quite a useful feature of the language, so syntax is "
+"required to opt out of the private-by-default semantics. Structural structs "
+"already allow visibility qualifiers on fields, and the `pub` qualifier would "
+"make the field public instead of private."
+msgstr ""
+
+#: src/0001-private-fields.md:74
+msgid ""
+"Additionally, the `priv` visibility will no longer be allowed to modify "
+"struct fields. Similarly to how a `priv fn` is a compiler error, a `priv` "
+"field will become a compiler error."
+msgstr ""
+
+#: src/0001-private-fields.md:78
+msgid "Refinements on tuple structs"
+msgstr ""
+
+#: src/0001-private-fields.md:80
+msgid ""
+"As with their structural cousins, it's useful to have tuple structs with "
+"public fields. This RFC will modify the tuple struct grammar to:"
+msgstr ""
+
+#: src/0001-private-fields.md:89
+msgid "For example, these definitions will be added to the language:"
+msgstr ""
+
+#: src/0001-private-fields.md:92
+msgid "// a \"newtype wrapper\" struct with a private field\n"
+msgstr ""
+
+#: src/0001-private-fields.md:94
+msgid "// a \"newtype wrapper\" struct with a public field\n"
+msgstr ""
+
+#: src/0001-private-fields.md:97
+msgid ""
+"// a tuple struct with many fields, only the first and last of which are "
+"public\n"
+msgstr ""
+
+#: src/0001-private-fields.md:102
+msgid ""
+"Public fields on tuple structs will maintain the semantics that they "
+"currently have today. The structs can be constructed, destructed, and "
+"participate in pattern matches."
+msgstr ""
+
+#: src/0001-private-fields.md:106
+msgid "Private fields on tuple structs will prevent the following behaviors:"
+msgstr ""
+
+#: src/0001-private-fields.md:108
+msgid ""
+"Private fields cannot be bound in patterns (both in irrefutable and "
+"refutable contexts, i.e. `let` and `match` statements)."
+msgstr ""
+
+#: src/0001-private-fields.md:110
+msgid ""
+"Private fields cannot be specified outside of the defining module when "
+"constructing a tuple struct."
+msgstr ""
+
+#: src/0001-private-fields.md:113
+msgid ""
+"These semantics are intended to closely mirror the behavior of private "
+"fields for structural structs."
+msgstr ""
+
+#: src/0001-private-fields.md:116
+msgid "Statistics gathered"
+msgstr ""
+
+#: src/0001-private-fields.md:118
+msgid ""
+"A brief survey was performed over the entire `mozilla/rust` repository to "
+"gather these statistics. While not representative of all projects, this "
+"repository should give a good indication of what most structs look like in "
+"the real world. The repository has both libraries (`libstd`) as well as "
+"libraries which don't care much about privacy (`librustc`)."
+msgstr ""
+
+#: src/0001-private-fields.md:124
+msgid ""
+"These numbers tally up all structs from all locations, and only take into "
+"account structural structs, not tuple structs."
+msgstr ""
+
+#: src/0001-private-fields.md:127
+msgid "Inherited privacy"
+msgstr ""
+
+#: src/0001-private-fields.md:127
+msgid "Private-by-default"
+msgstr ""
+
+#: src/0001-private-fields.md:129
+msgid "Private fields"
+msgstr ""
+
+#: src/0001-private-fields.md:129
+msgid "1418"
+msgstr ""
+
+#: src/0001-private-fields.md:129
+msgid "1852"
+msgstr ""
+
+#: src/0001-private-fields.md:130
+msgid "Public fields"
+msgstr ""
+
+#: src/0001-private-fields.md:130
+msgid "2036"
+msgstr ""
+
+#: src/0001-private-fields.md:130
+msgid "1602"
+msgstr ""
+
+#: src/0001-private-fields.md:131
+msgid "All-private structs"
+msgstr ""
+
+#: src/0001-private-fields.md:131
+msgid "551 (52.23%)"
+msgstr ""
+
+#: src/0001-private-fields.md:131
+msgid "671 (63.60%)"
+msgstr ""
+
+#: src/0001-private-fields.md:132
+msgid "All-public structs"
+msgstr ""
+
+#: src/0001-private-fields.md:132
+msgid "468 (44.36%)"
+msgstr ""
+
+#: src/0001-private-fields.md:132
+msgid "352 (33.36%)"
+msgstr ""
+
+#: src/0001-private-fields.md:133
+msgid "Mixed privacy structs"
+msgstr ""
+
+#: src/0001-private-fields.md:133
+msgid "36 ( 3.41%)"
+msgstr ""
+
+#: src/0001-private-fields.md:133
+msgid "32 ( 3.03%)"
+msgstr ""
+
+#: src/0001-private-fields.md:135
+msgid ""
+"The numbers clearly show that the predominant pattern is to have all-private "
+"structs, and that there are many public fields today which can be private "
+"(and perhaps should!). Additionally, there is on the order of 1418 instances "
+"of the word `priv` today, when in theory there should be around `1852`. With "
+"this RFC, there would need to be `1602` instances of the word `pub`. A very "
+"large portion of structs requiring `pub` fields are FFI structs defined in "
+"the `libc` module."
+msgstr ""
+
+#: src/0001-private-fields.md:143
+msgid "Impact on enums"
+msgstr ""
+
+#: src/0001-private-fields.md:145
+msgid ""
+"This RFC does not impact enum variants in any way. All enum variants will "
+"continue to inherit privacy from the outer enum type. This includes both the "
+"fields of tuple variants as well as fields of struct variants in enums."
+msgstr ""
+
+#: src/0001-private-fields.md:149
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0001-private-fields.md:151
+msgid ""
+"The main alternative to this design is what is currently implemented today, "
+"where fields inherit the privacy of the outer structure. The pros and cons "
+"of this strategy are discussed above."
+msgstr ""
+
+#: src/0001-private-fields.md:155
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0001-private-fields.md:157
+msgid ""
+"As the above statistics show, almost all structures are either all public or "
+"all private. This RFC provides an easy method to make struct fields all "
+"private, but it explicitly does not provide a method to make struct fields "
+"all public. The statistics show that `pub` will be written less often than "
+"`priv` is today, and it's always possible to add a method to specify a "
+"struct as all-public in the future in a backwards-compatible fashion."
+msgstr ""
+
+#: src/0001-private-fields.md:164
+msgid ""
+"That being said, it's an open question whether syntax for an \"all public "
+"struct\" is necessary at this time."
+msgstr ""

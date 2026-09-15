@@ -1,0 +1,200 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0839-embrace-extend-extinguish.md:1
+msgid "Feature Name: embrace-extend-extinguish"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:2
+msgid "Start Date: 2015-02-13"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#839](https://github.com/rust-lang/rfcs/pull/839)"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#25976](https://github.com/rust-lang/rust/"
+"issues/25976)"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:8
+msgid "Make all collections `impl<'a, T: Copy> Extend<&'a T>`."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:10
+msgid ""
+"This enables both `vec.extend(&[1, 2, 3])`, and `vec."
+"extend(&hash_set_of_ints)`. This partially covers the usecase of the awkward "
+"`Vec::push_all` with literally no ergonomic loss, while leveraging "
+"established APIs."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:16
+msgid ""
+"Vec::push_all is kinda random and specific. Partially motivated by "
+"performance concerns, but largely just \"nice\" to not have to do something "
+"like `vec.extend([1, 2, 3].iter().cloned())`. The performance argument falls "
+"flat (we _must_ make iterators fast, and trusted_len should get us there). "
+"The ergonomics argument is salient, though. Working with Plain Old Data "
+"types in Rust is super annoying because generic APIs and semantics are "
+"tailored for non-Copy types."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:23
+msgid ""
+"Even with Extend upgraded to take IntoIterator, that won't work with "
+"&\\[Copy\\], because a slice can't be moved out of. Collections would have "
+"to take `IntoIterator<&T>`, and copy out of the reference. So, do exactly "
+"that."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:27
+msgid ""
+"As a bonus, this is more expressive than `push_all`, because you can feed in "
+"_any_ collection by-reference to clone the data out of it, not just slices."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:30
+msgid "Detailed design"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:32
+msgid "For sequences and sets: `impl<'a, T: Copy> Extend<&'a T>`"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:33
+msgid "For maps: `impl<'a, K: Copy, V: Copy> Extend<(&'a K, &'a V)>`"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:35
+msgid "e.g."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:54
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:58
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:60
+msgid "Mo' generics, mo' magic. How you gonna discover it?"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:62
+msgid "This creates a potentially confusing behaviour in a generic context."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:64
+msgid "Consider the following code:"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:72
+msgid ""
+"One would reasonably expect X to contain &T's, but with this proposal it is "
+"possible that X now instead contains T's. It's not clear that in \"real\" "
+"code that this would ever be a problem, though. It may lead to novices "
+"accidentally by-passing ownership through implicit copies."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:78
+msgid ""
+"It also may make inference fail in some other cases, as Extend would not "
+"always be sufficient to determine the type of a `vec![]`."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:81
+msgid ""
+"This design does not fully replace the push_all, as it takes `T: Clone`."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:83
+msgid "Alternatives"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:86
+msgid "The Cloneian Candidate"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:87
+msgid ""
+"This proposal is artificially restricting itself to `Copy` rather than full "
+"`Clone` as a concession to the general Rustic philosophy of Clones being "
+"explicit. Since this proposal is largely motivated by simple shuffling of "
+"primitives, this is sufficient. Also, because `Copy: Clone`, it would be "
+"backwards compatible to upgrade to `Clone` in the future if demand is high "
+"enough."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:94
+msgid "The New Method"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:95
+msgid ""
+"It is theoretically plausible to add a new defaulted method to Extend called "
+"`extend_cloned` that provides this functionality. This removes any concern "
+"of accidental clones and makes inference totally work. However this design "
+"cannot simultaneously support Sequences and Maps, as the signature for "
+"sequences would mean Maps can only Copy through &(K, V), rather than (&K, "
+"&V). This would make it impossible to copy-chain Maps through Extend."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:102
+msgid "Why not FromIterator?"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:104
+msgid ""
+"FromIterator could also be extended in the same manner, but this is less "
+"useful for two reasons:"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:107
+msgid ""
+"FromIterator is always called by calling `collect`, and IntoIterator doesn't "
+"really \"work\" right in `self` position."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:109
+msgid ""
+"Introduces ambiguities in some cases. What is `let foo: Vec<_> = [1, 2, 3]."
+"iter().collect()`?"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:111
+msgid ""
+"Of course, context might disambiguate in many cases, and `let foo: Vec<i32> "
+"= [1, 2, 3].iter().collect()` might still be nicer than `let foo: Vec<_> = "
+"[1, 2, 3].iter().cloned().collect()`."
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:116
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/0839-embrace-extend-extinguish.md:118
+msgid "None."
+msgstr ""

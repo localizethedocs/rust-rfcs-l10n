@@ -1,0 +1,823 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3529-cargo-path-bases.md:1
+msgid "Feature Name: `path_bases`"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:2
+msgid "Start Date: 2023-11-13"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3529](https://github.com/rust-lang/rfcs/pull/3529)"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:4
+msgid ""
+"Rust Issue: [rust-lang/cargo#14355](https://github.com/rust-lang/cargo/"
+"issues/14355)"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/3529-cargo-path-bases.md:9
+msgid ""
+"Introduce a table of path \"bases\" in Cargo configuration files that can be "
+"used to prefix the path of `path` dependencies and `patch` entries."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:12
+msgid ""
+"This feature will not support declaring path bases in manifest files to "
+"avoid additional design complexity, though this may be added in the future."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:15
+msgid "Motivation"
+msgstr "動機"
+
+#: src/3529-cargo-path-bases.md:18
+msgid ""
+"As a project grows in size, it becomes necessary to split it into smaller "
+"sub-projects, architected into layers with well-defined boundaries."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:21
+msgid ""
+"One way to enforce these boundaries is to use different Git repos (aka "
+"\"multi-repo\"). Cargo has good support for multi-repo projects using either "
+"`git` dependencies, or developers can use private registries if they want to "
+"explicitly publish code or need to preprocess their sub-projects (e.g., "
+"generating code) before they can be consumed."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:27
+msgid ""
+"If all of the code is kept in a single Git repo (aka \"mono-repo\"), then "
+"these boundaries must be enforced a different way: either leveraging tooling "
+"during the build to check layering, or requiring that sub-projects "
+"explicitly publish and consume from some intermediate directory. Cargo has "
+"poor support for mono-repos: the only viable mechanism is `path` "
+"dependencies, but these require relative paths (which makes refactoring and "
+"moving sub-projects very difficult) and don't work at all if the mono-repo "
+"requires publishing and consuming from an intermediate directory (as this "
+"may very per host, or per target being built)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:36
+msgid ""
+"This RFC proposes a mechanism to specify path bases in `config.toml` files "
+"which can be used to prepend `path` dependencies. This allows mono-repos to "
+"specify dependencies relative to their root directory, which allows the "
+"consuming project to be moved freely (no relative paths to update) and a "
+"simple find-and-replace to handle a producing project being moved. "
+"Additionally, a host-specific or target-specific intermediate directory may "
+"be specified as a `base`, allowing code to be consumed from there using "
+"`path` dependencies."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:44
+msgid "Example"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:46
+msgid "If we had a sub-project that depends on three others:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:48
+msgid "`foo` which is in a different layer of the mono-repo."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:49
+msgid ""
+"`bar_with_generated` that must be consumed from an intermediate directory "
+"because it contains target-specific generated code."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:51
+msgid "`baz` which is in the current layer."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:53
+msgid "We may have a `Cargo.toml` snippet that looks like this:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:55
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"foo = { path = \"../../../other_layer/foo\" }\n"
+"bar_with_generated = { path = \"../../../../intermediates/x86_64/Debug/"
+"third_layer/bar_with_generated\" }\n"
+"baz = { path = \"../baz\" }\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:62
+msgid "This has many issues:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:64
+msgid ""
+"Moving the current sub-project may require changing all of these relative "
+"paths."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:66
+msgid "`bar_with_generated` will only work if we're building x86_64 Debug."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:67
+msgid ""
+"`bar_with_generated` assumes that the `intermediates` directory is a sibling "
+"to our source directory, and not somewhere else completely (e.g., a "
+"different drive for performance reasons)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:70
+msgid ""
+"Moving `foo` or `baz` requires searching the code for each possible relative "
+"path (e.g., `../../../other_layer/foo` and `../foo`) and may be error prone "
+"if there is some other sub-project in directory with the same name."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:74
+msgid ""
+"Instead, if we could specify these common paths as path bases in a `config."
+"toml` (which may be generated by an external build system which in turn "
+"invokes Cargo):"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:77
+msgid ""
+"```toml\n"
+"[path-bases]\n"
+"sources = \"/home/user/dev/src\"\n"
+"intermediates = \"/home/user/dev/intermediates/x86_64/Debug\"\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:83
+msgid ""
+"Then the `Cargo.toml` can use those path bases and avoid relative paths:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:85
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"foo = { path = \"other_layer/foo\", base = \"sources\" }\n"
+"bar_with_generated = { path = \"third_layer/bar_with_generated\", base = "
+"\"intermediates\" }\n"
+"baz = { path = \"this_layer/baz\", base = \"sources\" }\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:92
+msgid "Which resolves the issues we previously had:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:94
+msgid ""
+"The current project can be moved without modifying the `Cargo.toml` at all."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:95
+msgid ""
+"`bar_with_generated` works for all targets (assuming the `config.toml` is"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:97
+msgid "generated)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:98
+msgid "The `intermediates` directory can be placed anywhere."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:99
+msgid ""
+"Moving `foo` or `baz` only requires searching for the canonical form "
+"relative to the path base."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:102
+msgid "Other uses"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:104
+msgid ""
+"The ability to use path bases for `path` dependencies is convenient for "
+"developers who are using a large number of `path` dependencies within the "
+"same root directory. Instead of repeating the same path fragment many times "
+"in their `Cargo.toml`, they can instead specify it once in a `config.toml` "
+"as a path base, then use that path base in each of their `path` dependencies."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:110
+msgid ""
+"Cargo will also provide built-in base paths, for example `workspace` to "
+"point to the root directory of the workspace. This allows workspace members "
+"to reference each other without first needing to `../` their way back to the "
+"workspace root."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:114
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:117
+msgid ""
+"If you often use multiple path dependencies that have a common parent "
+"directory, or if you want to avoid putting long paths in your `Cargo.toml`, "
+"you can define path _base directories_ in your [configuration](https://doc."
+"rust-lang.org/cargo/reference/config.html). Your path dependencies can then "
+"be specified relative to those base directories."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:124
+msgid ""
+"For example, say you have a number of projects checked out in `/home/user/"
+"dev/rust/libraries/`. Rather than use that path in your `Cargo.toml` files, "
+"you can define it as a \"base\" path in `~/.cargo/config.toml`:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:129 src/3529-cargo-path-bases.md:174
+msgid ""
+"```toml\n"
+"[path-bases]\n"
+"dev = \"/home/user/dev/rust/libraries/\"\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:134
+msgid ""
+"Now, you can specify a path dependency on a library `foo` in that directory "
+"in your `Cargo.toml` using"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:137 src/3529-cargo-path-bases.md:167
+msgid ""
+"```toml\n"
+"[dependencies]\n"
+"foo = { path = \"foo\", base = \"dev\" }\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:142
+msgid ""
+"Like with other path dependencies, keep in mind that both the base _and_ the "
+"path must exist on any other host where you want to use the same `Cargo."
+"toml` to build your project."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:146
+msgid ""
+"You can also use `base` along with `path` when specifying a `[patch]`. "
+"Specifying a `path` and `base` on a `[patch]` is equivalent to specifying "
+"just a `path` containing the full path including the prepended base."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:150
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:153
+msgid "Specifying Dependencies"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:155
+msgid "Path Bases"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:157
+msgid ""
+"A `path` dependency may optionally specify a base by setting the `base` key "
+"to the name of a path base from the `[path-bases]` table in either the "
+"[configuration](https://doc.rust-lang.org/cargo/reference/config.html#path-"
+"bases) or one of the [built-in path bases](#built-in-path-bases). The value "
+"of that path base is prepended to the `path` value (along with a path "
+"separator if necessary) to produce the actual location where Cargo will look "
+"for the dependency."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:165
+msgid "For example, if the `Cargo.toml` contains:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:172
+msgid "Given a `[path-bases]` table in the configuration that contains:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:179
+msgid ""
+"This will produce a `path` dependency `foo` located at `/home/user/dev/rust/"
+"libraries/foo`."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:182
+msgid ""
+"Path bases can be either absolute or relative. Relative path bases are "
+"relative to the parent directory of the configuration file that declared "
+"that path base."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:185
+msgid ""
+"The name of a path base must use only [alphanumeric](https://doc.rust-lang."
+"org/std/primitive.char.html#method.is_alphanumeric) characters or `-` or "
+"`_`, must start with an [alphabetic](https://doc.rust-lang.org/std/primitive."
+"char.html#method.is_alphabetic) character, and must not be empty."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:189
+msgid ""
+"If the name of path base used in a dependency is neither in the "
+"configuration nor one of the built-in path base, then Cargo will raise an "
+"error."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:192
+msgid "Built-in path base"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:194
+msgid ""
+"Cargo provides implicit path bases that can be used without the need to "
+"specify them in a `[path-bases]` table."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:197
+msgid ""
+"`workspace` - If a project is [a workspace or workspace member](https://doc."
+"rust-lang.org/cargo/reference/workspaces.html) then this path base is "
+"defined as the parent directory of the root `Cargo.toml` of the workspace."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:201
+msgid ""
+"If a built-in path base name is also declared in the configuration, then "
+"Cargo will prefer the value in the configuration. The allows Cargo to add "
+"new built-in path bases without compatibility issues (as existing uses will "
+"shadow the built-in name)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:206
+msgid "Configuration"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:208
+msgid "`[path-bases]`"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:210
+msgid "Type: string"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:211
+msgid "Default: see below"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:212
+msgid "Environment: `CARGO_PATH_BASES_<name>`"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:214
+msgid ""
+"The `[path-bases]` table defines a set of path prefixes that can be used to "
+"prepend the locations of `path` dependencies. See the [specifying "
+"dependencies](https://doc.rust-lang.org/cargo/reference/specifying-"
+"dependencies.html#path-bases) documentation for more information."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:219
+msgid "cargo add"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:221
+msgid "Synopsis"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:223
+msgid "`cargo add` _\\[options\\]_ `--path` _path_ \\[`--base` _base_\\]"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:225
+msgid "Options"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:227
+msgid "Source options"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:229
+msgid "`--base` _base_"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:231
+msgid ""
+"The [path base](https://doc.rust-lang.org/cargo/reference/specifying-"
+"dependencies.html#path-bases) to use when adding from a local crate."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:234
+msgid "Workspaces"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:236
+msgid "Path bases can be used in a workspace's `[dependencies]` table."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:238
+msgid ""
+"If a member is inheriting a dependency (i.e., using `workspace = true`) then "
+"the `base` key cannot also be specified for that dependency in the member "
+"manifest. That is, the member will use the `path` dependency as specified in "
+"the workspace manifest and has no ability to override the base path being "
+"used (if any)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:243
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:246
+msgid ""
+"There is now an additional way to specify a dependency in `Cargo.toml` that "
+"may not be accessible when others try to build the same project. "
+"Specifically, it may now be that the other host has a `path` dependency "
+"available at the same relative path to `Cargo.toml` as the author of the "
+"`Cargo.toml` entry, but does not have the path base defined (or has it "
+"defined as some other value)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:253
+msgid ""
+"At the same time, this might make path dependencies _more_ re-usable across "
+"hosts, since developers can dictate only which _bases_ need to exist, rather "
+"than which _paths_ need to exist. This would allow different developers to "
+"host their path dependencies in different locations from the original author."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:258
+msgid ""
+"Developers still need to know the path _within_ each path base. We could "
+"instead define path \"aliases\", though at that point the whole thing looks "
+"more like a special kind of \"local path registry\"."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:261
+msgid ""
+"This introduces yet another mechanism for grouping local dependencies. We "
+"already have [local registries, directory registries](https://doc.rust-lang."
+"org/cargo/reference/source-replacement.html), and the [`[paths]` override]"
+"(https://doc.rust-lang.org/cargo/reference/overriding-dependencies."
+"html#paths-overrides). However, those are all intended for immutable local "
+"copies of dependencies where versioning is enforced, rather than as mutable "
+"path dependencies."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:270
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:273
+msgid ""
+"This design was primarily chosen for its simplicity — it adds very little to "
+"what we have today both in terms of API surface and mechanism. But, other "
+"approaches exist."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:277
+msgid ""
+"Developers could have their `path` dependencies point to symlinks in the "
+"current directory, which other developers would then be told to set up to "
+"point to the appropriate place on their system. This approach has two main "
+"drawbacks: they are harder to use on Windows as they [require special "
+"privileges](https://docs.microsoft.com/en-us/windows/security/threat-"
+"protection/security-policy-settings/create-symbolic-links), and they pollute "
+"the user's project directory."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:284
+msgid ""
+"For the build-system case, the build system could place vendored "
+"dependencies directly into the source directory at well-known locations, "
+"though this would mean that if the source of those dependencies were to "
+"change, the user would have to re-run the build system (rather than just run "
+"`cargo`) to refresh the vendored dependency. And this approach too would end "
+"up polluting the user's source directory."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:291
+msgid ""
+"An earlier iteration of the design avoided adding a new field to "
+"dependencies, and instead inlined the base name into the path using `path = "
+"\"base::relative/path\"`. This has the advantage of not introducing another "
+"special keyword in `Cargo.toml`, but comes at the cost of making `::` "
+"illegal in paths, which was deemed too great."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:297
+msgid ""
+"Alternatively, we could add support for extrapolating environment variables "
+"(or arbitrary configuration values?) in `Cargo.toml` values. That way, the "
+"path could be given as `path =  \"${base.name}/relative/path\"`. While that "
+"works, it's not trivially backwards compatible, may be confusing when users "
+"try to extrapolate random other configuration variables in their paths, and "
+"_seems_ like a possible Pandora's box of corner-cases."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:305
+msgid ""
+"The [`[paths]` feature](https://doc.rust-lang.org/cargo/reference/overriding-"
+"dependencies.html#paths-overrides) could be updated to lift its current "
+"limitations around adding dependencies and requiring that the dependencies "
+"be available on crates.io. This would allow users to avoid `path` "
+"dependencies in more cases, but makes the replacement more implicit than "
+"explicit. That change is also more likely to break existing users, and to "
+"involve significant refactoring of the existing mechanism."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:314
+msgid ""
+"We could add another type of local registry that is explicitly declared in "
+"`Cargo.toml`, and from which local dependencies could then be drawn. "
+"Something like:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:318
+msgid ""
+"```toml\n"
+"[registry.local]\n"
+"path = \"/path/to/path/registry\"\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:323
+msgid ""
+"This would make specifying the dependencies somewhat nicer (`version =  "
+"\"1\", registry = \"local\"`), and would ensure a standard layout for the "
+"locations of the local dependencies. However, using local dependencies in "
+"this manner would require more set-up to arrange for the right registry "
+"layout, and we would be introducing what is effectively a mutable registry, "
+"which Cargo has avoided thus far."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:330
+msgid ""
+"Even with such an approach, there are benefits to being able to not put "
+"complex paths into `Cargo.toml` as they may differ on other build hosts. So, "
+"a mechanism for indirecting through a path name may still be desirable."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:335
+msgid ""
+"Ultimately, by not having a mechanism to name paths that lives outside of "
+"`Cargo.toml`, we are forcing developers to coordinate their file system "
+"layouts without giving them a mechanism for doing so. Or to work around the "
+"lack of a mechanism by requiring developers to add symlinks in strategic "
+"locations, cluttering their directories. The proposed mechanism is simple to "
+"understand and to use, and still covers a wide variety of use-cases."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:343
+msgid "Support for declaring path bases in the manifest"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:345
+msgid ""
+"Currently path bases only support being declared in the configuration, and "
+"not the manifest. While it would be possible to add support for declaring "
+"path bases in the manifest in the future (which would require specifying if "
+"the declaration in the manifest or configuration is prefered, and how "
+"workspace versus members declarations work), it is hard to justify the "
+"additional complexity of adding of adding this capability to the initial "
+"implementation of the feature."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:352
+msgid ""
+"An argument could be made that specifying path bases in the manifest is a "
+"convenience feature, allowing a common path where multiple local "
+"dependencies exist to be specified as a path base so that the individual "
+"path dependencies would be shorter. However, it would be just as easy to add "
+"a configuration file to some parent directory of the dependent and this "
+"would be more useful as it is likely that those dependencies will also be "
+"used in other local packages thus saving the path bases table being "
+"duplicated in multiple manifests."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:360
+msgid ""
+"It could also be argued that specifying path bases in the manifest would be "
+"a way to set \"default values\" for path dependencies (e.g., to a submodule) "
+"that a developer could override in their local configuration file. While "
+"this may be useful, this scenario is already taken care of by the `patch` "
+"feature in Cargo."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:365
+msgid "Prior art"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:368
+msgid ""
+"Python searches for dependencies by walking `sys.path` in definition order, "
+"which [is pulled from](https://docs.python.org/3/tutorial/modules.html#the-"
+"module-search-path) the current directory, `PYTHONPATH`, and a list of "
+"system-wide library directories. All imports are thus \"relative\" to every "
+"directory in `sys.path`. This makes it easy to inject local development "
+"dependencies simply by injecting a path early in `sys.path`. The path "
+"dependency is never made explicit anywhere in Python. We _could_ adopt a "
+"similar approach by declaring an environment variable `CARGO_PATHS`, where "
+"every `path` is considered relative to each path in `CARGO_PATHS` until a "
+"path that exists is found. However, this introduces additional possibilities "
+"for user confusion if, say, `foo` exists in multiple paths in `CARGO_PATHS` "
+"and the first one is picked (though maybe that could be a warning?)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:383
+msgid ""
+"NodeJS (with npm) is very similar to Python, except that dependencies can "
+"also be [specified](https://nodejs.org/api/modules."
+"html#modules_all_together) using relative paths like Cargo's `path` "
+"dependencies. For non-path dependencies, it searches in [`node_modules/` in "
+"every parent directory](https://nodejs.org/api/modules."
+"html#modules_loading_from_node_modules_folders), as well as in the "
+"[`NODE_PATH` search path](https://nodejs.org/api/modules."
+"html#modules_loading_from_the_global_folders). There does not exist a "
+"standard mechanism to specify a path dependency relative to a path named "
+"elsewhere. With CommonJS modules, JavaScript developers are able to "
+"extrapolate variables directly into their `require` arguments, and can thus "
+"implement custom schemes for getting customizable paths."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:397
+msgid ""
+"Ruby's `Gemfile` [path dependencies](https://bundler.io/man/gemfile.5."
+"html#PATH) are only ever absolute paths or paths relative to the `Gemfile`'s "
+"location, and so are similar to Rust's current `path` dependencies."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:402
+msgid ""
+"The same is the case for Go's `go.mod` [replacement dependencies](https://"
+"golang.org/doc/modules/managing-dependencies#tmp_10), which only allow "
+"absolute or relative paths."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:406
+msgid ""
+"From this, it's clear that other major languages do not have a feature quite "
+"like this. This is likely because path dependencies are assumed to be short-"
+"lived and local, and thus having them be host-specific is often good enough. "
+"However, as the motivation section of this RFC outlines, there are still use-"
+"cases where a simple name-indirection could help."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:413
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/3529-cargo-path-bases.md:416
+msgid ""
+"What exact names we should use for the table (`path-bases`) and field names "
+"(`base`)?"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:418
+msgid "What other built-in base paths could be useful?"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:419
+msgid "`package` or `current-dir` for the directory of the current project?"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:420
+msgid "`home` or `user_home` for the user's home directory?"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:421
+msgid "`sysroot` for the current rustc sysroot?"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:423
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:426
+msgid "Add support for declaring path bases in the manifest"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:428
+msgid ""
+"As mentioned [above](#support-for-declaring-path-bases-in-the-manifest), "
+"declaring path bases is only supported in the configuration."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:431
+msgid ""
+"Support could be added to declare path bases in the manifest, but the "
+"following design questions need to be answered:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:434
+msgid "Is `[path-bases]` a package or a workspace field?"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:435
+msgid ""
+"If it is a package field, would it support workspace inheritance? Or would "
+"we introduce a new mechanism (e.g., one version of the RFC introduced a "
+"\"search order\" such that Cargo would search for a path base in the package "
+"manifest, then the workspace manifest, then the configuration and finally "
+"the built-in list)."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:440
+msgid ""
+"Would a relative path base in the workspace manifest be relative to that "
+"manifest, or to the package that uses it?"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:442
+msgid ""
+"If using inheritance, should path bases be implicitly or explicitly "
+"inherited? (e.g., requiring `[base-paths] workspace = true`)"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:445
+msgid "Path bases relative to other path bases"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:447
+msgid "We could allow defining a path base relative to another path base:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:449
+msgid ""
+"```toml\n"
+"[path-bases]\n"
+"base1 = \"/dev/me\"\n"
+"base2 = { base = \"base1\", path = \"some_subdir\" } # /dev/me/some_subdir\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:455
+msgid "Path dependency with just a base"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:457
+msgid ""
+"We could allow defining a path dependency with _just_ `base`, making "
+"`cratename = { base = \"thebase\" }` equivalent to `cratename = { base = "
+"\"thebase\", path = \"cratename\" }`. This would simplify many common cases, "
+"where crates appear within the base in a directory named for the crate."
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:463
+msgid "Git dependencies"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:465
+msgid ""
+"It seems reasonable to extend path bases to `git` dependencies, with "
+"something like:"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:468
+msgid ""
+"```toml\n"
+"[path-bases]\n"
+"gh = \"https://github.com/jonhoo\"\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:473
+msgid ""
+"```toml\n"
+"[dependency]\n"
+"foo = { git = \"foo.git\", base = \"gh\" }\n"
+"```"
+msgstr ""
+
+#: src/3529-cargo-path-bases.md:478
+msgid ""
+"However, this may get complicated if someone specifies `git`, `path`, _and_ "
+"`base`."
+msgstr ""

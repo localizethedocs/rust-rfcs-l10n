@@ -1,0 +1,129 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1521-copy-clone-semantics.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:2
+msgid "Start Date: 2016-03-01"
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1521](https://github.com/rust-lang/rfcs/pull/1521)"
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#33416](https://github.com/rust-lang/rust/"
+"issues/33416)"
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1521-copy-clone-semantics.md:9
+msgid ""
+"With specialization on the way, we need to talk about the semantics of `<T "
+"as Clone>::clone() where T: Copy`."
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:12
+msgid ""
+"It's generally been an unspoken rule of Rust that a `clone` of a `Copy` type "
+"is equivalent to a `memcpy` of that type; however, that fact is not "
+"documented anywhere. This fact should be in the documentation for the "
+"`Clone` trait, just like the fact that `T: Eq` should implement `a == b == c "
+"== a` rules."
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:17
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1521-copy-clone-semantics.md:20
+msgid ""
+"Currently, `Vec::clone()` is implemented by creating a new `Vec`, and then "
+"cloning all of the elements from one into the other. This is slow in debug "
+"mode, and may not always be optimized (although it often will be). "
+"Specialization would allow us to simply `memcpy` the values from the old "
+"`Vec` to the new `Vec` in the case of `T: Copy`. However, if we don't "
+"specify this, we will not be able to, and we will be stuck looping over "
+"every value."
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:27
+msgid ""
+"It's always been the intention that `Clone::clone == ptr::read for T: Copy`; "
+"see [issue #23790](https://github.com/rust-lang/rust/issues/23790): \"It "
+"really makes sense for `Clone` to be a supertrait of `Copy` -- `Copy` is a "
+"refinement of `Clone` where `memcpy` suffices, basically.\" This idea was "
+"also implicit in accepting [rfc #0839](https://github.com/rust-lang/rfcs/"
+"blob/master/text/0839-embrace-extend-extinguish.md) where \"\\[B\\]ecause "
+"Copy: Clone, it would be backwards compatible to upgrade to Clone in the "
+"future if demand is high enough.\""
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:34
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1521-copy-clone-semantics.md:37
+msgid ""
+"Specify that `<T as Clone>::clone(t)` shall be equivalent to `ptr::read(t)` "
+"where `T: Copy, t: &T`. An implementation that does not uphold this _shall "
+"not_ result in undefined behavior; `Clone` is not an `unsafe trait`."
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:41
+msgid ""
+"Also add something like the following sentence to the documentation for the "
+"`Clone` trait:"
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:44
+msgid ""
+"\"If `T: Copy`, `x: T`, and `y: &T`, then `let x = y.clone();` is equivalent "
+"to `let x = *y;`. Manual implementations must be careful to uphold this.\""
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:47
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:50
+msgid ""
+"This is a breaking change, technically, although it breaks code that was "
+"malformed in the first place."
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:53
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1521-copy-clone-semantics.md:56
+msgid ""
+"The alternative is that, for each type and function we would like to "
+"specialize in this way, we document this separately. This is how we started "
+"off with `clone_from_slice`."
+msgstr ""
+
+#: src/1521-copy-clone-semantics.md:60
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1521-copy-clone-semantics.md:63
+msgid "What the exact wording should be."
+msgstr ""

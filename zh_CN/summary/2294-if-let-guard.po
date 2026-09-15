@@ -1,0 +1,224 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2294-if-let-guard.md:1
+msgid "Feature Name: `if_let_guard`"
+msgstr ""
+
+#: src/2294-if-let-guard.md:2
+msgid "Start Date: 2018-01-15"
+msgstr ""
+
+#: src/2294-if-let-guard.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2294](https://github.com/rust-lang/rfcs/pull/2294)"
+msgstr ""
+
+#: src/2294-if-let-guard.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#51114](https://github.com/rust-lang/rust/"
+"issues/51114)"
+msgstr ""
+
+#: src/2294-if-let-guard.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2294-if-let-guard.md:9
+msgid "Allow `if let` guards in `match` expressions."
+msgstr ""
+
+#: src/2294-if-let-guard.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/2294-if-let-guard.md:14
+msgid ""
+"This feature would greatly simplify some logic where we must match a pattern "
+"iff some value computed from the `match`\\-bound values has a certain form, "
+"where said value may be costly or impossible (due to affine semantics) to "
+"recompute in the match arm."
+msgstr ""
+
+#: src/2294-if-let-guard.md:16
+msgid ""
+"For further motivation, see the example in the guide-level explanation. "
+"Absent this feature, we might rather write the following:"
+msgstr ""
+
+#: src/2294-if-let-guard.md:21
+msgid "/* can't re-use event verbatim if `datum` is non-`Copy` */"
+msgstr ""
+
+#: src/2294-if-let-guard.md:26
+msgid ""
+"`accept` may in general be lengthy and inconvenient to move into another "
+"function, for example if it refers to many locals."
+msgstr ""
+
+#: src/2294-if-let-guard.md:28
+msgid ""
+"Here is an (incomplete) example taken from a real codebase, to respond to "
+"ANSI CSI escape sequences:"
+msgstr ""
+
+#: src/2294-if-let-guard.md:34 src/2294-if-let-guard.md:101
+msgid "'C'"
+msgstr ""
+
+#: src/2294-if-let-guard.md:35 src/2294-if-let-guard.md:38
+#: src/2294-if-let-guard.md:45 src/2294-if-let-guard.md:53
+#: src/2294-if-let-guard.md:64 src/2294-if-let-guard.md:67
+#: src/2294-if-let-guard.md:70 src/2294-if-let-guard.md:111
+#: src/2294-if-let-guard.md:114
+msgid "\"Unknown CSI sequence: {:?}, {:?}, {:?}, {:?}\""
+msgstr ""
+
+#: src/2294-if-let-guard.md:37 src/2294-if-let-guard.md:102
+msgid "'D'"
+msgstr ""
+
+#: src/2294-if-let-guard.md:40 src/2294-if-let-guard.md:122
+msgid "'J'"
+msgstr ""
+
+#: src/2294-if-let-guard.md:48 src/2294-if-let-guard.md:129
+msgid "'K'"
+msgstr ""
+
+#: src/2294-if-let-guard.md:56 src/2294-if-let-guard.md:104
+msgid "'m'"
+msgstr ""
+
+#: src/2294-if-let-guard.md:76
+msgid ""
+"These examples are both clearer with `if let` guards as follows. "
+"Particularly in the latter example, in the author's opinion, the control "
+"flow is easier to follow."
+msgstr ""
+
+#: src/2294-if-let-guard.md:78
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2294-if-let-guard.md:81
+msgid "_(Adapted from Rust book)_"
+msgstr ""
+
+#: src/2294-if-let-guard.md:83
+msgid ""
+"A _match guard_ is an `if let` condition specified after the pattern in a "
+"`match` arm that also must match if the pattern matches in order for that "
+"arm to be chosen. Match guards are useful for expressing more complex ideas "
+"than a pattern alone allows."
+msgstr ""
+
+#: src/2294-if-let-guard.md:85
+msgid ""
+"The condition can use variables created in the pattern, and the match arm "
+"can use any variables bound in the `if let` pattern (as well as any bound in "
+"the `match` pattern, unless the `if let` expression moves out of them)."
+msgstr ""
+
+#: src/2294-if-let-guard.md:87
+msgid ""
+"Let us consider an example which accepts a user-interface event (e.g. key "
+"press, pointer motion) and follows 1 of 2 paths: either we intercept it and "
+"take some action or deal with it normally (whatever that might mean here):"
+msgstr ""
+
+#: src/2294-if-let-guard.md:95
+msgid "Here is another example, to respond to ANSI CSI escape sequences:"
+msgstr ""
+
+#: src/2294-if-let-guard.md:142
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2294-if-let-guard.md:145
+msgid ""
+"This proposal would introduce syntax for a match arm: `pat if let guard_pat "
+"= guard_expr => body_expr` with semantics so the arm is chosen iff the "
+"argument of `match` matches `pat` and `guard_expr` matches `guard_pat`. The "
+"variables of `pat` are bound in `guard_expr`, and the variables of `pat` and "
+"`guard_pat` are bound in `body_expr`. The syntax is otherwise the same as "
+"for `if` guards. (Indeed, `if` guards become effectively syntactic sugar for "
+"`if let` guards.)"
+msgstr ""
+
+#: src/2294-if-let-guard.md:147
+msgid "An arm may not have both an `if` and an `if let` guard."
+msgstr ""
+
+#: src/2294-if-let-guard.md:149
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2294-if-let-guard.md:152
+msgid "It further complicates the grammar."
+msgstr ""
+
+#: src/2294-if-let-guard.md:153
+msgid ""
+"It is ultimately syntactic sugar, but the transformation to present Rust is "
+"potentially non-obvious."
+msgstr ""
+
+#: src/2294-if-let-guard.md:155
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2294-if-let-guard.md:158
+msgid ""
+"The chief alternatives are to rewrite the guard as an `if` guard and a bind "
+"in the match arm, or in some cases into the argument of `match`; or to write "
+"the `if let` in the match arm and copy the rest of the `match` into the "
+"`else` branch — what can be done with this syntax can already be done in "
+"Rust (to the author's knowledge); this proposal is purely ergonomic, but in "
+"the author's opinion, the ergonomic win is significant."
+msgstr ""
+
+#: src/2294-if-let-guard.md:159
+msgid ""
+"The proposed syntax feels natural by analogy to the `if` guard syntax we "
+"already have, as between `if` and `if let` expressions. No alternative "
+"syntaxes were considered."
+msgstr ""
+
+#: src/2294-if-let-guard.md:161
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2294-if-let-guard.md:164
+msgid "Questions in scope of this proposal: none yet known"
+msgstr ""
+
+#: src/2294-if-let-guard.md:166
+msgid "Questions out of scope:"
+msgstr ""
+
+#: src/2294-if-let-guard.md:168
+msgid ""
+"Should we allow multiple guards? This proposal allows only a single `if let` "
+"guard. One can combine `if` guards with `&&` — [an RFC](https://github.com/"
+"rust-lang/rfcs/issues/929) to allow `&&` in `if let` already is, so we may "
+"want to follow that in future for `if let` guards also."
+msgstr ""
+
+#: src/2294-if-let-guard.md:169
+msgid ""
+"What happens if `guard_expr` moves out of `pat` but fails to match? This is "
+"already a question for `if` guards and (to the author's knowledge) not "
+"formally specified anywhere — this proposal (implicitly) copies that "
+"behavior."
+msgstr ""

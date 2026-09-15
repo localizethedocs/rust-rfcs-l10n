@@ -1,0 +1,222 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1047-socket-timeouts.md:1
+msgid "Feature Name: `socket_timeouts`"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:2
+msgid "Start Date: 2015-04-08"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1047](https://github.com/rust-lang/rfcs/pull/1047)"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#25619](https://github.com/rust-lang/rust/"
+"issues/25619)"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1047-socket-timeouts.md:8
+msgid "Add sockopt-style timeouts to `std::net` types."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:10
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1047-socket-timeouts.md:12
+msgid ""
+"Currently, operations on various socket types in `std::net` block "
+"indefinitely (i.e., until the connection is closed or data is transferred). "
+"But there are many contexts in which timing out a blocking call is important."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:17
+msgid ""
+"The [goal of the current IO system](https://github.com/rust-lang/rfcs/blob/"
+"master/text/0517-io-os-reform.md) is to gradually expose cross-platform, "
+"blocking APIs for IO, especially APIs that directly correspond to the "
+"underlying system APIs. Sockets are widely available with nearly identical "
+"system APIs across the platforms Rust targets, and this includes support for "
+"timeouts via [sockopts](http://pubs.opengroup.org/onlinepubs/009695399/"
+"functions/setsockopt.html)."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:23
+msgid "So timeouts are well-motivated and well-suited to `std::net`."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:25
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1047-socket-timeouts.md:27
+msgid ""
+"The proposal is to _directly expose_ the timeout functionality provided by "
+"[`setsockopt`](http://pubs.opengroup.org/onlinepubs/009695399/functions/"
+"setsockopt.html), in much the same way we currently expose functionality "
+"like `set_nodelay`:"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:49
+msgid ""
+"The setter methods take an amount of time in the form of a `Duration`, which "
+"is [undergoing stabilization](https://github.com/rust-lang/rfcs/pull/1040). "
+"They are implemented via straightforward calls to `setsockopt`. The `Option` "
+"is used to signify no timeout (for both setting and getting). Consequently, "
+"`Some(Duration::new(0, 0))` is a possible argument; the setter methods will "
+"return an IO error of kind `InvalidInput` in this case. (See Alternatives "
+"for other approaches.)"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:57
+msgid "The corresponding socket options are `SO_RCVTIMEO` and `SO_SNDTIMEO`."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:59
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:61
+msgid ""
+"One potential downside to this design is that the timeouts are set through "
+"direct mutation of the socket state, which can lead to composition problems. "
+"For example, a socket could be passed to another function which needs to use "
+"it with a timeout, but setting the timeout clobbers any previous values. "
+"This lack of composability leads to defensive programming in the form of "
+"\"callee save\" resets of timeouts, for example. An alternative design is "
+"given below."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:69
+msgid ""
+"The advantage of binding the mutating APIs directly is that we keep a close "
+"correspondence between the `std::net` types and their underlying system "
+"types, and a close correspondence between Rust APIs and system APIs. It's "
+"not clear that this kind of composability is important enough in practice to "
+"justify a departure from the traditional API."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:75
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1047-socket-timeouts.md:77
+msgid "Taking `Duration` directly"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:79
+msgid ""
+"Using an `Option<Duration>` introduces a certain amount of complexity \\-- "
+"it raises the issue of `Some(Duration::new(0, 0))`, and it's slightly more "
+"verbose to set a timeout."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:83
+msgid ""
+"An alternative would be to take a `Duration` directly, and interpret a zero "
+"length duration as \"no timeout\" (which is somewhat traditional in C APIs). "
+"That would make the API somewhat more familiar, but less Rustic, and it "
+"becomes somewhat easier to pass in a zero value by accident (without "
+"thinking about this possibility)."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:89
+msgid ""
+"Note that both styles of API require code that does arithmetic on durations "
+"to check for zero in advance."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:92
+msgid ""
+"Aside from fitting Rust idioms better, the main proposal also gives a "
+"somewhat stronger indication of a bug when things go wrong (rather than "
+"simply failing to time out, for example)."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:96
+msgid "Combining with nonblocking support"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:98
+msgid ""
+"Another possibility would be to provide a single method that can choose "
+"between blocking indefinitely, blocking with a timeout, and nonblocking mode:"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:110
+msgid ""
+"This `enum` makes clear that it doesn't make sense to have both a timeout "
+"and put the socket in nonblocking mode. On the other hand, it would "
+"relinquish the one-to-one correspondence between Rust configuration APIs and "
+"underlying socket options."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:115
+msgid "Wrapping for compositionality"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:117
+msgid ""
+"A different approach would be to _wrap_ socket types with a \"timeout "
+"modifier\", which would be responsible for setting and resetting the "
+"timeouts:"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:128
+msgid "/// Returns the wrapped object, resetting the timeout\n"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:133
+msgid "/// Wraps the stream with a timeout\n"
+msgstr ""
+
+#: src/1047-socket-timeouts.md:141
+msgid ""
+"A [previous RFC](https://github.com/rust-lang/rfcs/pull/577/) spelled this "
+"out in more detail."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:143
+msgid ""
+"Unfortunately, such a \"wrapping\" API has problems of its own. It creates "
+"unfortunate type incompatibilities, since you cannot store a timeout-wrapped "
+"socket where a \"normal\" socket is expected.  It is difficult to be "
+"\"polymorphic\" over timeouts."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:148
+msgid ""
+"Ultimately, it's not clear that the extra complexities of the type "
+"distinction here are worth the better theoretical composability."
+msgstr ""
+
+#: src/1047-socket-timeouts.md:151
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1047-socket-timeouts.md:153
+msgid ""
+"Should we consider a preliminary version of this RFC that introduces methods "
+"like `set_read_timeout_ms`, similar to `wait_timeout_ms` on `Condvar`? These "
+"methods have been introduced elsewhere to provide a stable way to use "
+"timeouts prior to `Duration` being stabilized."
+msgstr ""
