@@ -1,0 +1,478 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3698-declarative-derive-macros.md:1
+msgid "Feature Name: `macro_derive`"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:2
+msgid "Start Date: 2024-09-20"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3698](https://github.com/rust-lang/rfcs/pull/3698)"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#143549](https://github.com/rust-lang/rust/"
+"issues/143549)"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:9
+msgid "Support implementing `derive(Trait)` via a `macro_rules!` macro."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:14
+msgid ""
+"Many crates support deriving their traits with `derive(Trait)`. Today, this "
+"requires defining proc macros, in a separate crate, typically with several "
+"additional dependencies adding substantial compilation time, and typically "
+"guarded by a feature that users need to remember to enable."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:19
+msgid ""
+"However, many common cases of derives don't require any more power than an "
+"ordinary `macro_rules!` macro. Supporting these common cases would allow "
+"many crates to avoid defining proc macros, reduce dependencies and "
+"compilation time, and provide these macros unconditionally without requiring "
+"the user to enable a feature."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:25
+#: src/3698-declarative-derive-macros.md:204
+msgid ""
+"The [`macro_rules_attribute`](https://crates.io/crates/"
+"macro_rules_attribute) crate defines proc macros that allow invoking "
+"declarative macros as derives, demonstrating a demand for this. This feature "
+"would allow defining such derives without requiring proc macros at all, and "
+"would support the same invocation syntax as a proc macro."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:31
+#: src/3698-declarative-derive-macros.md:210
+msgid ""
+"The derive feature of the crate has [various uses in the ecosystem](https://"
+"github.com/search?q=macro_rules_attribute%3A%3Aderive&type=code)."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:34
+msgid ""
+"`derive` macros have a standard syntax that Rust users have come to expect "
+"for defining traits; this motivates providing users a way to invoke that "
+"mechanism for declarative macros. An attribute or a `macro_name!` invocation "
+"could serve the same purpose, but that would be less evocative than "
+"`derive(Trait)` for the purposes of making the purpose of the macro clear, "
+"and would additionally give the macro more power to rewrite the underlying "
+"definition. Derive macros simplify tools like rust-analyzer, which can know "
+"that a derive macro will never change the underlying item definition."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:43
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:46
+msgid ""
+"You can define a macro to implement `derive(MyTrait)` by defining a "
+"`macro_rules!` macro with one or more `derive()` rules. Such a macro can "
+"create new items based on a struct, enum, or union. Note that the macro can "
+"only append new items; it cannot modify the item it was applied to."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:51
+msgid "For example:"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:57
+msgid "// Simplified for this example\n"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:74
+msgid ""
+"Derive macros defined using `macro_rules!` follow the same scoping rules as "
+"any other macro, and may be invoked by any path that resolves to them."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:77
+msgid ""
+"A derive macro may share the same path as a trait of the same name. For "
+"instance, the name `mycrate::MyTrait` can refer to both the `MyTrait` trait "
+"and the macro for `derive(MyTrait)`. This is consistent with existing derive "
+"macros."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:82
+msgid ""
+"If a derive macro emits a trait impl for the type, it may want to add the "
+"[`#[automatically_derived]`](https://doc.rust-lang.org/reference/attributes/"
+"derive.html#the-automatically_derived-attribute) attribute, for the benefit "
+"of diagnostics."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:86
+msgid ""
+"If a derive macro mistakenly emits the token stream it was applied to "
+"(resulting in a duplicate item definition), the error the compiler emits for "
+"the duplicate item should hint to the user that the macro was defined "
+"incorrectly, and remind the user that derive macros only append new items."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:91
+msgid ""
+"A `derive()` rule can be marked as `unsafe`: `unsafe derive() (...) => "
+"{ ... }`. Invoking such a derive using a rule marked as `unsafe` requires "
+"`unsafe` derive syntax: `#[derive(unsafe(DangerousDeriveMacro))]`"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:97
+msgid ""
+"Invoking an unsafe derive rule without the unsafe derive syntax will produce "
+"a compiler error. Using the unsafe derive syntax without an unsafe derive "
+"will trigger an \"unused unsafe\" lint. (RFC 3715 defines the equivalent "
+"mechanism for proc macro derives.)"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:102
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:105
+msgid "The grammar for macros is extended as follows:"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:107
+msgid ""
+"_MacroRule_ :  \n"
+"   ( `unsafe`<sup>?</sup> `derive` `(` `)` )<sup>?</sup>  _MacroMatcher_ "
+"`=>` _MacroTranscriber_"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:110
+msgid ""
+"The _MacroMatcher_ matches the entire construct the attribute was applied "
+"to, receiving precisely what a proc-macro-based attribute would in the same "
+"place."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:114
+msgid ""
+"(The empty parentheses after `derive` reserve future syntax space for "
+"derives accepting arguments, at which time they'll be replaced by a second "
+"_MacroMatcher_ that matches the arguments.)"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:118
+msgid ""
+"A derive invocation that uses an `unsafe derive` rule will produce an error "
+"if invoked without using the `unsafe` derive syntax. A derive invocation "
+"that uses an `derive` rule (without `unsafe`) will trigger the \"unused "
+"unsafe\" lint if invoked using the `unsafe` derive syntax. A single derive "
+"macro may have both `derive` and `unsafe derive` rules, such as if only some "
+"invocations are unsafe."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:125
+msgid ""
+"This grammar addition is backwards compatible: previously, a _MacroRule_ "
+"could only start with `(`, `[`, or `{`, so the parser can easily distinguish "
+"rules that start with `derive` or `unsafe`."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:129
+msgid ""
+"Adding `derive` rules to an existing macro is a semver-compatible change, "
+"though in practice, it will likely be uncommon."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:132
+msgid ""
+"If a user invokes a macro as a derive and that macro does not have any "
+"`derive` rules, the compiler should give a clear error stating that the "
+"macro is not usable as a derive because it does not have any `derive` rules."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:136
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:139
+msgid ""
+"This feature will not be sufficient for _all_ uses of proc macros in the "
+"ecosystem, and its existence may create social pressure for crate "
+"maintainers to switch even if the result is harder to maintain. We can and "
+"should attempt to avert and such pressure, such as by providing a post with "
+"guidance that crate maintainers can link to when responding to such requests."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:145
+#: src/3698-declarative-derive-macros.md:224
+msgid ""
+"Before stabilizing this feature, we should receive feedback from crate "
+"maintainers, and potentially make further improvements to `macro_rules` to "
+"make it easier to use for their use cases. This feature will provide "
+"motivation to evaluate many new use cases that previously weren't written "
+"using `macro_rules`, and we should consider quality-of-life improvements to "
+"better support those use cases."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:152
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:155
+msgid ""
+"Adding this feature will allow many crates in the ecosystem to drop their "
+"proc macro crates and corresponding dependencies, and decrease their build "
+"times."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:158
+msgid ""
+"This will also give derive macros access to the `$crate` mechanism to refer "
+"to the defining crate, which is simpler than mechanisms currently used in "
+"proc macros to achieve the same goal."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:162
+msgid ""
+"Macros defined this way can more easily support caching, as they cannot "
+"depend on arbitrary unspecified inputs."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:165
+msgid ""
+"Crates could instead define `macro_rules!` macros and encourage users to "
+"invoke them using existing syntax like `macroname! { ... }`, rather than "
+"using derives. This would provide the same functionality, but would not "
+"support the same syntax people are accustomed to, and could not maintain "
+"semver compatibility with an existing proc-macro-based derive. In addition, "
+"this would not preserve the property derive macros normally have that they "
+"cannot change the item they are applied to."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:173
+msgid ""
+"A mechanism to define attribute macros would let people write attributes "
+"like `#[derive_mytrait]`, but that would not provide compatibility with "
+"existing derive syntax."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:177
+msgid ""
+"We could allow `macro_rules!` derive macros to emit a replacement token "
+"stream. That would be inconsistent with the restriction preventing proc "
+"macros from doing the same, but it would give macros more capabilities, and "
+"simplify some use cases. Notably, that would make it easy for derive macros "
+"to re-emit a structure with another `derive` attached to it."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:183
+msgid ""
+"We could allow directly invoking a `macro_rules!` derive macro as a function-"
+"like macro. This has the potential for confusion, given the append-only "
+"nature of derive macros versus the behavior of normal function-like macros. "
+"It might potentially be useful for code reuse, however."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:188
+msgid "Syntax alternatives"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:190
+msgid ""
+"Rather than using `derive()` rules, we could have `macro_rules!` macros use "
+"a `#[macro_derive]` attribute, similar to the `#[proc_macro_derive]` "
+"attribute used for proc macros."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:194
+msgid ""
+"However, this would be inconsistent with `attr()` rules as defined in RFC "
+"3697. This would also make it harder to add parameterized derives in the "
+"future (e.g. `derive(MyTrait(params))`)."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:198
+msgid "Prior art"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:201
+msgid ""
+"We have had proc-macro-based derive macros for a long time, and the "
+"ecosystem makes extensive use of them."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:213
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:216
+msgid ""
+"Before stabilizing this feature, we should ensure there's a mechanism macros "
+"can use to ensure that an error when producing an impl does not result in a "
+"cascade of additional errors caused by a missing impl. This may take the "
+"form of a fallback impl, for instance."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:221
+msgid ""
+"Before stabilizing this feature, we should make sure it doesn't produce "
+"wildly worse error messages in common cases."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:231
+msgid ""
+"Before stabilizing this feature, we should have clear public guidance "
+"recommending against pressuring crate maintainers to adopt this feature "
+"rapidly, and encourage crate maintainers to link to that guidance if such "
+"requests arise."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:236
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:239
+msgid ""
+"We should provide a way for derive macros to invoke other derive macros. The "
+"`macro_rules_attribute` crate includes a `derive_alias` mechanism, which we "
+"could trivially implement given a means of invoking another derive macro."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:243
+msgid ""
+"We should provide a means to perform a `derive` on a struct without being "
+"directly attached to that struct. (This would also potentially require "
+"something like a compile-time reflection mechanism.)"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:247
+msgid ""
+"We could support passing parameters to derive macros (e.g. "
+"`#[derive(Trait(params), OtherTrait(other, params))]`). This may benefit "
+"from having `derive(...)` rules inside the `macro_rules!` macro declaration, "
+"similar to the `attr(...)` rules proposed in RFC 3697."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:252
+msgid ""
+"In the future, if we support something like `const Trait` or similar trait "
+"modifiers, we'll want to support `derive(const Trait)`, and define how a "
+"`macro_rules!` derive handles that."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:256
+msgid ""
+"We should provide a way for `macro_rules!` macros to provide better error "
+"reporting, with spans, rather than just pointing to the macro."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:259
+msgid ""
+"We may want to support error recovery, so that a derive can produce an error "
+"but still provide enough for the remainder of the compilation to proceed far "
+"enough to usefully report further errors."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:263
+msgid ""
+"As people test this feature and run into limitations of `macro_rules!` "
+"parsing, we should consider additional features to make this easier to use "
+"for various use cases."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:267
+msgid ""
+"We could provide a macro matcher to match an entire struct field, along with "
+"syntax (based on macro metavariable expressions) to extract the field name "
+"or type (e.g. `${f.name}`). This would simplify many common cases by "
+"leveraging the compiler's own parser."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:272
+msgid "We could do the same for various other high-level constructs."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:274
+msgid ""
+"We may want to provide simple helpers for generating/propagating `where` "
+"bounds, which would otherwise be complex to do in a `macro_rules!` macro."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:277
+msgid ""
+"We may want to add a lint for macro names, encouraging macros with derive "
+"rules to use `CamelCase` names, and encouraging macros without derive rules "
+"to use `snake_case` names."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:281
+msgid "Helper attribute namespacing and hygiene"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:283
+msgid ""
+"We should provide a way for derive macros to define helper attributes "
+"([inert attributes](https://doc.rust-lang.org/reference/attributes."
+"html#active-and-inert-attributes) that exist for the derive macro to parse "
+"and act upon). Such attributes are supported by proc macro derives; however, "
+"such attributes have no namespacing, and thus currently represent "
+"compatibility hazards because they can conflict. We should provide a "
+"namespaced, hygienic mechanism for defining and using helper attributes."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:291
+msgid ""
+"For instance, could we have `pub macro_helper_attr! skip` in the standard "
+"library, namespaced under `core::derives` or similar? Could we let macros "
+"parse that in a way that matches it in a namespaced fashion, so that:"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:294
+msgid "If you write `#[core::derives::skip]`, the macro matches it"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:295
+msgid ""
+"If you `use core::derives::skip;` and `write #[skip]`, the macro matches it"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:296
+msgid ""
+"If you `use elsewhere::skip` (or no import at all) and write `#[skip]`, the "
+"macro _doesn't_ match it."
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:299
+msgid ""
+"We already have _some_ interaction between macros and name resolution, in "
+"order to have namespaced `macro_rules!` macros. Would something like this be "
+"feasible?"
+msgstr ""
+
+#: src/3698-declarative-derive-macros.md:302
+msgid ""
+"(We would still need to specify the exact mechanism by which macros match "
+"these helper attributes.)"
+msgstr ""

@@ -1,0 +1,845 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1946-intra-rustdoc-links.md:1
+msgid "Feature Name: `intra_rustdoc_links`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:2
+msgid "Start Date: 2017-03-06"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1946](https://github.com/rust-lang/rfcs/pull/1946)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#43466](https://github.com/rust-lang/rust/"
+"issues/43466)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1946-intra-rustdoc-links.md:9
+msgid ""
+"Add a notation how to create relative links in documentation comments (based "
+"on Rust item paths) and extend Rustdoc to automatically turn this into "
+"working links."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:14
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1946-intra-rustdoc-links.md:17
+msgid ""
+"It is good practice in the Rust community to add documentation to all public "
+"items of a crate, as the API documentation as rendered by Rustdoc is the "
+"main documentation of most libraries. Documentation comments at the module "
+"(or crate) level are used to give an overview of the module (or crate) and "
+"describe how the items of a crate can be used together. To make navigating "
+"the documentation easy, crate authors make these items link to their "
+"individual entries in the API docs."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:27
+msgid ""
+"Currently, these links are plain Markdown links, and the URLs are the "
+"(relative) paths of the items' pages in the rendered Rustdoc output. This is "
+"sadly very fragile in several ways:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:32
+msgid ""
+"As the same doc comment can be rendered on several Rustdoc pages and thus on "
+"separate directory levels (e.g., the summary page of a module, and a "
+"struct's own page), it is not possible to confidently use relative paths. "
+"For example, adding a link to `../foo/struct.Bar.html` to the first "
+"paragraph of the doc comment of the module `lorem` will work on the rendered "
+"`/lorem/index.html` page, but not on the crate's summary page `/index.html`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:41
+msgid ""
+"Using absolute paths in links (like `/crate-name/foo/struct.Bar.html`) to "
+"circumvent the previous issue might work for the author's own hosted "
+"version, but will break when looking at the documentation using `cargo doc --"
+"open` (which uses `file:///` URLs) or when using docs.rs."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:49
+msgid ""
+"Should Rustdoc's file name scheme ever change (it has change before, cf. "
+"[Rust issue #35236](https://github.com/rust-lang/rust/pull/35236)), all "
+"manually created links need to be updated."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:55
+msgid ""
+"To solve this dilemma, we propose extending Rustdoc to be able to generate "
+"relative links that work in all contexts."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:60
+msgid "Detailed Design"
+msgstr "詳細設計"
+
+#: src/1946-intra-rustdoc-links.md:63
+msgid ""
+"[Markdown](https://daringfireball.net/projects/markdown/syntax)/[CommonMark]"
+"(http://commonmark.org) allow writing links in several forms (the names are "
+"from the [CommonMark spec](http://spec.commonmark.org/0.27/) in version "
+"0.27):"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:70
+msgid ""
+"`[link text](URL)` ([inline link](http://spec.commonmark.org/0.27/#inline-"
+"link))"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:72
+msgid ""
+"`[link text][link label]` ([reference link](http://spec.commonmark.org/0.27/"
+"#reference-link), link label can also be omitted, cf. [shortcut reference "
+"links](http://spec.commonmark.org/0.27/#shortcut-reference-link)) and "
+"somewhere else in the document: `[link label]: URL` (this part is called "
+"[link reference definition](http://spec.commonmark.org/0.27/#link-reference-"
+"definitions))"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:77
+msgid ""
+"`<URL>` which will be turned into the equivalent of `[URL](URL)` ([autolink]"
+"(http://spec.commonmark.org/0.27/#autolinks), required to start with a "
+"schema)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:86
+msgid ""
+"We propose that in each occurrence of `URL` of inline links and link "
+"reference definitions, it should also be possible to write a Rust path (as "
+"defined [in the reference](https://github.com/rust-lang-nursery/reference/"
+"blob/2d23ea601f017c106a2303094ee1c57ba856d246/src/paths.md)). Additionally, "
+"automatic [link reference definitions](http://spec.commonmark.org/0.27/#link-"
+"reference-definitions) should be generated to allow easy linking to obvious "
+"targets."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:96
+msgid "Additions To The Documentation Syntax"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:98
+msgid "Rust paths as URLs in inline and reference links:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:100
+msgid "`[Iterator](std::iter::Iterator)`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:101
+msgid ""
+"`[Iterator][iter]`, and somewhere else in the document: `[iter]: std::iter::"
+"Iterator`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:103
+msgid ""
+"`[Iterator]`, and somewhere else in the document: `[Iterator]: std::iter::"
+"Iterator`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:106
+msgid "Implied Shortcut Reference Links"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:109
+msgid ""
+"The third syntax example above shows a [shortcut reference link](http://spec."
+"commonmark.org/0.27/#shortcut-reference-link), which is a reference link "
+"whose link text and link label are the same, and there exists a link "
+"reference definition for that label. For example: `[HashMap]` will be "
+"rendered as a link given a link reference definition like `[HashMap]: std::"
+"collections::HashMap`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:117
+msgid ""
+"To make linking to items easier, we introduce \"implied link reference "
+"definitions\":"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:120
+msgid ""
+"`[std::iter::Iterator]`, without having a link reference definition for "
+"`Iterator` anywhere else in the document"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:122
+msgid ""
+"``[`std::iter::Iterator`]``, without having a link reference definition for "
+"`Iterator` anywhere else in the document (same as previous style but with "
+"back ticks to format link as inline code)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:126
+msgid "If Rustdoc finds a shortcut reference link"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:128
+msgid "without a matching link reference definition"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:129
+msgid ""
+"whose link label, after stripping leading and trailing back ticks, is a "
+"valid Rust path"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:133
+msgid ""
+"it will add a link reference definition for this link label pointing to the "
+"Rust path."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:136
+msgid ""
+"[Collapsed reference links](http://spec.commonmark.org/0.27/#collapsed-"
+"reference-link) (`[link label][]`) are handled analogously."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:140
+msgid ""
+"(This was one of the first ideas suggested by [CommonMark forum](https://"
+"talk.commonmark.org/t/what-should-the-rust-community-do-for-linkage/2141) "
+"members as well as by [Guillaume Gomez](https://github.com/GuillaumeGomez).)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:147
+msgid "Standard-conforming Markdown"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:149
+msgid ""
+"These additions are valid Markdown, as defined by the original [Markdown "
+"syntax definition](https://daringfireball.net/projects/markdown/syntax) as "
+"well as the [CommonMark](http://commonmark.org) project. Especially, Rust "
+"paths are valid CommonMark [link destinations](http://spec.commonmark."
+"org/0.27/#link-destination), even with the suffixes described [below](#path-"
+"ambiguities)."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:157
+msgid "How Links Will Be Rendered"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:159
+msgid "The following:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:165
+msgid "should be rendered as:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:168
+msgid "\"bars/struct.Bar.html\""
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:171
+msgid ""
+"when on the crates index page (`index.html`), and as this when on the page "
+"for the `foos` module (`foos/index.html`):"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:176 src/1946-intra-rustdoc-links.md:215
+msgid "\"../bars/struct.Bar.html\""
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:179
+msgid "No Autolinks Style"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:181
+msgid ""
+"When using the autolink syntax (`<URL>`), the URL has to be an [absolute URI]"
+"(http://spec.commonmark.org/0.27/#absolute-uri), i.e., it has to start with "
+"an URI scheme. Thus, it will not be possible to write `<Foo>` to link to a "
+"Rust item called `Foo` that is in scope (this also conflicts with Markdown "
+"ability to contain arbitrary HTML elements). And while `<std::iter::"
+"Iterator>` is a valid URI (treating `std:` as the scheme), to avoid "
+"confusion, the RFC does not propose adding any support for autolinks."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:194
+msgid "This means that this **will not** render a valid link:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:200
+msgid ""
+"It will just output what any CommonMark compliant renderer would generate:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:203
+msgid "\"bars::Bar\""
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:206
+msgid ""
+"We suggest to use [Implied Shortcut Reference Links](#implied-shortcut-"
+"reference-links) instead:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:212
+msgid "which will be rendered as"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:218
+msgid "Resolving Paths"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:220
+msgid ""
+"The Rust paths used in links are resolved relative to the item in whose "
+"documentation they appear. Specifically, when using inner doc comments (`//!"
+"`, `/*!`), the paths are resolved from the inside of the item, while regular "
+"doc comments (`///`, `/**`) start from the parent scope."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:226
+msgid "Here's an example:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:229
+msgid "/// Container for a [Dolor](ipsum::Dolor).\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:231
+msgid ""
+"/// Contains various things, mostly [Dolor](ipsum::Dolor) and a helper "
+"function,\n"
+"/// [sit](ipsum::sit).\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:237
+msgid "/// Takes a [Dolor] and does things.\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:242
+msgid "//! Helper types, can be used with the [ipsum](super::ipsum) module.\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:246
+msgid "And here's an edge case:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:250
+msgid ""
+"/// Uses `[Iterator]`. <- This resolves to `foo::Iterator` because it "
+"starts\n"
+"/// at the same scope as `foo1`.\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:256
+msgid ""
+"//! Uses `[Iterator]`. <- This resolves to `bar::Iterator` because it "
+"starts\n"
+"    //! with the inner scope of `foo2`'s body.\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:263
+msgid "Cross-crate re-exports"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:265
+msgid ""
+"If an item is re-exported from an inner crate to an outer crate, its "
+"documentation will be resolved the same in both crates, as if it were in the "
+"original scope. For example, this function will link to `f` in both crates, "
+"even though `f` is not in scope in the outer crate:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:271
+msgid "// inner-crate\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:273
+msgid "/// This links to [f].\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:279
+msgid "// outer-crate\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:283
+msgid "Links to private items"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:285
+msgid ""
+"If a public item links to a private one, and `--document-private-items` is "
+"not passed, rustdoc should give a warning. If a private item links to "
+"another private item, no warning should be emitted. If a public item links "
+"to another private item and `--document-private-items` is passed, rustdoc "
+"should emit the link, but it is up to the implementation whether to give a "
+"warning."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:291
+msgid "Path Ambiguities"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:294
+msgid ""
+"Rust has three different namespaces that items can be in, types, values, and "
+"macros. That means that in a given source file, three items with the same "
+"name can be used, as long as they are in different namespaces."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:300
+msgid ""
+"To illustrate, in the following example we introduce an item called `FOO` in "
+"each namespace:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:311
+msgid ""
+"To be able to link to each item, we'll need a way to disambiguate the "
+"namespaces. Our proposal is this:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:315
+msgid ""
+"In unambiguous cases paths can be written as described earlier, with no pre- "
+"or suffix, e.g., `Look at the [FOO] trait`. This also applies to modules and "
+"tuple structs which exist in both namespaces. Rustdoc will throw a warning "
+"if you use a non-disambiguated path in the case of there being a value in "
+"both the type and value namespace."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:320
+msgid ""
+"Links to types can be disambiguated by prefixing them with the concrete item "
+"type:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:322
+msgid ""
+"Links to any type-namespace object can be prefixed with `type@`, e.g., `See "
+"[type@foo]`. This will work for structs, enums, mods, traits, and unions."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:325
+msgid ""
+"Links to `struct`s can be prefixed with `struct@`, e.g., `See [struct@Foo]`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:327
+msgid "Links to `enum`s can be prefixed with `enum@`, e.g., `See [enum@foo]`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:329
+msgid "Links to modules can be prefixed with `mod@`, e.g., `See [mod@foo]`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:331
+msgid "Links to traits can be prefixed with `trait@`, e.g., `See [trait@foo]`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:333
+msgid "Links to unions can be prefixed with `union@`, e.g., `See [union@foo]`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:335
+msgid ""
+"It is possible that disambiguators for one kind of type-namespace object "
+"will work for the other (i.e. you can use `struct@` to refer to an enum), "
+"but do not rely on this."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:338
+msgid ""
+"Modules exist in both the type and value namespace and can be disambiguated "
+"with a `mod@` or `module@`, e.g. `[module@foo]`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:340
+msgid ""
+"In links to macros, the link label can end with a `!`, e.g., `Look at the "
+"[FOO!] macro`. You can alternatively use a `macro@` prefix, e.g. "
+"`[macro@foo]`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:344
+msgid "For disambiguating links to values, we differentiate three cases:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:345
+msgid ""
+"Links to any kind of value (function, const, static) can be prefixed with "
+"`value@`, e.g., `See [value@foo]`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:347
+msgid ""
+"Links to functions and methods can be written with a `()` suffix, e.g., "
+"`Also see the [foo()] function`. You can also use `function@`, `fn@`, or "
+"`method@`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:350
+msgid ""
+"Links to constants are prefixed with `const@`, e.g., `As defined in "
+"[const@FOO].`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:352
+msgid "Links to statics are prefixed with `static@`, e.g., `See [static@FOO]`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:354
+msgid ""
+"It is possible that disambiguators for one kind of type-namespace object "
+"will work for the other (i.e. you can use `static@` to refer to a const),"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:357
+msgid ""
+"If a disambiguator for a type does not match, rustdoc should issue a "
+"warning. For example, given `struct@Foo`, attempting to link to it using "
+"`[enum@Foo]` should not be allowed."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:361
+msgid "Errors"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:364
+msgid ""
+"Ideally, Rustdoc would be able to recognize Rust path syntax, and if the "
+"path cannot be resolved, print a warning (or an error). These diagnostic "
+"messages should highlight the specific link that Rustdoc was not able to "
+"resolve, using the original Markdown source from the comment and correct "
+"line numbers."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:371
+msgid "Complex Example"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:374
+msgid ""
+"(Excerpt from Diesel's [`expression`](https://github.com/diesel-rs/diesel/"
+"blob/1daf2581919d82b80c18f00957e5c3d35375c4c0/diesel/src/expression/mod.rs) "
+"module.)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:379
+msgid "// diesel/src/expression/mod.rs\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:380
+msgid ""
+"//! AST types representing various typed SQL expressions. Almost all types\n"
+"//! implement either [`Expression`] or [`AsExpression`].\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:383
+msgid ""
+"/// Represents a typed fragment of SQL. Apps should not need to implement "
+"this\n"
+"/// type directly, but it may be common to use this as type boundaries.\n"
+"/// Libraries should consider using [`infix_predicate!`] or\n"
+"/// [`postfix_predicate!`] instead of implementing this directly.\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:391
+msgid ""
+"/// Describes how a type can be represented as an expression for a given "
+"type.\n"
+"/// These types couldn't just implement [`Expression`] directly, as many "
+"things\n"
+"/// can be used as an expression of multiple types. ([`String`] for example, "
+"can\n"
+"/// be used as either [`VarChar`] or [`Text`]).\n"
+"///\n"
+"/// [`VarChar`]: diesel::types::VarChar\n"
+"/// [`Text`]: diesel::types::Text\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:405
+msgid "Please note:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:407
+msgid ""
+"This uses implied shortcut reference links most often. Since the original "
+"documentation put the type/trait names in back ticks to render them as code, "
+"we preserved this style. (We don't propose this as a general convention, "
+"though.)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:410
+msgid ""
+"Even though implied shortcut reference links could be used throughout, they "
+"are not used for the last two links (to `VarChar` and `Text`), which are not "
+"in scope and need to be linked to by their absolute Rust path. To make "
+"reading easier and less noisy, reference links are used to rename the links. "
+"(An assumption is that most readers will recognize these names and know they "
+"are part of `diesel::types`.)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:417
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:420
+msgid ""
+"Extend the documentation chapter of the book with a subchapter on How to "
+"Link to Items."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:421
+msgid ""
+"Reference the chapter on the module system, to let reads familiarize "
+"themselves with Rust paths."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:422
+msgid ""
+"Maybe present an example use case of a module whose documentation links to "
+"several related items."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:425
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:428
+msgid "Rustdoc gets more complex."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:429
+msgid ""
+"These links won't work when the doc comments are rendered with a default "
+"Markdown renderer."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:430
+msgid ""
+"The Rust paths might conflict with other valid links, though we could not "
+"think of any."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:434
+msgid "Possible Extensions"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:437
+msgid "Linking to Fields"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:439
+msgid ""
+"To link to the fields of a `struct` we propose to write the path to the "
+"struct, followed by a dot, followed by the field name."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:443 src/1946-intra-rustdoc-links.md:456
+msgid "For example:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:449
+msgid "Linking to Enum Variants"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:451
+msgid ""
+"To link to the variants of an `enum`, we propose to write the path to the "
+"enum, followed by two colons, followed by the field name, just like `use "
+"Foo::Bar` can be used to import the `Bar` variant of an `enum Foo`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:462
+msgid "Linking to associated Items"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:464
+msgid ""
+"To link to associated items, i.e., the associated functions, types, and "
+"constants of a trait, we propose to write the path to the trait, followed by "
+"two colons, followed by the associated item's name. It may be necessary to "
+"use fully-qualified paths (cf. [the reference's section on disambiguating "
+"function calls](https://github.com/rust-lang-nursery/reference/"
+"blob/96e976d32a0a6927dd26c2ee805aaf44ef3bef2d/src/expressions."
+"md#disambiguating-function-calls)), like `See the [<Foo as Bar>::bar()] "
+"method`. We have yet to analyze in which cases this is necessary, and what "
+"syntax should be used."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:474
+msgid "Traits in scope"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:476
+msgid ""
+"If linking to an associated item that comes from a trait, the link should "
+"only be resolved in the trait is in scope. This prevents ambiguities if "
+"multiple traits are available with the associated item. For example, this "
+"should issue a warning:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:482 src/1946-intra-rustdoc-links.md:492
+msgid "/// Link to [S::fmt]\n"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:487
+msgid "but this should link to the implementation of `Debug::fmt` for `S`:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:499
+msgid "Linking to External Documentation"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:501
+msgid ""
+"Currently, Rustdoc is able to link to external crates, and renders "
+"documentation for all dependencies by default. Referencing the standard "
+"library (or `core`) generates links with a well-known base path, e.g. "
+"`https://doc.rust-lang.org/nightly/`. Referencing other external crates "
+"links to the pages Rustdoc has already rendered (or will render) for them. "
+"Special flags (e.g. `cargo doc --no-deps`) will not change this behavior."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:510
+msgid ""
+"We propose to generalize this approach by adding parameters to rustdoc that "
+"allow overwriting the base URLs it used for external crate links. (These "
+"parameters will at first be supplied as CLI flags but could also be given "
+"via a config file, environment variables, or other means in the future.)"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:520
+msgid "We suggest the following syntax:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:523
+msgid "\"regex=https://docs.rs/regex/0.2.2/regex/\""
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:526
+msgid ""
+"By default, the core/std libraries should have a default base URL set to the "
+"latest known Rust release when the version of rustdoc was built."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:529
+msgid ""
+"In addition to that, `cargo doc` _may_ be extended with CLI flags to allow "
+"shortcuts to some common usages. E.g., a `--external-docs` flag may add base "
+"URLs using [docs.rs](https://docs.rs/) for all crates that are from the "
+"crates.io repository (docs.rs automatically renders documentation for crates "
+"published to crates.io)."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:538
+msgid "Known Issues"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:540
+msgid ""
+"Automatically linking to external docs has the following known tradeoffs:"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:542
+msgid "The generated URLs may not/no longer exist"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:543
+msgid ""
+"Not all crate documentation can be rendered without a known local setup, e."
+"g., for crates that use procedural macros/build scripts to generate code "
+"based on the local environment."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:546
+msgid ""
+"Not all crate documentation can be rendered without having  3rd-party tools "
+"installed."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:547
+msgid "The generated URLs may not/no have the expected content, because"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:548
+msgid ""
+"The exact Cargo features used to build a crate locally were not used when "
+"building the docs available at the given URL."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:550
+msgid ""
+"The crate has platform-specific items, and the local platform and the "
+"platform used to render the docs available at the given URL differ (note "
+"that docs.rs renders docs for multiple platforms, though)."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:556
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1946-intra-rustdoc-links.md:559
+msgid ""
+"Prefix Rust paths with a URI scheme, e.g. `rust:` (cf. [path ambiguities]"
+"(#path-ambiguities))."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:561
+msgid ""
+"Prefix Rust paths with a URI scheme for the item type, e.g. `struct:`, `enum:"
+"`, `trait:`, or `fn:`."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:563
+msgid ""
+"[javadoc](http://docs.oracle.com/javase/8/docs/technotes/tools/windows/"
+"javadoc.html) and [jsdoc](http://usejsdoc.org/tags-inline-link.html) use "
+"`{@link java.awt.Panel}` or `[link text]{@link namepathOrURL}`"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:570
+msgid ""
+"[@kennytm](https://github.com/kennytm) listed other syntax alternatives "
+"[here](https://github.com/rust-lang/rfcs/pull/1946#issuecomment-284718018)."
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:575
+msgid "Unresolved Questions"
+msgstr "未解決的問題"
+
+#: src/1946-intra-rustdoc-links.md:578
+msgid ""
+"Is it possible for Rustdoc to resolve paths? Is it easy to implement this?"
+msgstr ""
+
+#: src/1946-intra-rustdoc-links.md:580
+msgid ""
+"There is talk about switching Rustdoc to a different markdown renderer "
+"([pulldown-cmark](https://github.com/google/pulldown-cmark/)). Does it "
+"support this? Does the current renderer?"
+msgstr ""

@@ -1,0 +1,136 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1679-panic-safe-slicing.md:1
+msgid "Feature Name: `panic_safe_slicing`"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:2
+msgid "Start Date: 2015-10-16"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1679](https://github.com/rust-lang/rfcs/pull/1679)"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:4
+msgid ""
+"Rust Issue: [rust-lang/rfcs#35729](https://github.com/rust-lang/rust/"
+"issues/35729)"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1679-panic-safe-slicing.md:8
+msgid ""
+"Add \"panic-safe\" or \"total\" alternatives to the existing panicking "
+"indexing syntax."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:10
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1679-panic-safe-slicing.md:12
+msgid ""
+"`SliceExt::get` and `SliceExt::get_mut` can be thought as non-panicking "
+"versions of the simple indexing syntax, `a[idx]`, and `SliceExt::"
+"get_unchecked` and `SliceExt::get_unchecked_mut` can be thought of as unsafe "
+"versions with bounds checks elided. However, there is no such equivalent for "
+"`a[start..end]`, `a[start..]`, or `a[..end]`. This RFC proposes such methods "
+"to fill the gap."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:17
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1679-panic-safe-slicing.md:19
+msgid ""
+"The `get`, `get_mut`, `get_unchecked`, and `get_unchecked_mut` will be made "
+"generic over `usize` as well as ranges of `usize` like slice's `Index` "
+"implementation currently is. This will allow e.g. `a.get(start..end)` which "
+"will behave analagously to `a[start..end]`."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:23
+msgid ""
+"Because methods cannot be overloaded in an ad-hoc manner in the same way "
+"that traits may be implemented, we introduce a `SliceIndex` trait which is "
+"implemented by types which can index into a slice:"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:40 src/1679-panic-safe-slicing.md:47
+msgid "// ...\n"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:51
+msgid ""
+"And then alter the `Index`, `IndexMut`, `get`, `get_mut`, `get_unchecked`, "
+"and `get_mut_unchecked` implementations to be generic over `SliceIndex`:"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:99
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:101
+msgid ""
+"The `SliceIndex` trait is unfortunate - it's tuned for exactly the set of "
+"methods it's used by. It only exists because inherent methods cannot be "
+"overloaded the same way that trait implementations can be. It would most "
+"likely remain unstable indefinitely."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:104
+msgid ""
+"Documentation may suffer. Rustdoc output currently explicitly shows each of "
+"the ways you can index a slice, while there will simply be a single generic "
+"implementation with this change. This may not be that bad, though. The doc "
+"block currently seems to provided the most valuable information to newcomers "
+"rather than the trait bound, and that will still be present with this change."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:110
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1679-panic-safe-slicing.md:112
+msgid "Stay as is."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:113
+msgid ""
+"A previous version of this RFC introduced new `get_slice` etc methods rather "
+"than overloading `get` etc. This avoids the utility trait but is somewhat "
+"less ergonomic."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:115
+msgid ""
+"Instead of one trait amalgamating all of the required methods, we could have "
+"one trait per method. This would open a more reasonable door to stabilizing "
+"those traits, but adds quite a lot more surface area. Replacing an unstable "
+"`SliceIndex` trait with a collection would be backwards compatible."
+msgstr ""
+
+#: src/1679-panic-safe-slicing.md:120
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1679-panic-safe-slicing.md:122
+msgid "None"
+msgstr ""

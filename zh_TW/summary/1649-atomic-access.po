@@ -1,0 +1,162 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1649-atomic-access.md:1
+msgid "q- Feature Name: atomic_access"
+msgstr ""
+
+#: src/1649-atomic-access.md:2
+msgid "Start Date: 2016-06-15"
+msgstr ""
+
+#: src/1649-atomic-access.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1649](https://github.com/rust-lang/rfcs/pull/1649)"
+msgstr ""
+
+#: src/1649-atomic-access.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#35603](https://github.com/rust-lang/rust/"
+"issues/35603)"
+msgstr ""
+
+#: src/1649-atomic-access.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1649-atomic-access.md:9
+msgid "This RFC adds the following methods to atomic types:"
+msgstr ""
+
+#: src/1649-atomic-access.md:18
+msgid ""
+"It also specifies that the layout of an `AtomicT` type is always the same as "
+"the underlying `T` type. So, for example, `AtomicI32` is guaranteed to be "
+"transmutable to and from `i32`."
+msgstr ""
+
+#: src/1649-atomic-access.md:20
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1649-atomic-access.md:23
+msgid "`get_mut` and `into_inner`"
+msgstr ""
+
+#: src/1649-atomic-access.md:25
+msgid ""
+"These methods are useful for accessing the value inside an atomic object "
+"directly when there are no other threads accessing it. This is guaranteed by "
+"the mutable reference and the move, since it means there can be no other "
+"live references to the atomic."
+msgstr ""
+
+#: src/1649-atomic-access.md:27
+msgid ""
+"A normal load/store is different from a `load(Relaxed)` or `store(Relaxed)` "
+"because it has much weaker synchronization guarantees, which means that the "
+"compiler can produce more efficient code. In particular, LLVM currently "
+"treats all atomic operations (even relaxed ones) as volatile operations, "
+"which means that it does not perform any optimizations on them. For example, "
+"it will not eliminate a `load(Relaxed)` even if the results of the load is "
+"not used anywhere."
+msgstr ""
+
+#: src/1649-atomic-access.md:29
+msgid ""
+"`get_mut` in particular is expected to be useful in `Drop` implementations "
+"where you have a `&mut self` and need to read the value of an atomic. "
+"`into_inner` somewhat overlaps in functionality with `get_mut`, but it is "
+"included to allow extracting the value without requiring the atomic object "
+"to be mutable. These methods mirror `Mutex::get_mut` and `Mutex::into_inner`."
+msgstr ""
+
+#: src/1649-atomic-access.md:31
+msgid "Atomic type layout"
+msgstr ""
+
+#: src/1649-atomic-access.md:33
+msgid ""
+"The layout guarantee is mainly intended to be used for FFI, where a variable "
+"of a non-atomic type needs to be modified atomically. The most common "
+"example of this is the Linux `futex` system call which takes an `int*` "
+"parameter pointing to an integer that is atomically modified by both "
+"userspace and the kernel."
+msgstr ""
+
+#: src/1649-atomic-access.md:35
+msgid ""
+"Rust code invoking the `futex` system call so far has simply passed the "
+"address of the atomic object directly to the system call. However this makes "
+"the assumption that the atomic type has the same layout as the underlying "
+"integer type, which is not currently guaranteed by the documentation."
+msgstr ""
+
+#: src/1649-atomic-access.md:37
+msgid ""
+"This also allows the reverse operation by casting a pointer: it allows Rust "
+"code to atomically modify a value that was not declared as a atomic type. "
+"This is useful when dealing with FFI structs that are shared with a thread "
+"managed by a C library. Another example would be to atomically modify a "
+"value in a memory mapped file that is shared with another process."
+msgstr ""
+
+#: src/1649-atomic-access.md:39
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1649-atomic-access.md:42
+msgid ""
+"The actual implementations of these functions are mostly trivial since they "
+"are based on `UnsafeCell::get`."
+msgstr ""
+
+#: src/1649-atomic-access.md:44
+msgid ""
+"The existing implementations of atomic types already have the same layout as "
+"the underlying types (even `AtomicBool` and `bool`), so no change is needed "
+"here apart from the documentation."
+msgstr ""
+
+#: src/1649-atomic-access.md:46
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1649-atomic-access.md:49
+msgid "The functionality of `into_inner` somewhat overlaps with `get_mut`."
+msgstr ""
+
+#: src/1649-atomic-access.md:51
+msgid ""
+"We lose the ability to change the layout of atomic types, but this shouldn't "
+"be necessary since these types map directly to hardware primitives."
+msgstr ""
+
+#: src/1649-atomic-access.md:53
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1649-atomic-access.md:56
+msgid ""
+"The functionality of `get_mut` and `into_inner` can be implemented using "
+"`load(Relaxed)`, however the latter can result in worse code because it is "
+"poorly handled by the optimizer."
+msgstr ""
+
+#: src/1649-atomic-access.md:58
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1649-atomic-access.md:61
+msgid "None"
+msgstr ""

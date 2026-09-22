@@ -1,0 +1,531 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1444-union.md:1
+msgid "Feature Name: `union`"
+msgstr ""
+
+#: src/1444-union.md:2
+msgid "Start Date: 2015-12-29"
+msgstr ""
+
+#: src/1444-union.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1444](https://github.com/rust-lang/rfcs/pull/1444)"
+msgstr ""
+
+#: src/1444-union.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#32836](https://github.com/rust-lang/rust/"
+"issues/32836)"
+msgstr ""
+
+#: src/1444-union.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1444-union.md:9
+msgid ""
+"Provide native support for C-compatible unions, defined via a new "
+"\"contextual keyword\" `union`, without breaking any existing code that uses "
+"`union` as an identifier."
+msgstr ""
+
+#: src/1444-union.md:13
+msgid "**Note:** This RFC has been partially superseded by `unions-and-drop`."
+msgstr ""
+
+#: src/1444-union.md:15
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1444-union.md:18
+msgid ""
+"Many FFI interfaces include unions.  Rust does not currently have any native "
+"representation for unions, so users of these FFI interfaces must define "
+"multiple structs and transmute between them via `std::mem::transmute`.  The "
+"resulting FFI code must carefully understand platform-specific size and "
+"alignment requirements for structure fields.  Such code has little in common "
+"with how a C client would invoke the same interfaces."
+msgstr ""
+
+#: src/1444-union.md:25
+msgid ""
+"Introducing native syntax for unions makes many FFI interfaces much simpler "
+"and less error-prone to write, simplifying the creation of bindings to "
+"native libraries, and enriching the Rust/Cargo ecosystem."
+msgstr ""
+
+#: src/1444-union.md:29
+msgid ""
+"A native union mechanism would also simplify Rust implementations of space-"
+"efficient or cache-efficient structures relying on value representation, "
+"such as machine-word-sized unions using the least-significant bits of "
+"aligned pointers to distinguish cases."
+msgstr ""
+
+#: src/1444-union.md:34
+msgid ""
+"The syntax proposed here recognizes `union` as though it were a keyword when "
+"used to introduce a union declaration, _without_ breaking any existing code "
+"that uses `union` as an identifier.  Experiments by Niko Matsakis "
+"demonstrate that recognizing `union` in this manner works unambiguously with "
+"zero conflicts in the Rust grammar."
+msgstr ""
+
+#: src/1444-union.md:40
+msgid ""
+"To preserve memory safety, accesses to union fields may only occur in unsafe "
+"code.  Commonly, code using unions will provide safe wrappers around unsafe "
+"union field accesses."
+msgstr ""
+
+#: src/1444-union.md:44
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1444-union.md:47
+msgid "Declaring a union type"
+msgstr ""
+
+#: src/1444-union.md:49
+msgid ""
+"A union declaration uses the same field declaration syntax as a struct "
+"declaration, except with `union` in place of `struct`."
+msgstr ""
+
+#: src/1444-union.md:59
+msgid ""
+"By default, a union uses an unspecified binary layout.  A union declared "
+"with the `#[repr(C)]` attribute will have the same layout as an equivalent C "
+"union."
+msgstr ""
+
+#: src/1444-union.md:62
+msgid ""
+"A union must have at least one field; an empty union declaration produces a "
+"syntax error."
+msgstr ""
+
+#: src/1444-union.md:65
+msgid "Contextual keyword"
+msgstr ""
+
+#: src/1444-union.md:67
+msgid ""
+"Rust normally prevents the use of a keyword as an identifier; for instance, "
+"a declaration `fn struct() {}` will produce an error \"expected identifier, "
+"found keyword `struct`\".  However, to avoid breaking existing declarations "
+"that use `union` as an identifier, Rust will only recognize `union` as a "
+"keyword when used to introduce a union declaration.  A declaration `fn "
+"union() {}` will not produce such an error."
+msgstr ""
+
+#: src/1444-union.md:74
+msgid "Instantiating a union"
+msgstr ""
+
+#: src/1444-union.md:76
+msgid ""
+"A union instantiation uses the same syntax as a struct instantiation, except "
+"that it must specify exactly one field:"
+msgstr ""
+
+#: src/1444-union.md:83
+msgid ""
+"Specifying multiple fields in a union instantiation results in a compiler "
+"error."
+msgstr ""
+
+#: src/1444-union.md:86
+msgid ""
+"Safe code may instantiate a union, as no unsafe behavior can occur until "
+"accessing a field of the union.  Code that wishes to maintain invariants "
+"about the union fields should make the union fields private and provide "
+"public functions that maintain the invariants."
+msgstr ""
+
+#: src/1444-union.md:91
+msgid "Reading fields"
+msgstr ""
+
+#: src/1444-union.md:93
+msgid ""
+"Unsafe code may read from union fields, using the same dotted syntax as a "
+"struct:"
+msgstr ""
+
+#: src/1444-union.md:102
+msgid "Writing fields"
+msgstr ""
+
+#: src/1444-union.md:104
+msgid ""
+"Unsafe code may write to fields in a mutable union, using the same syntax as "
+"a struct:"
+msgstr ""
+
+#: src/1444-union.md:115
+msgid ""
+"If a union contains multiple fields of different sizes, assigning to a field "
+"smaller than the entire union must not change the memory of the union "
+"outside that field."
+msgstr ""
+
+#: src/1444-union.md:119
+msgid ""
+"Union fields will normally not implement `Drop`, and by default, declaring a "
+"union with a field type that implements `Drop` will produce a lint warning. "
+"Assigning to a field with a type that implements `Drop` will call `drop()` "
+"on the previous value of that field.  This matches the behavior of `struct` "
+"fields that implement `Drop`.  To avoid this, such as if interpreting the "
+"union's value via that field and dropping it would produce incorrect "
+"behavior, Rust code can assign to the entire union instead of the field.  A "
+"union does not implicitly implement `Drop` even if its field types do."
+msgstr ""
+
+#: src/1444-union.md:128
+msgid ""
+"The lint warning produced when declaring a union field of a type that "
+"implements `Drop` should document this caveat in its explanatory text."
+msgstr ""
+
+#: src/1444-union.md:131
+msgid "Pattern matching"
+msgstr ""
+
+#: src/1444-union.md:133
+msgid ""
+"Unsafe code may pattern match on union fields, using the same syntax as a "
+"struct, without the requirement to mention every field of the union in a "
+"match or use `..`:"
+msgstr ""
+
+#: src/1444-union.md:141
+msgid "\"ten\""
+msgstr ""
+
+#: src/1444-union.md:142
+msgid "\"{}\""
+msgstr ""
+
+#: src/1444-union.md:148
+msgid ""
+"Matching a specific value from a union field makes a refutable pattern; "
+"naming a union field without matching a specific value makes an irrefutable "
+"pattern. Both require unsafe code."
+msgstr ""
+
+#: src/1444-union.md:152
+msgid ""
+"Pattern matching may match a union as a field of a larger structure.  In "
+"particular, when using a Rust union to implement a C tagged union via FFI, "
+"this allows matching on the tag and the corresponding field simultaneously:"
+msgstr ""
+
+#: src/1444-union.md:183
+msgid ""
+"Note that a pattern match on a union field that has a smaller size than the "
+"entire union must not make any assumptions about the value of the union's "
+"memory outside that field.  For example, if a union contains a `u8` and a "
+"`u32`, matching on the `u8` may not perform a `u32`\\-sized comparison over "
+"the entire union."
+msgstr ""
+
+#: src/1444-union.md:189
+msgid "Borrowing union fields"
+msgstr ""
+
+#: src/1444-union.md:191
+msgid ""
+"Unsafe code may borrow a reference to a field of a union; doing so borrows "
+"the entire union, such that any borrow conflicting with a borrow of the "
+"union (including a borrow of another union field or a borrow of a structure "
+"containing the union) will produce an error."
+msgstr ""
+
+#: src/1444-union.md:207
+msgid "// let b2 = &mut u.f2; // This would produce an error\n"
+msgstr ""
+
+#: src/1444-union.md:214
+msgid ""
+"Simultaneous borrows of multiple fields of a struct contained within a union "
+"do not conflict:"
+msgstr ""
+
+#: src/1444-union.md:233
+msgid "// let bboth = &mut u.both; // This would fail\n"
+msgstr ""
+
+#: src/1444-union.md:243
+msgid "Union and field visibility"
+msgstr ""
+
+#: src/1444-union.md:245
+msgid ""
+"The `pub` keyword works on the union and on its fields, as with a struct.  "
+"The union and its fields default to private.  Using a private field in a "
+"union instantiation, field access, or pattern match produces an error."
+msgstr ""
+
+#: src/1444-union.md:249
+msgid "Uninitialized unions"
+msgstr ""
+
+#: src/1444-union.md:251
+msgid ""
+"The compiler should consider a union uninitialized if declared without an "
+"initializer.  However, providing a field during instantiation, or assigning "
+"to a field, should cause the compiler to treat the entire union as "
+"initialized."
+msgstr ""
+
+#: src/1444-union.md:255
+msgid "Unions and traits"
+msgstr ""
+
+#: src/1444-union.md:257
+msgid ""
+"A union may have trait implementations, using the same `impl` syntax as a "
+"struct."
+msgstr ""
+
+#: src/1444-union.md:260
+msgid ""
+"The compiler should provide a lint if a union field has a type that "
+"implements the `Drop` trait.  The explanation for that lint should include "
+"an explanation of the caveat documented in the section \"Writing fields\".  "
+"The compiler should allow disabling that lint with "
+"`#[allow(union_field_drop)]`, for code that intentionally stores a type with "
+"Drop in a union.  The compiler must never implicitly generate a Drop "
+"implementation for the union itself, though Rust code may explicitly "
+"implement Drop for a union type."
+msgstr ""
+
+#: src/1444-union.md:268
+msgid "Generic unions"
+msgstr ""
+
+#: src/1444-union.md:270
+msgid ""
+"A union may have a generic type, with one or more type parameters or "
+"lifetime parameters.  As with a generic enum, the types within the union "
+"must make use of all the parameters; however, not all fields within the "
+"union must use all parameters."
+msgstr ""
+
+#: src/1444-union.md:275
+msgid ""
+"Type inference works on generic union types.  In some cases, the compiler "
+"may not have enough information to infer the parameters of a generic type, "
+"and may require explicitly specifying them."
+msgstr ""
+
+#: src/1444-union.md:279
+msgid "Unions and undefined behavior"
+msgstr ""
+
+#: src/1444-union.md:281
+msgid ""
+"Rust code must not use unions to invoke [undefined behavior](https://doc."
+"rust-lang.org/nightly/reference/behavior-considered-undefined.html). In "
+"particular, Rust code must not use unions to break the pointer aliasing "
+"rules with raw pointers, or access a field containing a primitive type with "
+"an invalid value."
+msgstr ""
+
+#: src/1444-union.md:287
+msgid ""
+"In addition, since a union declared without `#[repr(C)]` uses an unspecified "
+"binary layout, code reading fields of such a union or pattern-matching such "
+"a union must not read from a field other than the one written to.  This "
+"includes pattern-matching a specific value in a union field."
+msgstr ""
+
+#: src/1444-union.md:292
+msgid "Union size and alignment"
+msgstr ""
+
+#: src/1444-union.md:294
+msgid ""
+"A union declared with `#[repr(C)]` must have the same size and alignment as "
+"an equivalent C union declaration for the target platform.  Typically, a "
+"union would have the maximum size of any of its fields, and the maximum "
+"alignment of any of its fields.  Note that those maximums may come from "
+"different fields; for instance:"
+msgstr ""
+
+#: src/1444-union.md:314
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1444-union.md:317
+msgid ""
+"Adding a new type of data structure would increase the complexity of the "
+"language and the compiler implementation, albeit marginally.  However, this "
+"change seems likely to provide a net reduction in the quantity and "
+"complexity of unsafe code."
+msgstr ""
+
+#: src/1444-union.md:322
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1444-union.md:325
+msgid ""
+"Proposals for unions in Rust have a substantial history, with many variants "
+"and alternatives prior to the syntax proposed here with a `union` pseudo-"
+"keyword. Thanks to many people in the Rust community for helping to refine "
+"this RFC."
+msgstr ""
+
+#: src/1444-union.md:329
+msgid ""
+"The most obvious path to introducing unions in Rust would introduce `union` "
+"as a new keyword.  However, any introduction of a new keyword will "
+"necessarily break some code that previously compiled, such as code using the "
+"keyword as an identifier.  Making `union` a keyword in the standard way "
+"would break the substantial volume of existing Rust code using `union` for "
+"other purposes, including [multiple functions in the standard library]"
+"(https://doc.rust-lang.org/std/?search=union).  The approach proposed here, "
+"recognizing `union` to introduce a union declaration without prohibiting "
+"`union` as an identifier, provides the most natural declaration syntax and "
+"avoids breaking any existing code."
+msgstr ""
+
+#: src/1444-union.md:340
+msgid ""
+"Proposals for unions in Rust have extensively explored possible variations "
+"on declaration syntax, including longer keywords (`untagged_union`), built-"
+"in syntax macros (`union!`), compound keywords (`unsafe union`), pragmas "
+"(`#[repr(union)] struct`), and combinations of existing keywords (`unsafe "
+"enum`)."
+msgstr ""
+
+#: src/1444-union.md:346
+msgid ""
+"In the absence of a new keyword, since unions represent unsafe, untagged sum "
+"types, and enum represents safe, tagged sum types, Rust could base unions on "
+"enum instead.  The [unsafe enum](https://github.com/rust-lang/rfcs/pull/724) "
+"proposal took this approach, introducing unsafe, untagged enums, identified "
+"with `unsafe enum`; further discussion around that proposal led to the "
+"suggestion of extending it with struct-like field access syntax.  Such a "
+"proposal would similarly eliminate explicit use of `std::mem::transmute`, "
+"and avoid the need to handle platform-specific size and alignment "
+"requirements for fields."
+msgstr ""
+
+#: src/1444-union.md:356
+msgid ""
+"The standard pattern-matching syntax of enums would make field accesses "
+"significantly more verbose than struct-like syntax, and in particular would "
+"typically require more code inside unsafe blocks.  Adding struct-like field "
+"access syntax would avoid that; however, pairing an enum-like definition "
+"with struct-like usage seems confusing for developers.  A declaration using "
+"`enum` leads users to expect enum-like syntax; a new construct distinct from "
+"both `enum` and `struct` avoids leading users to expect any particular "
+"syntax or semantics.  Furthermore, developers used to C unions will expect "
+"struct-like field access for unions."
+msgstr ""
+
+#: src/1444-union.md:366
+msgid ""
+"Since this proposal uses struct-like syntax for declaration, initialization, "
+"pattern matching, and field access, the original version of this RFC used a "
+"pragma modifying the `struct` keyword: `#[repr(union)] struct`.  However, "
+"while the proposed unions match struct syntax, they do not share the "
+"semantics of struct; most notably, unions represent a sum type, while "
+"structs represent a product type.  The new construct `union` avoids the "
+"semantics attached to existing keywords."
+msgstr ""
+
+#: src/1444-union.md:374
+msgid ""
+"In the absence of any native support for unions, developers of existing Rust "
+"code have resorted to either complex platform-specific transmute code, or "
+"complex union-definition macros.  In the latter case, such macros make field "
+"accesses and pattern matching look more cumbersome and less structure-like, "
+"and still require detailed platform-specific knowledge of structure layout "
+"and field sizes.  The implementation and use of such macros provides strong "
+"motivation to seek a better solution, and indeed existing writers and users "
+"of such macros have specifically requested native syntax in Rust."
+msgstr ""
+
+#: src/1444-union.md:383
+msgid ""
+"Finally, to call more attention to reads and writes of union fields, field "
+"access could use a new access operator, rather than the same `.` operator "
+"used for struct fields.  This would make union fields more obvious at the "
+"time of access, rather than making them look syntactically identical to "
+"struct fields despite the semantic difference in storage representation.  "
+"However, this does not seem worth the additional syntactic complexity and "
+"divergence from other languages.  Union field accesses already require "
+"unsafe blocks, which calls attention to them.  Calls to unsafe functions use "
+"the same syntax as calls to safe functions."
+msgstr ""
+
+#: src/1444-union.md:393
+msgid ""
+"Much discussion in the [tracking issue for unions](https://github.com/rust-"
+"lang/rust/issues/32836) debated whether assigning to a union field that "
+"implements Drop should drop the previous value of the field.  This produces "
+"potentially surprising behavior if that field doesn't currently contain a "
+"valid value of that type.  However, that behavior maintains consistency with "
+"assignments to struct fields and mutable variables, which writers of unsafe "
+"code must already take into account; the alternative would add an additional "
+"special case for writers of unsafe code.  This does provide further "
+"motivation for the lint for union fields implementing Drop; code that "
+"explicitly overrides that lint will need to take this into account."
+msgstr ""
+
+#: src/1444-union.md:404
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1444-union.md:407
+msgid ""
+"Can the borrow checker support the rule that \"simultaneous borrows of "
+"multiple fields of a struct contained within a union do not conflict\"?  If "
+"not, omitting that rule would only marginally increase the verbosity of such "
+"code, by requiring an explicit borrow of the entire struct first."
+msgstr ""
+
+#: src/1444-union.md:412
+msgid ""
+"Can a pattern match match multiple fields of a union at once?  For "
+"rationale, consider a union using the low bits of an aligned pointer as a "
+"tag; a pattern match may match the tag using one field and a value "
+"identified by that tag using another field.  However, if this complicates "
+"the implementation, omitting it would not significantly complicate code "
+"using unions."
+msgstr ""
+
+#: src/1444-union.md:418
+msgid ""
+"C APIs using unions often also make use of anonymous unions and anonymous "
+"structs.  For instance, a union may contain anonymous structs to define non-"
+"overlapping fields, and a struct may contain an anonymous union to define "
+"overlapping fields.  This RFC does not define anonymous unions or structs, "
+"but a subsequent RFC may wish to do so."
+msgstr ""
+
+#: src/1444-union.md:424
+msgid "Edit History"
+msgstr ""
+
+#: src/1444-union.md:426
+msgid ""
+"This RFC was amended in https://github.com/rust-lang/rfcs/pull/1663/ to "
+"clarify the behavior when an individual field whose type implements `Drop`."
+msgstr ""
