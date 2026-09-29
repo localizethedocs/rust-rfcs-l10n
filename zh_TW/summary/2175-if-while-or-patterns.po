@@ -1,0 +1,429 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2175-if-while-or-patterns.md:1
+msgid "Feature Name: if_while_or_patterns"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:2
+msgid "Start Date: 2017-10-16"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2175](https://github.com/rust-lang/rfcs/pull/2175)"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#48215](https://github.com/rust-lang/rust/"
+"issues/48215)"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2175-if-while-or-patterns.md:12
+msgid ""
+"Enables \"or\" patterns for [`if let`](https://github.com/rust-lang/rfcs/"
+"pull/160) and [`while let`](https://github.com/rust-lang/rfcs/pull/214) "
+"expressions as well as `let` and `for` statements. In other words, examples "
+"like the following are now possible:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:20
+msgid "// Assume the enum E and the following for the remainder of the RFC:\n"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:33
+msgid "// Only possible when `L = T` such that `kind : ParameterKind<T, T>`.\n"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:40
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2175-if-while-or-patterns.md:43
+msgid ""
+"While nothing in this RFC is currently impossible in Rust, the changes the "
+"RFC proposes improves the ergonomics of control flow when dealing with "
+"`enum`s (sum types) with three or more variants where the program should "
+"react in one way to a group of variants, and another way to another group of "
+"variants. Examples of when such sum types occur are protocols, when dealing "
+"with languages (ASTs), and non-trivial iterators."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:50 src/2175-if-while-or-patterns.md:122
+msgid "The following snippet (written with this RFC):"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:58
+msgid "must be written as:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:68
+msgid "or, using `match`:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:79
+msgid ""
+"This way of using `match` is seen multiple times in [`std::iter`](https://"
+"doc.rust-lang.org/nightly/src/core/iter/mod.rs.html#691) when dealing with "
+"the `Chain` iterator adapter. An example of this is:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:103
+msgid "which could have been written as:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:117
+msgid "This version is both shorter and clearer."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:119
+msgid ""
+"With `while let`, the ergonomics and in particular the readability can be "
+"significantly improved."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:130
+msgid "must currently be written as:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:141
+msgid "Another major motivation of the RFC is consistency with `match`."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:143
+msgid ""
+"To keep `let` and `for` statements consistent with `if let`, and to enable "
+"the scenario exemplified by `ParameterKind` in the [motivation]"
+"(#motivation), these or-patterns are allowed at the top level of `let` and "
+"`for` statements."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:147
+msgid ""
+"In addition to the `ParameterKind` example, we can also consider `slice."
+"binary_search(&x)`. If we are only interested in the `index` at where `x` is "
+"or would be, without any regard for if it was there or not, we can now "
+"simply write:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:156
+msgid ""
+"and we will get back the `index` in any case and continue on from there."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:158
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:163
+msgid ""
+"[RFC 2005](https://github.com/rust-lang/rfcs/blob/master/text/2005-match-"
+"ergonomics.md#examples), in describing the third example in the section "
+"\"Examples\", refers to patterns with `|` in them as \"or\" patterns. This "
+"RFC adopts the same terminology."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:166
+msgid ""
+"While the \"sum\" of all patterns in `match` must be irrefutable, or in "
+"other words: cover all cases, be exhaustive, this is not the case "
+"(currently) with `if/while let`, which may have a refutable pattern. This "
+"RFC does not change this."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:171
+msgid ""
+"The RFC only extends the use of or-patterns at the top level from `match`es "
+"to `if let` and `while let` expressions as well as `let` and `for` "
+"statements."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:174
+msgid "For examples, see [motivation](#motivation)."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:176
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:179
+msgid "Grammar"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:184
+msgid "`if let`"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:186
+msgid ""
+"The grammar in [§ 7.2.24](https://doc.rust-lang.org/grammar.html#if-let-"
+"expressions) is changed from:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:188
+msgid ""
+"```\n"
+"if_let_expr : \"if\" \"let\" pat '=' expr '{' block '}'\n"
+"               else_tail ? ;\n"
+"```"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:193 src/2175-if-while-or-patterns.md:208
+#: src/2175-if-while-or-patterns.md:224
+msgid "to:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:195
+msgid ""
+"```\n"
+"if_let_expr : \"if\" \"let\" '|'? pat [ '|' pat ] * '=' expr '{' block '}'\n"
+"               else_tail ? ;\n"
+"```"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:200
+msgid "`while let`"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:202
+msgid ""
+"The grammar in [§ 7.2.25](https://doc.rust-lang.org/grammar.html#while-let-"
+"loops) is changed from:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:204
+msgid ""
+"```\n"
+"while_let_expr : [ lifetime ':' ] ? \"while\" \"let\" pat '=' expr '{' block "
+"'}' ;\n"
+"```"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:210
+msgid ""
+"```\n"
+"while_let_expr : [ lifetime ':' ] ? \"while\" \"let\" '|'? pat [ '|' pat ] * "
+"'=' expr '{' block '}' ;\n"
+"```"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:214
+msgid "`for`"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:218
+msgid ""
+"The `expr_for` grammar is changed [from](https://github.com/rust-lang/rust/"
+"blob/master/src/grammar/parser-lalr.y):"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:230
+msgid "`let` statements"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:232
+msgid "The statement `stmt` grammar is replaced with a language equivalent to:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:234
+msgid ""
+"```\n"
+"stmt ::= old_stmt_grammar\n"
+"       | let_stmt_many\n"
+"       ;\n"
+"\n"
+"let_stmt_many ::= \"let\" pat_two_plus \"=\" expr \";\"\n"
+"\n"
+"pat_two_plus ::= '|'? pat [ '|' pat ] + ;\n"
+"```"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:244
+msgid "Syntax lowering"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:246
+msgid ""
+"The changes proposed in this RFC with respect to `if let`, `while let`, and "
+"`for` can be implemented by transforming the `if/while let` constructs with "
+"a syntax-lowering pass into `match` and `loop` + `match` expressions."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:250
+msgid ""
+"Meanwhile, `let` statements can be transformed into a continuation with "
+"`match` as described below."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:253
+msgid "Examples, `if let`"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:257
+msgid ""
+"These examples are extensions on the [`if let` RFC](https://github.com/rust-"
+"lang/rfcs/pull/160). Therefore, the RFC avoids duplicating any details "
+"already specified there."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:260 src/2175-if-while-or-patterns.md:272
+#: src/2175-if-while-or-patterns.md:284 src/2175-if-while-or-patterns.md:385
+msgid "Source:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:264 src/2175-if-while-or-patterns.md:276
+#: src/2175-if-while-or-patterns.md:294 src/2175-if-while-or-patterns.md:316
+#: src/2175-if-while-or-patterns.md:338
+msgid "Result:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:306 src/2175-if-while-or-patterns.md:332
+msgid "Source"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:326
+msgid "Examples, `while let`"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:330
+msgid ""
+"The following example is an extension on the [`while let` RFC](https://"
+"github.com/rust-lang/rfcs/pull/214)."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:348
+msgid "Examples, `for`"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:350
+msgid "Assuming that the semantics of `for` is defined by a desugaring from:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:358
+msgid "into:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:373
+msgid ""
+"then the only thing that changes is that `PAT` may include `|` at the top "
+"level in the `for` loop and the desugaring as per the section on grammar."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:376
+msgid "Desugaring `let` statements with `|` in the top-level pattern"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:378
+msgid ""
+"There continues to be an exhaustivity check in `let` statements, however "
+"this check will now be able to support multiple patterns."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:381
+msgid ""
+"This is a possible desugaring that a Rust compiler may do. While such a "
+"compiler may elect to implement this differently, these semantics should be "
+"kept."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:388
+msgid "// prefix of statements:\n"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:390
+msgid "// The let statement which is the cause for desugaring:\n"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:392
+msgid "// the continuation / suffix of statements:\n"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:394
+msgid "// Meta-variable for optional tail expression without ; at end\n"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:397
+msgid "Result"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:410
+msgid "For example, the following code:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:417 src/2175-if-while-or-patterns.md:430
+#: src/2175-if-while-or-patterns.md:446
+msgid "\"{}\""
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:422
+msgid "can be desugared to"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:437
+msgid "It can also be desugared to:"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:451
+msgid "(Both are equivalent)"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:452
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:455
+msgid ""
+"This adds more additions to the grammar and makes the compiler more complex."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:457
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:460
+msgid ""
+"This could simply not be done. Consistency with `match` is however on its "
+"own reason enough to do this."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:463
+msgid ""
+"It could be claimed that the `if/while let` RFCs already mandate this RFC, "
+"this RFC does answer that question and instead simply mandates it now."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:466
+msgid ""
+"Another alternative is to only deal with `if/while let` expressions but not "
+"`let` and `for` statements."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:469
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2175-if-while-or-patterns.md:472
+msgid ""
+"The exact syntax transformations should be deferred to the implementation. "
+"This RFC does not mandate exactly how the AST:s should be transformed, only "
+"that the or-pattern feature be supported."
+msgstr ""
+
+#: src/2175-if-while-or-patterns.md:476
+msgid "There are no unresolved questions."
+msgstr ""

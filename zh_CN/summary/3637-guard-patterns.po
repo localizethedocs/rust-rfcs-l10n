@@ -1,0 +1,640 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3637-guard-patterns.md:1
+msgid "Feature Name: `guard_patterns`"
+msgstr ""
+
+#: src/3637-guard-patterns.md:2
+msgid "Start Date: 2024-05-13"
+msgstr ""
+
+#: src/3637-guard-patterns.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3637](https://github.com/rust-lang/rfcs/pull/3637)"
+msgstr ""
+
+#: src/3637-guard-patterns.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#129967](https://github.com/rust-lang/rust/"
+"issues/129967)"
+msgstr ""
+
+#: src/3637-guard-patterns.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3637-guard-patterns.md:10
+msgid ""
+"This RFC proposes to add a new kind of pattern, the **guard pattern.** Like "
+"match arm guards, guard patterns restrict another pattern to match only if "
+"an expression evaluates to `true`. The syntax for guard patterns, `pat if "
+"condition`, is compatible with match arm guard syntax, so existing guards "
+"can be superceded by guard patterns without breakage."
+msgstr ""
+
+#: src/3637-guard-patterns.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/3637-guard-patterns.md:16
+msgid ""
+"Guard patterns, unlike match arm guards, can be nested within other "
+"patterns. In particular, guard patterns nested within or-patterns can depend "
+"on the branch of the or-pattern being matched. This has the potential to "
+"simplify certain match expressions, and also enables the use of guards in "
+"other places where refutable patterns are acceptable. Furthermore, by moving "
+"the guard condition closer to the bindings upon which it depends, pattern "
+"behavior can be made more local."
+msgstr ""
+
+#: src/3637-guard-patterns.md:18
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3637-guard-patterns.md:22
+msgid ""
+"Guard patterns allow you to write guard expressions to decide whether or not "
+"something should match anywhere you can use a pattern, not just at the top "
+"level of `match` arms."
+msgstr ""
+
+#: src/3637-guard-patterns.md:24
+msgid ""
+"For example, imagine that you're writing a function that decides whether a "
+"user has enough credit to buy an item. Regular users have to pay 100 "
+"credits, but premium subscribers get a 20% discount. You could implement "
+"this with a match expression as follows:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:29 src/3637-guard-patterns.md:32
+#: src/3637-guard-patterns.md:45
+msgid "// Complete the transaction.\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:35 src/3637-guard-patterns.md:48
+msgid "// The user doesn't have enough credit, return an error message.\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:40
+msgid ""
+"But this isn't great, because two of the match arms have exactly the same "
+"body. Instead, we can write"
+msgstr ""
+
+#: src/3637-guard-patterns.md:53
+msgid ""
+"Now we have just one arm for a successful transaction, with an or-pattern "
+"combining the two arms we used to have. The two nested patterns are of the "
+"form"
+msgstr ""
+
+#: src/3637-guard-patterns.md:59
+msgid ""
+"This is a **guard pattern**. It matches a value if `pattern` (the pattern it "
+"wraps) matches that value, _and_ `expr` evaluates to `true`. Like in match "
+"arm guards, `expr` can use values bound in `pattern`."
+msgstr ""
+
+#: src/3637-guard-patterns.md:61
+msgid "For New Users"
+msgstr ""
+
+#: src/3637-guard-patterns.md:63
+msgid ""
+"For new users, guard patterns are better explained without reference to "
+"match arm guards. Instead, they can be explained by similar examples to the "
+"ones currently used for match arm guards, followed by an example showing "
+"that they can be nested within other patterns and used outside of match arms."
+msgstr ""
+
+#: src/3637-guard-patterns.md:65
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3637-guard-patterns.md:69
+msgid "Supersession of Match Arm Guards"
+msgstr ""
+
+#: src/3637-guard-patterns.md:71
+msgid ""
+"Rather than being parsed as part of the match expression, guards in match "
+"arms will instead be parsed as a guard pattern. For this reason, the `if` "
+"pattern operator must have lower precedence than all other pattern operators."
+msgstr ""
+
+#: src/3637-guard-patterns.md:73
+msgid "That is,"
+msgstr ""
+
+#: src/3637-guard-patterns.md:76
+msgid "// Let <=> denote equivalence of patterns.\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:83
+msgid "Precedence Relative to `|`"
+msgstr ""
+
+#: src/3637-guard-patterns.md:85
+msgid "Consider the following match expression:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:93
+msgid ""
+"This match arm is currently parsed as `(A | B) if (c | d)`, with the first `|"
+"` being the or-operator on patterns and the second being the bitwise OR "
+"operator on expressions. Therefore, to maintain backwards compatability, "
+"`if` must have lower precedence than `|` on both sides (or equivalently, for "
+"both meanings of `|`). For that reason, guard patterns nested within or-"
+"patterns must be explicitly parenthesized:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:96
+msgid "// This is not an or-pattern of guards:\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:99
+msgid "// Instead, write\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:104
+msgid "In Assignment-Like Contexts"
+msgstr ""
+
+#: src/3637-guard-patterns.md:106
+msgid ""
+"There's an ambiguity between `=` used as the assignment operator within the "
+"guard and used outside to indicate assignment to the pattern (e.g. in `if "
+"let`) Therefore guard patterns appearing at the top level in those places "
+"must also be parenthesized:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:111
+msgid "// Not allowed:\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:115
+msgid "// Allowed:\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:122
+msgid "Therefore the syntax for patterns becomes"
+msgstr ""
+
+#: src/3637-guard-patterns.md:124
+msgid ""
+"**<sup>Syntax</sup>**  \n"
+"_Pattern_ :  \n"
+"      _PatternNoTopGuard_  \n"
+"   | _GuardPattern_"
+msgstr ""
+
+#: src/3637-guard-patterns.md:129
+msgid ""
+"_PatternNoTopGuard_ :  \n"
+"      `|`<sup>?</sup> _PatternNoTopAlt_ ( `|` _PatternNoTopAlt_ )<sup>\\*</"
+"sup>"
+msgstr ""
+
+#: src/3637-guard-patterns.md:132
+msgid ""
+"With `if let` and `while let` expressions now using `PatternNoTopGuard`. "
+"`let` statements and function parameters can continue to use "
+"`PatternNoTopAlt`."
+msgstr ""
+
+#: src/3637-guard-patterns.md:134
+msgid "Bindings Available to Guards"
+msgstr ""
+
+#: src/3637-guard-patterns.md:136
+msgid "The only bindings available to guard conditions are"
+msgstr ""
+
+#: src/3637-guard-patterns.md:138
+msgid "bindings from the scope containing the pattern match, if any; and"
+msgstr ""
+
+#: src/3637-guard-patterns.md:139
+msgid "bindings introduced by identifier patterns _within_ the guard pattern."
+msgstr ""
+
+#: src/3637-guard-patterns.md:141
+msgid "This disallows, for example, the following uses:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:144
+msgid "// ERROR: `x` bound outside the guard pattern\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:145 src/3637-guard-patterns.md:146
+#: src/3637-guard-patterns.md:147 src/3637-guard-patterns.md:148
+#: src/3637-guard-patterns.md:151 src/3637-guard-patterns.md:157
+#: src/3637-guard-patterns.md:158 src/3637-guard-patterns.md:159
+#: src/3637-guard-patterns.md:160 src/3637-guard-patterns.md:218
+#: src/3637-guard-patterns.md:233
+msgid "/* ... */"
+msgstr ""
+
+#: src/3637-guard-patterns.md:149
+msgid "// ERROR: `x` cannot be used by other parameters' patterns\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:154
+msgid ""
+"Note that in each of these cases besides the function, the condition is "
+"still possible by moving the condition outside of the destructuring pattern:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:163
+msgid ""
+"In general, guards can, without changing meaning, \"move outwards\" until "
+"they reach an or-pattern where the condition can be different in other "
+"branches, and \"move inwards\" until they reach a level where the "
+"identifiers they reference are not bound."
+msgstr ""
+
+#: src/3637-guard-patterns.md:165
+msgid "As Macro Arguments"
+msgstr ""
+
+#: src/3637-guard-patterns.md:167
+msgid ""
+"Currently, `if` is in the follow set of `pat` and `pat_param` fragments, so "
+"top-level guards cannot be used as arguments for the current edition. This "
+"is identical to the situation with top-level or-patterns as macro arguments, "
+"and guard patterns will take the same approach:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:169
+msgid ""
+"Update `pat` fragments to accept `PatternNoTopGuard` rather than `Pattern`."
+msgstr ""
+
+#: src/3637-guard-patterns.md:170
+msgid ""
+"Introduce a new fragment specifier, `pat_no_top_guard`, which works in all "
+"editions and accepts `PatternNoTopGuard`."
+msgstr ""
+
+#: src/3637-guard-patterns.md:171
+msgid ""
+"In the next edition, update `pat` fragments to accept `Pattern` once again."
+msgstr ""
+
+#: src/3637-guard-patterns.md:173
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3637-guard-patterns.md:177
+msgid ""
+"Rather than matching only by structural properties of ADTs, equality, and "
+"ranges of certain primitives, guards give patterns the power to express "
+"arbitrary restrictions on types. This necessarily makes patterns more "
+"complex both in implementation and in concept."
+msgstr ""
+
+#: src/3637-guard-patterns.md:179
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3637-guard-patterns.md:183
+msgid "\"Or-of-guards\" Patterns"
+msgstr ""
+
+#: src/3637-guard-patterns.md:185
+msgid ""
+"Earlier it was mentioned that guards can \"move outwards\" up to an or-"
+"pattern without changing meaning:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:190
+msgid ""
+"// Cannot move outwards any further, because the conditions are different.\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:194
+msgid ""
+"In most situations, it is preferable to have the guard as far outwards as "
+"possible; that is, at the top-level of the whole pattern or immediately "
+"within one alternative of an or-pattern. Therefore, we could choose to "
+"restrict guard patterns so that they appear only in these places. This RFC "
+"refers to this as \"or-of-guards\" patterns, because it changes or-patterns "
+"from or-ing together a list of patterns to or-ing together a list of "
+"optionally guarded patterns."
+msgstr ""
+
+#: src/3637-guard-patterns.md:198
+msgid ""
+"Note that, currently, most patterns are actually parsed as an or-pattern "
+"with only one choice. Therefore, to achieve the effect of forcing patterns "
+"as far out as possible guards would only be allowed in or-patterns with more "
+"than one choice."
+msgstr ""
+
+#: src/3637-guard-patterns.md:201
+msgid ""
+"There are, however, a couple reasons where it could be desirable to allow "
+"guards further inwards than strictly necessary."
+msgstr ""
+
+#: src/3637-guard-patterns.md:203
+msgid "Localization of Behavior"
+msgstr ""
+
+#: src/3637-guard-patterns.md:205
+msgid ""
+"Sometimes guards are only related to information from a small part of a "
+"large structure being matched."
+msgstr ""
+
+#: src/3637-guard-patterns.md:207
+msgid ""
+"For example, consider a function that iterates over a list of customer "
+"orders and performs different actions depending on the customer's "
+"subscription plan, the item type, the payment info, and various other "
+"factors:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:212
+msgid ""
+"// These patterns match based on method calls, necessitating the use of a "
+"guard pattern:\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:217 src/3637-guard-patterns.md:232
+msgid "// A bunch of other conditions...\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:219 src/3637-guard-patterns.md:234
+msgid "// Other similar branches...\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:223
+msgid ""
+"Here, the pattern `customer if customer.subscription_plan() == Plan::"
+"Premium` has a clear meaning: it matches customers with premium "
+"subscriptions. Similarly, `Payment::Cash(amount) if amount.in_usd() > 100` "
+"matches cash payments of amounts greater than 100USD. All of the behavior of "
+"the pattern pertaining to the customer is in one place, and all behavior "
+"pertaining to the payment is in another. However, if we move the guard "
+"outwards to wrap the entire order struct, the behavior is spread out and "
+"much harder to understand -- particularly if the two conditions are merged "
+"into one:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:226
+msgid "// The same match statement using or-of-guards.\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:238
+msgid "Pattern Macros"
+msgstr ""
+
+#: src/3637-guard-patterns.md:240
+msgid "If guards can only appear immediately within or-patterns, then either"
+msgstr ""
+
+#: src/3637-guard-patterns.md:242
+msgid ""
+"pattern macros can emit guards at the top-level, in which case they can only "
+"be called immediately within or-patterns without risking breakage if the "
+"macro definition changes (even to another valid pattern!); or"
+msgstr ""
+
+#: src/3637-guard-patterns.md:243
+msgid ""
+"pattern macros cannot emit guards at the top-level, forcing macro authors to "
+"use terrible workarounds like `(Some(x) if guard(x)) | (Some(x) if false)` "
+"if they want to use the feature."
+msgstr ""
+
+#: src/3637-guard-patterns.md:245
+msgid ""
+"This can also be seen as a special case of the previous argument, as pattern "
+"macros fundamentally assume that patterns can be built out of composable, "
+"local pieces."
+msgstr ""
+
+#: src/3637-guard-patterns.md:247
+msgid "Deref and Const Patterns Must Be Pure, But Not Guards"
+msgstr ""
+
+#: src/3637-guard-patterns.md:249
+msgid ""
+"It may seem odd that we explicitly require const patterns to use pure "
+"`PartialEq` implementations (and the upcoming [proposal](https://hackmd."
+"io/4qDDMcvyQ-GDB089IPcHGg) for deref patterns to use pure `Deref` "
+"implementations), but allow arbitrary side effects in guards. The ultimate "
+"reason for this is that, unlike const patterns and the proposed deref "
+"patterns, guard patterns are always refutable."
+msgstr ""
+
+#: src/3637-guard-patterns.md:251
+msgid ""
+"Without the requirement of `StructuralPartialEq` we could write a "
+"`PartialEq` implementation which always returns `false`, resulting either in "
+"UB or a failure to ensure match exhaustiveness:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:263
+msgid ""
+"And similarly, with an impure version of the proposed deref patterns, we "
+"could write a `Deref` impl which alternates between returning `true` or "
+"`false` to get UB:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:267
+msgid "// Here the `EvilBox` dereferences to `false`.\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:268
+msgid "// And here to `true`.\n"
+msgstr ""
+
+#: src/3637-guard-patterns.md:272
+msgid ""
+"However, this is not a problem with guard patterns because they already need "
+"an irrefutable alternative anyway. For example, we could rewrite the const "
+"pattern example with guard patterns as follows:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:282
+msgid ""
+"But this will always be a compilation error because the `match` statement is "
+"no longer assumed to be exhaustive."
+msgstr ""
+
+#: src/3637-guard-patterns.md:284
+msgid "Prior art"
+msgstr ""
+
+#: src/3637-guard-patterns.md:288
+msgid ""
+"This feature has been implemented in the [Unison](https://www.unison-lang."
+"org/docs/language-reference/guard-patterns/), [Wolfram](https://reference."
+"wolfram.com/language/ref/Condition.html), and [E ](https://en.wikipedia.org/"
+"wiki/E_(programming_language)) languages."
+msgstr ""
+
+#: src/3637-guard-patterns.md:290
+msgid ""
+"Guard patterns are also very similar to Haskell's [view patterns](https://"
+"ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/view_patterns.html), which "
+"are more powerful and closer to a hypothetical \"`if let` pattern\" than a "
+"guard pattern as this RFC proposes it."
+msgstr ""
+
+#: src/3637-guard-patterns.md:292
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3637-guard-patterns.md:296
+msgid "Allowing Mismatching Bindings When Possible"
+msgstr ""
+
+#: src/3637-guard-patterns.md:298
+msgid "Ideally, users would be able to write something to the effect of"
+msgstr ""
+
+#: src/3637-guard-patterns.md:307
+msgid "This is also very useful for macros, because it allows"
+msgstr ""
+
+#: src/3637-guard-patterns.md:309
+msgid ""
+"pattern macros to use guard patterns freely without introducing new bindings "
+"the user has to be aware of in order to use the pattern macro within a "
+"disjunction, and"
+msgstr ""
+
+#: src/3637-guard-patterns.md:310
+msgid ""
+"macro users to pass guard patterns to macros freely, even if the macro uses "
+"the pattern within a disjunction."
+msgstr ""
+
+#: src/3637-guard-patterns.md:312
+msgid ""
+"As mentioned above, this case is not covered by this RFC, because `x` would "
+"need to be bound in both cases of the disjunction."
+msgstr ""
+
+#: src/3637-guard-patterns.md:314
+msgid "Possible Design"
+msgstr ""
+
+#: src/3637-guard-patterns.md:316
+msgid ""
+"[@tmandry proposed](https://github.com/rust-lang/rfcs/"
+"pull/3637#issuecomment-2307839511) amending the rules for how names can be "
+"bound in patterns to the following:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:318
+msgid ""
+"Unchanged: If a name is bound in any part of a pattern, it shadows existing "
+"definitions of the name."
+msgstr ""
+
+#: src/3637-guard-patterns.md:319
+msgid ""
+"Unchanged: If a name bound by a pattern is used in the body, it must be "
+"defined in every part of a disjunction and be the same type in each."
+msgstr ""
+
+#: src/3637-guard-patterns.md:320
+msgid ""
+"Removed: ~~Bindings introduced in one branch of a disjunction must be "
+"introduced in all branches.~~"
+msgstr ""
+
+#: src/3637-guard-patterns.md:321
+msgid ""
+"Added: If a name is bound in multiple parts of a disjunction, it must be "
+"bound to the same type in every part. (Enforced today by the combination of "
+"2 and 3.)"
+msgstr ""
+
+#: src/3637-guard-patterns.md:323
+msgid "How to Refer to Guard Patterns"
+msgstr ""
+
+#: src/3637-guard-patterns.md:325
+msgid "Some possibilities:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:327
+msgid ""
+"\"Guard pattern\" will likely be most intuitive to users already familiar "
+"with match arm guards. Most likely, this includes anyone reading this, which "
+"is why this RFC uses that term."
+msgstr ""
+
+#: src/3637-guard-patterns.md:328
+msgid ""
+"\"`if`\\-pattern\" agrees with the naming of or-patterns, and obviously "
+"matches the syntax well. This is probably the most intuitive name for new "
+"users learning the feature."
+msgstr ""
+
+#: src/3637-guard-patterns.md:329
+msgid ""
+"Some other possibilities: \"condition/conditioned pattern,\" \"refinement/"
+"refined pattern,\" \"restriction/restricted pattern,\" or \"predicate/"
+"predicated pattern.\""
+msgstr ""
+
+#: src/3637-guard-patterns.md:333
+msgid "Future Possibilities"
+msgstr ""
+
+#: src/3637-guard-patterns.md:335
+msgid "Allowing `if let`"
+msgstr ""
+
+#: src/3637-guard-patterns.md:337
+msgid ""
+"Users expect to be able to write `if let` where they can write `if`. "
+"Allowing this in guard patterns would make them significantly more powerful, "
+"but also more complex."
+msgstr ""
+
+#: src/3637-guard-patterns.md:339
+msgid "One way to think about this is that patterns serve two functions:"
+msgstr ""
+
+#: src/3637-guard-patterns.md:341
+msgid ""
+"Refinement: refutable patterns only match some subset of a type's values."
+msgstr ""
+
+#: src/3637-guard-patterns.md:342
+msgid ""
+"Destructuring: patterns use the structure common to values of that subset to "
+"extract data."
+msgstr ""
+
+#: src/3637-guard-patterns.md:344
+msgid ""
+"Guard patterns as described here provide _arbitrary refinement_. That is, "
+"guard patterns can match based on whether any arbitrary expression evaluates "
+"to true."
+msgstr ""
+
+#: src/3637-guard-patterns.md:346
+msgid ""
+"Allowing `if let` allows not just arbitrary refinement, but also _arbitrary "
+"destructuring_. The value(s) bound by an `if let` pattern can depend on the "
+"value of an arbitrary expression."
+msgstr ""

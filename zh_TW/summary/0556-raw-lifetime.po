@@ -1,0 +1,204 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0556-raw-lifetime.md:1
+msgid "Start Date: 2015-01-06"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:2
+msgid ""
+"RFC PR: [rust-lang/rfcs#556](https://github.com/rust-lang/rfcs/pull/556)"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:3
+msgid ""
+"Rust Issue: [rust-lang/rust#21923](https://github.com/rust-lang/rust/"
+"issues/21923)"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:5
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0556-raw-lifetime.md:7
+msgid ""
+"Establish a convention throughout the core libraries for unsafe functions "
+"constructing references out of raw pointers. The goal is to improve "
+"usability while promoting awareness of possible pitfalls with inferred "
+"lifetimes."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0556-raw-lifetime.md:13
+msgid ""
+"The current library convention on functions constructing borrowed values "
+"from raw pointers has the pointer passed by reference, which reference's "
+"lifetime is carried over to the return value. Unfortunately, the lifetime of "
+"a raw pointer is often not indicative of the lifetime of the pointed-to "
+"data. So the status quo eschews the flexibility of inferring the lifetime "
+"from the usage, while falling short of providing useful safety semantics in "
+"exchange."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:21
+msgid ""
+"A typical case where the lifetime needs to be adjusted is in bindings to a "
+"foreign library, when returning a reference to an object's inner value (we "
+"know from the library's API contract that the inner data's lifetime is bound "
+"to the containing object):"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:36
+msgid ""
+"Raw pointer casts also discard the lifetime of the original pointed-to value."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:38
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0556-raw-lifetime.md:40
+msgid ""
+"The signature of `from_raw*` constructors will be changed back to what it "
+"once was, passing a pointer by value:"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:45
+msgid "The lifetime on the return value is inferred from the call context."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:47
+msgid ""
+"The current usage can be mechanically changed, while keeping an eye on "
+"possible lifetime leaks which need to be worked around by e.g. providing "
+"safe helper functions establishing lifetime guarantees, as described below."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:51
+msgid "Document the unsafety"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:53
+msgid ""
+"In many cases, the lifetime parameter will come annotated or elided from the "
+"call context. The example above, adapted to the new convention, is safe "
+"despite lack of any explicit annotation:"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:67
+msgid "In other cases, the inferred lifetime will not be correct:"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:72
+msgid "// Some lines later\n"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:75
+msgid "// More lines later\n"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:77
+msgid ""
+"// The lifetime of s is inferred to extend to the line above.\n"
+"    // That code told you it's unsafe, didn't it?\n"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:81
+msgid ""
+"Given that the function is unsafe, the code author should exercise due care "
+"when using it. However, the pitfall here is not readily apparent at the "
+"place where the invalid usage happens, so it can be easily committed by an "
+"inexperienced user, or inadvertently slipped in with a later edit."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:86
+msgid ""
+"To mitigate this, the documentation on the reference-from-raw functions "
+"should include caveats warning about possible misuse and suggesting ways to "
+"avoid it. When an 'anchor' object providing the lifetime is available, the "
+"best practice is to create a safe helper function or method, taking a "
+"reference to the anchor object as input for the lifetime parameter, like in "
+"the example above. The lifetime can also be explicitly assigned with `std::"
+"mem::copy_lifetime` or `std::mem::copy_lifetime_mut`, or annotated when "
+"possible."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:95
+msgid "Fix copy_mut_lifetime"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:97
+msgid ""
+"To improve composability in cases when the lifetime does need to be assigned "
+"explicitly, the first parameter of `std::mem::copy_mut_lifetime` should be "
+"made an immutable reference. There is no reason for the lifetime anchor to "
+"be mutable: the pointer's mutability is usually the relevant question, and "
+"it's an unsafe function to begin with. This wart may breed tedious, mut-"
+"happy, or transmute-happy code, when e.g. a container providing the lifetime "
+"for a mutable view into its contents is not itself necessarily mutable."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:106
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:108
+msgid ""
+"The implicitly inferred lifetimes are unsafe in sneaky ways, so care is "
+"required when using the borrowed values."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:111
+msgid "Changing the existing functions is an API break."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:113
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0556-raw-lifetime.md:115
+msgid ""
+"An earlier revision of this RFC proposed adding a generic input parameter to "
+"determine the lifetime of the returned reference:"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:122
+msgid ""
+"However, an object with a suitable lifetime is not always available in the "
+"context of the call. In line with the general trend in Rust libraries to "
+"favor composability, `std::mem::copy_lifetime` and `std::mem::"
+"copy_lifetime_mut` should be the principal methods to explicitly adjust a "
+"lifetime."
+msgstr ""
+
+#: src/0556-raw-lifetime.md:128
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0556-raw-lifetime.md:130
+msgid "Should the change in function parameter signatures be done before 1.0?"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:132
+msgid "Acknowledgements"
+msgstr ""
+
+#: src/0556-raw-lifetime.md:134
+msgid ""
+"Thanks to Alex Crichton for shepherding this proposal in a constructive and "
+"timely manner. He has in fact rationalized the convention in its present "
+"form."
+msgstr ""
