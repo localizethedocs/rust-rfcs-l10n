@@ -1,0 +1,146 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1058-slice-tail-redesign.md:1
+msgid "Feature Name: `slice_tail_redesign`"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:2
+msgid "Start Date: 2015-04-11"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1058](https://github.com/rust-lang/rfcs/pull/1058)"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#26906](https://github.com/rust-lang/rust/"
+"issues/26906)"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1058-slice-tail-redesign.md:8
+msgid ""
+"Replace `slice.tail()`, `slice.init()` with new methods `slice."
+"split_first()`, `slice.split_last()`."
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1058-slice-tail-redesign.md:13
+msgid ""
+"The `slice.tail()` and `slice.init()` methods are relics from an older "
+"version of the slice APIs that included a `head()` method. `slice` no longer "
+"has `head()`, instead it has `first()` which returns an `Option`, and "
+"`last()` also returns an `Option`. While it's generally accepted that "
+"indexing / slicing should panic on out-of-bounds access, `tail()`/`init()` "
+"are the only remaining methods that panic without taking an explicit index."
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:20
+msgid ""
+"A conservative change here would be to simply change `head()`/`tail()` to "
+"return `Option`, but I believe we can do better. These operations are "
+"actually specializations of `split_at()` and should be replaced with methods "
+"that return `Option<(&T,&[T])>`. This makes the common operation of "
+"processing the first/last element and the remainder of the list more "
+"ergonomic, with very low impact on code that only wants the remainder (such "
+"code only has to add `.1` to the expression). This has an even more "
+"significant effect on code that uses the mutable variants."
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:29
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1058-slice-tail-redesign.md:31
+msgid ""
+"The methods `head()`, `tail()`, `head_mut()`, and `tail_mut()` will be "
+"removed, and new methods will be added:"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:41
+msgid ""
+"Existing code using `tail()` or `init()` could be translated as follows:"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:43
+msgid "`slice.tail()` becomes `&slice[1..]`"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:44
+msgid ""
+"`slice.init()` becomes `&slice[..slice.len()-1]` or `slice.split_last()."
+"unwrap().1`"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:47
+msgid ""
+"It is expected that a lot of code using `tail()` or `init()` is already "
+"either testing `len()` explicitly or using `first()` / `last()` and could be "
+"refactored to use `split_first()` / `split_last()` in a more ergonomic "
+"fashion. As an example, the following code from typeck:"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:57 src/1058-slice-tail-redesign.md:71
+msgid "can be rewritten as:"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:64
+msgid "And the following code from compiletest:"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:77
+msgid "(the `clone()` ended up being unnecessary)."
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:79
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:81
+msgid ""
+"The expression `slice.split_last().unwrap().1` is more cumbersome than "
+"`slice.init()`. However, this is primarily due to the need for `.unwrap()` "
+"rather than the need for `.1`, and would affect the more conservative "
+"solution (of making the return type `Option<&[T]>`) as well. Furthermore, "
+"the more idiomatic translation is `&slice[..slice.len()-1]`, which can be "
+"used any time the slice is already stored in a local variable."
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:88
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1058-slice-tail-redesign.md:90
+msgid ""
+"Only change the return type to `Option` without adding the tuple. This is "
+"the more conservative change mentioned above. It still has the same drawback "
+"of requiring `.unwrap()` when translating existing code. And it's unclear "
+"what the function names should be (the current names are considered "
+"suboptimal)."
+msgstr ""
+
+#: src/1058-slice-tail-redesign.md:95
+msgid ""
+"Just deprecate the current methods without adding replacements. This gets "
+"rid of the odd methods today, but it doesn't do anything to make it easier "
+"to safely perform these operations."
+msgstr ""

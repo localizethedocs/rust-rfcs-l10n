@@ -1,0 +1,1158 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3013-conditional-compilation-checking.md:1
+msgid "Feature Name: N/A"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:2
+msgid "Start Date: 2020-11-04"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3013](https://github.com/rust-lang/rfcs/pull/3013)"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#82450](https://github.com/rust-lang/rust/"
+"issues/82450)"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:6
+msgid "Checking conditional compilation at compile time"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:8
+msgid "Summary"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:10
+msgid ""
+"Rust supports conditional compilation, analogous to `#ifdef` in C / C++ / "
+"C#. Experience has shown that managing conditional compilation is a "
+"significant burden for large-scale development. One of the risks is that a "
+"condition may contain misspelled identifiers, or may use identifiers that "
+"are obsolete or have been removed from a product. For example:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:16
+msgid "\"widnows\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:16
+msgid "// notice the typo!"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:17
+msgid "/* ... */"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:20
+msgid ""
+"The developer intended to test for the feature named `windows`. This could "
+"easily have been detected by `rustc` if it had known the set of all valid "
+"`feature` flags, not only the ones currently enabled."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:24
+msgid ""
+"This RFC proposes adding new command-line options to `rustc`, which will "
+"allow Cargo (and other build tools) to inform `rustc` of the set of valid "
+"conditions, such as `feature` tests. Using conditions that are not valid "
+"will cause a diagnostic warning. This feature is opt-in, for backwards "
+"compatibility; if no valid configuration options are presented to `rustc` "
+"then no warnings are generated."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:30
+msgid "Motivation"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:32
+msgid "Stronger assurance that large code bases are correct."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:33
+msgid "Protect against typos, bad merges, etc."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:34
+msgid ""
+"Detect dead code, typically caused by feature flags that have been removed "
+"from a crate's manifest, but which still have `#[cfg(...)]` attributes that "
+"mention those features."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:37
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:39
+msgid "Background"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:41
+msgid ""
+"Rust programs can use conditional compilation in order to modify programs "
+"based on the features a user has selected, the target CPU architecture, the "
+"target OS, or other parameters under control of the user. Rust programs may "
+"use conditional compilation in these ways:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:45
+msgid ""
+"By applying the `#[cfg(c)]` attribute to language elements, where `c` is a "
+"condition."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:46
+msgid ""
+"By applying the `#[cfg_attr(c, attr)]` attribute to language elements, where "
+"`c` is a conditional and `attr` is an attribute to apply."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:48
+msgid ""
+"By using the `cfg!(c)` built-in macro, where `c` is a condition. The "
+"compiler replaces the macro call with a `true` or `false` literal."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:51
+msgid "A _condition_ can take one of two forms:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:53
+msgid ""
+"A single identifier, such as `#[cfg(test)]` or `#[cfg(linux)]`. These are "
+"Boolean conditions; they are either enabled or disabled."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:55
+msgid ""
+"A condition may test whether a given value is present in a named list of "
+"values. For example, `#[cfg(feature = \"lighting\")]` tests whether the "
+"`lighting` feature is enabled. Note that a given condition name may have any "
+"number of enabled values; for example, it is legal to invoke `rustc --cfg "
+"feature=\"lighting\" --cfg feature=\"bump_maps\"`."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:59
+msgid ""
+"Boolean operators on conditions, such as `not(...)`, `all(...)`, and "
+"`any(...)`."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:61
+msgid "Checking conditions names"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:63
+msgid ""
+"`rustc` can optionally verify that condition names used in source code are "
+"valid. _Valid_ is distinct from _enabled_. A _valid_ condition is one that "
+"is allowed to appear in source code; the condition may be enabled or "
+"disabled, but it is still valid. An _enabled_ condition is one which has "
+"been specified with a `--cfg foo` or `--cfg 'foo = \"value\"'` option."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:68
+msgid ""
+"For example, `rustc` can detect this bug, where the `test` condition is "
+"misspelled as `tset`:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:71
+msgid "// uh oh, should have been 'test'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:76
+msgid "To catch this error, we give `rustc` the set of valid condition names:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:79
+msgid "'names(name1, name2, ..., nameN)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:82
+msgid ""
+"The `--check-cfg` option does two things: First, it turns on validation for "
+"the set of condition names (and separately for values). Second, it specifies "
+"the set of valid condition names (values)."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:85
+msgid ""
+"Like many `rustc` options the `--check-cfg` option can be specified in a "
+"single-argument form, with the option name and its argument joined by `=`, "
+"or can be specified in a two-argument form."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:88
+msgid "Well-known condition names"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:90
+msgid ""
+"`rustc` defines a set of well-known conditions, such as `test`, `target_os`, "
+"etc. These conditions are always valid; it is not necessary to enable "
+"checking for these conditions. If these conditions are specified in a `--"
+"check-cfg names(...)` option then they will be ignored. This set of well-"
+"known names is a part of the stable interface of the compiler. New well-"
+"known conditions may be added in the future, because adding a new name "
+"cannot break existing code. However, a name may not be removed from the set "
+"of well-known names, because doing so would be a breaking change."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:97
+msgid "These are the well-known conditions:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:99
+msgid "`feature`"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:100
+msgid "`linux`"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:101
+msgid "`test`"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:102
+msgid "`target_os`"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:103
+msgid "`target_arch`"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:104
+msgid "`windows`"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:105
+msgid "TODO: finish enumerating this list during implementation"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:107
+msgid "Checking key-value conditions"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:109
+msgid ""
+"For conditions that define a list of values, such as `feature`, we want to "
+"verify that any `#[cfg(feature = \"v\")]` test uses a valid value `v`. We "
+"want to detect this kind of bug:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:113
+msgid "\"awwwwsome\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:113
+msgid "// should have been \"awesome\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:118
+msgid ""
+"This kind of bug could be due to a typo or a bad PR merge. It could also "
+"occur because a feature was removed from a `Cargo.toml` file, but source "
+"code still contains references to it. Or, a feature name may have been "
+"renamed in one branch, while a new use of that feature was added in a second "
+"branch. We want to catch that kind of accident during a merge."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:123
+msgid ""
+"To catch these errors, we give `rustc` the set of valid values for a given "
+"condition name, by specifying the `--check-cfg` option. For example:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:127
+msgid ""
+"'values(feature, \"derive\", \"parsing\", \"printing\", \"proc-macro\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:128
+msgid ""
+"# specifying values for different names requires more than one --cfg option"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:130
+msgid "'values(foo, \"red\", \"green\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:130
+msgid "'values(bar, \"up\", \"down\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:133
+msgid "Checking is opt-in (disabled by default)"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:135
+msgid ""
+"The default behavior of `rustc` is that conditional compilation names and "
+"values are not checked. This maintains compatibility with existing versions "
+"of Cargo and other build systems that might invoke `rustc` directly. All of "
+"the information for checking conditional compilation uses new syntactic "
+"forms of the existing `--cfg` option."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:140
+msgid ""
+"Checking condition names is independent of checking condition values, for "
+"those conditions that use value lists."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:143
+msgid "Example: Checking condition names, but not values"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:146
+msgid ""
+"# This turns on checking for condition names, but not values, such as "
+"'feature' values."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:147
+#: src/3013-conditional-compilation-checking.md:197
+msgid "'names(is_embedded, has_feathers)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:149
+msgid "'feature = \"zapping\"'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:153
+#: src/3013-conditional-compilation-checking.md:204
+msgid "// this is valid, and #[cfg] evaluates to disabled"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:156
+#: src/3013-conditional-compilation-checking.md:207
+msgid "// this is valid, and #[cfg] evaluates to enabled"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:159
+msgid "// this is INVALID"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:162
+#: src/3013-conditional-compilation-checking.md:184
+#: src/3013-conditional-compilation-checking.md:214
+msgid "\"lasers\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:162
+msgid "// this is valid, because values() was never used"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:166
+msgid "Example: Checking feature values, but not condition names"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:169
+msgid ""
+"# This turns on checking for feature values, but not for condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:170
+#: src/3013-conditional-compilation-checking.md:198
+msgid "'values(feature, \"zapping\", \"lasers\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:171
+#: src/3013-conditional-compilation-checking.md:200
+msgid "'feature=\"zapping\"'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:175
+#: src/3013-conditional-compilation-checking.md:178
+#: src/3013-conditional-compilation-checking.md:181
+msgid "// this is valid, because --check-cfg names(...) was never used"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:184
+msgid "// this is valid, because \"lasers\" is in the"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:185
+#: src/3013-conditional-compilation-checking.md:189
+msgid "// --check-cfg values(feature) list"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:188
+#: src/3013-conditional-compilation-checking.md:217
+msgid "\"monkeys\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:188
+msgid "// this is INVALID, because \"monkeys\" is not in the"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:193
+msgid "Example: Checking both condition names and feature values"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:196
+msgid "# This turns on checking for feature values and for condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:210
+msgid "// this is INVALID, because has_mumble_frotz is not in the"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:211
+msgid "// --check-cfg names(...) list"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:214
+msgid "// this is valid, because \"lasers\" is in the values(feature) list"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:217
+msgid "// this is INVALID, because \"monkeys\" is not in"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:218
+msgid "// the values(feature) list"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:222
+msgid "Cargo support"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:224
+msgid ""
+"Cargo is ideally positioned to enable checking for `feature` flags, since "
+"Cargo knows the set of valid features. Cargo will invoke `rustc --check-cfg "
+"'values(feature, \"...\", ...)'`, so that checking for features is enabled. "
+"Optionally, Cargo could also specify the set of valid condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:229
+msgid ""
+"Cargo users will not need to do anything to take advantage of this feature. "
+"Cargo will always specify the set of valid `feature` flags. This may cause "
+"warnings in crates that contain invalid `#[cfg]` conditions. (Rust is "
+"permitted to add new lints; new lints are not considered a breaking change.) "
+"If a user upgrades to a version of Cargo / Rust that supports validating "
+"features, and their crate now reports errors, then they will need to align "
+"their source code with their `Cargo.toml` file in order to fix the error. "
+"(Or use `#[allow(...)]` to suppress it.) This is a benefit, because it "
+"exposes potential existing bugs."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:237
+msgid "Supporting build systems other than Cargo"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:239
+msgid ""
+"Some users invoke `rustc` using build systems other than Cargo. In this "
+"case, `rustc` will provide the mechanism for validating conditions, but "
+"those build systems will need to be updated in order to take advantage of "
+"this feature. Doing so is expected to be easy and non-disruptive, since this "
+"feature does not change the meaning of the existing `--cfg` option."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:244
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:246
+msgid "What Cargo does"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:248
+msgid ""
+"When Cargo builds a `rustc` command line, it knows which features are "
+"enabled and which are disabled. Cargo normally specifies the set of enabled "
+"features like so:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:252
+#: src/3013-conditional-compilation-checking.md:259
+msgid "'feature=\"lighting\"'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:252
+#: src/3013-conditional-compilation-checking.md:259
+msgid "'feature=\"bump_maps\"'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:255
+msgid ""
+"When conditional compilation checking is enabled, Cargo will also specify "
+"which features are valid, so that `rustc` can validate conditional "
+"compilation tests. For example:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:260
+msgid ""
+"'values(feature, \"lighting\", \"bump_maps\", \"mip_maps\", \"vulkan\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:263
+msgid ""
+"In this command-line, Cargo has specified the full set of _valid_ features "
+"(`lighting`, `bump_maps`, `mip_maps`, `vulkan`) while also specifying which "
+"of those features are currently _enabled_ (`lighting`, `bump_maps`)."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:267
+msgid "Command line arguments reference"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:269
+msgid ""
+"`rustc` accepts the `--check-cfg` option, which specifies whether to check "
+"conditions and how to check them. The `--check-cfg` option takes a value, "
+"called the _check cfg specification_. The check cfg specification is parsed "
+"using the Rust metadata syntax, just as the `--cfg` option is. (This allows "
+"for easy future extensibility, and for easily specifying moderately-complex "
+"data.)"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:274
+msgid "Each `--check-cfg` option can take one of two forms:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:276
+msgid "`--check-cfg names(...)` enables checking condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:277
+msgid ""
+"`--check-cfg values(...)` enables checking the values within list-valued "
+"conditions."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:279
+msgid "The `names(...)` form"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:281
+msgid "This form uses a named metadata list:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:284
+msgid "'names(name1, name2, ... nameN)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:287
+msgid ""
+"where each `name` is a bare identifier (has no quotes). The order of the "
+"names is not significant."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:289
+msgid ""
+"If `--check-cfg names(...)` is specified at least once, then `rustc` will "
+"check all references to condition names. `rustc` will check every `#[cfg]` "
+"attribute, `#[cfg_attr]` attribute, and `cfg!(...)` call against the "
+"provided list of valid condition names. If a name is not present in this "
+"list, then `rustc` will report an `invalid_cfg_name` lint diagnostic. The "
+"default diagnostic level for this lint is `Warn`."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:295
+msgid ""
+"If `--check-cfg names(...)` is not specified, then `rustc` will not check "
+"references to condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:298
+msgid ""
+"`--check-cfg names(...)` may be specified more than once. The result is that "
+"the list of valid condition names is merged across all options. It is legal "
+"for a condition name to be specified more than once; redundantly specifying "
+"a condition name has no effect."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:302
+msgid ""
+"To enable checking condition names with an empty set of valid condition "
+"names, use the following form. The parentheses are required."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:306
+#: src/3013-conditional-compilation-checking.md:319
+#: src/3013-conditional-compilation-checking.md:394
+msgid "'names()'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:309
+msgid ""
+"Note that `--check-cfg 'names()'` is _not_ equivalent to omitting the option "
+"entirely. The first form enables checking condition names, while specifying "
+"that there are no valid condition names (outside of the set of well-known "
+"names defined by `rustc`). Omitting the `--check-cfg 'names(...)'` option "
+"does not enable checking condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:314
+msgid ""
+"Conditions that are enabled are implicitly valid; it is unnecessary (but "
+"legal) to specify a condition name as both enabled and valid. For example, "
+"the following invocations are equivalent:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:318
+#: src/3013-conditional-compilation-checking.md:320
+msgid "# condition names will be checked, and 'has_time_travel' is valid"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:319
+#: src/3013-conditional-compilation-checking.md:322
+#: src/3013-conditional-compilation-checking.md:329
+#: src/3013-conditional-compilation-checking.md:332
+msgid "'has_time_travel'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:322
+#: src/3013-conditional-compilation-checking.md:332
+#: src/3013-conditional-compilation-checking.md:434
+#: src/3013-conditional-compilation-checking.md:445
+msgid "'names(has_time_travel)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:325
+msgid "In contrast, the following two invocations are _not_ equivalent:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:328
+msgid ""
+"# condition names will not be checked (because there is no --check-cfg "
+"names(...))"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:330
+msgid ""
+"# condition names will be checked, and 'has_time_travel' is both valid and "
+"enabled."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:335
+msgid "The `values(...)` form"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:337
+msgid ""
+"The `values(...)` form enables checking the values within list-valued "
+"conditions. It has this form:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:341
+msgid "\"value1\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:341
+msgid "\"value2\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:341
+msgid "\"valueN\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:341
+msgid "'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:344
+msgid ""
+"where `name` is a bare identifier (has no quotes) and each `\"value\"` term "
+"is a quoted literal string. `name` specifies the name of the condition, such "
+"as `feature` or `target_os`."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:347
+msgid ""
+"When the `values(...)` option is specified, `rustc` will check every "
+"`#[cfg(name = \"value\")]` attribute, `#[cfg_attr(name = \"value\")]` "
+"attribute, and `cfg!(name = \"value\")` call. It will check that the "
+"`\"value\"` specified is present in the list of valid values. If `\"value\"` "
+"is not valid, then `rustc` will report an `invalid_cfg_value` lint "
+"diagnostic. The default diagnostic level for this lint is `Warn`."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:353
+msgid ""
+"The form `values()` is an error, because it does not specify a condition "
+"name."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:355
+msgid ""
+"To enable checking of values, but to provide an empty set of valid values, "
+"use this form:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:361
+msgid ""
+"The `--check-cfg values(...)` option can be repeated, both for the same "
+"condition name and for different names. If it is repeated for the same "
+"condition name, then the sets of values for that condition are merged "
+"together."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:365
+msgid ""
+"The `--check-cfg names(...)` and `--check-cfg values(...)` options are "
+"independent. `names` checks the namespace of condition names; `values` "
+"checks the namespace of the values of list-valued conditions."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:369
+msgid "Valid values can be split across multiple options"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:371
+msgid ""
+"The valid condition values are the union of all options specified on the "
+"command line. For example, this command line:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:375
+#: src/3013-conditional-compilation-checking.md:390
+#: src/3013-conditional-compilation-checking.md:414
+msgid "# legal but redundant:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:376
+#: src/3013-conditional-compilation-checking.md:415
+#: src/3013-conditional-compilation-checking.md:418
+msgid "'values(animals, \"lion\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:376
+#: src/3013-conditional-compilation-checking.md:407
+msgid "'values(animals, \"zebra\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:377
+#: src/3013-conditional-compilation-checking.md:392
+msgid "# equivalent:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:379
+#: src/3013-conditional-compilation-checking.md:404
+msgid "'values(animals, \"lion\", \"zebra\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:382
+msgid ""
+"This is intended to give tool developers more flexibility when generating "
+"Rustc command lines."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:384
+msgid "Enabled condition names are implicitly valid"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:386
+msgid ""
+"Specifying an enabled condition name implicitly makes it valid. For example, "
+"the following invocations are equivalent:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:391
+msgid "'names(animals)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:391
+#: src/3013-conditional-compilation-checking.md:394
+#: src/3013-conditional-compilation-checking.md:404
+#: src/3013-conditional-compilation-checking.md:407
+msgid "'animals = \"lion\"'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:397
+msgid "Enabled condition values are implicitly valid"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:399
+msgid ""
+"Specifying an enabled condition _value_ implicitly makes that _value_ valid. "
+"For example, the following invocations are equivalent:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:403
+msgid "# legal but redundant"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:405
+msgid "# equivalent"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:410
+msgid ""
+"Specifying a condition value also implicitly marks that condition _name_ as "
+"valid. For example, the following invocations are equivalent:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:415
+msgid "'names(other, animals)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:416
+msgid "# so the above can be simplified to:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:418
+msgid "'names(other)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:421
+msgid "Checking condition names and values is independent"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:423
+msgid ""
+"Checking condition names may be enabled independently of checking condition "
+"values. If checking of condition values is enabled, then it is enabled "
+"separately for each condition name."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:426
+msgid "Examples:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:429
+msgid "# no checking is performed"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:432
+msgid "# names are checked, but values are not checked"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:435
+msgid "# names are not checked, but 'feature' values are checked."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:437
+msgid "#[cfg(market = \"...\")] values are not checked."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:438
+#: src/3013-conditional-compilation-checking.md:441
+#: src/3013-conditional-compilation-checking.md:446
+msgid "'values(feature, \"lighting\", \"bump_maps\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:439
+msgid ""
+"# names are not checked, but 'feature' values _and_ 'market' values are "
+"checked."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:442
+msgid "'values(market, \"europe\", \"asia\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:443
+msgid "# names _and_ feature values are checked."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:449
+msgid "Stabilizing"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:451
+msgid ""
+"Until this feature is stabilized, it can only be used with a `nightly` "
+"compiler, and only when specifying the `rustc -Z check-cfg ...` option."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:454
+msgid ""
+"Similarly, users of `nightly` Cargo builds must also opt-in to use this "
+"feature, by specifying `cargo build -Z check-cfg ...`."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:457
+msgid ""
+"Experience gained during stabilization will determine how this feature is "
+"best enabled in the final product. Ideally, once the feature is stabilized "
+"in `rustc`, the `-Z check-cfg` requirement will be dropped from `rustc`. "
+"Stabilizing in Cargo may require a stable opt-in flag, however."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:461
+msgid "Diagnostics"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:463
+msgid "Conditional checking can report these diagnostics:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:465
+msgid ""
+"`invalid_cfg_name`: Indicates that a condition name was not in the set of "
+"valid names. This diagnostic will only be reported if the command line "
+"options enable checking condition names (i.e. there is at least one `--cfg "
+"'names(...)'` option and an invalid condition name is found during "
+"compilation."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:470
+msgid ""
+"`invalid_cfg_value`: Indicates that source code contained a condition value "
+"that was invalid. This diagnostic will only be reported if the command line "
+"options enable checking condition values for the specified condition name (i."
+"e. there is a least one `--check-cfg 'values(c, ...)'` for a given condition "
+"name `c`)."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:475
+msgid ""
+"All of the diagnostics defined by this RFC are reported as warnings. They "
+"can be upgraded to errors or silenced using the usual diagnostics controls."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:478
+msgid "Examples"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:480
+msgid "Consider this command line:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:483
+msgid "'name(feature)'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:484
+msgid "'values(feature,\"lion\",\"zebra\")'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:485
+msgid "'feature=\"lion\"'"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:489
+msgid ""
+"This command line indicates that this crate has two features: `lion` and "
+"`zebra`. The `lion` feature is enabled, while the `zebra` feature is "
+"disabled. Consider compiling this code:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:493
+msgid "// this is valid, and tame_lion() will be compiled"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:494
+#: src/3013-conditional-compilation-checking.md:507
+msgid "\"lion\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:496
+msgid "// this is valid, and ride_zebra() will NOT be compiled"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:498
+msgid "\"zebra\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:500
+msgid "// this is INVALID, and will cause a compiler error"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:502
+msgid "\"platypus\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:504
+msgid "// this is INVALID, because 'feechure' is not a known condition name,"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:505
+msgid "// and will cause a compiler error."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:511
+msgid ""
+"Note: The `--check-cfg names(feature)` option is necessary only to enable "
+"checking the condition name, as in the last example. `feature` is a well-"
+"known (always-valid) condition name, and so it is not necessary to specify "
+"it in a `--check-cfg 'names(...)'` option. That option can be shortened to > "
+"`--check-cfg names()` in order to enable checking condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:516
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:518
+msgid ""
+"Adds complexity, in the form of additional command-line options. "
+"Fortunately, this is complexity that will be mainly be exposed to build "
+"systems, such as Cargo."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:520
+msgid ""
+"As with all lints, correct code may be trigger lints. Developers will need "
+"to take time to examine them and see whether they are legitimate or not."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:522
+msgid ""
+"To take full advantage of this, build systems (including but not limited to "
+"Cargo) must be updated. However, for those systems that are not updated, "
+"there is no penalty or drawback, since `--check-cfg` is opt-in."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:526
+msgid ""
+"This lint will not be able to detect invalid `#[cfg]` tests that are within "
+"modules that are not compiled, presumably because an ancestor `mod` is "
+"disabled due to a.  For example:"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:529
+msgid "File `lib.rs` (root module):"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:531
+msgid "\"this_is_disabled_but_valid\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:535
+msgid "File `foo.rs` (nested module):"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:537
+msgid "\"oooooops_this_feature_is_misspelled_and_invalid\""
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:541
+msgid ""
+"The invalid `#[cfg]` attribute in `foo.rs` will not be detected, because "
+"`foo.rs` was not read and parsed. This is a minor drawback, and should not "
+"prevent users from benefitting from checking in most common situations."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:545
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:547
+msgid ""
+"This design enables checking for a class of bugs at compile time, rather "
+"than detecting them by running code."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:550
+msgid ""
+"This design does not break any existing usage of Rustc. It does not change "
+"the meaning of existing programs or existing Rustc command-line options. It "
+"is strictly opt-in. If the verification that this feature provides is "
+"valuable, then it could be promoted to a warning in the future, or "
+"eventually an error. There would need to be a cleanup period, though, where "
+"we detected failures in existing crates and fixed them."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:556
+msgid ""
+"The impact of not doing this is that a class of bugs may go undetected. "
+"These bugs are often easy to find in relatively small systems of code, but "
+"experience shows that these kinds of bugs are much harder to verify in large "
+"code bases. Rust should enable developers to scale up from small to large "
+"systems, without losing agility or reliability."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:561
+msgid "Prior art"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:563
+msgid ""
+"Rust has a very strong focus on finding defects at compile time, rather than "
+"allowing defects to be detected much later in the development cycle. "
+"Statically checking that conditional compilation is used correctly is "
+"consistent with this approach."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:567
+msgid ""
+"Many languages have similar facilities for conditional compilation. C, C++, "
+"C#, and many of their variants make extensive use of conditional "
+"compilation. The author is unaware of any effort to systematically verify "
+"the correct usage of conditional compilation in these languages."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:571
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:573
+msgid ""
+"This RFC specifies the exact syntax of this feature in source code and in "
+"the command-line options for `rustc`. However, it does not address how these "
+"will be used by tools, such as Cargo. This is a split between \"mechanism\" "
+"and \"policy\"; the mechanism (what goes in `rustc`) is specified in this "
+"RFC, but the policies that control this mechanism are intentionally left out "
+"of scope."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:579
+msgid ""
+"We expect the stabilization process for the mechanism (the support in "
+"`rustc`) to stabilize relatively quickly. Separately, over a much longer "
+"time frame, we expect the polices that control those options to stabilize "
+"more slowly. For example, it seems uncontroversial for Cargo to enable "
+"checking for `feature = \"...\"` values immediately; this could be "
+"implemented and stabilized quickly."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:585
+msgid ""
+"However, when (if ever) should Cargo enable checking condition _names_? For "
+"crates that do not have a `build.rs` script, Cargo could enable checking "
+"condition names immediately. But for crates that do have a `build.rs` "
+"script, we may need a way for those scripts to control the behavior of "
+"checking condition names."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:590
+msgid ""
+"One possible source of problems may come from build scripts (`build.rs` "
+"files) that add `--cfg` options that Cargo is not aware of. For example, if "
+"a `Cargo.toml` file did _not_ define a feature flag of `foo`, but the `build."
+"rs` file added a `--cfg feature=\"foo\"` option, then source code could use "
+"`foo` in a condition. My guess is that this is rare, and that a Crater run "
+"will expose this kind of problem."
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:596
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:598
+msgid "Should these checks be enabled by default in Cargo?"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:599
+msgid "How many public crates would fail these checks?"
+msgstr ""
+
+#: src/3013-conditional-compilation-checking.md:600
+msgid ""
+"If these checks are enabled by default in Cargo, should they be warnings or "
+"errors?"
+msgstr ""

@@ -1,0 +1,279 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3593-unprefixed-guarded-strings.md:1
+msgid "Feature Name: `unprefixed_guarded_strings`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:2
+msgid "Start Date: 2024-03-24"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3593](https://github.com/rust-lang/rfcs/pull/3593)"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#123735](https://github.com/rust-lang/rust/"
+"issues/123735)"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/3593-unprefixed-guarded-strings.md:9
+msgid ""
+"Beginning with the 2024 edition, reserve the syntax `#\"foo\"#`, as a way of "
+"future-proofing against future language changes."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/3593-unprefixed-guarded-strings.md:14
+msgid ""
+"[RFC 3101](https://github.com/rust-lang/rfcs/blob/master/text/3101-"
+"reserved_prefixes.md) reserved, among other things, all ident-prefixed "
+"strings like `ident\"foo\"` and `ident##\"foo\"##`. Despite these prefixes "
+"not conflicting with basic Rust grammar, reserving various prefixes avoids "
+"future macro breakage."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:16
+msgid ""
+"Reserving all identifier prefixes covers a large swath of future "
+"possibilities, but one edge case was not included: unprefixed \"guarded\" "
+"string literals."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:19
+msgid ""
+"// Basic string literal\n"
+"\"bar\""
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:20
+msgid ""
+"// Prefixed string literal\n"
+"r\"foo\""
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:22
+msgid ""
+"// Prefixed guarded string literal\n"
+"r#\"foo\"#"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:24
+msgid "// Unprefixed guarded string literal\n"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:26
+#: src/3593-unprefixed-guarded-strings.md:39
+#: src/3593-unprefixed-guarded-strings.md:41
+msgid "\"foo\""
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:26
+msgid "// not yet reserved\n"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:29
+msgid ""
+"[RFC 3475](https://github.com/rust-lang/rfcs/pull/3475) proposes to use this "
+"syntax for a new kind of string literal, reserving the syntax in Edition "
+"2024. However, it is unlikely that RFC will be merged before Edition 2024. "
+"It could be declined, leaving that syntax for an entirely different "
+"proposal. In order to enable usage of this syntax in the future without "
+"waiting for the next edition boundary, we propose reserving `#\"foo\"#` "
+"syntax independently in this RFC."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:31
+msgid ""
+"Just like in RFC 3101, we must reserve this syntax across an edition "
+"boundary to avoid breaking macros. This reservation would be mostly "
+"unobservable by end-users and would only manifest in code using macros like "
+"so:"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:35
+msgid "\"one token\""
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:36
+msgid "\"three tokens\""
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:40
+msgid "r#\"foo\"#"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:44
+msgid "Prior to the 2024 edition, this produces:"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:51
+msgid "Following the 2021 edition, `#\"foo\"#` would become a compiler error."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:53
+msgid ""
+"Note that this syntactic reservation is whitespace-sensitive: any whitespace "
+"to either side of the intervening `#` will allow this code to compile. This "
+"provides a simple migration path for anyone who would be impacted by this "
+"change; they would need only change their macro invocations from `foo!"
+"(#\"qux\"#)` to `foo!(# \"qux\" #)` or `foo!(# \"qux\"#)`. It is possible to "
+"automate this mechanical migration via rustfix."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:55
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:58
+msgid ""
+"When designing DSLs via macros that take token trees as inputs, be aware "
+"that certain syntactic productions which have no meaning in Rust are "
+"nonetheless forbidden by the grammar, as they represent \"reserved space\" "
+"for future language development. In addition to the "
+"`<identifier>#<identifier>`, `<identifier>\"<string contents>\"`, "
+"`<identifier>'<char contents>'`, and `<identifier>#<numeric literal>` forms "
+"reserved in Edition 2021, `#\"<string contents>\"` (with any number of "
+"leading `#`) is reserved for future use by the language."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:60
+msgid ""
+"Note that this syntax relies on the absence of whitespace, so a macro "
+"invocation can use `# \"<string contents>\"` (note the space) as a way to "
+"consume string literal tokens adjacent to a `#`."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:62
+msgid ""
+"Putting it all together, this means that the following are valid macro "
+"invocations:"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:64
+msgid "`foo!(\"qux\")`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:65
+msgid "`foo!(\"qux\"#)`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:66
+msgid "`foo!(r#\"qux\"#)`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:67
+msgid "`foo!(# \"qux\")`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:69
+msgid "...but the following are invalid macro invocations:"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:71
+msgid "`foo!(#\"qux\")`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:72
+msgid "`foo!(#\"qux\"#)`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:73
+msgid "`foo!(####\"qux\"####)`"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:75
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:79
+msgid "New tokenizing rules are introduced:"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:81
+msgid "RESERVED_GUARDED_STRING_LITERAL : `#`<sup>+</sup> STRING_LITERAL"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:83
+msgid ""
+"When compiling under the Rust 2024 edition (as determined by the edition of "
+"the current crate), any instance of the above produces a tokenization error."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:85
+msgid ""
+"An edition migration may be implemented that looks for `#\"string\"#`, etc. "
+"within macro calls and inserts whitespace to force proper tokenization."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:87
+msgid "What follows are some examples of suggested error message templates:"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:88
+msgid ""
+"```\n"
+"error: invalid string literal\n"
+" --> file.rs:x:y\n"
+"  |\n"
+"1 | foo!(#\"qux\"#);\n"
+"  |      ^^^^^^^ help: try using whitespace here: `# \"qux\" #`\n"
+"  |\n"
+"  = note: unprefixed guarded string literals are reserved for future use\n"
+"```"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:98
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:101
+msgid "Complicates macro tokenizing rules."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:103
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:106
+msgid ""
+"Just merge [RFC 3475: Unified String Literals](https://github.com/rust-lang/"
+"rfcs/pull/3475) instead. That RFC is a strict superset of this RFC."
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:108
+msgid "Prior art"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:111
+msgid ""
+"[RFC 3101: Reserved prefixes in the 2021 edition](https://github.com/rust-"
+"lang/rfcs/blob/master/text/3101-reserved_prefixes.md)"
+msgstr ""
+
+#: src/3593-unprefixed-guarded-strings.md:112
+msgid ""
+"[Swift: Extended String Delimiters](https://docs.swift.org/swift-book/"
+"documentation/the-swift-programming-language/stringsandcharacters/#Extended-"
+"String-Delimiters)"
+msgstr ""

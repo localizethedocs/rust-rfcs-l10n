@@ -1,0 +1,1162 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3848-asm-const-ptr.md:1
+msgid "Feature Name: `asm_const_ptr`"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:2
+msgid "Start Date: 2025-07-09"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3848](https://github.com/rust-lang/rfcs/pull/3848)"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#128464](https://github.com/rust-lang/rust/"
+"issues/128464)"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:9
+msgid ""
+"The `const` operand to `asm!` and `global_asm!` currently only accepts "
+"integers. Change it to also accept pointer values. The value must be "
+"computed during const evaluation. The operand expands to the name of the "
+"symbol that the pointer references, plus an integer offset when necessary."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:17
+msgid ""
+"Right now, the only way to reference a global symbol from inline asm is to "
+"use the `sym` operand type."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:28 src/3848-asm-const-ptr.md:118
+#: src/3848-asm-const-ptr.md:152 src/3848-asm-const-ptr.md:194
+#: src/3848-asm-const-ptr.md:893
+msgid "\"lea {1}(%rip), {0}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:37
+msgid "However, the `sym` operand has several limitations:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:39
+msgid "It can only be used with a hard-coded path to one specific global."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:40
+msgid "It can only reference the global as a whole, not a field of the global."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:42
+msgid "Generics and const-evaluation"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:44
+msgid "The `sym` operand lets you use generic parameters:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:47 src/3848-asm-const-ptr.md:56
+#: src/3848-asm-const-ptr.md:84 src/3848-asm-const-ptr.md:91
+#: src/3848-asm-const-ptr.md:92 src/3848-asm-const-ptr.md:463
+#: src/3848-asm-const-ptr.md:500 src/3848-asm-const-ptr.md:549
+msgid "\"C\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:49
+msgid ""
+"\"\n"
+"            tail {}\n"
+"        \""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:58
+msgid "And you can compute integers in const evaluation:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:70
+msgid "\"mov ${1}, {0:e}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:76 src/3848-asm-const-ptr.md:165
+#: src/3848-asm-const-ptr.md:290
+msgid "\"{}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:79
+msgid ""
+"However, asm is otherwise incompatible with const eval. Const evaluation is "
+"only usable to compute integer constants; it cannot access symbols. For "
+"example:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:86
+msgid "\"tail {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:101
+msgid "And pointers also do not work:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:136
+msgid "Casting the pointer to `usize` does not help:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:147
+msgid ""
+"The Linux kernel currently works around this limitation by using a macro:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:168
+msgid ""
+"With the macro it is possible to use the `sym` operand to access a global "
+"specified by the caller. However, this has the disadvantage of being a macro "
+"rather than a function call, and you also cannot get around the fact that "
+"you must specify the name of the global directly in the macro invocation."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:173
+msgid "Accessing fields"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:175
+msgid "Let's say you want to access the field of a static."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:210
+msgid "The only way to fix this is to use `offset_of!`."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:227
+msgid "\"lea ({1} + {2})(%rip), {0}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:237
+msgid ""
+"Having to use `offset_of!` to access a field is inconvenient. If we could "
+"pass a pointer instead of being limited to a symbol name, then this would be "
+"no issue as we could pass `&MY_GLOBAL.b`."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:241
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:244
+msgid ""
+"When writing assembly, you may use the `const` operand to insert a value "
+"that was evaluated in const context. The following types are supported:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:247
+msgid "Integers."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:248
+msgid "Pointers. (To sized types.)"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:249 src/3848-asm-const-ptr.md:616
+msgid "Function pointers."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:251
+msgid ""
+"The `const` operand inserts the value directly into the inline assembly "
+"verbatim. The value will be evaluated using const evaluation, which ensures "
+"that the inserted value is known at compile time."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:255
+msgid ""
+"Note that when working with pointers in const evaluation, the pointers are "
+"evaluated \"symbolically\". That is to say, in const eval, a pointer is a "
+"symbolic value represented as an allocation and an offset. It's impossible "
+"to turn a symbolic pointer into an integer during const eval. It's done this "
+"way because when const evaluation runs, we don't yet know the address of "
+"globals."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:261
+msgid ""
+"The same caveat actually applies to assembly. We might not yet know the "
+"address of a symbol or function when running the assembler or linker. For "
+"this reason, linkers use similar symbolic math when working with pointers. "
+"This has consequences for how you are allowed to use symbols in assembly."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:266
+msgid ""
+"The rest of the guide-level explanation will discuss what happens in "
+"practice when you use the `const` operand in different scenarios. Note that "
+"all of these examples also apply to the `sym` operand."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:270
+msgid "Use in the `.text` section"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:272
+msgid ""
+"Most commonly, instructions written in an inline assembly block will be "
+"stored in the `.text` section. This is where your executable machine code is "
+"stored."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:275
+msgid ""
+"You can use the `const` operand to write a compile-time integer into the "
+"machine code. For example:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:284
+msgid "\"mov ${}, {:e}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:293
+msgid ""
+"This will expand to a program where a `mov` instruction is used to write the "
+"value 42 into a register, and the value of that register is then printed. "
+"The value 42 is hard-coded into the mov instruction."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:297
+msgid "Position-independent code"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:299
+msgid ""
+"When you use `const` with pointers rather than integers, you must think "
+"about position-independent code."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:302
+msgid ""
+"Position-independent code is a special way of compiling machine code so that "
+"it doesn't rely on the absolute address in memory it is stored at, and it is "
+"the default on most Rust targets. This has various advantages:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:306
+msgid ""
+"When loading shared libraries, you can store them at any unused address. "
+"There is no risk that two shared libraries need to be stored at the same "
+"location."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:309
+msgid ""
+"It allows for address space layout randomization (ASLR), which is a "
+"mitigation that exploitation harder. The idea is that every time you run an "
+"executable, you store everything at a new address so that exploits cannot "
+"hardcode the address something is stored at."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:314
+msgid ""
+"However this means that the actual address of global variables is not yet "
+"known at link-time. Since some instructions require the value to be known at "
+"link-time, this can lead to linker errors when the `const` operand is used "
+"incorrectly."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:319
+msgid "As an example of this going wrong, consider this code:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:329 src/3848-asm-const-ptr.md:725
+msgid "\"mov ${}, {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:335 src/3848-asm-const-ptr.md:369
+#: src/3848-asm-const-ptr.md:401 src/3848-asm-const-ptr.md:731
+#: src/3848-asm-const-ptr.md:750
+msgid "\"{:p}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:338
+msgid "This will fail a linker error on most targets."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:340
+msgid ""
+"This error is because a `mov` instruction requires you to hard-code the "
+"actual integer value into the instruction, but the address that `FORTY_TWO` "
+"will have when you execute the code is not yet known when the assembly code "
+"is turned into machine code."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:345
+msgid ""
+"Note that if you compiled this for a target such as `x86_64-unknown-none` "
+"which does _not_ use position independent code by default, then you will not "
+"get an error because the absolute address of `FORTY_TWO` is known at compile-"
+"time, so hard-coding it in `mov` is not an issue."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:350
+msgid "Relative values"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:352
+msgid ""
+"Note that whether it fails doesn't just depend on the instruction, but also "
+"the kind of expression the constant is used in. For example, consider this "
+"code:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:363
+msgid "\"mov $({} - .), {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:375
+msgid ""
+"Here, the argument to `mov` is going to be `$(FORTY_TWO - .)` where the "
+"period means \"the address of this instruction\". In this case, since "
+"`FORTY_TWO` and the `mov` instruction are stored in the same object file, "
+"the linker is able to compute the _offset_ between the two addresses, even "
+"though it doesn't know the absolute value of either address."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:381
+msgid "Rip-relative instructions"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:383
+msgid ""
+"This comes up more often with rip-relative instructions, which are "
+"instructions where the hard-coded value is relative to the instruction "
+"pointer (rip register). For example, using the load-effective-address (lea) "
+"instruction:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:395
+msgid "\"lea {}(%rip), {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:407
+msgid ""
+"The above code creates a `lea` instruction that computes the value of `%rip` "
+"plus some hard-coded offset. This allows the instruction to store the real "
+"address of `FORTY_TWO` into `a` by hard-coding the offset between "
+"`FORTY_TWO` and the lea instruction."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:412
+msgid ""
+"This kind of rip-relative instruction exists on basically every architecture."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:414
+msgid "Symbols from dynamically loaded libraries"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:416
+msgid ""
+"When you pass a pointer value to a symbol from a dynamically loaded library, "
+"then it's not possible to use either absolute or relative addresses to "
+"access it. The address is truly not known until runtime. This is for several "
+"reasons:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:420
+msgid "The location at which the library is loaded is not known until runtime."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:421
+msgid ""
+"Even if you knew the location of the library, the library could have been "
+"recompiled, so you don't even know the offset of the symbol in the library "
+"until runtime."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:425
+msgid ""
+"When you use the `const` operand with a pointer to a symbol from a "
+"dynamically loaded library, you must use the symbol in one of the few "
+"contexts where this is permitted. The simplest example of this is the `call` "
+"instruction:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:436
+msgid "\"call {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:438
+msgid "\"rdi\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:444
+msgid ""
+"In this scenario, the linker will expand `call` to different things "
+"depending on where the symbol comes from and the platform. For example, on "
+"Linux, if you `call` a symbol from another library, it uses a mechanism "
+"called the procedure linkage table (PLT). Usually, the way this works is "
+"that instead of calling `libc::exit` directly, it will call a dummy function "
+"in the PLT (which has a constant offset from the `call` instruction). The "
+"dummy function will jump to the real `libc::exit` function with the help of "
+"the dl loader."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:452
+msgid ""
+"Another scenario is global variables that are not functions. At least on "
+"Linux, a global offset table (GOT) is used. Basically, the idea is that you "
+"are going to store a big array of pointers called the GOT, and your "
+"executable or library will include instructions to the linker (called "
+"relocations) that tell the linker to replace each pointer with the address "
+"of a given symbol. Since the GOT has a known fixed offset from your machine "
+"code, you can look up the address of any symbol through the GOT."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:468
+msgid ""
+"// The GOT has a pointer of type `*const *const FILE` that points\n"
+"    // to the real stdin global. This asm code will load the address\n"
+"    // of that GOT entry into `a`.\n"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:474
+msgid "\"leaq {}@GOTPCREL(%rip), {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:480
+msgid ""
+"// Check that dereferencing the GOT entry gives the address of\n"
+"    // stdin.\n"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:482 src/3848-asm-const-ptr.md:514
+msgid "\"offset: {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:488
+msgid ""
+"Here, the `@GOTPCREL` directive tells the linker to create an entry in the "
+"GOT containing the value before the @ sign, and the expression then "
+"evaluates to the address of the GOT entry."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:492
+msgid ""
+"That said, you would usually not use the `@GOTPCREL` directive with the "
+"`const` operand in machine code. The `@GOTPCREL` directive is mainly useful "
+"for loading the address of the global into a register, and there is a "
+"significantly simpler alternative for that: use the `in(reg)` operand "
+"instead of `const`."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:508
+msgid "\"mov {}, {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:520
+msgid ""
+"In this scenario, the compiler will compute the address of `stdin` before "
+"the assembly block using whichever mechanism is most efficient for the given "
+"symbol. In this case, that is a lookup using the GOT, but for a locally-"
+"defined symbol it would not need a GOT lookup."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:525
+msgid "Use in other sections"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:527
+msgid ""
+"The `.text` section of the binary contains the executable machine code, and "
+"this section is normally immutable. This ensures that if many programs load "
+"the same shared library, the parts that constitute the `.text` section will "
+"be identical across each copy, meaning that the same physical memory can be "
+"reused for each copy of the library."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:533
+msgid ""
+"However, sections other than the `.text` section may not be immutable. For "
+"example, the section that contains `static mut` variables is mutable. In "
+"this case, we can make use of something called a _relocation_. This is a "
+"directive to the dl loader, which tells it to _replace_ a given location "
+"with the address of a given symbol."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:539
+msgid ""
+"When you use the `const` operand to place a value in a custom section, "
+"relocations are automatically used when necessary. This means that even "
+"though the address of `FORTY_TWO` and `stdin` are not known in the below "
+"example, it's still possible to store the addresses in static data:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:555
+msgid ""
+"// This asm block no longer computes a value at runtime. Instead,\n"
+"    // it injects directives that instruct the assembler to create a\n"
+"    // new section in the compiled binary and write data to it.\n"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:561
+msgid "\".pushsection .my_data_section, \\\"aw\\\"\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:562
+msgid "\".globl my_section_start\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:563
+msgid "\".balign 8\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:564
+msgid "\"my_section_start:\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:565
+msgid "\".quad {} - .\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:565
+msgid ""
+"// period = address of this .quad\n"
+"            \".quad {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:567
+msgid "\".quad {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:568
+msgid "\".popsection\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:582
+msgid "\"{},{}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:583 src/3848-asm-const-ptr.md:584
+msgid "\"{:p},{:p}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:592
+msgid ""
+"In this case, the asm block ends up creating a section containing three "
+"integers:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:595
+msgid "The offset from the section to the `FORTY_TWO` global."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:596
+msgid "The address of the `FORTY_TWO` global."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:597
+msgid "The address of the `stdin` global."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:599
+msgid ""
+"Only the first of these three values is actually a constant value, and if "
+"you inspect the binary, the actual values in the section are going to be "
+"`-75980, 0, 0`. The two zeros are filled in when loading the program into "
+"memory based on relocations emitted by the linker."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:604
+msgid ""
+"Note that if you try to use `stdin` with `{} - .` to make it relative, then "
+"this will fail to compile because there is no relocation to insert a "
+"relative address when the symbol is from a dynamically loaded library."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:608
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:611
+msgid ""
+"The `const` operand has different behavior depending on the provided "
+"argument. It accepts the following types:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:614
+msgid "Any integer type."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:615
+msgid "Raw pointers and references to sized types."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:618
+msgid "The argument is evaluated using const evaluation."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:620
+msgid "Integer values"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:622
+msgid ""
+"If the argument type is any integer type, then the value is inserted into "
+"the asm block as plain text. This behavior exists on stable Rust today."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:625
+msgid ""
+"If the argument type is a raw pointer, but the value of the raw pointer is "
+"an integer, then the behavior is the same as when passing an integer type. "
+"This includes cases such as:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:629
+msgid "`core::ptr::null()`"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:630
+msgid "`0xA000_000 as *mut u8`"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:631
+msgid "`core::ptr::null().wrappind_add(1000)`"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:632
+msgid "`core::ptr::without_provenance(1000)`"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:634
+msgid "Pointer values to a named symbol"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:636
+msgid ""
+"When the argument type is a raw pointer, reference, or function pointer that "
+"points at a named symbol, then the compiler will insert `symbol_name` into "
+"the asm block as plain text. In this scenario, it is equivalent to using the "
+"`sym` operand."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:641
+msgid ""
+"When the pointer was created from a named symbol, but is offset from the "
+"symbol itself (e.g. it points at a field of the symbol), then the compiler "
+"will insert `symbol_name+offset` (or `symbol_name-offset`) into the asm "
+"block as plain text. In this scenario, using `{}` with a const operand is "
+"equivalent to writing `{}+offset` (or `{}-offset`) with the `sym` operand."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:647
+msgid ""
+"The compiler may choose to emit the symbol name by inserting it into the asm "
+"verbatim, or by using certain backend-specific operands (e.g. `'i'` or "
+"`'s'`), depending on what the backend supports."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:651
+msgid "Pointer values to an unnamed global"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:653
+msgid ""
+"Not all globals are named. For example, when using static promotion to "
+"create a variable stored statically, the location of the global has no name."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:656
+msgid ""
+"In this scenario, the compiler will generate a name for the symbol and emit "
+"`symbol_name` or `symbol_name+offset` (or `symbol_name-offset`) using the "
+"newly generated symbol, under the same rules as named symbols."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:660
+msgid ""
+"The compiler may choose any name for this symbol. The name may be chosen by "
+"rustc and emitted to the backend as `symbol_name` or `symbol_name+offset` "
+"(or `symbol_name-offset`), or rustc may pass the pointer to the backend "
+"using a backend-specific operand (e.g. `'i'`) and let the backend choose the "
+"name."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:665
+msgid "Coercions"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:667
+msgid ""
+"Const parameters will be a coercion site for function pointers. This means "
+"that when a function item is passed to a `const` argument, it will be "
+"coerced to a function pointer. The same applies to closures without captures."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:671
+msgid "No other coercions will happen."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:673
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:676
+msgid ""
+"The new operand supports every use-case that the `sym` operand supports "
+"(with the possible exception of thread-locals). It may or may not make sense "
+"to emit a warning if `const` is used in cases where `sym` could be used "
+"instead."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:680
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:683
+msgid "Why extend the `const` operand"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:685
+msgid ""
+"This RFC proposes to add pointer support to the existing `const` operand "
+"rather than add a new operand or extend the `sym` operand. I think this "
+"makes sense, since there are many other contexts where const-evaluated "
+"pointers work together with the `const` keyword."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:690
+msgid ""
+"Extending the `sym` operand is not a workable solution because of the kind "
+"of argument it takes. Currently, the `sym` operand takes a path, so if we "
+"extended it to also support pointers, then `sym MY_GLOBAL` and `sym "
+"&MY_GLOBAL` would be equivalent. Or worse, if `MY_GLOBAL` has a raw pointer "
+"type, then `sym MY_GLOBAL` becomes ambiguous."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:696
+msgid ""
+"Adding a new operand is an option, but I don't think there is any reason to "
+"do so. Using the name `const` for anything that can be evaluated during "
+"const evaluation is entirely normal in Rust, even if the absolute address is "
+"not known until runtime."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:701
+msgid ""
+"If we wish to choose a different name than `const` for the operand that "
+"takes a pointer value, then we should be careful to pick a name that can not "
+"be confused with the `memory` operand proposed in the future possibilities "
+"section at the end of this RFC. The name `const` does not have this issue."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:706
+msgid "What about wide pointers"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:709
+msgid ""
+"When passing a `&str` or `&[u8]` to an inline asm block, it could make sense "
+"to treat this as the address of the given string. However, there is "
+"potential for confusion with _interpolation_."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:713
+msgid ""
+"Interpolation is when a string is inserted verbatim into assembly. For "
+"example, you could imagine having a string containing the name of a symbol "
+"and inserting the string verbatim:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:726
+msgid "\"FORTY_TWO\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:734
+msgid "Or even interpolating entire instructions:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:744
+msgid "\"{}, {}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:745
+msgid "\"mov $FORTY_TWO\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:753
+msgid ""
+"To avoid confusion with this hypothetical interpolate operand, this RFC "
+"proposes that wide pointers cannot be passed to the `const` operand. You "
+"must do e.g. this:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:757
+msgid "\"my_string\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:759
+msgid "to insert a pointer to the string."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:761
+msgid "Ambiguity in the expansion"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:763
+msgid ""
+"Const evaluation is very restrictive about what you can do to a pointer. "
+"This means that the pointer's provenance always unambiguously determines "
+"which symbol should be used in the expansion."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:767
+msgid ""
+"Any future language features that introduce ambiguity here must address how "
+"they affect the `const` operand. An example of such a feature would be "
+"casting pointers to integers during const eval."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:771
+msgid "What about codegen units"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:773
+msgid ""
+"Rust may choose to split a crate into multiple codegen units to enable "
+"parallel compilation. This is not an issue for this RFC because when the "
+"codegen units are statically linked, the offsets between symbols from "
+"different units become known constants. This allows the linker to resolve "
+"references between them correctly."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:779
+msgid "Implementation complexity"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:781
+msgid ""
+"The implementation of this feature in rustc is straightforward. The "
+"compiler's only responsibility is to perform const evaluation on the pointer "
+"and then insert the resulting symbol and offset into the assembly string. "
+"All of the complex logic for handling relocations and symbol resolution is "
+"handled by the backend (LLVM) and the linker. Rustc does not need to "
+"implement any of this logic itself."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:788
+msgid "Large offsets and memory operands"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:790
+msgid ""
+"Sarah brings up a concern about large offsets [on github](https://github.com/"
+"rust-lang/rust/issues/128464#issuecomment-2859580807). In this concern, the "
+"assumption is that we are going to expand"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:793
+msgid "\"lea rax, {P}\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:795
+msgid "to"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:797
+msgid "\"lea rax, [rip + three_symbol]\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:799
+msgid ""
+"However this expansion is what you get when you use the memory operand "
+"`'m'`. That is not the expansion used by this RFC. The `const` operand "
+"proposed by this RFC corresponds to the `'i'` operand in C and _not_ to the "
+"`'m'` operand. The main difference here is that the `'m'` operand operates "
+"_on the place behind the pointer_, whereas the `'i'` operand operates on the "
+"pointer value itself."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:806
+msgid ""
+"This means that the code shared by Sarah [will fail with a linker error on "
+"most Rust targets](https://play.rust-lang.org/?"
+"version=stable&mode=debug&edition=2024&gist=c583db3a2aa7f007381eaec2029fd040) "
+"because it's missing the `[rip + _]`. In assembly under Intel syntax, square "
+"brackets is how you dereference an address. If you want the expansion that "
+"Sarah used, you must instead write this:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:812
+msgid "\"lea rax, [rip + {P}]\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:814
+msgid ""
+"([playground](https://play.rust-lang.org/?"
+"version=stable&mode=debug&edition=2024&gist=684dc97aedb328b95c45b9725e1c0be5))"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:816
+msgid ""
+"which uses the relatively simple expansion of inserting the symbol name "
+"verbatim."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:819
+msgid ""
+"To summarize, the concern that Sarah shares about the `lea` instruction "
+"getting mangled by LLVM is mostly relevant if we add a Rust equivalent to "
+"the `'m'` operand, because that operand uses a much more complex expansion "
+"where you need to understand the instruction that it is expanded into."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:824
+msgid "Why not add the memory operand instead?"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:826
+msgid ""
+"The actual use-case that motivated this RFC is tracepoints in the Linux "
+"Kernel. Here, we need to place a relative symbol into a section"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:828
+msgid ""
+"```text\n"
+".pushsection .my_data_section, \"aw\"\n"
+".balign 8\n"
+".quad {} - .\n"
+".popsection\n"
+"```"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:834
+msgid ""
+"with `{}` being the address of a _field_ in a `static`. The memory operand "
+"cannot do this."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:837
+msgid "Prior art"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:840
+msgid ""
+"When compared to C inline assembly, this feature is most similar to the "
+"`'i'` operand. However, the `'i'` operand is less reliable to work with than "
+"what is proposed in this RFC. For example, this C code:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:844
+msgid "<stdio.h>"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:852
+msgid "\"movabs %1 - ., %0\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:853
+msgid "\"=r\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:854
+msgid "\"i\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:857
+msgid "\"%p\\n\""
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:862
+msgid ""
+"will have identical behavior to the `const` operand when it compiles. "
+"However, in practice Clang will fail to compile this code on x86 targets "
+"using GOT relocation, whereas GCC compiles it just fine."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:866
+msgid ""
+"Another difference is that C will accept runtime values to the `'i'` operand "
+"as long as the compiler is able to optimize them to a constant value. That "
+"is to say, whether the `'i'` operand compiles depends on compiler "
+"optimizations. This means that in C, you can have a function that takes a "
+"pointer argument, and pass it to the `'i'` operand. As long as the function "
+"is inlined and the caller provided a constant value, this will compile."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:873
+msgid ""
+"To avoid having compiler optimizations (including inlining decisions!) "
+"affect whether code compiles or not, this RFC proposes that the `const` "
+"operand requires const evaluation even though this means that passing a "
+"pointer as a function argument requires tricks such as this one:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:903
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:906
+msgid ""
+"In the future, we may wish to consider adding other operands that Rust is "
+"missing."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:909
+msgid "Memory operand"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:911
+msgid ""
+"It would make sense to add a Rust equivalent to the `'m'` operand, also "
+"called the memory operand. The idea is that the operand takes a pointer "
+"argument, but it expands to the place behind the pointer instead of the "
+"pointer itself. That is to say, the operand contains an implicit dereference."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:916
+msgid ""
+"The memory operand is useful because it leaves significantly more "
+"flexibility to the compiler / assembler. For example, if you use inline asm "
+"to read from a global variable, then the compiler can choose one of several "
+"expansions:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:920
+msgid ""
+"If the address of the global is known verbatim at link time, then the "
+"verbatim address may be hard-coded into the instruction."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:922
+msgid ""
+"If the rip-relative address of the global is known, then a rip-relative "
+"instruction may be used instead."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:924
+msgid ""
+"If the global is in another dynamic library, the compiler may load the "
+"address into a register before the asm block and insert that register in "
+"place of the operand."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:928
+msgid ""
+"That is, the operand is more limiting by not giving you access to the "
+"address as a value, but that also makes it much more flexible. You usually "
+"do not need to care about where the target symbol is defined with the memory "
+"operand."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:932
+msgid ""
+"Note that with the memory operand, const evaluation is not needed. If the "
+"pointer is a runtime value, it will just be loaded into a register and the "
+"operand will expand to something using that register."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:936
+msgid "Interpolation"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:938
+msgid ""
+"We could add an operand for interpolating a string into the assembly "
+"verbatim. See [the section on wide pointers](#what-about-wide-pointers) for "
+"more info."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:941
+msgid "Formatting Specifiers"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:943
+msgid ""
+"Similar to how `println!` uses format specifiers like `{:x}` or `{:?}` to "
+"change how a value is printed, the `asm!` format string could be extended to "
+"support specifiers for its operands. This would provide a more convenient "
+"way to request architecture-specific formatting without requiring the user "
+"to write it manually."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:949
+msgid ""
+"For example, a `pcrel` specifier could be introduced for program-counter-"
+"relative addressing, used like `asm!(\"lea {0:pcrel}, rax\", sym "
+"MY_GLOBAL)`. The specifier (`:pcrel`) modifies how the operand is rendered. "
+"On x86, the behavior would be:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:953
+msgid ""
+"For an integer (`const 123`), `{0:pcrel}` would expand to the integer value "
+"with a dollar sign: `$123`."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:955
+msgid ""
+"For a symbol operand (`sym my_symbol`), `{0:pcrel}` would expand to "
+"`my_symbol(%rip)`."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:957
+msgid ""
+"For an offset symbol operand (`const &MY_GLOBAL.field`), `{0:pcrel}` would "
+"expand to `(symbol+offset)(%rip)`."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:960
+msgid ""
+"This syntax could apply to both `sym` and `const` operands. This kind of "
+"formatting can be quite useful due to assembly language quirks. For example, "
+"on x86:"
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:964
+msgid ""
+"On one hand, `symbol(%rip)` means `%rip + (symbol - %rip)` (where the part "
+"in parentheses is calculated at link time), so it is equal to just writing "
+"`symbol` except that the instruction uses rip-relative addressing."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:967
+msgid ""
+"On the other hand, `100(%rip)` means `%rip + 100`, so it is _not_ equal to "
+"`100`. The thing that actually means 100 in this context is `$100`."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:970
+msgid ""
+"Therefore, having a way to format into either `symbol(%rip)` or `$100` is "
+"quite useful."
+msgstr ""
+
+#: src/3848-asm-const-ptr.md:973
+msgid ""
+"Note that `{:pcrel}` is an interesting middle ground between the bare "
+"`const`/`sym` operand and the memory operand. On one hand, the expansion is "
+"going to be architecture-specific, so it's a bit more complex than the "
+"`symbol+offset` expansion. But unlike the memory operand, it does not need "
+"to understand the context in which it is used within the asm block."
+msgstr ""

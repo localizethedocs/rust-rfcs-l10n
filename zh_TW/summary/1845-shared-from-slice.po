@@ -1,0 +1,731 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1845-shared-from-slice.md:1
+msgid "Feature Name: `shared_from_slice`"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:2
+msgid "Start Date: 2017-01-05"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1845](https://github.com/rust-lang/rfcs/pull/1845)"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#40475](https://github.com/rust-lang/rust/"
+"issues/40475)"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/1845-shared-from-slice.md:9
+msgid ""
+"This is an RFC to add the APIs: `From<&[T]> for Rc<[T]>` where [`T: Clone`]"
+"(https://doc.rust-lang.org/std/clone/trait.Clone.html) or [`T: Copy`]"
+"(https://doc.rust-lang.org/std/marker/trait.Copy.html) as well as "
+"`From<&str> for Rc<str>`. In addition: `From<Vec<T>> for Rc<[T]>` and "
+"`From<Box<T: ?Sized>> for Rc<T>` will be added."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:11
+msgid ""
+"Identical APIs will also be added for [`Arc`](https://doc.rust-lang.org/std/"
+"sync/struct.Arc.html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:13
+msgid "Motivation"
+msgstr "動機"
+
+#: src/1845-shared-from-slice.md:16
+msgid ""
+"Caching and [string interning](https://en.wikipedia.org/wiki/"
+"String_interning)"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:18
+msgid ""
+"These, and especially the latter - i.e: `From<&str>`, trait implementations "
+"of [`From`](https://doc.rust-lang.org/std/convert/trait.From.html) are "
+"useful when dealing with any form of caching of slices."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:20
+msgid ""
+"This especially applies to _controllable_ [string interning](https://en."
+"wikipedia.org/wiki/String_interning), where you can cheaply cache strings "
+"with a construct such as putting [`Rc`](https://doc.rust-lang.org/std/rc/"
+"struct.Rc.html)s into [`HashSet`](https://doc.rust-lang.org/std/collections/"
+"struct.HashSet.html)s, i.e: `HashSet<Rc<str>>`."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:22
+msgid "An example of string interning:"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:32
+msgid "// If the input hasn't been cached, do it:\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:37
+msgid "// Retrieve the cached element.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:41
+msgid "\"hello world!\""
+msgstr ""
+
+#: src/1845-shared-from-slice.md:42
+msgid "\"goodbye!\""
+msgstr ""
+
+#: src/1845-shared-from-slice.md:44
+msgid "// Cache the slices:\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:49
+msgid "// The contents match:\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:54
+msgid "// It was cached:\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:64
+msgid ""
+"One could imagine a scenario where you have an [AST](https://en.wikipedia."
+"org/wiki/Abstract_syntax_tree) with string literals that gets repeated a lot "
+"in it. For example, [namespaces](https://www.w3.org/TR/xml-names11/) in [XML]"
+"(https://en.wikipedia.org/wiki/XML) documents tends to be repeated many "
+"times."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:66
+msgid ""
+"The [tendril](https://kmcallister.github.io/docs/html5ever/tendril/struct."
+"Tendril.html) crate does one form of interning:"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:67
+msgid ""
+"Buffer sharing is accomplished through thread-local (non-atomic) reference "
+"counting"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:69
+msgid ""
+"It is useful to provide an implementation of `From<&[T]>` as well, and not "
+"just for [`&str`](https://doc.rust-lang.org/std/primitive.str.html), because "
+"one might deal with non-utf8 strings, i.e: `&[u8]`. One could potentially "
+"reuse this for [`Path`](https://doc.rust-lang.org/std/path/struct.Path."
+"html), [`OsStr`](https://doc.rust-lang.org/std/ffi/struct.OsStr.html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:71
+msgid "Safe abstraction for `unsafe` code."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:73
+msgid ""
+"Providing these implementations in the current state of Rust requires "
+"substantial amount of `unsafe` code. Therefore, for the sake of confidence "
+"in that the implementations are safe - it is best done in the standard "
+"library."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:75
+msgid ""
+"[`RcBox`](https://doc.rust-lang.org/src/alloc/rc.rs.html#242-246) is not "
+"public"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:77
+msgid ""
+"Furthermore, since [`RcBox`](https://doc.rust-lang.org/src/alloc/rc.rs."
+"html#242-246) is not exposed publicly from [`std::rc`](https://doc.rust-lang."
+"org/std/rc/index.html), one can't make an implementation outside of the "
+"standard library for this without making assumptions about the internal "
+"layout of [`Rc`](https://doc.rust-lang.org/std/rc/struct.Rc.html). The "
+"alternative is to roll your own implementation of [`Rc`](https://doc.rust-"
+"lang.org/std/rc/struct.Rc.html) in its entirety - but this in turn requires "
+"using a lot of feature gates, which makes using this on stable Rust in the "
+"near future unfeasible."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:79 src/1845-shared-from-slice.md:459
+msgid "For [`Arc`](https://doc.rust-lang.org/std/sync/struct.Arc.html)"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:81
+msgid ""
+"For [`Arc`](https://doc.rust-lang.org/std/sync/struct.Arc.html) the "
+"synchronization overhead of doing `.clone()` is probably greater than the "
+"overhead of doing `Arc<Box<str>>`. But once the clones have been made, "
+"`Arc<str>` would probably be cheaper to dereference due to locality."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:83
+msgid ""
+"Most of the motivations for [`Rc`](https://doc.rust-lang.org/std/rc/struct."
+"Rc.html) applies to [`Arc`](https://doc.rust-lang.org/std/sync/struct.Arc."
+"html) as well, but the use cases might be fewer. Therefore, the case for "
+"adding the same API for [`Arc`](https://doc.rust-lang.org/std/sync/struct."
+"Arc.html) is less clear. One could perhaps use it for multi threaded "
+"interning with a type such as: `Arc<Mutex<HashSet<Arc<str>>>>`."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:85
+msgid ""
+"Because of the similarities between the layout of [`Rc`](https://doc.rust-"
+"lang.org/std/rc/struct.Rc.html) and [`Arc`](https://doc.rust-lang.org/std/"
+"sync/struct.Arc.html), almost identical implementations could be added for "
+"`From<&[T]> for Arc<[T]>` and `From<&str> for Arc<str>`. It would also be "
+"consistent to do so."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:87
+msgid ""
+"Taking all of this into account, adding the APIs for [`Arc`](https://doc."
+"rust-lang.org/std/sync/struct.Arc.html) is warranted."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:89
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/1845-shared-from-slice.md:92
+msgid "There's already an implementation"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:95
+msgid ""
+"There is [already an implementation](https://doc.rust-lang.org/nightly/src/"
+"alloc/rc.rs.html#417-440) of sorts [`alloc::rc`](https://doc.rust-lang.org/"
+"std/rc/struct.Rc.html) for this. But it is hidden under the feature gate "
+"`rustc_private`, which, to the authors knowledge, will never be stabilized. "
+"The implementation is, on this day, as follows:"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:99
+msgid "/// Constructs a new `Rc<str>` from a string slice.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:101
+msgid "\"rustc_private\""
+msgstr ""
+
+#: src/1845-shared-from-slice.md:102
+msgid "\"for internal use in rustc\""
+msgstr ""
+
+#: src/1845-shared-from-slice.md:103
+msgid "\"0\""
+msgstr ""
+
+#: src/1845-shared-from-slice.md:106
+msgid "// Allocate enough space for `RcBox<str>`.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:111
+msgid "// Initialize fields of `RcBox<str>`.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:112
+msgid "// strong: Cell::new(1)\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:113
+msgid "// weak: Cell::new(1)\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:115
+msgid ""
+"// Combine the allocation address and the string length into a fat pointer "
+"to `RcBox`.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:124
+msgid ""
+"The idea is to use the bulk of the implementation of that, generalize it to "
+"[`Vec`](https://doc.rust-lang.org/std/collections/struct.HashSet.html)s and "
+"[slices](https://doc.rust-lang.org/std/primitive.slice.html), specialize it "
+"for [`&str`](https://doc.rust-lang.org/std/primitive.str.html), provide "
+"documentation for both."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:126
+msgid ""
+"[`Copy`](https://doc.rust-lang.org/std/marker/trait.Copy.html) and [`Clone`]"
+"(https://doc.rust-lang.org/std/clone/trait.Clone.html)"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:129
+msgid ""
+"For the implementation of `From<&[T]> for Rc<[T]>`, `T` must be [`Copy`]"
+"(https://doc.rust-lang.org/std/marker/trait.Copy.html) if `ptr::"
+"copy_nonoverlapping` is used because this relies on it being memory safe to "
+"simply copy the bits over. If instead, [`T::clone()`](https://doc.rust-lang."
+"org/std/clone/trait.Clone.html) is used in a loop, then `T` can simply be "
+"[`Clone`](https://doc.rust-lang.org/std/clone/trait.Clone.html) instead. "
+"This is however slower than using `ptr::copy_nonoverlapping`."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:131
+msgid ""
+"[`Vec`](https://doc.rust-lang.org/std/collections/struct.HashSet.html) and "
+"[`Box`](https://doc.rust-lang.org/alloc/boxed/struct.Box.html)"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:133
+msgid ""
+"For the implementation of `From<Vec<T>> for Rc<[T]>`, `T` need not be "
+"[`Copy`](https://doc.rust-lang.org/std/marker/trait.Copy.html), nor [`Clone`]"
+"(https://doc.rust-lang.org/std/clone/trait.Clone.html). The input vector "
+"already owns valid `T`s, and these elements are simply copied over bit for "
+"bit. After copying all elements, they are no longer owned in the vector, "
+"which is then deallocated. Unfortunately, at this stage, the memory used by "
+"the vector can not be reused - this could potentially be changed in the "
+"future."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:136
+msgid ""
+"This is similar for [`Box`](https://doc.rust-lang.org/alloc/boxed/struct.Box."
+"html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:138
+msgid "Suggested implementation"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:140
+msgid "The actual implementations could / will look something like:"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:142
+msgid "For [`Rc`](https://doc.rust-lang.org/std/rc/struct.Rc.html)"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:151
+msgid "// Compute space to allocate for `RcBox<U>`.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:155
+msgid "// Allocate enough space for `RcBox<U>`.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:160
+msgid ""
+"// Combine the allocation address and the slice length into a\n"
+"    // fat pointer to RcBox<[T]>.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:165
+msgid "// Initialize fields of RcBox<[T]>.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:170
+msgid "// Recast to RcBox<U> and yield the Rc:\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:176 src/1845-shared-from-slice.md:213
+#: src/1845-shared-from-slice.md:264 src/1845-shared-from-slice.md:306
+#: src/1845-shared-from-slice.md:391
+msgid "\"shared_from_slice\""
+msgstr ""
+
+#: src/1845-shared-from-slice.md:177 src/1845-shared-from-slice.md:178
+#: src/1845-shared-from-slice.md:214 src/1845-shared-from-slice.md:215
+#: src/1845-shared-from-slice.md:265 src/1845-shared-from-slice.md:266
+#: src/1845-shared-from-slice.md:307 src/1845-shared-from-slice.md:308
+#: src/1845-shared-from-slice.md:392 src/1845-shared-from-slice.md:393
+msgid "\"TODO\""
+msgstr ""
+
+#: src/1845-shared-from-slice.md:180
+msgid ""
+"/// Constructs a new `Rc<[T]>` from a `Vec<T>`.\n"
+"    /// The allocated space of the `Vec<T>` is not reused,\n"
+"    /// but new space is allocated and the old is deallocated.\n"
+"    /// This happens due to the internal layout of `Rc`.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// let arr = [1, 2, 3];\n"
+"    /// let vec = vec![Box::new(1), Box::new(2), Box::new(3)];\n"
+"    /// let rc: Rc<[Box<usize>]> = Rc::from(vec);\n"
+"    /// assert_eq!(rc.len(), arr.len());\n"
+"    /// for (x, y) in rc.iter().zip(&arr) {\n"
+"    ///     assert_eq!(**x, *y);\n"
+"    /// }\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:206
+msgid "// Prevent vec from trying to drop the elements:\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:217
+msgid ""
+"/// Constructs a new `Rc<[T]>` by cloning all elements from the shared "
+"slice\n"
+"    /// [`&[T]`][slice]. The length of the reference counted slice will be "
+"exactly\n"
+"    /// the given [slice].\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// #[derive(PartialEq, Clone, Debug)]\n"
+"    /// struct Wrap(u8);\n"
+"    ///\n"
+"    /// let arr = [Wrap(1), Wrap(2), Wrap(3)];\n"
+"    /// let rc: Rc<[Wrap]> = Rc::from(arr.as_ref());\n"
+"    /// assert_eq!(rc.as_ref(), &arr);   // The elements match.\n"
+"    /// assert_eq!(rc.len(), arr.len()); // The lengths match.\n"
+"    /// ```\n"
+"    ///\n"
+"    /// Using the [`Into`][Into] trait:\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// #[derive(PartialEq, Clone, Debug)]\n"
+"    /// struct Wrap(u8);\n"
+"    ///\n"
+"    /// let rc: Rc<[Wrap]> = arr.as_ref().into();\n"
+"    /// assert_eq!(rc.as_ref(), &arr);   // The elements match.\n"
+"    /// assert_eq!(rc.len(), arr.len()); // The lengths match.\n"
+"    /// ```\n"
+"    ///\n"
+"    /// [Into]: https://doc.rust-lang.org/std/convert/trait.Into.html\n"
+"    /// [slice]: https://doc.rust-lang.org/std/primitive.slice.html\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:268
+msgid ""
+"/// Constructs a new `Rc<[T]>` from a shared slice [`&[T]`][slice].\n"
+"    /// All elements in the slice are copied and the length is exactly that "
+"of\n"
+"    /// the given [slice]. In this case, `T` must be `Copy`.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// let arr = [1, 2, 3];\n"
+"    /// let rc  = Rc::from(arr);\n"
+"    /// assert_eq!(rc.as_ref(), &arr);   // The elements match.\n"
+"    /// assert_eq!(rc.len(), arr.len()); // The length is the same.\n"
+"    /// ```\n"
+"    ///\n"
+"    /// Using the [`Into`][Into] trait:\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// let arr          = [1, 2, 3];\n"
+"    /// let rc: Rc<[u8]> = arr.as_ref().into();\n"
+"    /// assert_eq!(rc.as_ref(), &arr);   // The elements match.\n"
+"    /// assert_eq!(rc.len(), arr.len()); // The length is the same.\n"
+"    /// ```\n"
+"    ///\n"
+"    /// [Into]: ../../std/convert/trait.Into.html\n"
+"    /// [slice]: ../../std/primitive.slice.html\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:310
+msgid ""
+"/// Constructs a new `Rc<str>` from a [string slice].\n"
+"    /// The underlying bytes are copied from it.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// let slice = \"hello world!\";\n"
+"    /// let rc: Rc<str> = Rc::from(slice);\n"
+"    /// assert_eq!(rc.as_ref(), slice);    // The elements match.\n"
+"    /// assert_eq!(rc.len(), slice.len()); // The length is the same.\n"
+"    /// ```\n"
+"    ///\n"
+"    /// Using the [`Into`][Into] trait:\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// let slice = \"hello world!\";\n"
+"    /// let rc: Rc<str> = slice.into();\n"
+"    /// assert_eq!(rc.as_ref(), slice);    // The elements match.\n"
+"    /// assert_eq!(rc.len(), slice.len()); // The length is the same.\n"
+"    /// ```\n"
+"    ///\n"
+"    /// This can be useful in doing [string interning], and caching your "
+"strings.\n"
+"    ///\n"
+"    /// ```\n"
+"    /// // For Rc::ptr_eq\n"
+"    /// #![feature(ptr_eq)]\n"
+"    ///\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    /// use std::collections::HashSet;\n"
+"    /// use std::mem::drop;\n"
+"    ///\n"
+"    /// fn cache_str(cache: &mut HashSet<Rc<str>>, input: &str) -> Rc<str> "
+"{\n"
+"    ///     // If the input hasn't been cached, do it:\n"
+"    ///     if !cache.contains(input) {\n"
+"    ///         cache.insert(input.into());\n"
+"    ///     }\n"
+"    ///\n"
+"    ///     // Retrieve the cached element.\n"
+"    ///     cache.get(input).unwrap().clone()\n"
+"    /// }\n"
+"    ///\n"
+"    /// let first   = \"hello world!\";\n"
+"    /// let second  = \"goodbye!\";\n"
+"    /// let mut set = HashSet::new();\n"
+"    ///\n"
+"    /// // Cache the slices:\n"
+"    /// let rc_first  = cache_str(&mut set, first);\n"
+"    /// let rc_second = cache_str(&mut set, second);\n"
+"    /// let rc_third  = cache_str(&mut set, second);\n"
+"    ///\n"
+"    /// // The contents match:\n"
+"    /// assert_eq!(rc_first.as_ref(),  first);\n"
+"    /// assert_eq!(rc_second.as_ref(), second);\n"
+"    /// assert_eq!(rc_third.as_ref(),  rc_second.as_ref());\n"
+"    ///\n"
+"    /// // It was cached:\n"
+"    /// assert_eq!(set.len(), 2);\n"
+"    /// drop(set);\n"
+"    /// assert_eq!(Rc::strong_count(&rc_first),  1);\n"
+"    /// assert_eq!(Rc::strong_count(&rc_second), 2);\n"
+"    /// assert_eq!(Rc::strong_count(&rc_third),  2);\n"
+"    /// assert!(Rc::ptr_eq(&rc_second, &rc_third));\n"
+"    ///\n"
+"    /// [string interning]: https://en.wikipedia.org/wiki/String_interning\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:382
+msgid ""
+"// This is safe since the input was valid utf8 to begin with, and thus\n"
+"        // the invariants hold.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:395
+msgid ""
+"/// Constructs a new `Rc<T>` from a `Box<T>` where `T` can be unsized.\n"
+"    /// The allocated space of the `Box<T>` is not reused,\n"
+"    /// but new space is allocated and the old is deallocated.\n"
+"    /// This happens due to the internal layout of `Rc`.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// #![feature(shared_from_slice)]\n"
+"    /// use std::rc::Rc;\n"
+"    ///\n"
+"    /// let arr = [1, 2, 3];\n"
+"    /// let vec = vec![Box::new(1), Box::new(2), Box::new(3)]."
+"into_boxed_slice();\n"
+"    /// let rc: Rc<[Box<usize>]> = Rc::from(vec);\n"
+"    /// assert_eq!(rc.len(), arr.len());\n"
+"    /// for (x, y) in rc.iter().zip(&arr) {\n"
+"    ///     assert_eq!(**x, *y);\n"
+"    /// }\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:417
+msgid "// Compute space to allocate + alignment for `RcBox<T>`.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:423
+msgid "// Allocate the space.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:426
+msgid "// Cast to fat pointer: *mut RcBox<T>.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:434
+msgid "// Initialize fields of RcBox<T>.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:442
+msgid "// Deallocate box, we've already forgotten it.\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:445
+msgid "// Yield the Rc:\n"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:453
+msgid "These work on zero sized slices and vectors as well."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:455
+msgid ""
+"With more safe abstractions in the future, this can perhaps be rewritten "
+"with less unsafe code. But this should not change the API itself and thus "
+"will never cause a breaking change."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:461
+msgid ""
+"For the sake of brevity, just use the implementation above, and replace:"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:462
+msgid "`slice_to_rc` with `slice_to_arc`,"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:463
+msgid "`RcBox` with `ArcInner`,"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:464
+msgid "`rcbox_ptr` with `arcinner_ptr`,"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:465
+msgid "`Rc` with `Arc`."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:467
+msgid "How We Teach This"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:470
+msgid "The documentation provided in the `impls` should be enough."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:472
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:475
+msgid "The main drawback would be increasing the size of the standard library."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:477
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/1845-shared-from-slice.md:480
+msgid ""
+"Only implement this for [`T: Copy`](https://doc.rust-lang.org/std/marker/"
+"trait.Copy.html) and skip [`T: Clone`](https://doc.rust-lang.org/std/clone/"
+"trait.Clone.html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:481
+msgid ""
+"Let other libraries do this. This has the problems explained in the "
+"[motivation](#motivation) section above regarding [`RcBox`](https://doc.rust-"
+"lang.org/src/alloc/rc.rs.html#242-246) not being publicly exposed as well as "
+"the amount of feature gates needed to roll ones own [`Rc`](https://doc.rust-"
+"lang.org/std/rc/struct.Rc.html) alternative - for little gain."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:485
+msgid ""
+"Only implement this for [`Rc`](https://doc.rust-lang.org/std/rc/struct.Rc."
+"html) and skip it for [`Arc`](https://doc.rust-lang.org/std/sync/struct.Arc."
+"html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:486
+msgid ""
+"Skip this for [`Vec`](https://doc.rust-lang.org/std/collections/struct."
+"HashSet.html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:487
+msgid ""
+"Only implement this for [`Vec`](https://doc.rust-lang.org/std/collections/"
+"struct.HashSet.html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:488
+msgid ""
+"Skip this for [`Box`](https://doc.rust-lang.org/alloc/boxed/struct.Box.html)."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:489
+msgid ""
+"Use [`AsRef`](https://doc.rust-lang.org/std/convert/trait.AsRef.html). For "
+"example: `impl<'a> From<&'a str> for Rc<str>` becomes `impl From<AsRef<str>> "
+"for Rc<str>`. It could potentially make the API a bit more ergonomic to use. "
+"However, it could run afoul of coherence issues, preventing other wanted "
+"impls. This RFC currently leans towards not using it."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:490
+msgid ""
+"Add these trait implementations of [`From`](https://doc.rust-lang.org/std/"
+"convert/trait.From.html) as functions on [`&str`](https://doc.rust-lang.org/"
+"std/primitive.str.html) like `.into_rc_str()` and on [`&[T]`](https://doc."
+"rust-lang.org/std/primitive.slice.html) like `.into_rc_slice()`. This RFC "
+"currently leans towards using [`From`](https://doc.rust-lang.org/std/convert/"
+"trait.From.html) implementations for the sake of uniformity and ergonomics. "
+"It also has the added benefit of letting you remember one method name "
+"instead of many. One could also consider [`String::into_boxed_str`](https://"
+"doc.rust-lang.org/std/string/struct.String.html#method.into_boxed_str) and "
+"[`Vec::into_boxed_slice`](https://doc.rust-lang.org/std/vec/struct.Vec."
+"html#method.into_boxed_slice), since these are similar with the difference "
+"being that this version uses the [`From`](https://doc.rust-lang.org/std/"
+"convert/trait.From.html) trait, and is converted into a shared smart pointer "
+"instead."
+msgstr ""
+
+#: src/1845-shared-from-slice.md:492
+msgid ""
+"**Also** add these APIs as [`associated functions`](https://doc.rust-lang."
+"org/book/method-syntax.html#associated-functions) on [`Rc`](https://doc.rust-"
+"lang.org/std/rc/struct.Rc.html) and [`Arc`](https://doc.rust-lang.org/std/"
+"sync/struct.Arc.html) as follows:"
+msgstr ""
+
+#: src/1845-shared-from-slice.md:512
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/1845-shared-from-slice.md:515
+msgid ""
+"Should a special version of [`make_mut`](https://doc.rust-lang.org/stable/"
+"std/rc/struct.Rc.html#method.make_mut) be added for `Rc<[T]>`? This could "
+"look like:"
+msgstr ""

@@ -1,0 +1,385 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3349-mixed-utf8-literals.md:1
+msgid "Feature Name: `mixed_utf8_literals`"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:2
+msgid "Start Date: 2022-11-15"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3349](https://github.com/rust-lang/rfcs/pull/3349)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#116907](https://github.com/rust-lang/rust/"
+"issues/116907)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:9
+msgid ""
+"Relax the restrictions on which characters and escape codes are allowed in "
+"string, char, byte string, and byte literals."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:11
+msgid ""
+"Most importantly, this means we accept the exact same characters and escape "
+"codes in `\"…\"` and `b\"…\"` literals. That is:"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:13
+msgid ""
+"Allow unicode characters, including `\\u{…}` escape codes, in byte string "
+"literals. E.g. `b\"hello\\xff我叫\\u{1F980}\"`"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:14
+msgid ""
+"Also allow non-ASCII `\\x…` escape codes in regular string literals, as long "
+"as they are valid UTF-8. E.g. `\"\\xf0\\x9f\\xa6\\x80\"`"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:16
+msgid "Motivation"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:19
+msgid ""
+"Byte strings (`[u8]`) are a strict superset of regular (utf-8) strings "
+"(`str`), but Rust's byte string literals are currently not a superset of "
+"regular string literals: they reject non-ascii characters and `\\u{…}` "
+"escape codes."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:23
+msgid ""
+"```\n"
+"error: non-ASCII character in byte constant\n"
+" --> src/main.rs:2:16\n"
+"  |\n"
+"2 |     b\"hello\\xff你\\u{597d}\"\n"
+"  |                ^^ byte constant must be ASCII\n"
+"  |\n"
+"\n"
+"error: unicode escape in byte string\n"
+" --> src/main.rs:2:17\n"
+"  |\n"
+"2 |     b\"hello\\xff你\\u{597d}\"\n"
+"  |                  ^^^^^^^^ unicode escape in byte string\n"
+"  |\n"
+"```"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:39
+msgid ""
+"This can be annoying when working with \"conventionally UTF-8\" strings, "
+"such as with the popular [`bstr` crate](https://docs.rs/bstr/latest/bstr/). "
+"For example, right now, there is no convenient way to write a literal like "
+"`b\"hello\\xff你好\"`."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:42
+msgid ""
+"Allowing all characters and all known escape codes in both types of string "
+"literals reduces the complexity of the language. We'd no longer have "
+"[different escape codes](https://doc.rust-lang.org/reference/tokens."
+"html#characters-and-strings) for different literal types. We'd only require "
+"regular string literals to be valid UTF-8."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:46
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:49
+msgid ""
+"Regular string literals (`\"\"` and `r\"\"`) must be valid UTF-8. For "
+"example, valid strings are `\"abc\"`, `\"🦀\"`, `\"\\u{1F980}\"` and "
+"`\"\\xf0\\x9f\\xa6\\x80\"`. `\"\\xff\"` is not valid, however, as that is "
+"not valid UTF-8."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:53
+msgid ""
+"Byte string literals (`b\"\"` and `br\"\"`) may include non-ascii characters "
+"and unicode escape codes (`\\u{…}`), which will be encoded as UTF-8."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:55
+msgid ""
+"The `char` type does not store UTF-8, so while `'\\u{1F980}'` is valid, "
+"trying to encode it in UTF-8 as in `'\\xf0\\x9f\\xa6\\x80'` is not accepted. "
+"In a char literal (`''`), `\\x` may only be used for values 0 through 0x7F."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:58
+msgid ""
+"Similarly, in a byte literal (`b''`), `\\u` may only be used for values 0 "
+"through 0x7F, since those are the only code points that are unambiguously "
+"represented as a single byte."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:60
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:63
+msgid ""
+"The [\"characters and strings\" section in the Rust Reference](https://doc."
+"rust-lang.org/reference/tokens.html#characters-and-strings) is updated with "
+"the following table:"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:66
+msgid "Example"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:66
+msgid "Characters"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:66
+msgid "Escapes"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:66
+msgid "Validation"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:68
+msgid "Character"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:68
+msgid "'H'"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:68 src/3349-mixed-utf8-literals.md:69
+#: src/3349-mixed-utf8-literals.md:70 src/3349-mixed-utf8-literals.md:72
+#: src/3349-mixed-utf8-literals.md:73
+msgid "All Unicode"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:68
+msgid "ASCII, unicode"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:68
+msgid "Valid unicode code point"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:69
+msgid "String"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:69
+msgid "\"hello\""
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:69 src/3349-mixed-utf8-literals.md:72
+msgid "ASCII, high byte, unicode"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:69 src/3349-mixed-utf8-literals.md:70
+msgid "Valid UTF-8"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:70
+msgid "Raw string"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:70
+msgid "r#\"hello\"#"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:70 src/3349-mixed-utf8-literals.md:71
+#: src/3349-mixed-utf8-literals.md:72 src/3349-mixed-utf8-literals.md:73
+msgid "\\-"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:71
+msgid "Byte"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:71
+msgid "b'H'"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:71
+msgid "All ASCII"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:71
+msgid "ASCII, high byte"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:72
+msgid "Byte string"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:72
+msgid "b\"hello\""
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:73
+msgid "Raw byte string"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:73
+msgid "br#\"hello\"#"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:75
+msgid "With the following definitions for the escape codes:"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:77
+msgid ""
+"ASCII: `\\'`, `\\\"`, `\\n`, `\\r`, `\\t`, `\\\\`, `\\0`, `\\u{0}` through "
+"`\\u{7F}`, `\\x00` through `\\x7F`"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:78
+msgid "Unicode: `\\u{80}` and beyond."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:79
+msgid "High byte: `\\x80` through `\\xFF`"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:81
+msgid "Compared to before, the tokenizer should start accepting:"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:82
+msgid ""
+"unicode characters in `b\"\"` and `br\"\"` literals (which will be encoded "
+"as UTF-8),"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:83
+msgid "all `\\x` escapes in `\"\"` literals,"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:84
+msgid ""
+"all `\\u` escapes in `b\"\"` literals (which will be encoded as UTF-8), and"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:85
+msgid "ASCII `\\u` escapes in `b''` literals."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:87
+msgid ""
+"Regular string literals (`\"\"`) are checked to be valid UTF-8 afterwards. "
+"(Either during tokenization, or at a later point in time. See future "
+"possibilities.)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:90
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:93
+msgid ""
+"One might unintentionally write `\\xf0` instead of `\\u{f0}`. However, for "
+"regular string literals that will result in an error in nearly all cases, "
+"since that's not valid UTF-8 by itself."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:96
+msgid "Alternatives"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:99
+msgid ""
+"Only extend `b\"\"` (that is, accept `b\"🦀\"`), but still do not accept non-"
+"ASCII `\\x` in regular string literals (that is, keep rejecting "
+"`\"\\xf0\\x9f\\xa6\\x80\"`)."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:101
+msgid ""
+"Stabilize `concat_bytes!()` and require writing `\"hello\\xff你好\"` as "
+"`concat_bytes!(b\"hello\\xff\", \"你好\")`. (Assuming we extend the macro to "
+"accept a mix of byte string literals and regular string literals.)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:104
+msgid "Prior art"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:107
+msgid "C and C++ do the same. (Assuming UTF-8 character set.)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:108
+msgid "[The `bstr` crate](https://docs.rs/bstr/latest/bstr/)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:109
+msgid ""
+"Python and Javascript do it differently: `\\xff` means `\\u{ff}`, because "
+"their strings behave like UTF-32 or UTF-16 rather than UTF-8. (Also, "
+"Python's byte strings \"accept\" `\\u` as just `'\\\\', 'u'`, without any "
+"warning or error.)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:112
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:115
+msgid ""
+"Should `concat!(\"\\xf0\\x9f\", \"\\xa6\\x80\")` work? (The string literals "
+"are not valid UTF-8 individually, but are valid UTF-8 after being "
+"concatenated.)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:117
+msgid "(I don't care. I guess we should do whatever is easiest to implement.)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:119
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:122
+msgid ""
+"Postpone the UTF-8 validation to a later stage, such that macros can accept "
+"literals with invalid UTF-8. E.g. `cstr!(\"\\xff\")`."
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:124
+msgid ""
+"If we do that, we could also decide to accept _all_ escape codes, even "
+"unknown ones, to allow things like `some_macro!(\"\\a\\b\\c\")`. (The "
+"tokenizer would only need to know about `\\\"`.)"
+msgstr ""
+
+#: src/3349-mixed-utf8-literals.md:127
+msgid ""
+"Update the `concat!()` macro to accept `b\"\"` strings and also not "
+"implicitly convert integers to strings, such that `concat!(b\"\", $x, "
+"b\"\\0\")` becomes usable. (This would need to happen over an edition.)"
+msgstr ""

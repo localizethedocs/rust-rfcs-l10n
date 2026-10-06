@@ -1,0 +1,339 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2070-panic-implementation.md:1
+msgid "Feature Name: panic_implementation"
+msgstr ""
+
+#: src/2070-panic-implementation.md:2
+msgid "Start Date: 2017-07-19"
+msgstr ""
+
+#: src/2070-panic-implementation.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2070](https://github.com/rust-lang/rfcs/pull/2070)"
+msgstr ""
+
+#: src/2070-panic-implementation.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44489](https://github.com/rust-lang/rust/"
+"issues/44489)"
+msgstr ""
+
+#: src/2070-panic-implementation.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2070-panic-implementation.md:9
+msgid ""
+"Provide a stable mechanism to specify the behavior of `panic!` in no-std "
+"applications."
+msgstr ""
+
+#: src/2070-panic-implementation.md:12
+msgid "Motivation"
+msgstr ""
+
+#: src/2070-panic-implementation.md:15
+msgid ""
+"The `#![no_std]` attribute was stabilized some time ago and it made possible "
+"to build no-std libraries on stable. However, to this day no-std "
+"applications still require a nightly compiler to be built. The main cause of "
+"this is that the behavior of `panic!` is left undefined in no-std context, "
+"and the only way to specify a panicking behavior is through the unstable "
+"`panic_fmt` [language item](https://doc.rust-lang.org/unstable-book/language-"
+"features/lang-items.html)."
+msgstr ""
+
+#: src/2070-panic-implementation.md:24
+msgid ""
+"This document proposes a stable mechanism to specify the behavior of `panic!"
+"` in no-std context. This would be a step towards enabling development of no-"
+"std applications like device firmware, kernels and operating systems on the "
+"stable channel."
+msgstr ""
+
+#: src/2070-panic-implementation.md:29
+msgid "Detailed design"
+msgstr ""
+
+#: src/2070-panic-implementation.md:32
+msgid "Constraints"
+msgstr ""
+
+#: src/2070-panic-implementation.md:34
+msgid ""
+"`panic!` in no-std environments must continue to be free of memory "
+"allocations and [its API](https://doc.rust-lang.org/core/macro.panic.html) "
+"can only be changed in a backward compatible way."
+msgstr ""
+
+#: src/2070-panic-implementation.md:39
+msgid ""
+"Although not a hard constraint, the cognitive load of the mechanism would be "
+"greatly reduced if it mimicked the existing [custom panic hook](https://doc."
+"rust-lang.org/std/panic/fn.set_hook.html) mechanism as much as possible."
+msgstr ""
+
+#: src/2070-panic-implementation.md:45
+msgid "`PanicInfo`"
+msgstr ""
+
+#: src/2070-panic-implementation.md:47
+msgid ""
+"The types [`std::panic::PanicInfo`](https://doc.rust-lang.org/std/panic/"
+"struct.PanicInfo.html) and [`std::panic::Location`](https://doc.rust-lang."
+"org/std/panic/struct.Location.html) will be moved into the `core` crate, and "
+"`PanicInfo` will gain a new method:"
+msgstr ""
+
+#: src/2070-panic-implementation.md:59
+msgid ""
+"This method returns `Some` if the `panic!` invocation needs to do any "
+"formatting like `panic!(\"{}: {}\", key , value)` does."
+msgstr ""
+
+#: src/2070-panic-implementation.md:62 src/2070-panic-implementation.md:229
+msgid "`fmt::Display`"
+msgstr ""
+
+#: src/2070-panic-implementation.md:64
+msgid ""
+"For convenience, `PanicInfo` will gain an implementation of the `fmt::"
+"Display` trait that produces a message very similar to the one that the "
+"standard `panic!` hook produces. For instance, this program:"
+msgstr ""
+
+#: src/2070-panic-implementation.md:72
+msgid "\"the application {}\""
+msgstr ""
+
+#: src/2070-panic-implementation.md:78
+msgid "\"Hello, {}!\""
+msgstr ""
+
+#: src/2070-panic-implementation.md:78
+msgid "\"world\""
+msgstr ""
+
+#: src/2070-panic-implementation.md:82
+msgid "Would print:"
+msgstr ""
+
+#: src/2070-panic-implementation.md:89
+msgid "`#[panic_implementation]`"
+msgstr ""
+
+#: src/2070-panic-implementation.md:91
+msgid ""
+"A `#[panic_implementation]` attribute will be added to the language. This "
+"attribute can be used to specify the behavior of `panic!` in no-std context. "
+"Only functions with signature `fn(&PanicInfo) -> !` can be annotated with "
+"this attribute, and only one item can be annotated with this attribute in "
+"the whole dependency graph of a crate."
+msgstr ""
+
+#: src/2070-panic-implementation.md:97
+msgid ""
+"Here's an example of how to replicate the panic messages one gets on std "
+"programs on a no-std program:"
+msgstr ""
+
+#: src/2070-panic-implementation.md:103
+msgid "// prints: \"program panicked at 'reason', src/main.rs:27:4\"\n"
+msgstr ""
+
+#: src/2070-panic-implementation.md:107
+msgid "\"program {}\""
+msgstr ""
+
+#: src/2070-panic-implementation.md:113
+msgid "The `#[panic_implementation]` item will roughly expand to:"
+msgstr ""
+
+#: src/2070-panic-implementation.md:117
+msgid "// same as before\n"
+msgstr ""
+
+#: src/2070-panic-implementation.md:119
+msgid ""
+"// Generated by the compiler\n"
+"// This will always use the correct ABI and will work on the stable channel\n"
+msgstr ""
+
+#: src/2070-panic-implementation.md:122
+msgid "\"panic_fmt\""
+msgstr ""
+
+#: src/2070-panic-implementation.md:132
+msgid "Payload"
+msgstr ""
+
+#: src/2070-panic-implementation.md:134
+msgid ""
+"The `core` version of the `panic!` macro will gain support for _payloads_, "
+"as in `panic!(42)`. When invoked with a payload `PanicInfo.payload()` will "
+"return the payload as an `&Any` trait object just like it does in std "
+"context with custom panic hooks."
+msgstr ""
+
+#: src/2070-panic-implementation.md:139
+msgid ""
+"When using `core::panic!` with formatting, e.g. `panic!(\"{}\", 42)`, the "
+"payload will be uninspectable: it won't be downcastable to any known type. "
+"This is where `core::panic!` diverges from `std::panic!`. The latter returns "
+"a `String`, behind the `&Any` trait object, from the `payload()` method in "
+"this situation."
+msgstr ""
+
+#: src/2070-panic-implementation.md:144
+msgid "Feature gate"
+msgstr ""
+
+#: src/2070-panic-implementation.md:146
+msgid ""
+"The initial implementation of the `#[panic_implementation]` mechanism as "
+"well as the `core::panic::Location` and `core::panic::PanicInfo` types will "
+"be feature gated. `std::panic::Location` and `std::panic::PanicInfo` will "
+"continue to be stable except for the new `PanicInfo.message` method."
+msgstr ""
+
+#: src/2070-panic-implementation.md:151
+msgid "Unwinding"
+msgstr ""
+
+#: src/2070-panic-implementation.md:153
+msgid ""
+"The `#[panic_implementation]` mechanism can only be used with no-std "
+"applications compiled with `-C panic=abort`. Applications compiled with `-C "
+"panic=unwind` additionally require the `eh_personality` language item which "
+"this proposal doesn't cover."
+msgstr ""
+
+#: src/2070-panic-implementation.md:158
+msgid "`std::panic!`"
+msgstr ""
+
+#: src/2070-panic-implementation.md:160
+msgid ""
+"This proposal doesn't affect how the selection of the panic runtime in `std` "
+"applications works (`panic_abort`, `panic_unwind`, etc.). Using "
+"`#[panic_implementation]` in `std` programs will cause a compiler error."
+msgstr ""
+
+#: src/2070-panic-implementation.md:164
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2070-panic-implementation.md:167
+msgid ""
+"Currently, no-std applications are only possible on nightly so there's not "
+"much official documentation on this topic given its dependency on several "
+"unstable features. Hopefully once no-std applications are minimally possible "
+"on stable we can have a detailed chapter on the topic in [\"The Rust "
+"Programming Language\"](https://doc.rust-lang.org/book/second-edition/) "
+"book. In the meantime, this feature can be documented in [the unstable book]"
+"(https://doc.rust-lang.org/unstable-book/)."
+msgstr ""
+
+#: src/2070-panic-implementation.md:176
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2070-panic-implementation.md:179
+msgid "Slight deviation from std"
+msgstr ""
+
+#: src/2070-panic-implementation.md:181
+msgid ""
+"Although both `#[panic_implementation]` (no-std) and custom panic hooks "
+"(std) use the same `PanicInfo` type. The behavior of the `PanicInfo."
+"payload()` method changes depending on which context it is used: given "
+"`panic!(\"{}\", 42)`, `payload()` will return a `String`, behind an `Any` "
+"trait object, in std context but it will return an opaque `Any` trait object "
+"in no-std context."
+msgstr ""
+
+#: src/2070-panic-implementation.md:187
+msgid "Alternatives"
+msgstr ""
+
+#: src/2070-panic-implementation.md:190
+msgid "Not doing this"
+msgstr ""
+
+#: src/2070-panic-implementation.md:192
+msgid ""
+"Not providing a stable alternative to the `panic_fmt` language item means "
+"that no-std applications will continue to be tied to the nightly channel."
+msgstr ""
+
+#: src/2070-panic-implementation.md:195
+msgid "Two `PanicInfo` types"
+msgstr ""
+
+#: src/2070-panic-implementation.md:197
+msgid ""
+"An alternative design is to have two different `PanicInfo` types, one in "
+"`core` and one in `std`. The difference between these two types would be in "
+"their APIs:"
+msgstr ""
+
+#: src/2070-panic-implementation.md:201
+msgid "// core\n"
+msgstr ""
+
+#: src/2070-panic-implementation.md:206
+msgid ""
+"// Not available\n"
+"    // pub fn payload(&self) -> &(Any + Send) { .. }\n"
+msgstr ""
+
+#: src/2070-panic-implementation.md:209
+msgid "// std\n"
+msgstr ""
+
+#: src/2070-panic-implementation.md:218
+msgid ""
+"In this alternative design the signature of the `#[panic_implementation]` "
+"function would be enforced to be `fn(&core::panic::PanicInfo) -> !`. Custom "
+"panic hooks will continue to use the `std::panic::PanicInfo` type."
+msgstr ""
+
+#: src/2070-panic-implementation.md:222
+msgid ""
+"This design precludes supporting payloads in `core::panic!` but also "
+"eliminates the difference between `core::PanicInfo.payload()` in no-std vs "
+"std by eliminating the method in the former context."
+msgstr ""
+
+#: src/2070-panic-implementation.md:226
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2070-panic-implementation.md:231
+msgid ""
+"Should the `Display` of `PanicInfo` format the panic information as "
+"`\"panicked at 'reason', src/main.rs:27:4\"`, as `\"'reason', src/main."
+"rs:27:4\"`, or simply as `\"reason\"`."
+msgstr ""
+
+#: src/2070-panic-implementation.md:235
+msgid "Unwinding in no-std"
+msgstr ""
+
+#: src/2070-panic-implementation.md:237
+msgid ""
+"Is this design compatible, or can it be extended to work, with unwinding "
+"implementations for no-std environments?"
+msgstr ""

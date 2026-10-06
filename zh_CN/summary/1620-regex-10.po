@@ -1,0 +1,1487 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1620-regex-1.0.md:1
+msgid "Feature Name: regex-1.0"
+msgstr ""
+
+#: src/1620-regex-1.0.md:2
+msgid "Start Date: 2016-05-11"
+msgstr ""
+
+#: src/1620-regex-1.0.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1620](https://github.com/rust-lang/rfcs/pull/1620)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:4
+msgid "Rust Issue: N/A"
+msgstr ""
+
+#: src/1620-regex-1.0.md:6
+msgid "Table of contents"
+msgstr ""
+
+#: src/1620-regex-1.0.md:8
+msgid "[Summary](#summary)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:9
+msgid "[Motivation](#motivation)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:10
+msgid "[Detailed design](#detailed-design)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:11
+msgid "[Syntax](#syntax)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:12
+msgid "[Evolution](#evolution)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:13
+msgid "[Concrete syntax](#concrete-syntax)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:14
+msgid "[Expansion concerns](#expansion-concerns)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:15
+msgid "[Core API](#core-api)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:16
+msgid "[RegexBuilder](#regexbuilder)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:17
+msgid "[Replacer](#replacer)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:18
+msgid "[quote](#quote)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:19
+msgid "[RegexSet](#regexset)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:20
+msgid "[The `bytes` submodule](#the-bytes-submodule)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:21
+msgid "[Drawbacks](#drawbacks)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:22
+msgid "[Guaranteed linear time matching](#guaranteed-linear-time-matching)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:23
+msgid "[Allocation](#allocation)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:24
+msgid "[Synchronization is implicit](#synchronization-is-implicit)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:25
+msgid "[The implementation is complex](#the-implementation-is-complex)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:26
+msgid "[Alternatives](#alternatives)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:27
+msgid "[Big picture](#big-picture)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:28
+msgid "[`bytes::Regex`](#bytesregex)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:29
+msgid "[A regex trait](#a-regex-trait)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:30
+msgid "[Reuse some types](#reuse-some-types)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:31
+msgid "[Unresolved questions](#unresolved-questions)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:32
+msgid "[`regex-syntax`](#regex-syntax)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:33
+msgid "[`regex-capi`](#regex-capi)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:34
+msgid "[`regex_macros`](#regex_macros)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:35
+msgid "[Dependencies](#dependencies)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:36
+msgid "[Exposing more internals](#exposing-more-internals)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:37
+msgid "[Breaking changes](#breaking-changes)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:39
+msgid "Summary"
+msgstr ""
+
+#: src/1620-regex-1.0.md:42
+msgid ""
+"This RFC proposes a 1.0 API for the `regex` crate and therefore a move out "
+"of the `rust-lang-nursery` organization and into the `rust-lang` "
+"organization. Since the API of `regex` has largely remained unchanged since "
+"its inception [2 years ago](https://github.com/rust-lang/rfcs/blob/master/"
+"text/0042-regexps.md), significant emphasis is placed on retaining the "
+"existing API. Some minor breaking changes are proposed."
+msgstr ""
+
+#: src/1620-regex-1.0.md:49
+msgid "Motivation"
+msgstr ""
+
+#: src/1620-regex-1.0.md:52
+msgid ""
+"Regular expressions are a widely used tool and most popular programming "
+"languages either have an implementation of regexes in their standard "
+"library, or there exists at least one widely used third party "
+"implementation. It therefore seems reasonable for Rust to do something "
+"similar."
+msgstr ""
+
+#: src/1620-regex-1.0.md:57
+msgid ""
+"The `regex` crate specifically serves many use cases, most of which are "
+"somehow related to searching strings for patterns. Describing regular "
+"expressions in detail is beyond the scope of this RFC, but briefly, these "
+"core use cases are supported in the main API:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:62
+msgid "Testing whether a pattern matches some text."
+msgstr ""
+
+#: src/1620-regex-1.0.md:63
+msgid "Finding the location of a match of a pattern in some text."
+msgstr ""
+
+#: src/1620-regex-1.0.md:64
+msgid ""
+"Finding the location of a match of a pattern---and locations of all its "
+"capturing groups---in some text."
+msgstr ""
+
+#: src/1620-regex-1.0.md:66
+msgid "Iterating over successive non-overlapping matches of (2) and (3)."
+msgstr ""
+
+#: src/1620-regex-1.0.md:68
+msgid ""
+"The expected outcome is that the `regex` crate should be the preferred "
+"default choice for matching regular expressions when writing Rust code. This "
+"is already true today; this RFC formalizes it."
+msgstr ""
+
+#: src/1620-regex-1.0.md:72
+msgid "Detailed design"
+msgstr ""
+
+#: src/1620-regex-1.0.md:75
+msgid "Syntax"
+msgstr ""
+
+#: src/1620-regex-1.0.md:78
+msgid "Evolution"
+msgstr ""
+
+#: src/1620-regex-1.0.md:81
+msgid ""
+"The public API of a `regex` library _includes_ the syntax of a regular "
+"expression. A change in the semantics of the syntax can cause otherwise "
+"working programs to break, yet, we'd still like the option to expand the "
+"syntax if necessary. Thus, this RFC proposes:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:86
+msgid ""
+"Any change that causes a previously invalid regex pattern to become valid is "
+"_not_ a breaking change. For example, the escape sequence `\\y` is not a "
+"valid pattern, but could become one in a future release without a major "
+"version bump."
+msgstr ""
+
+#: src/1620-regex-1.0.md:90
+msgid ""
+"Any change that causes a previously valid regex pattern to become invalid "
+"_is_ a breaking change."
+msgstr ""
+
+#: src/1620-regex-1.0.md:92
+msgid ""
+"Any change that causes a valid regex pattern to change its matching "
+"semantics _is_ a breaking change. (For example, changing `\\b` from \"word "
+"boundary assertion\" to \"backspace character.\")"
+msgstr ""
+
+#: src/1620-regex-1.0.md:96
+msgid "Bug fixes and Unicode upgrades are exceptions to both (2) and (3)."
+msgstr ""
+
+#: src/1620-regex-1.0.md:98
+msgid ""
+"Another interesting exception to (2) is that compiling a regex can fail if "
+"the entire compiled object would exceed some pre-defined user configurable "
+"size. In particular, future changes to the compiler could cause certain "
+"instructions to use more memory, or indeed, the representation of the "
+"compiled regex could change completely. This could cause a regex that fit "
+"under the size limit to no longer fit, and therefore fail to compile. These "
+"cases are expected to be extremely rare in practice. Notably, the default "
+"size limit is `10MB`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:106
+msgid "Concrete syntax"
+msgstr ""
+
+#: src/1620-regex-1.0.md:109
+msgid ""
+"The syntax is exhaustively documented in the current public API "
+"documentation: http://doc.rust-lang.org/regex/regex/index.html#syntax"
+msgstr ""
+
+#: src/1620-regex-1.0.md:112
+msgid ""
+"To my knowledge, the evolution as proposed in this RFC has been followed "
+"since `regex` was created. The syntax has largely remained unchanged with "
+"few additions."
+msgstr ""
+
+#: src/1620-regex-1.0.md:116
+msgid "Expansion concerns"
+msgstr ""
+
+#: src/1620-regex-1.0.md:119
+msgid ""
+"There are a few possible avenues for expansion, and we take measures to make "
+"sure they are possible with respect to API evolution."
+msgstr ""
+
+#: src/1620-regex-1.0.md:122
+msgid ""
+"Escape sequences are often blessed with special semantics. For example, "
+"`\\d` is a Unicode character class that matches any digit and `\\b` is a "
+"word boundary assertion. We may one day like to add more escape sequences "
+"with special semantics. For this reason, any unrecognized escape sequence "
+"makes a pattern invalid."
+msgstr ""
+
+#: src/1620-regex-1.0.md:127
+msgid ""
+"If we wanted to expand the syntax with various look-around operators, then "
+"it would be possible since most common syntax is considered an invalid "
+"pattern today. In particular, all of the [syntactic forms listed here]"
+"(http://www.regular-expressions.info/refadv.html) are invalid patterns in "
+"`regex`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:132
+msgid ""
+"Character class sets are another potentially useful feature that may be "
+"worth adding. Currently, [various forms of set notation](http://www.regular-"
+"expressions.info/refcharclass.html) are treated as valid patterns, but this "
+"RFC proposes making them invalid patterns before `1.0`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:137
+msgid ""
+"Additional named Unicode classes or codepoints may be desirable to add. "
+"Today, any pattern of the form `\\p{NAME}` where `NAME` is unrecognized is "
+"considered invalid, which leaves room for expansion."
+msgstr ""
+
+#: src/1620-regex-1.0.md:140
+msgid ""
+"If all else fails, we can introduce new flags that enable new features that "
+"conflict with stable syntax. This is possible because using an unrecognized "
+"flag results in an invalid pattern."
+msgstr ""
+
+#: src/1620-regex-1.0.md:144
+msgid "Core API"
+msgstr ""
+
+#: src/1620-regex-1.0.md:147
+msgid "The core API of the `regex` crate is the `Regex` type:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:153
+msgid "It has one primary constructor:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:157
+msgid ""
+"/// Creates a new regular expression. If the pattern is invalid or "
+"otherwise\n"
+"  /// fails to compile, this returns an error.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:163
+msgid ""
+"And five core search methods. All searching completes in worst case linear "
+"time with respect to the search text (the size of the regex is taken as a "
+"constant)."
+msgstr ""
+
+#: src/1620-regex-1.0.md:168
+msgid "/// Returns true if and only if the text matches this regex.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:171
+msgid ""
+"/// Returns the leftmost-first match of this regex in the text given. If no\n"
+"  /// match exists, then None is returned.\n"
+"  ///\n"
+"  /// The leftmost-first match is defined as the first match that is found\n"
+"  /// by a backtracking search.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:178
+msgid ""
+"/// Returns an iterator of successive non-overlapping matches of this regex\n"
+"  /// in the text given.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:182
+msgid ""
+"/// Returns the leftmost-first match of this regex in the text given with\n"
+"  /// locations for all capturing groups that participated in the match.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:186
+msgid ""
+"/// Returns an iterator of successive non-overlapping matches with "
+"capturing\n"
+"  /// group information in the text given.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:192
+msgid ""
+"(N.B. The `captures` method can technically replace all uses of `find` and "
+"`is_match`, but is potentially slower. Namely, the API reflects a "
+"performance trade off: the more you ask for, the harder the regex engine has "
+"to work.)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:196
+msgid "There is one additional, but idiosyncratic, search method:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:200
+msgid ""
+"/// Returns the end location of a match if one exists in text.\n"
+"  ///\n"
+"  /// This may return a location preceding the end of a proper leftmost-"
+"first\n"
+"  /// match. In particular, it may return the location at which a match is\n"
+"  /// determined to exist. For example, matching `a+` against `aaaaa` will\n"
+"  /// return `1` while the end of the leftmost-first match is actually `5`.\n"
+"  ///\n"
+"  /// This has the same performance characteristics as `is_match`.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:212
+msgid "And two methods for splitting:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:216
+msgid ""
+"/// Returns an iterator of substrings of `text` delimited by a match of\n"
+"  /// this regular expression. Each element yielded by the iterator "
+"corresponds\n"
+"  /// to text that *isn't* matched by this regex.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:221
+msgid ""
+"/// Returns an iterator of at most `limit` substrings of `text` delimited "
+"by\n"
+"  /// a match of this regular expression. Each element yielded by the "
+"iterator\n"
+"  /// corresponds to text that *isn't* matched by this regex. The remainder "
+"of\n"
+"  /// `text` that is not split will be the last element yielded by the\n"
+"  /// iterator.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:230
+msgid ""
+"And three methods for replacement. Replacement is discussed in more detail "
+"in a subsequent section."
+msgstr ""
+
+#: src/1620-regex-1.0.md:235
+msgid ""
+"/// Replaces matches of this regex in `text` with `rep`. If no matches were\n"
+"  /// found, then the given string is returned unchanged, otherwise a new\n"
+"  /// string is allocated.\n"
+"  ///\n"
+"  /// `replace` replaces the first match only. `replace_all` replaces all\n"
+"  /// matches. `replacen` replaces at most `limit` matches.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:247
+msgid "And lastly, three simple accessors:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:251
+msgid "/// Returns the original pattern string.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:254
+msgid ""
+"/// Returns an iterator over all capturing group in the pattern in the "
+"order\n"
+"  /// they were defined (by position of the leftmost parenthesis). The name "
+"of\n"
+"  /// the group is yielded if it has a name, otherwise None is yielded.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:259
+msgid ""
+"/// Returns the total number of capturing groups in the pattern. This\n"
+"  /// includes the implicit capturing group corresponding to the entire\n"
+"  /// pattern.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:266
+msgid ""
+"Finally, `Regex` impls the `Send`, `Sync`, `Display`, `Debug`, `Clone` and "
+"`FromStr` traits from the standard library."
+msgstr ""
+
+#: src/1620-regex-1.0.md:269
+msgid "Error"
+msgstr ""
+
+#: src/1620-regex-1.0.md:271
+msgid ""
+"The `Error` enum is an _extensible_ enum, similar to `std::io::Error`, "
+"corresponding to the different ways that regex compilation can fail. In "
+"particular, this means that adding a new variant to this enum is not a "
+"breaking change. (Removing or changing an existing variant is still a "
+"breaking change.)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:278
+msgid "/// A syntax error.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:280
+msgid ""
+"/// The compiled program exceeded the set size limit.\n"
+"  /// The argument is the size limit imposed.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:283
+msgid ""
+"/// Hints that destructuring should not be exhaustive.\n"
+"  ///\n"
+"  /// This enum may grow additional variants, so this makes sure clients\n"
+"  /// don't count on exhaustive matching. (Otherwise, adding a new variant\n"
+"  /// could break existing code.)\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:293
+msgid ""
+"Note that the `Syntax` variant could contain the `Error` type from the "
+"`regex-syntax` crate, but this couples `regex-syntax` to the public API of "
+"`regex`. We sidestep this hazard by defining a newtype in `regex` that "
+"internally wraps `regex_syntax::Error`. This also enables us to selectively "
+"expose more information in the future."
+msgstr ""
+
+#: src/1620-regex-1.0.md:299
+msgid "RegexBuilder"
+msgstr ""
+
+#: src/1620-regex-1.0.md:302
+msgid ""
+"In most cases, the construction of a regex is done with `Regex::new`. There "
+"are however some options one might want to tweak. This can be done with a "
+"`RegexBuilder`:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:308
+msgid "/// Creates a new builder from the given pattern.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:311
+msgid ""
+"/// Compiles the pattern and all set options. If successful, a Regex is\n"
+"  /// returned. Otherwise, if compilation failed, an Error is returned.\n"
+"  ///\n"
+"  /// N.B. `RegexBuilder::new(\"...\").compile()` is equivalent to\n"
+"  /// `Regex::new(\"...\")`.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:318
+msgid "/// Set the case insensitive flag (i).\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:321
+msgid "/// Set the multi line flag (m).\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:324
+msgid "/// Set the dot-matches-any-character flag (s).\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:327
+msgid "/// Set the swap-greedy flag (U).\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:330
+msgid "/// Set the ignore whitespace flag (x).\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:333
+msgid "/// Set the Unicode flag (u).\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:336
+msgid ""
+"/// Set the approximate size limit (in bytes) of the compiled regular\n"
+"  /// expression.\n"
+"  ///\n"
+"  /// If compiling a pattern would approximately exceed this size, then\n"
+"  /// compilation will fail.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:343
+msgid ""
+"/// Set the approximate size limit (in bytes) of the cache used by the DFA.\n"
+"  ///\n"
+"  /// This is a per thread limit. Once the DFA fills the cache, it will be\n"
+"  /// wiped and refilled again. If the cache is wiped too frequently, the\n"
+"  /// DFA will quit and fall back to another matching engine.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:352
+msgid "Captures"
+msgstr ""
+
+#: src/1620-regex-1.0.md:354
+msgid ""
+"A `Captures` value stores the locations of all matching capturing groups for "
+"a single match. It provides convenient access to those locations indexed by "
+"either number, or, if available, name."
+msgstr ""
+
+#: src/1620-regex-1.0.md:358
+msgid ""
+"The first capturing group (index `0`) is always unnamed and always "
+"corresponds to the entire match. Other capturing groups correspond to groups "
+"in the pattern. Capturing groups are indexed by the position of their "
+"leftmost parenthesis in the pattern."
+msgstr ""
+
+#: src/1620-regex-1.0.md:363
+msgid ""
+"Note that `Captures` is a type constructor with a single parameter: the "
+"lifetime of the text searched by the corresponding regex. In particular, the "
+"lifetime of `Captures` is not tied to the lifetime of a `Regex`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:369
+msgid ""
+"/// Returns the match associated with the capture group at index `i`. If\n"
+"  /// `i` does not correspond to a capture group, or if the capture group\n"
+"  /// did not participate in the match, then `None` is returned.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:374
+msgid ""
+"/// Returns the match for the capture group named `name`. If `name` isn't a\n"
+"  /// valid capture group or didn't match anything, then `None` is "
+"returned.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:378
+msgid ""
+"/// Returns the number of captured groups. This is always at least 1, since\n"
+"  /// the first unnamed capturing group corresponding to the entire match\n"
+"  /// always exists.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:383
+msgid ""
+"/// Expands all instances of $name in the text given to the value of the\n"
+"  /// corresponding named capture group. The expanded string is written to\n"
+"  /// dst.\n"
+"  ///\n"
+"  /// The name in $name may be integer corresponding to the index of a "
+"capture\n"
+"  /// group or it can be the name of a capture group. If the name isn't a "
+"valid\n"
+"  /// capture group, then it is replaced with an empty string.\n"
+"  ///\n"
+"  /// The longest possible name is used. e.g., $1a looks up the capture "
+"group\n"
+"  /// named 1a and not the capture group at index 1. To exert more precise\n"
+"  /// control over the name, use braces, e.g., ${1}a.\n"
+"  ///\n"
+"  /// To write a literal $, use $$.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:400
+msgid ""
+"The `Captures` type impls `Debug`, `Index<usize>` (for numbered capture "
+"groups) and `Index<str>` (for named capture groups). A downside of the "
+"`Index` impls is that the return value is bounded to the lifetime of "
+"`Captures` instead of the lifetime of the actual text searched because of "
+"how the `Index` trait is defined. Callers can work around that limitation if "
+"necessary by using an explicit method such as `get` or `name`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:407
+msgid "Replacer"
+msgstr ""
+
+#: src/1620-regex-1.0.md:410
+msgid ""
+"The `Replacer` trait is a helper trait to make the various `replace` methods "
+"on `Regex` more ergonomic. In particular, it makes it possible to use either "
+"a standard string as a replacement, or a closure with more explicit access "
+"to a `Captures` value."
+msgstr ""
+
+#: src/1620-regex-1.0.md:417
+msgid ""
+"/// Appends text to dst to replace the current match.\n"
+"  ///\n"
+"  /// The current match is represents by caps, which is guaranteed to have "
+"a\n"
+"  /// match at capture group 0.\n"
+"  ///\n"
+"  /// For example, a no-op replacement would be\n"
+"  /// dst.extend(caps.at(0).unwrap()).\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:426
+msgid ""
+"/// Return a fixed unchanging replacement string.\n"
+"  ///\n"
+"  /// When doing replacements, if access to Captures is not needed, then\n"
+"  /// it can be beneficial from a performance perspective to avoid finding\n"
+"  /// sub-captures. In general, this is called once for every call to "
+"replacen.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:437
+msgid ""
+"Along with this trait, there is also a helper type, `NoExpand` that "
+"implements `Replacer` like so:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:454
+msgid ""
+"This permits callers to use `NoExpand` with the `replace` methods to "
+"guarantee that the replacement string is never searched for `$group` "
+"replacement syntax."
+msgstr ""
+
+#: src/1620-regex-1.0.md:457
+msgid ""
+"We also provide two more implementations of the `Replacer` trait: `&str` and "
+"`FnMut(&Captures) -> String`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:460
+msgid "quote"
+msgstr ""
+
+#: src/1620-regex-1.0.md:463
+msgid "There is one free function in `regex`:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:466
+msgid ""
+"/// Escapes all regular expression meta characters in `text`.\n"
+"///\n"
+"/// The string returned may be safely used as a literal in a regex.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:472
+msgid "RegexSet"
+msgstr ""
+
+#: src/1620-regex-1.0.md:475
+msgid ""
+"A `RegexSet` represents the union of zero or more regular expressions. It is "
+"a specialized machine that can match multiple regular expressions "
+"simultaneously. Conceptually, it is similar to joining multiple regexes as "
+"alternates, e.g., `re1|re2|...|reN`, with one crucial difference: in a "
+"`RegexSet`, multiple expressions can match. This means that each pattern can "
+"be reasoned about independently. A `RegexSet` is ideal for building simpler "
+"lexers or an HTTP router."
+msgstr ""
+
+#: src/1620-regex-1.0.md:483
+msgid ""
+"Because of their specialized nature, they can only report which regexes "
+"match. They do not report match locations. In theory, this could be added in "
+"the future, but is difficult."
+msgstr ""
+
+#: src/1620-regex-1.0.md:491
+msgid ""
+"/// Constructs a new RegexSet from the given sequence of patterns.\n"
+"  ///\n"
+"  /// The order of the patterns given is used to assign increasing integer\n"
+"  /// ids starting from 0. Namely, matches are reported in terms of these "
+"ids.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:498
+msgid "/// Returns the total number of regexes in this set.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:501
+msgid ""
+"/// Returns true if and only if one or more regexes in this set match\n"
+"  /// somewhere in the given text.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:505
+msgid ""
+"/// Returns the set of regular expressions that match somewhere in the "
+"given\n"
+"  /// text.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:511
+msgid "`RegexSet` impls the `Debug` and `Clone` traits."
+msgstr ""
+
+#: src/1620-regex-1.0.md:513
+msgid "The `SetMatches` type is queryable and implements `IntoIterator`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:519
+msgid "/// Returns true if this set contains 1 or more matches.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:522
+msgid ""
+"/// Returns true if and only if the regex identified by the given id is in\n"
+"  /// this set of matches.\n"
+"  ///\n"
+"  /// This panics if the id given is >= the number of regexes in the set "
+"that\n"
+"  /// these matches came from.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:529
+msgid ""
+"/// Returns the total number of regexes in the set that created these\n"
+"  /// matches.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:533
+msgid ""
+"/// Returns an iterator over the ids in the set that correspond to a match.\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:538
+msgid "`SetMatches` impls the `Debug` and `Clone` traits."
+msgstr ""
+
+#: src/1620-regex-1.0.md:540
+msgid ""
+"Note that a builder is not proposed for `RegexSet` in this RFC; however, it "
+"is likely one will be added at some point in a backwards compatible way."
+msgstr ""
+
+#: src/1620-regex-1.0.md:543
+msgid "The `bytes` submodule"
+msgstr ""
+
+#: src/1620-regex-1.0.md:546
+msgid ""
+"All of the above APIs have thus far been explicitly for searching `text` "
+"where `text` has type `&str`. While this author believes that suits most use "
+"cases, it should also be possible to search a regex on _arbitrary_ bytes, i."
+"e., `&[u8]`. One particular use case is quickly searching a file via a "
+"memory map. If regexes could only search `&str`, then one would have to "
+"verify it was UTF-8 first, which could be costly. Moreover, if the file "
+"isn't valid UTF-8, then you either can't search it, or you have to allocate "
+"a new string and lossily copy the contents. Neither case is particularly "
+"ideal. It would instead be nice to just search the `&[u8]` directly."
+msgstr ""
+
+#: src/1620-regex-1.0.md:556
+msgid ""
+"This RFC including a `bytes` submodule in the crate. The API of this "
+"submodule is a clone of the API described so far, except with `&str` "
+"replaced by `&[u8]` for the search text (patterns are still `&str`). The "
+"clone includes `Regex` itself, along with all supporting types and traits "
+"such as `Captures`, `Replacer`, `FindIter`, `RegexSet`, `RegexBuilder` and "
+"so on. (This RFC describes some alternative designs in a subsequent section.)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:563
+msgid ""
+"Since the API is a clone of what has been seen so far, it is not written out "
+"again. Instead, we'll discuss the key differences."
+msgstr ""
+
+#: src/1620-regex-1.0.md:566
+msgid ""
+"Again, the first difference is that a `bytes::Regex` can search `&[u8]` "
+"while a `Regex` can search `&str`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:569
+msgid ""
+"The second difference is that a `bytes::Regex` can completely disable "
+"Unicode support and explicitly match arbitrary bytes. The details:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:572
+msgid ""
+"The `u` flag can be disabled even when disabling it might cause the regex to "
+"match invalid UTF-8. When the `u` flag is disabled, the regex is said to be "
+"in \"ASCII compatible\" mode."
+msgstr ""
+
+#: src/1620-regex-1.0.md:575
+msgid ""
+"In ASCII compatible mode, neither Unicode codepoints nor Unicode character "
+"classes are allowed."
+msgstr ""
+
+#: src/1620-regex-1.0.md:577
+msgid ""
+"In ASCII compatible mode, Perl character classes (`\\w`, `\\d` and `\\s`) "
+"revert to their typical ASCII definition. `\\w` maps to `[[:word:]]`, `\\d` "
+"maps to `[[:digit:]]` and `\\s` maps to `[[:space:]]`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:580
+msgid ""
+"In ASCII compatible mode, word boundaries use the ASCII compatible `\\w` to "
+"determine whether a byte is a word byte or not."
+msgstr ""
+
+#: src/1620-regex-1.0.md:582
+msgid ""
+"Hexadecimal notation can be used to specify arbitrary bytes instead of "
+"Unicode codepoints. For example, in ASCII compatible mode, `\\xFF` matches "
+"the literal byte `\\xFF`, while in Unicode mode, `\\xFF` is a Unicode "
+"codepoint that matches its UTF-8 encoding of `\\xC3\\xBF`. Similarly for "
+"octal notation."
+msgstr ""
+
+#: src/1620-regex-1.0.md:586
+msgid ""
+"`.` matches any byte except for `\\n` instead of any Unicode codepoint. When "
+"the `s` flag is enabled, `.` matches any byte."
+msgstr ""
+
+#: src/1620-regex-1.0.md:589
+msgid ""
+"An interesting property of the above is that while the Unicode flag is "
+"enabled, a `bytes::Regex` is _guaranteed_ to match only valid UTF-8 in a "
+"`&[u8]`. Like `Regex`, the Unicode flag is enabled by default."
+msgstr ""
+
+#: src/1620-regex-1.0.md:593
+msgid ""
+"N.B. The Unicode flag can also be selectively disabled in a `Regex`, but not "
+"in a way that permits matching invalid UTF-8."
+msgstr ""
+
+#: src/1620-regex-1.0.md:596
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1620-regex-1.0.md:599
+msgid "Guaranteed linear time matching"
+msgstr ""
+
+#: src/1620-regex-1.0.md:602
+msgid ""
+"A significant contract in the API of the `regex` crate is that all searching "
+"has worst case `O(n)` complexity, where `n ~ length(text)`. (The size of the "
+"regular expression is taken as a constant.) This contract imposes "
+"significant restrictions on both the implementation and the set of features "
+"exposed in the pattern language. A full analysis is beyond the scope of this "
+"RFC, but here are the highlights:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:609
+msgid ""
+"Unbounded backtracking can't be used to implement matching. Backtracking can "
+"be quite fast in practice (indeed, the current implementation uses bounded "
+"backtracking in some cases), but has worst case exponential time."
+msgstr ""
+
+#: src/1620-regex-1.0.md:612
+msgid ""
+"Permitting backreferences in the pattern language can cause matching to "
+"become NP-complete, which (probably) can't be solved in linear time."
+msgstr ""
+
+#: src/1620-regex-1.0.md:614
+msgid ""
+"Arbitrary look around is probably difficult to fit into a linear time "
+"guarantee _in practice_."
+msgstr ""
+
+#: src/1620-regex-1.0.md:617
+msgid ""
+"The benefit to the linear time guarantee is just that: no matter what, all "
+"searching completes in linear time with respect to the search text. This is "
+"a valuable guarantee to make, because it means that one can execute "
+"arbitrary regular expressions over arbitrary input and be absolutely sure "
+"that it will finish in some \"reasonable\" time."
+msgstr ""
+
+#: src/1620-regex-1.0.md:623
+msgid ""
+"Of course, in practice, constants that are omitted from complexity analysis "
+"_actually matter_. For this reason, the `regex` crate takes a number of "
+"steps to keep constants low. For example, by placing a limit on the size of "
+"the regular expression or choosing an appropriate matching engine when "
+"another might result in higher constant factors."
+msgstr ""
+
+#: src/1620-regex-1.0.md:629
+msgid ""
+"This particular drawback segregates Rust's regular expression library from "
+"most other regular expression libraries that programmers may be familiar "
+"with. Languages such as Java, Python, Perl, Ruby, PHP and C++ support more "
+"flavorful regexes by default. Go is the only language this author knows of "
+"whose standard regex implementation guarantees linear time matching. Of "
+"course, RE2 is also worth mentioning, which is a C++ regex library that "
+"guarantees linear time matching. There are other implementations of regexes "
+"that guarantee linear time matching (TRE, for example), but none of them are "
+"particularly popular."
+msgstr ""
+
+#: src/1620-regex-1.0.md:638
+msgid ""
+"It is also worth noting that since Rust's FFI is zero cost, one can bind to "
+"existing regex implementations that provide more features (bindings for both "
+"PCRE1 and Oniguruma exist today)."
+msgstr ""
+
+#: src/1620-regex-1.0.md:642
+msgid "Allocation"
+msgstr ""
+
+#: src/1620-regex-1.0.md:645
+msgid ""
+"The `regex` API assumes that the implementation can dynamically allocate "
+"memory. Indeed, the current implementation takes advantage of this. A "
+"`regex` library that has no requirement on dynamic memory allocation would "
+"look significantly different than the one that exists today. Dynamic memory "
+"allocation is utilized pervasively in the parser, compiler and even during "
+"search."
+msgstr ""
+
+#: src/1620-regex-1.0.md:652
+msgid ""
+"The benefit of permitting dynamic memory allocation is that it makes the "
+"implementation _and_ API simpler. This does make use of the `regex` crate in "
+"environments that don't have dynamic memory allocation impossible."
+msgstr ""
+
+#: src/1620-regex-1.0.md:656
+msgid ""
+"This author isn't aware of any `regex` library that can work without dynamic "
+"memory allocation."
+msgstr ""
+
+#: src/1620-regex-1.0.md:659
+msgid ""
+"With that said, `regex` may want to grow custom allocator support when the "
+"corresponding traits stabilize."
+msgstr ""
+
+#: src/1620-regex-1.0.md:662
+msgid "Synchronization is implicit"
+msgstr ""
+
+#: src/1620-regex-1.0.md:665
+msgid ""
+"Every `Regex` value can be safely used from multiple threads simultaneously. "
+"Since a `Regex` has interior mutable state, this implies that it must do "
+"some kind of synchronization in order to be safe."
+msgstr ""
+
+#: src/1620-regex-1.0.md:669
+msgid ""
+"There are some reasons why we might want to do synchronization automatically:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:672
+msgid ""
+"`Regex` exposes an _immutable API_. That is, from looking at its set of "
+"methods, none of them borrow the `Regex` mutably (or otherwise claim to "
+"mutate the `Regex`). This author claims that since there is no _observable "
+"mutation_ of a `Regex`, it _not_ being thread safe would violate the "
+"principle of least surprise."
+msgstr ""
+
+#: src/1620-regex-1.0.md:677
+msgid ""
+"Often, a `Regex` should be compiled once and reused repeatedly in multiple "
+"searches. To facilitate this, `lazy_static!` can be used to guarantee that "
+"compilation happens exactly once. `lazy_static!` requires its types to be "
+"`Sync`. A user of `Regex` could work around this by wrapping a `Regex` in a "
+"`Mutex`, but this would make misuse too easy. For example, locking a `Regex` "
+"in one thread would prevent simultaneous searching in another thread."
+msgstr ""
+
+#: src/1620-regex-1.0.md:684
+msgid ""
+"Synchronization has overhead, although it is extremely small (and dwarfed by "
+"general matching overhead). The author has _ad hoc_ benchmarked the `regex` "
+"implementation with GNU Grep, and per match overhead is comparable in single "
+"threaded use. It is this author's opinion, that it is good enough. If "
+"synchronization overhead across multiple threads is too much, callers may "
+"elect to clone the `Regex` so that each thread gets its own copy. Cloning a "
+"`Regex` is no more expensive than what would be done internally "
+"automatically, but it does eliminate contention."
+msgstr ""
+
+#: src/1620-regex-1.0.md:693
+msgid ""
+"An alternative is to increase the API surface and have types that are "
+"synchronized by default and types that aren't synchronized. This was "
+"discussed at length in [this thread](https://users.rust-lang.org/t/help-me-"
+"reduce-overhead-of-regex-matching/5220/1). My conclusion from this thread is "
+"that we either expand the surface of the API, or we break the current API or "
+"we keep implicit synchronization as-is. In this author's opinion, neither "
+"expanding the API or breaking the API is worth avoiding negligible "
+"synchronization overhead."
+msgstr ""
+
+#: src/1620-regex-1.0.md:703
+msgid "The implementation is complex"
+msgstr ""
+
+#: src/1620-regex-1.0.md:706
+msgid ""
+"Regular expression engines have a lot of moving parts and it often requires "
+"quite a bit of context on how the whole library is organized in order to "
+"make significant contributions. Therefore, moving `regex` into `rust-lang` "
+"is a _maintenance hazard_. This author has tried to mitigate this hazard "
+"somewhat by doing the following:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:712
+msgid ""
+"Offering to mentor contributions. Significant contributions have thus far "
+"fizzled, but minor contributions---even to complex code like the DFA---have "
+"been successful."
+msgstr ""
+
+#: src/1620-regex-1.0.md:715
+msgid ""
+"Documenting not just the API, but the _internals_. The DFA is, for example, "
+"heavily documented."
+msgstr ""
+
+#: src/1620-regex-1.0.md:717
+msgid ""
+"Wrote a `HACKING.md` guide that gives a sweeping overview of the design."
+msgstr ""
+
+#: src/1620-regex-1.0.md:718
+msgid "Significant test and benchmark suites."
+msgstr ""
+
+#: src/1620-regex-1.0.md:720
+msgid ""
+"With that said, there is still a lot more that could be done to mitigate the "
+"maintenance hazard. In this author's opinion, the interaction between the "
+"three parts of the implementation (parsing, compilation, searching) is not "
+"documented clearly enough."
+msgstr ""
+
+#: src/1620-regex-1.0.md:725
+msgid "Alternatives"
+msgstr ""
+
+#: src/1620-regex-1.0.md:728
+msgid "Big picture"
+msgstr ""
+
+#: src/1620-regex-1.0.md:731
+msgid ""
+"The most important alternative is to decide _not_ to bless a particular "
+"implementation of regular expressions. We might want to go this route for "
+"any number of reasons (see: Drawbacks). However, the `regex` crate is "
+"already widely used, which provides at least some evidence that some set of "
+"programmers find it good enough for general purpose regex searching."
+msgstr ""
+
+#: src/1620-regex-1.0.md:737
+msgid ""
+"The impact of not moving `regex` into `rust-lang` is, plainly, that Rust "
+"won't have an \"officially blessed\" regex implementation. Many programmers "
+"may appreciate the complexity of a regex implementation, and therefore might "
+"insist that one be officially maintained. However, to be honest, it isn't "
+"quite clear what would happen in practice. This author is speculating."
+msgstr ""
+
+#: src/1620-regex-1.0.md:743
+msgid "`bytes::Regex`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:746
+msgid ""
+"This RFC proposes stabilizing the `bytes` sub-module of the `regex` crate in "
+"its entirety. The `bytes` sub-module is a near clone of the API at the crate "
+"level with one important difference: it searches `&[u8]` instead of `&str`. "
+"This design was motivated by a similar split in `std`, but there are "
+"alternatives."
+msgstr ""
+
+#: src/1620-regex-1.0.md:752
+msgid "A regex trait"
+msgstr ""
+
+#: src/1620-regex-1.0.md:755
+msgid "One alternative is designing a trait that looks something like this:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:764
+msgid "// and so on\n"
+msgstr ""
+
+#: src/1620-regex-1.0.md:768
+msgid ""
+"However, there are a couple problems with this approach. First and foremost, "
+"the use cases of such a trait aren't exactly clear. It does make writing "
+"generic code that searches either a `&str` or a `&[u8]` possible, but the "
+"semantics of searching `&str` (always valid UTF-8) or `&[u8]` are quite a "
+"bit different with respect to the original `Regex`. Secondly, the trait "
+"isn't obviously implementable by others. For example, some of the methods "
+"return iterator types such as `Matches` that are typically implemented with "
+"a lower level API that isn't exposed. This suggests that a straight-forward "
+"traitification of the current API probably isn't appropriate, and perhaps, a "
+"better trait needs to be more fundamental to regex searching."
+msgstr ""
+
+#: src/1620-regex-1.0.md:779
+msgid ""
+"Perhaps the strongest reason to not adopt this design for regex `1.0` is "
+"that we don't have any experience with it and there hasn't been any demand "
+"for it. In particular, it could be prototyped in another crate."
+msgstr ""
+
+#: src/1620-regex-1.0.md:783
+msgid "Reuse some types"
+msgstr ""
+
+#: src/1620-regex-1.0.md:786
+msgid ""
+"In the current proposal, the `bytes` submodule completely duplicates the top-"
+"level API, including all iterator types, `Captures` and even the `Replacer` "
+"trait. We could parameterize many of those types over the type of the text "
+"searched. For example, the proposed `Replacer` trait looks like this:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:801
+msgid "We might add an associated type like so:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:819
+msgid ""
+"But parameterizing the `Captures` type is a little bit tricky. Namely, "
+"methods like `get` want to slice the text at match offsets, but this can't "
+"be done safely in generic code without introducing another public trait."
+msgstr ""
+
+#: src/1620-regex-1.0.md:823
+msgid ""
+"The final death knell in this idea is that these two implementations cannot "
+"co-exist:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:844
+msgid ""
+"Perhaps there is a path through this using yet more types or more traits, "
+"but without a really strong motivating reason to find it, I'm not convinced "
+"it's worth it. Duplicating all of the types is unfortunate, but it's "
+"_simple_."
+msgstr ""
+
+#: src/1620-regex-1.0.md:849
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1620-regex-1.0.md:852
+msgid "The `regex` repository has more than just the `regex` crate."
+msgstr ""
+
+#: src/1620-regex-1.0.md:854 src/1620-regex-1.0.md:905
+msgid "`regex-syntax`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:857
+msgid ""
+"This crate exposes a regular expression parser and abstract syntax that is "
+"completely divorced from compilation or searching. It is not part of `regex` "
+"proper since it may experience more frequent breaking changes and is far "
+"less frequently used. It is not clear whether this crate will ever see "
+"`1.0`, and if it does, what criteria would be used to judge it suitable for "
+"`1.0`. Nevertheless, it is a useful public API, but it is not part of this "
+"RFC."
+msgstr ""
+
+#: src/1620-regex-1.0.md:864
+msgid "`regex-capi`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:867
+msgid ""
+"Recently, `regex-capi` was built to provide a C API to this regex library. "
+"It has been used to build [cgo bindings to this library for Go](https://"
+"github.com/BurntSushi/rure-go). Given its young age, it is not part of this "
+"proposal but will be maintained as a pre-1.0 crate in the same repository."
+msgstr ""
+
+#: src/1620-regex-1.0.md:873
+msgid "`regex_macros`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:876
+msgid ""
+"The `regex!` compiler plugin is a macro that can compile regular expressions "
+"when your Rust program compiles. Stated differently, `regex!(\"...\")` is "
+"transformed into Rust code that executes a search of the given pattern "
+"directly. It was written two years ago and largely hasn't changed since. "
+"When it was first written, it had two major benefits:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:882
+msgid ""
+"If there was a syntax error in your regex, your Rust program would not "
+"compile."
+msgstr ""
+
+#: src/1620-regex-1.0.md:884
+msgid "It was faster."
+msgstr ""
+
+#: src/1620-regex-1.0.md:886
+msgid ""
+"Today, (1) can be simulated in practice with the use of a Clippy lint and "
+"(2) is no longer true. In fact, `regex!` is at least one order of magnitude "
+"slower than the standard `Regex` implementation."
+msgstr ""
+
+#: src/1620-regex-1.0.md:890
+msgid ""
+"The future of `regex_macros` is not clear. In one sense, since it is a "
+"compiler plugin, there hasn't been much interest in developing it further "
+"since its audience is necessarily limited. In another sense, it's not "
+"entirely clear what its implementation path is. It would take considerable "
+"work for it to beat the current `Regex` implementation (if it's even "
+"possible). More discussion on this is out of scope."
+msgstr ""
+
+#: src/1620-regex-1.0.md:897
+msgid "Dependencies"
+msgstr ""
+
+#: src/1620-regex-1.0.md:900
+msgid "As of now, `regex` has several dependencies:"
+msgstr ""
+
+#: src/1620-regex-1.0.md:902
+msgid "`aho-corasick`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:903
+msgid "`memchr`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:904
+msgid "`thread_local`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:906
+msgid "`utf8-ranges`"
+msgstr ""
+
+#: src/1620-regex-1.0.md:908
+msgid ""
+"All of them except for `thread_local` were written by this author, and were "
+"primarily motivated for use in the `regex` crate. They were split out "
+"because they seem generally useful."
+msgstr ""
+
+#: src/1620-regex-1.0.md:912
+msgid ""
+"There may be other things in `regex` (today or in the future) that may also "
+"be helpful to others outside the strict context of `regex`. Is it beneficial "
+"to split such things out and create a longer list of dependencies? Or should "
+"we keep `regex` as tight as possible?"
+msgstr ""
+
+#: src/1620-regex-1.0.md:917
+msgid "Exposing more internals"
+msgstr ""
+
+#: src/1620-regex-1.0.md:920
+msgid ""
+"It is conceivable that others might find interest in the regex compiler or "
+"more lower level access to the matching engines. We could do something "
+"similar to `regex-syntax` and expose some internals in a separate crate. "
+"However, there isn't a pressing desire to do this at the moment, and would "
+"probably require a good deal of work."
+msgstr ""
+
+#: src/1620-regex-1.0.md:926
+msgid "Breaking changes"
+msgstr ""
+
+#: src/1620-regex-1.0.md:929
+msgid ""
+"This section of the RFC lists all breaking changes between `regex 0.1` and "
+"the API proposed in this RFC."
+msgstr ""
+
+#: src/1620-regex-1.0.md:932
+msgid ""
+"`find` and `find_iter` now return values of type `Match` instead of `(usize, "
+"usize)`. The `Match` type has `start` and `end` methods which can be used to "
+"recover the original offsets, as well as an `as_str` method to get the "
+"matched text."
+msgstr ""
+
+#: src/1620-regex-1.0.md:936
+msgid ""
+"The `Captures` type no longer has any iterators defined. Instead, callers "
+"should use the `Regex::capture_names` method."
+msgstr ""
+
+#: src/1620-regex-1.0.md:938
+msgid ""
+"`bytes::Regex` enables the Unicode flag by default. Previously, it disabled "
+"it by default. The flag can be disabled in the pattern with `(?-u)`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:940
+msgid ""
+"The definition of the `Replacer` trait was completely re-worked. Namely, its "
+"API inverts control of allocation so that the caller must provide a `String` "
+"to write to. Previous implementors will need to examine the new API. Moving "
+"to the new API should be straight-forward."
+msgstr ""
+
+#: src/1620-regex-1.0.md:944
+msgid ""
+"The `is_empty` method on `Captures` was removed since it always returns "
+"`false` (because every `Captures` has at least one capture group "
+"corresponding to the entire match)."
+msgstr ""
+
+#: src/1620-regex-1.0.md:947
+msgid ""
+"The `PartialEq` and `Eq` impls on `Regex` were removed. If you need this "
+"functionality, add a newtype around `Regex` and write the corresponding "
+"`PartialEq` and `Eq` impls."
+msgstr ""
+
+#: src/1620-regex-1.0.md:950
+msgid ""
+"The lifetime parameters for the `iter` and `iter_named` methods on "
+"`Captures` were fixed. The corresponding iterator types, `SubCaptures` and "
+"`SubCapturesNamed`, grew an additional lifetime parameter."
+msgstr ""
+
+#: src/1620-regex-1.0.md:953
+msgid ""
+"The constructor, `Regex::with_size_limit`, was removed. It can be replaced "
+"with use of `RegexBuilder`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:955
+msgid ""
+"The `is_match` free function was removed. Instead, compile a `Regex` "
+"explicitly and call the `is_match` method."
+msgstr ""
+
+#: src/1620-regex-1.0.md:957
+msgid ""
+"Many iterator types were renamed. (e.g., `RegexSplits` to `SplitsIter`.)"
+msgstr ""
+
+#: src/1620-regex-1.0.md:958
+msgid ""
+"Replacements now return a `Cow<str>` instead of a `String`. Namely, the "
+"subject text doesn't need to be copied if there are no replacements. Callers "
+"may need to add `into_owned()` calls to convert the `Cow<str>` to a proper "
+"`String`."
+msgstr ""
+
+#: src/1620-regex-1.0.md:962
+msgid ""
+"The `Error` type no longer has the `InvalidSet` variant, since the error is "
+"no longer possible. Its `Syntax` variant was also modified to wrap a "
+"`String` instead of a `regex_syntax::Error`. If you need access to specific "
+"parse error information, use the `regex-syntax` crate directly."
+msgstr ""
+
+#: src/1620-regex-1.0.md:966
+msgid ""
+"To allow future growth, some character classes may no longer compile to make "
+"room for possibly adding class set notation in the future."
+msgstr ""
+
+#: src/1620-regex-1.0.md:968
+msgid "Various iterator types have been renamed."
+msgstr ""
+
+#: src/1620-regex-1.0.md:969
+msgid ""
+"The `RegexBuilder` type now takes an `&mut self` on most methods instead of "
+"`self`. Additionally, the final build step now uses `build()` instead of "
+"`compile()`."
+msgstr ""

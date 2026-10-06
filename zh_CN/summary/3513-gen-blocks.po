@@ -1,0 +1,987 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3513-gen-blocks.md:1
+msgid "Feature Name: `gen_blocks`"
+msgstr ""
+
+#: src/3513-gen-blocks.md:2
+msgid "Start Date: 2023-10-10"
+msgstr ""
+
+#: src/3513-gen-blocks.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3513](https://github.com/rust-lang/rfcs/pull/3513)"
+msgstr ""
+
+#: src/3513-gen-blocks.md:4
+msgid ""
+"Tracking Issue: [rust-lang/rust#117078](https://github.com/rust-lang/rust/"
+"issues/117078)"
+msgstr ""
+
+#: src/3513-gen-blocks.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3513-gen-blocks.md:9
+msgid ""
+"This RFC reserves the `gen` keyword in the Rust 2024 edition for generators "
+"and adds `gen { .. }` blocks to the language.  Similar to how `async` blocks "
+"produce values that can be awaited with `.await`, `gen` blocks produce "
+"values that can be iterated over with `for`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3513-gen-blocks.md:14
+msgid ""
+"Writing iterators manually can be painful.  Many iterators can be written by "
+"chaining together iterator combinators, but some need to be written with a "
+"manual implementation of `Iterator`.  This can push people to avoid "
+"iterators and do worse things such as writing loops that eagerly store "
+"values to mutable state.  With `gen` blocks, we can now write a simple `for` "
+"loop and still get a lazy iterator of values."
+msgstr ""
+
+#: src/3513-gen-blocks.md:16
+msgid ""
+"By way of example, consider these alternate ways of expressing [run-length "
+"encoding](https://en.wikipedia.org/wiki/Run-length_encoding):"
+msgstr ""
+
+#: src/3513-gen-blocks.md:21
+msgid "// This example uses `gen` blocks, introduced in this RFC.\n"
+msgstr ""
+
+#: src/3513-gen-blocks.md:39
+msgid "// This example uses a manual implementation of `Iterator`.\n"
+msgstr ""
+
+#: src/3513-gen-blocks.md:87
+msgid "// This example uses `iter::from_fn`.\n"
+msgstr ""
+
+#: src/3513-gen-blocks.md:121
+msgid ""
+"Iterators created with `gen` blocks return `None` from `next` once the `gen` "
+"block has returned (either implicitly at the end of the scope or explicitly "
+"with the `return` statement) and are fused (after `next` returns `None` "
+"once, it will keep returning `None` forever)."
+msgstr ""
+
+#: src/3513-gen-blocks.md:123
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3513-gen-blocks.md:126 src/3513-gen-blocks.md:180
+msgid "New keyword"
+msgstr ""
+
+#: src/3513-gen-blocks.md:128
+msgid ""
+"Starting in the 2024 edition, `gen` is a keyword that cannot be used for "
+"naming any items or bindings.  This means during the migration to the 2024 "
+"edition, all variables, functions, modules, types, etc. named `gen` must be "
+"renamed or be referred to via `r#gen`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:130
+msgid "Return value"
+msgstr ""
+
+#: src/3513-gen-blocks.md:132
+msgid ""
+"`gen` blocks must diverge or return the unit type.  Specifically, the "
+"trailing expression must be of the unit or `!` type, and any `return` "
+"statements in the block must either be given no argument at all or given an "
+"argument of the unit or `!` type."
+msgstr ""
+
+#: src/3513-gen-blocks.md:134
+msgid "Diverging"
+msgstr ""
+
+#: src/3513-gen-blocks.md:136
+msgid ""
+"For example, a `gen` block that produces the infinite sequence `0, 1, 0, 1, "
+"0, 1, ..` will never return `None` from `next` and will only drop its "
+"captured state when the iterator is dropped.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:147
+msgid ""
+"If a `gen` block panics, the behavior is similar to that of `return`, except "
+"that the call to `next` unwinds instead of returning `None`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:149 src/3513-gen-blocks.md:184
+msgid "Error handling"
+msgstr ""
+
+#: src/3513-gen-blocks.md:151
+msgid ""
+"Within `gen` blocks, the `?` operator behaves as follows.  When its argument "
+"is a value indicating \"do not short circuit\" (e.g. `Option::Some(..)`, "
+"`Result::Ok(..)`, `ControlFlow::Continue(..)`), that value becomes the "
+"result of the expression as usual.  When its argument is a value indicating "
+"that short-circuiting is desired (e.g. `Option::None`, `Result::Err(..)`, "
+"`ControlFlow::Break(..)`), the value is first yielded (after being converted "
+"by `FromResidual::from_residual` as usual), then the block returns "
+"immediately."
+msgstr ""
+
+#: src/3513-gen-blocks.md:153
+msgid ""
+"Even when `?` is used within a `gen` block, the block must return a value of "
+"type unit or `!`.  That is, it does not return a value of `Some(..)`, "
+"`Ok(..)`, or `Continue(..)` as other such blocks might."
+msgstr ""
+
+#: src/3513-gen-blocks.md:155
+msgid ""
+"However, note that when `?` is used within a `gen` block, all `yield` "
+"statements will need to be given an argument of a compatible type.  For "
+"example, if `None?` is used in an expression, then all `yield` statements "
+"will need to be given arguments of some `Option` type (or of the `!` type) ."
+msgstr ""
+
+#: src/3513-gen-blocks.md:157
+msgid "Fusing"
+msgstr ""
+
+#: src/3513-gen-blocks.md:159
+msgid ""
+"Iterators produced by `gen` return `None` from `next` repeatedly after "
+"having once returned `None` from `next`.  However, they do not implement "
+"`FusedIterator`, as that is not a language item, but may do so in the future "
+"(see the future possibilities)."
+msgstr ""
+
+#: src/3513-gen-blocks.md:161
+msgid "Holding borrows across yields"
+msgstr ""
+
+#: src/3513-gen-blocks.md:163
+msgid ""
+"Since the `Iterator::next` method takes `&mut self` instead of `Pin<&mut "
+"Self>`, we cannot create self-referential `gen` blocks without taking other "
+"steps (see the open questions).  Self-referential `gen` blocks occur when "
+"holding a borrow to a local variable across a yield point.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:171
+msgid "//~^ ERROR borrow may still be in use when `gen` block yields\n"
+msgstr ""
+
+#: src/3513-gen-blocks.md:175
+msgid ""
+"This may in fact be a severe and surprising limitation, and whether we "
+"should take the steps necessary to address this before stabilization is left "
+"as an open question."
+msgstr ""
+
+#: src/3513-gen-blocks.md:177
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3513-gen-blocks.md:182
+msgid ""
+"In the 2024 edition we reserve `gen` as a keyword.  Rust 2021 will use "
+"`k#gen` to access the same feature.  What to do about earlier editions is "
+"left as an open question."
+msgstr ""
+
+#: src/3513-gen-blocks.md:186
+msgid ""
+"`foo?` in `gen` blocks will stop iteration after the first error as if it "
+"desugared to:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:198
+msgid "Implementation"
+msgstr ""
+
+#: src/3513-gen-blocks.md:200
+msgid ""
+"This feature is mostly implemented via existing coroutines, though there are "
+"some special cases."
+msgstr ""
+
+#: src/3513-gen-blocks.md:202
+msgid "We could say that `gen` blocks are the same as unstable coroutines..."
+msgstr ""
+
+#: src/3513-gen-blocks.md:204
+msgid "...without arguments,"
+msgstr ""
+
+#: src/3513-gen-blocks.md:205
+msgid ""
+"...with an additional check forbidding holding borrows across `yield` points,"
+msgstr ""
+
+#: src/3513-gen-blocks.md:206
+msgid ""
+"...with an automatic implementation of a trait allowing the type to be used "
+"in `for` loops (see the open questions),"
+msgstr ""
+
+#: src/3513-gen-blocks.md:207
+msgid "...that do not panic if invoked again after returning."
+msgstr ""
+
+#: src/3513-gen-blocks.md:209
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3513-gen-blocks.md:212
+msgid ""
+"The main drawback is that this adds a language feature for something that "
+"can already be written entirely (if more painfully) in user code."
+msgstr ""
+
+#: src/3513-gen-blocks.md:214
+msgid ""
+"In contrast to full coroutines (currently unstable), `gen` blocks cannot "
+"hold references across `yield` points (see the open questions, and see "
+"[`from_coroutine`](https://doc.rust-lang.org/1.77.0/core/iter/fn."
+"from_coroutine.html) which has an `Unpin` bound on the generator it takes to "
+"produce an `Iterator`)."
+msgstr ""
+
+#: src/3513-gen-blocks.md:216
+msgid ""
+"Reserving  the `gen` keyword will require some adaptation from the ecosystem "
+"mostly due to the `rand` crate which has `gen` methods on its traits."
+msgstr ""
+
+#: src/3513-gen-blocks.md:220
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3513-gen-blocks.md:223 src/3513-gen-blocks.md:689
+msgid "Keyword"
+msgstr ""
+
+#: src/3513-gen-blocks.md:225
+msgid "We could use `iter` as the keyword."
+msgstr ""
+
+#: src/3513-gen-blocks.md:227
+msgid ""
+"Due to unstable coroutines having originally been named \"generators\" "
+"within `rustc` and nightly Rust, some of the authors connect \"generators\" "
+"with this more powerful control flow construct that can do everything that "
+"`gen` blocks and `async` blocks can do and more."
+msgstr ""
+
+#: src/3513-gen-blocks.md:229
+msgid ""
+"There is some appeal in syntactically connecting the `Iterator` trait with "
+"`iter` blocks, but that would require us to carve out many exceptions for "
+"this keyword as `iter` is widely used for module names and method names, not "
+"just in the ecosystem, but also in `libstd` and `libcore`.  To what degree "
+"this might be worse than the situation for the `gen` keyword we leave as an "
+"open question."
+msgstr ""
+
+#: src/3513-gen-blocks.md:231
+msgid ""
+"Not using the `gen` keyword now would leave open the possibility of using "
+"the `gen` keyword in the future for a kind of block that might produce types "
+"that implement a more powerful `Generator` trait (perhaps one that takes "
+"`self` by pinned reference) or that implement `Coroutine`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:233
+msgid "Do not do this"
+msgstr ""
+
+#: src/3513-gen-blocks.md:235
+msgid "Add more combinators"
+msgstr ""
+
+#: src/3513-gen-blocks.md:237
+msgid "One alternative is to instead add more helper methods to `Iterator`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:239
+msgid ""
+"However, it is already difficult for new users of Rust to become familiar "
+"with all of the many existing methods on `Iterator`.  Further, some of the "
+"new methods we might want would need to be quite generic (similar to "
+"[`array::try_map`](https://doc.rust-lang.org/1.77.0/std/primitive.array."
+"html#method.try_map))."
+msgstr ""
+
+#: src/3513-gen-blocks.md:243
+msgid "Use crates"
+msgstr ""
+
+#: src/3513-gen-blocks.md:245
+msgid ""
+"We could suggest that people use crates like [`genawaiter`](https://crates."
+"io/crates/genawaiter), [`propane`](https://crates.io/crates/propane), or "
+"[`iterator_item`](https://crates.io/crates/iterator_item) instead.  "
+"`genawaiter` works on stable Rust and provides `gen!` macro blocks that "
+"behave like `gen` blocks, but it doesn't have compiler support for nice "
+"diagnostics or language support for the `?` operator.  The `propane` and "
+"`iterator_item` crates use the `Coroutine` trait from nightly and work "
+"mostly like `gen` would (but therefore require unstable Rust)."
+msgstr ""
+
+#: src/3513-gen-blocks.md:251
+msgid "Use `iter::from_fn`"
+msgstr ""
+
+#: src/3513-gen-blocks.md:253
+msgid ""
+"The standard library includes [`std::iter::from_fn`](https://doc.rust-lang."
+"org/1.77.0/std/array/fn.from_fn.html) which can be used in some cases, but "
+"as we saw in the [motivating example](#motivation), often the improvement "
+"over writing out a manual implementation of `Iterator` is limited."
+msgstr ""
+
+#: src/3513-gen-blocks.md:257
+msgid "Have trailing expressions yield one last element"
+msgstr ""
+
+#: src/3513-gen-blocks.md:259
+msgid ""
+"Trailing expressions could have a meaningful value that is yielded before "
+"terminating iteration."
+msgstr ""
+
+#: src/3513-gen-blocks.md:261
+msgid ""
+"However, if we were to do this, we would need to add some other way to "
+"immediately terminate iteration without yielding a value.  We could do "
+"something magical where returning `()` terminates the iteration, so that "
+"this code..."
+msgstr ""
+
+#: src/3513-gen-blocks.md:269
+msgid ""
+"...could be a way to specify `std::iter::once(42)`.  However, then logically "
+"this code..."
+msgstr ""
+
+#: src/3513-gen-blocks.md:273
+msgid "// Note the semicolon.\n"
+msgstr ""
+
+#: src/3513-gen-blocks.md:277
+msgid "...would then not return a value due to the semicolon."
+msgstr ""
+
+#: src/3513-gen-blocks.md:279
+msgid "Further, this would make it unclear what the behavior of this..."
+msgstr ""
+
+#: src/3513-gen-blocks.md:285
+msgid ""
+"...should be, as it could reasonably be either `std::iter::once(())` or "
+"`std::iter::empty::<()>()`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:287
+msgid ""
+"Note that, under this RFC, because `return` within `gen` blocks accepts an "
+"argument of type `()` and `yield` within `gen` blocks returns the `()` type, "
+"it is possible to yield one last element concisely with `return yield EXPR`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:289
+msgid "Prior art"
+msgstr ""
+
+#: src/3513-gen-blocks.md:292
+msgid "CLU, Alphard"
+msgstr ""
+
+#: src/3513-gen-blocks.md:294
+msgid ""
+"The idea of generators that yield their values goes back at least as far as "
+"the Alphard language from circa 1975 (see [\"Alphard: Form and Content\"]"
+"(https://web.archive.org/web/20150926014020/http://repository.cmu.edu/cgi/"
+"viewcontent.cgi?article=1868&context=isr), Mary Shaw, 1981).  This was later "
+"refined into the idea of iterators in the CLU language (see [\"A History of "
+"CLU\"](https://web.archive.org/web/20030917041834/http://www.lcs.mit.edu/"
+"publications/pubs/pdf/MIT-LCS-TR-561.pdf), Barbara Liskov, 1992 and [\"CLU "
+"Reference Manual\"](https://web.archive.org/web/20211105171453/https://pmg."
+"csail.mit.edu/ftp.lcs.mit.edu/pub/pclu/CLU/3.Documents/MIT-LCS-TR-225.pdf), "
+"Liskov et al., 1979)."
+msgstr ""
+
+#: src/3513-gen-blocks.md:296
+msgid ""
+"The CLU language opened an iterator context with the `iter` keyword and "
+"produced values with `yield` statements.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:312
+msgid "Icon"
+msgstr ""
+
+#: src/3513-gen-blocks.md:314
+msgid ""
+"In [Icon](https://web.archive.org/web/20230721102710/https://www2.cs.arizona."
+"edu/icon/ftp/doc/lb1up.pdf) (introduced circa 1977), generators are woven "
+"deeply into the language, and any function can return a sequence of values.  "
+"When done explicitly, the `suspend` keyword is used.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:328
+msgid "Python"
+msgstr ""
+
+#: src/3513-gen-blocks.md:330
+msgid ""
+"In Python, any function that contains a `yield` statement returns a "
+"generator.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:339
+msgid "ECMAScript / JavaScript"
+msgstr ""
+
+#: src/3513-gen-blocks.md:341
+msgid ""
+"In JavaScript, `yield` can be used within [`function*`](https://developer."
+"mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) "
+"generator functions.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:355
+msgid ""
+"These generator functions are general coroutines.  `yield` forms an "
+"expression that returns the value passed to `next`.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:371
+msgid "Ruby"
+msgstr ""
+
+#: src/3513-gen-blocks.md:373
+msgid ""
+"In Ruby, `yield` can be used with the [`Enumerator`](https://ruby-doc."
+"org/3.2.2/Enumerator.html) class to implement an iterator.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:389
+msgid ""
+"Ruby also uses `yield` for a general coroutine mechanism with the [`Fiber`]"
+"(https://ruby-doc.org/3.2.2/Fiber.html) class.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:408
+msgid "Kotlin"
+msgstr ""
+
+#: src/3513-gen-blocks.md:410
+msgid ""
+"In Kotlin, a lazy [`Sequence`](https://kotlinlang.org/docs/sequences."
+"html#from-elements) can be built using `sequence` expressions and `yield`.  "
+"E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:432
+msgid "Swift"
+msgstr ""
+
+#: src/3513-gen-blocks.md:434
+msgid ""
+"In Swift, [`AsyncStream`](https://developer.apple.com/documentation/swift/"
+"asyncstream) is used with `yield` to produce asynchronous generators.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:458
+msgid ""
+"Synchronous generators are not yet available in Swift, but [may be](https://"
+"forums.swift.org/t/is-it-possible-to-make-an-iterator-that-yelds/53995/7) "
+"something they are planning."
+msgstr ""
+
+#: src/3513-gen-blocks.md:463
+msgid "C\\#"
+msgstr ""
+
+#: src/3513-gen-blocks.md:465
+msgid ""
+"In C#, within an [`iterator`](https://learn.microsoft.com/en-us/dotnet/"
+"csharp/iterators), the [`yield`](https://learn.microsoft.com/en-us/dotnet/"
+"csharp/language-reference/statements/yield) statement is used to either "
+"yield the next value or to stop iteration.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:484
+msgid ""
+"Analogously with this RFC and with `async` blocks in Rust (but unlike `async "
+"Task` in C#), execution of C# iterators does not start until they are "
+"iterated."
+msgstr ""
+
+#: src/3513-gen-blocks.md:489
+msgid "D"
+msgstr ""
+
+#: src/3513-gen-blocks.md:491
+msgid ""
+"In D, `yield` is used when constructing a [`Generator`](https://dlang.org/"
+"library/std/concurrency/generator.html).  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:493
+msgid ""
+"```dlang\n"
+"import std.concurrency;\n"
+"import std.stdio: writefln;\n"
+"\n"
+"auto odd_dup(int[] xs) {\n"
+"    return new Generator!int({\n"
+"        foreach(x; xs) {\n"
+"            if (x % 2 == 1) {\n"
+"                yield(x * 2);\n"
+"            }\n"
+"        }\n"
+"    });\n"
+"}\n"
+"\n"
+"void main() {\n"
+"    auto xs = odd_dup([1, 2, 3, 4, 5]);\n"
+"    foreach (x; xs) {\n"
+"        writefln(\"%d\", x);\n"
+"    }\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/3513-gen-blocks.md:515
+msgid ""
+"As in Ruby, generators in D are built on top of a more general [`Fiber`]"
+"(https://dlang.org/library/core/thread/fiber/fiber.html) class that also "
+"uses `yield`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:520
+msgid "Dart"
+msgstr ""
+
+#: src/3513-gen-blocks.md:522
+msgid ""
+"In Dart, there are both synchronous and asynchronous [generator functions]"
+"(https://dart.dev/language/functions#generators).  Synchronous generator "
+"functions return an `Iteratable`.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:538
+msgid "Asynchronous generator functions return a `Stream` object.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:556
+msgid "F\\#"
+msgstr ""
+
+#: src/3513-gen-blocks.md:558
+msgid ""
+"In F#, generators can be expressed with [sequence expressions](https://learn."
+"microsoft.com/en-us/dotnet/fsharp/language-reference/sequences) using "
+"`yield`.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:560
+msgid ""
+"```fsharp\n"
+"let oddDup xs = seq {\n"
+"  for x in xs do\n"
+"    if x % 2 = 1 then\n"
+"      yield x * 2 }\n"
+"\n"
+"for x in oddDup (seq { 1 .. 20 }) do\n"
+"  printfn \"%d\" x\n"
+"```"
+msgstr ""
+
+#: src/3513-gen-blocks.md:572
+msgid "Racket"
+msgstr ""
+
+#: src/3513-gen-blocks.md:574
+msgid ""
+"In Racket, generators can be built using [`generator`](https://docs.racket-"
+"lang.org/reference/Generators.html) and `yield`.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:592
+msgid ""
+"Note that because of the expressive power of [`call/cc`](https://docs.racket-"
+"lang.org/reference/cont.html) (and continuations in general), generators can "
+"be written in Racket (and in other Scheme dialects) as a normal library."
+msgstr ""
+
+#: src/3513-gen-blocks.md:597
+msgid "Haskell, Idris, Clean, etc."
+msgstr ""
+
+#: src/3513-gen-blocks.md:599
+msgid ""
+"In [Haskell](https://www.haskell.org/) (and in similar languages such as "
+"[Idris](https://www.idris-lang.org/), [Clean](https://wiki.clean.cs.ru.nl/"
+"Clean), etc.), all functions are lazy unless specially annotated.  "
+"Consequently, Haskell does not need a special `yield` operator.  Any "
+"function can be a generator by recursively building a list of elements that "
+"will be lazily returned one at a time.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:616
+msgid "Koka"
+msgstr ""
+
+#: src/3513-gen-blocks.md:618
+msgid ""
+"The [Koka](https://koka-lang.github.io/) language, by contrast, does not "
+"lean on laziness.  Instead, like Scheme, Koka provides powerful general "
+"control flow constructs from which generators, async, coroutines, and other "
+"such things fall out naturally.  Unlike Scheme, these powerful control flow "
+"constructs are _typed_ and are called effect handlers.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:638
+msgid ""
+"Note that there is no library being used here and that `yield` is not a "
+"keyword or feature of the language.  In Koka, the code above is all that is "
+"needed to express generators."
+msgstr ""
+
+#: src/3513-gen-blocks.md:642
+msgid "Rust"
+msgstr ""
+
+#: src/3513-gen-blocks.md:644
+msgid ""
+"In Rust, `async` blocks are built on top of the coroutine transformation.  "
+"Using a no-op `Waker`, it's possible to expose this transformation.  With "
+"that, we can build generators.  Without the assistance of macros, the result "
+"looks like this:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:665
+msgid ""
+"Crates such as [`genawaiter`](https://crates.io/crates/genawaiter) use this "
+"technique."
+msgstr ""
+
+#: src/3513-gen-blocks.md:667
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3513-gen-blocks.md:670
+msgid "Whether to implement `Iterator`"
+msgstr ""
+
+#: src/3513-gen-blocks.md:672
+msgid ""
+"There may be benefits to having the type returned by `gen` blocks _not_ "
+"implement `Iterator` directly.  Instead, these blocks would return a type "
+"that implements either `IntoIterator` or a new `IntoGenerator` trait.  Such "
+"a design could leave us more appealing options for supporting self-"
+"referential `gen` blocks.  We leave this as an open question."
+msgstr ""
+
+#: src/3513-gen-blocks.md:674
+msgid "Self-referential `gen` blocks"
+msgstr ""
+
+#: src/3513-gen-blocks.md:676
+msgid ""
+"We can allow `gen` blocks to hold borrows across `yield` points.  Should "
+"this be part of the initial stabilization?"
+msgstr ""
+
+#: src/3513-gen-blocks.md:678
+msgid ""
+"Here are some options for how we might do this, either before or after "
+"stabilization:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:680
+msgid ""
+"Add a separate trait for pinned iteration that is also usable with `gen` and "
+"`for`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:681
+msgid "_Downside_: We would have very similar traits for the same thing."
+msgstr ""
+
+#: src/3513-gen-blocks.md:682
+msgid ""
+"Backward compatibly add a way to change the argument type of `Iterator::"
+"next`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:683
+msgid "_Downside_: It's unclear whether this is possible."
+msgstr ""
+
+#: src/3513-gen-blocks.md:684
+msgid ""
+"Implement `Iterator` for `Pin<&mut G>` instead of for `G` directly (for some "
+"type `G` that can be produced by `gen` blocks)."
+msgstr ""
+
+#: src/3513-gen-blocks.md:685
+msgid ""
+"_Downside_: The `next` method would take a double indirected reference of "
+"the form `&mut Pin<&mut G>` which may present challenges for optimization."
+msgstr ""
+
+#: src/3513-gen-blocks.md:687
+msgid ""
+"If we were to stabilize `gen` blocks that could not hold borrows across "
+"`yield` points, this would be a serious usability limitation that users "
+"might find surprising.  Consequently, whether we should choose to address "
+"this before stabilization is an open question."
+msgstr ""
+
+#: src/3513-gen-blocks.md:691
+msgid "Should we use `iter` as the keyword since we're producing `Iterator`s?"
+msgstr ""
+
+#: src/3513-gen-blocks.md:693
+msgid ""
+"Alternatively, we could use `gen` as proposed in this RFC and then later "
+"extend its abilities to include those of more powerful generators or "
+"coroutines, thereby justifying use of the more general name."
+msgstr ""
+
+#: src/3513-gen-blocks.md:695
+msgid "Contextual keyword"
+msgstr ""
+
+#: src/3513-gen-blocks.md:697
+msgid ""
+"Popular crates (like `rand`) have methods named [`gen`](https://docs.rs/rand/"
+"latest/rand/trait.Rng.html#method.gen).  If we reserve `gen` as a full "
+"keyword, users of Rust 2024 and later editions would need to call these "
+"methods as `r#gen` until these crates update to make some accommodation."
+msgstr ""
+
+#: src/3513-gen-blocks.md:699
+msgid ""
+"We could instead choose to make `gen` a contextual keyword and only forbid "
+"it in:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:701
+msgid "bindings"
+msgstr ""
+
+#: src/3513-gen-blocks.md:702
+msgid "field names (due to destructuring bindings)"
+msgstr ""
+
+#: src/3513-gen-blocks.md:703
+msgid "enum variants"
+msgstr ""
+
+#: src/3513-gen-blocks.md:704
+msgid "type names"
+msgstr ""
+
+#: src/3513-gen-blocks.md:708
+msgid "`Iterator::size_hint`"
+msgstr ""
+
+#: src/3513-gen-blocks.md:710
+msgid "Should we try to compute a conservative `size_hint`?"
+msgstr ""
+
+#: src/3513-gen-blocks.md:712
+msgid ""
+"Doing this would reveal information from the body of a generator.  But, at "
+"least for simple cases, users would likely expect `size_hint` to not just be "
+"the default."
+msgstr ""
+
+#: src/3513-gen-blocks.md:714
+msgid ""
+"It is backward compatible to later add support for opportunistically "
+"implementing `size_hint`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:716
+msgid "Implement other `Iterator` traits"
+msgstr ""
+
+#: src/3513-gen-blocks.md:718
+msgid ""
+"Might we later want to or be able to implement traits such as "
+"`DoubleEndedIterator`, `ExactSizeIterator`, etc.?"
+msgstr ""
+
+#: src/3513-gen-blocks.md:720
+msgid "What to do about Rust 2015 and Rust 2018"
+msgstr ""
+
+#: src/3513-gen-blocks.md:722
+msgid ""
+"In [RFC 3101](https://github.com/rust-lang/rfcs/pull/3101) we reserved "
+"prefixed identifiers such as `prefix#ident`.  For this reason, we can make "
+"`gen` blocks available in Rust 2021 using `k#gen` as was anticipated in the "
+"(currently pending) [RFC 3098](https://github.com/rust-lang/rfcs/pull/3098)."
+msgstr ""
+
+#: src/3513-gen-blocks.md:724
+msgid ""
+"Whether and how to make this feature available in Rust 2015 and Rust 2018, "
+"however, we leave as an open question."
+msgstr ""
+
+#: src/3513-gen-blocks.md:729
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3513-gen-blocks.md:732
+msgid "`yield from` (forwarding operator)"
+msgstr ""
+
+#: src/3513-gen-blocks.md:734
+msgid ""
+"Python has the ability to `yield from` an iterator.  Effectively this is "
+"syntactic sugar for looping over all elements of the iterator and yielding "
+"each individually.  There is a wide design space here, but some options are "
+"included in the following subsections."
+msgstr ""
+
+#: src/3513-gen-blocks.md:736
+msgid "Do nothing, just use loops"
+msgstr ""
+
+#: src/3513-gen-blocks.md:738
+msgid ""
+"Instead of adding special support for this, we could expect that users would "
+"write, e.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:746
+msgid "Language support"
+msgstr ""
+
+#: src/3513-gen-blocks.md:748
+msgid "We could do something like postfix `yield`, e.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:754
+msgid "Alternatively, we could use an entirely new keyword."
+msgstr ""
+
+#: src/3513-gen-blocks.md:756
+msgid "stdlib macro"
+msgstr ""
+
+#: src/3513-gen-blocks.md:758
+msgid ""
+"We could add a macro to the standard library and prelude.  The macro would "
+"expand to a `for` loop + `yield`.  E.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:764
+msgid "Complete `Coroutine` support"
+msgstr ""
+
+#: src/3513-gen-blocks.md:766
+msgid ""
+"We have a `Coroutine` trait on nightly (previously called `Generator`) that "
+"is more powerful than the `Iterator` API could possibly be:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:768
+msgid ""
+"`resume` takes `Pin<&mut Self>`, allowing self-references across yield "
+"points."
+msgstr ""
+
+#: src/3513-gen-blocks.md:769
+msgid "`yield` returns the argument passed to `resume`."
+msgstr ""
+
+#: src/3513-gen-blocks.md:771
+msgid ""
+"We could perhaps argue for coroutines to be `gen` closures while leaving "
+"`gen` blocks as a simpler concept."
+msgstr ""
+
+#: src/3513-gen-blocks.md:773
+msgid "There are many open questions here, so we leave this to future work."
+msgstr ""
+
+#: src/3513-gen-blocks.md:775
+msgid "`async` interactions"
+msgstr ""
+
+#: src/3513-gen-blocks.md:777
+msgid ""
+"We could support using `await` in `gen async` blocks in a similar way to how "
+"we support `?` being used within `gen` blocks.  Without a solution for self-"
+"referential generators, we'd have the limitation that these blocks could not "
+"hold references across `await` points."
+msgstr ""
+
+#: src/3513-gen-blocks.md:779
+msgid ""
+"The solution space here is large.  This RFC is forward compatible with the "
+"solutions we can foresee, so we leave this to later work."
+msgstr ""
+
+#: src/3513-gen-blocks.md:781
+msgid "`try` interactions"
+msgstr ""
+
+#: src/3513-gen-blocks.md:783
+msgid ""
+"We could allow `gen try fn foo() -> i32` to mean something akin to `gen fn "
+"foo() -> Result<i32, E>`.  Whatever we do here, it should mirror whatever "
+"`try fn` means in the future."
+msgstr ""
+
+#: src/3513-gen-blocks.md:785
+msgid "`gen fn`"
+msgstr ""
+
+#: src/3513-gen-blocks.md:787
+msgid ""
+"This RFC does not introduce `gen fn`.  The syntax design space for this is "
+"large and there are open questions around the difference between returning "
+"or yielding a type.  The options currently known include, e.g.:"
+msgstr ""
+
+#: src/3513-gen-blocks.md:792
+msgid ""
+"// Each of the below may instead be combined\n"
+"// with `yield`, `yields`, or `=>`.\n"
+msgstr ""
+
+#: src/3513-gen-blocks.md:801
+msgid "Implement `FusedIterator`"
+msgstr ""
+
+#: src/3513-gen-blocks.md:803
+msgid ""
+"The iterators produced by `gen` blocks are fused but do not implement "
+"`FusedIterator` because it is not a language item.  We may in the future "
+"want for these iterators to implement `FusedIterator`."
+msgstr ""
