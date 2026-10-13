@@ -1,0 +1,338 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:1
+msgid "Shorter temporary lifetimes in tail expressions"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:3
+msgid "Feature Name: `shorter_tail_lifetimes`"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:4
+msgid "Start Date: 2023-05-04"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#3606](https://github.com/rust-lang/rfcs/pull/3606)"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:6
+msgid ""
+"Tracking Issue: [rust-lang/rust#123739](https://github.com/rust-lang/rust/"
+"issues/123739)"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:8
+msgid "Summary"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:10
+msgid ""
+"In the next edition, drop temporaries in tail expressions _before_ dropping "
+"locals, rather than after."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:12
+msgid ""
+"![A diagram showing a function with one let statement \"let x = g();\" and a "
+"tail expression \"temp().h()\" and a visualisation of how long x and temp "
+"live before and after this change. Before: x is created first, then temp is "
+"created, then x is dropped, then temp is dropped. After: x is created first, "
+"then temp is created, then temp is dropped, then x is dropped. ](3606-"
+"temporary-lifetimes-in-tail-expressions/diagram.svg)"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:20
+msgid ""
+"Temporaries in the tail expression in a block live longer than the block "
+"itself, so that e.g. `{expr;}` and `{expr}` can behave very differently."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:23
+msgid "For example, this fails to compile:"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:26
+msgid "// This fails to compile!\n"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:28
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:67
+msgid "\"..\""
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:29
+msgid "// ERROR!!!\n"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:33
+msgid ""
+"The temporary `std::cell::Ref` created in the tail expression will be "
+"dropped after the local `RefCell` is dropped, resulting in a lifetime error."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:36
+msgid ""
+"This leads to having to add seemingly unnecessary extra `let` statements or "
+"having to add seemingly unnecessary semicolons:"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:45
+msgid "// <-- Error if you remove the semicolon!\n"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:49
+msgid "Both of these examples will compile fine after the proposed change."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:51
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:53
+msgid "Temporaries are normally dropped at the end of the statement."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:55
+msgid ""
+"The tail expression of a block (such as a function body, if/else body, match "
+"arm, block expression, etc.) is not a statement, so has its own rule:"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:59
+msgid ""
+"Starting in Rust 2024, temporaries in tail expressions are dropped after "
+"evaluating the tail expression, but before dropping any local variables of "
+"the block."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:63
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:89
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:126
+msgid "For example:"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:68
+msgid "// Ok in Rust 2024\n"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:72
+msgid ""
+"The `.borrow()` method returns a (temporary) `Ref` object that borrows `c`. "
+"Starting in Rust 2024, this will compile fine, because the temporary `Ref` "
+"is dropped before dropping local variable `c`."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:76
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:78
+msgid ""
+"For blocks/bodies/arms whose `{}` tokens come from Rust 2024 code, "
+"temporaries in the tail expression will be dropped _before_ the locals of "
+"the block are dropped."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:81
+msgid "Breakage"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:83
+msgid "It is tricky to come up with examples that will stop compiling."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:85
+msgid ""
+"For tail expressions of a function body, such code will involve a tail "
+"expression that injects a borrow to a temporary into an already existing "
+"local variable that borrows it on drop."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:94
+msgid "// Make a temporary `RefCell` and put a `Ref` that borrows it in `x`.\n"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:99
+msgid "We expect such patterns to be very rare in real world code."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:101
+msgid ""
+"For tail expressions of block expressions (and if/else bodies and match "
+"arms), the block could be a subexpression of a larger expression. In that "
+"case, dropping the (not lifetime extended) temporaries at the end of the "
+"block (rather than at the end of the statement) can cause subtle breakage. "
+"For example:"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:111
+msgid ""
+"This example compiles if the temporary `String` is kept alive until the end "
+"of the statement, which is what happens today without the proposed changes. "
+"However, it will no longer compile with the proposed changes in the next "
+"edition, since the temporary `String` will be dropped at the end of the "
+"block expression, before `.len()` is executed on the `&str` that borrows the "
+"`String`."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:117
+msgid ""
+"(In this specific case, possible fixes are: removing the `{}`, using `()` "
+"instead of `{}`, moving the `.len()` call inside the block, or removing `."
+"as_str()`.)"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:120
+msgid ""
+"Such situations are less rare than the first breakage example, but likely "
+"still uncommon."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:122
+msgid ""
+"The other kind of breakage to consider is code that will still compile, but "
+"behave differently. However, we also expect code for which it the current "
+"drop order is critical is very rare, as it will involve a Drop "
+"implementation with side effects."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:135
+msgid ""
+"This function will always panic, but will today poison the `Mutex`. After "
+"the proposed change, this code will still panic, but leave the mutex "
+"unpoisoned. (Because the mutex is unlocked _before_ dropping the "
+"`PanicOnDrop`, which probably better matches expectations.)"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:140
+msgid "Edition migration"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:142
+msgid ""
+"Since this is a breaking change, this should be an edition change, even "
+"though we expect the impact to be minimal."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:145
+msgid ""
+"We need to investigate any real world cases where this change results in an "
+"observable difference. Depending on this investigation, we can either:"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:148
+msgid "Not have any migration lint at all, or"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:149
+msgid "Have a migration lint that warns but does not suggest new code, or"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:150
+msgid ""
+"Have a migration lint that suggests new code for the most basic common cases "
+"(e.g. replacing `{}` by `()`), or"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:151
+msgid ""
+"Have a migration lint that suggests new code for all cases (e.g. using "
+"explicit `let` and `drop()` statements)."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:153
+msgid ""
+"We highly doubt the last option is necessary. If it turns out to be "
+"necessary, that might be a reason to not continue with this change."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:156
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:158
+msgid ""
+"It introduces another subtle difference between editions. (That's kind of "
+"the point of editions, though.)"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:161
+msgid ""
+"There's a very small chance this breaks existing code in a very subtle way. "
+"However, we can detect these cases and issue warnings."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:163
+msgid "Prior art"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:165
+msgid ""
+"There has been an earlier attempt at changing temporary lifetimes with [RFC "
+"66](https://rust.tf/rfc66). However, it turned out to be too complicated to "
+"resolve types prematurely and it introduced inconsistency when generics are "
+"involved."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:169
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:171
+msgid ""
+"How uncommon are the situations where this change could affect existing code?"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:172
+msgid "How advanced should the edition lint and migration be?"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:173
+msgid ""
+"Can we make sure a lint catches the cases with unsafe code that could result "
+"in undefined behaviour?"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:175
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:177
+msgid ""
+"Not really \"future\" but more \"recent past\": Making temporary lifetime "
+"extension consistent between block expressions and if/else blocks and match "
+"arms. This has already been implemented and approved: https://github.com/"
+"rust-lang/rust/pull/121346"
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:182
+msgid ""
+"Dropping temporaries in a match scrutinee _before_ the arms are evaluated, "
+"rather than after, to prevent deadlocks. This has been explored in depth as "
+"part of the [temporary lifetimes effort](https://rust-lang.zulipchat.com/"
+"#narrow/stream/403629-t-lang.2Ftemporary-lifetimes-2024), but our initial "
+"approaches didn't work out. This requires more research and design."
+msgstr ""
+
+#: src/3606-temporary-lifetimes-in-tail-expressions.md:189
+msgid ""
+"An explicit way to make use of temporary lifetime extension. (`super let`) "
+"This does not require an edition change and will be part of a separate RFC."
+msgstr ""

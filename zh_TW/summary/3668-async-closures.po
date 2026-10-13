@@ -1,0 +1,1261 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3668-async-closures.md:1
+msgid "Feature Name: `async_closure`[^rework][^plural]"
+msgstr ""
+
+#: src/3668-async-closures.md:2
+msgid ""
+"This RFC reworks the \"async closures\" section of [RFC 2394](https://rust-"
+"lang.github.io/rfcs/2394-async_await.html#async--closures)"
+msgstr ""
+
+#: src/3668-async-closures.md:3
+msgid ""
+"The original feature name was not pluralized, and though it'd be more "
+"correct in the plural, it's probably too late to change at this point."
+msgstr ""
+
+#: src/3668-async-closures.md:4
+msgid "Start Date: 2024-06-25"
+msgstr ""
+
+#: src/3668-async-closures.md:5
+msgid ""
+"RFC PR: [rust-lang/rfcs#3668](https://github.com/rust-lang/rfcs/pull/3668)"
+msgstr ""
+
+#: src/3668-async-closures.md:6
+msgid ""
+"Tracking Issue: [rust-lang/rust#62290](https://github.com/rust-lang/rust/"
+"issues/62290)"
+msgstr ""
+
+#: src/3668-async-closures.md:10
+msgid "Summary"
+msgstr "摘要"
+
+#: src/3668-async-closures.md:13
+msgid ""
+"This RFC adds an `async` bound modifier to the `Fn` family of trait bounds.  "
+"The combination currently desugars to a set of unstable `AsyncFn{,Mut,Once}` "
+"traits that parallel the current `Fn{,Mut,Once}` traits."
+msgstr ""
+
+#: src/3668-async-closures.md:15
+msgid ""
+"These traits give users the ability to express bounds for async callable "
+"types that are higher-ranked, and allow async closures to return futures "
+"which borrow from the closure's captures."
+msgstr ""
+
+#: src/3668-async-closures.md:17
+msgid ""
+"This RFC also connects these traits to the `async || {}` closure syntax, as "
+"originally laid out in [RFC 2394](https://rust-lang.github.io/rfcs/2394-"
+"async_await.html#async--closures), and confirms the necessity of a first-"
+"class async closure syntax."
+msgstr ""
+
+#: src/3668-async-closures.md:21
+msgid "Motivation"
+msgstr "動機"
+
+#: src/3668-async-closures.md:24
+msgid ""
+"Users hit two major pitfalls when writing async code that uses closures and "
+"`Fn` trait bounds:"
+msgstr ""
+
+#: src/3668-async-closures.md:26
+msgid "The inability to express higher-ranked async function signatures."
+msgstr ""
+
+#: src/3668-async-closures.md:27
+msgid ""
+"That closures cannot return futures that borrow from the closure captures."
+msgstr ""
+
+#: src/3668-async-closures.md:29
+msgid "We'll discuss each of these in the sections below."
+msgstr ""
+
+#: src/3668-async-closures.md:31
+msgid "Inability to express higher-ranked async function signatures"
+msgstr ""
+
+#: src/3668-async-closures.md:33
+msgid ""
+"Users often employ `Fn()` trait bounds to write more functional code and "
+"reduce code duplication by pulling out specific logic into callbacks. When "
+"adapting these idioms into async Rust, users find that they need to split "
+"their `Fn()` trait bounds[^alloc] into two to account for the fact that "
+"`async` blocks and async functions return anonymous futures.  E.g.:"
+msgstr ""
+
+#: src/3668-async-closures.md:34
+msgid ""
+"Or return a concrete future type, like `F: Fn() -> Pin<Box<dyn Future<Output "
+"= T>>>`."
+msgstr ""
+
+#: src/3668-async-closures.md:42 src/3668-async-closures.md:335
+#: src/3668-async-closures.md:629
+msgid "\"New York\""
+msgstr ""
+
+#: src/3668-async-closures.md:42 src/3668-async-closures.md:335
+#: src/3668-async-closures.md:629
+msgid "\"London\""
+msgstr ""
+
+#: src/3668-async-closures.md:42 src/3668-async-closures.md:335
+#: src/3668-async-closures.md:629
+msgid "\"Tokyo\""
+msgstr ""
+
+#: src/3668-async-closures.md:48
+msgid ""
+"However, when they try to call this code, users are often hit with "
+"mysterious higher-ranked lifetime errors, e.g.:"
+msgstr ""
+
+#: src/3668-async-closures.md:69
+msgid ""
+"This happens because the type for the `Fut` generic parameter is chosen by "
+"the caller, in `main`, and it cannot reference the higher-ranked lifetime "
+"`for<'c>` in the `FnMut` trait bound, but the anonymous future produced by "
+"calling `do_something` does capture a generic lifetime parameter, and _must_ "
+"capture it in order to use the `&str` argument."
+msgstr ""
+
+#: src/3668-async-closures.md:71
+msgid "Closures cannot return futures that borrow from their captures"
+msgstr ""
+
+#: src/3668-async-closures.md:73
+msgid ""
+"When users wants to _call_ a function that takes an async callback argument, "
+"they often reach for `|| async {}` (a closure that returns an anonymous "
+"future) because closures can capture state from the local environment and "
+"are syntactically lightweight."
+msgstr ""
+
+#: src/3668-async-closures.md:75
+msgid ""
+"However, users are quickly met with the limitation that they cannot use any "
+"of the closure's captures by reference in the async block.  E.g.:"
+msgstr ""
+
+#: src/3668-async-closures.md:81
+msgid "// Collect the country names of each city in our list.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:108
+msgid ""
+"The future that is returned by the closure cannot reference any of the "
+"captures of the closure, which is a limitation that makes `|| async {}` "
+"quite unusable today without needing to, for example, clone data and declare "
+"the async block `move`."
+msgstr ""
+
+#: src/3668-async-closures.md:110
+msgid ""
+"In order for this to work, the `FnMut` trait would need to be [\"lending\"]"
+"(https://smallcultfollowing.com/babysteps/blog/2023/05/09/giving-lending-and-"
+"async-closures/#async-closures-are-a-lending-pattern); however, there are "
+"[complications](https://hackmd.io/@compiler-errors/async-closures#Lending-"
+"closures-are-not-typically-FnOnce) with implementing general lending "
+"closures."
+msgstr ""
+
+#: src/3668-async-closures.md:112
+msgid "Guide Level Explanation"
+msgstr ""
+
+#: src/3668-async-closures.md:114
+msgid ""
+"(**note**: See the [naming blocking concern](#what-do-we-call-the-trait) "
+"about `async Fn*` vs `AsyncFn*` syntax. This RFC uses the `async Fn` syntax "
+"for trait bounds to avoid duplicating explanations for two different "
+"proposed syntaxes, but the syntax remains an open question.)"
+msgstr ""
+
+#: src/3668-async-closures.md:116
+msgid ""
+"Just as you can write functions which accept closures, you can write "
+"functions which accept async closures:"
+msgstr ""
+
+#: src/3668-async-closures.md:126
+msgid "\"done with {i}.\""
+msgstr ""
+
+#: src/3668-async-closures.md:130
+msgid ""
+"We recommend for users to write `async Fn()`/`async FnMut()`/`async "
+"FnOnce()` and `async ||` for async closures. This is more flexible than a "
+"closure returning a future for the reasons described elsewhere in this RFC."
+msgstr ""
+
+#: src/3668-async-closures.md:132
+msgid ""
+"Async closures act similarly to closures, and can have parts of their their "
+"signatures specified:"
+msgstr ""
+
+#: src/3668-async-closures.md:135
+msgid "// They can have arguments annotated with types:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:137
+msgid "// They can have their return types annotated:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:140
+msgid "// They can be higher-ranked:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:143
+msgid "// They can capture values by move:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:145 src/3668-async-closures.md:391
+#: src/3668-async-closures.md:398 src/3668-async-closures.md:407
+#: src/3668-async-closures.md:426 src/3668-async-closures.md:457
+#: src/3668-async-closures.md:484
+msgid "\"hello, world\""
+msgstr ""
+
+#: src/3668-async-closures.md:149
+msgid ""
+"When called, they return an anonymous future type corresponding to the (not-"
+"yet-executed) body of the closure. These can be awaited like any other "
+"future."
+msgstr ""
+
+#: src/3668-async-closures.md:151
+msgid ""
+"The `async Fn` trait bound syntax can be used anywhere a trait bound is "
+"allowed, such as:"
+msgstr ""
+
+#: src/3668-async-closures.md:154
+msgid "/// In return-position impl trait:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:156
+msgid "/// In trait bounds:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:164
+msgid "/// in GATs:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:171
+msgid "Detailed Explanation"
+msgstr ""
+
+#: src/3668-async-closures.md:173
+msgid "`AsyncFn*`"
+msgstr ""
+
+#: src/3668-async-closures.md:175
+msgid ""
+"This RFC begins by introducing a family of `AsyncFn` traits for the purposes "
+"of demonstrating the lending behavior of async closures. These traits are "
+"intended to remain unstable to name or implement, just like the `Fn` traits. "
+"Nonetheless, we'll describe the details of these traits so as to explain the "
+"user-facing features enabled by them."
+msgstr ""
+
+#: src/3668-async-closures.md:177
+msgid ""
+"The definition of the traits is (modulo `rustc_` attributes, and the `\"rust-"
+"call\"` ABI):"
+msgstr ""
+
+#: src/3668-async-closures.md:180
+msgid ""
+"\\[!NOTE\\] We omit some details about the `\"rust-call\"` calling "
+"convention and the fact that the `Args` parameter is enforced to be a tuple."
+msgstr ""
+
+#: src/3668-async-closures.md:184
+msgid ""
+"/// An async-aware version of the [`FnOnce`](crate::ops::FnOnce) trait.\n"
+"///\n"
+"/// All `async fn` and functions returning futures implement this trait.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:188
+msgid "/// Future returned by [`AsyncFnOnce::async_call_once`].\n"
+msgstr ""
+
+#: src/3668-async-closures.md:191
+msgid "/// Output type of the called closure's future.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:194
+msgid ""
+"/// Call the [`AsyncFnOnce`], returning a future which may move out of the "
+"called closure.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:197
+msgid ""
+"/// An async-aware version of the [`FnMut`](crate::ops::FnMut) trait.\n"
+"///\n"
+"/// All `async fn` and functions returning futures implement this trait.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:202
+msgid ""
+"/// Future returned by [`AsyncFnMut::async_call_mut`] and [`AsyncFn::"
+"async_call`].\n"
+msgstr ""
+
+#: src/3668-async-closures.md:207
+msgid ""
+"/// Call the [`AsyncFnMut`], returning a future which may borrow from the "
+"called closure.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:210
+msgid ""
+"/// An async-aware version of the [`Fn`](crate::ops::Fn) trait.\n"
+"///\n"
+"/// All `async fn` and functions returning futures implement this trait.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:215
+msgid ""
+"/// Call the [`AsyncFn`], returning a future which may borrow from the "
+"called closure.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:220
+msgid "Associated types of `AsyncFn*` traits are not nameable"
+msgstr ""
+
+#: src/3668-async-closures.md:222
+msgid ""
+"Unlike what is true today with the current `Fn*` traits, this RFC reserves "
+"as an implementation detail the associated types of the `AsyncFn*` traits, "
+"and these will not be nameable as part of the stable interface specified by "
+"this RFC."
+msgstr ""
+
+#: src/3668-async-closures.md:224
+msgid ""
+"That is, using the existing `FnOnce` trait, we can write this today on "
+"stable Rust:"
+msgstr ""
+
+#: src/3668-async-closures.md:230 src/3668-async-closures.md:584
+msgid "//~ OK\n"
+msgstr ""
+
+#: src/3668-async-closures.md:235
+msgid ""
+"(We decided to allow this in [\\#34365](https://github.com/rust-lang/rust/"
+"pull/34365).)"
+msgstr ""
+
+#: src/3668-async-closures.md:237
+msgid ""
+"However, this RFC reserves as an implementation detail the associated types "
+"of the traits specified above, so this does not work:"
+msgstr ""
+
+#: src/3668-async-closures.md:244 src/3668-async-closures.md:246
+msgid "//~^ ERROR use of unstable library feature\n"
+msgstr ""
+
+#: src/3668-async-closures.md:251
+msgid "`async` bound modifier on `Fn()` trait bounds"
+msgstr ""
+
+#: src/3668-async-closures.md:253
+msgid ""
+"(**note**: See the [naming blocking concern](#what-do-we-call-the-trait), "
+"which reflects that this remains an open question. Repeating the blocking "
+"concern: within this RFC, we generally name the user-facing semantics of "
+"async trait bounds as `async Fn*`, and we use the name `AsyncFn*` for the "
+"internal details of the trait implementation for the purpose of "
+"demonstrating the lending behavior.)"
+msgstr ""
+
+#: src/3668-async-closures.md:255
+msgid ""
+"The `AsyncFn*` traits specified above are nameable via a new `async` bound "
+"modifier that is allowed on `Fn` trait bounds. That is, `async Fn*() -> T` "
+"desugars to `AsyncFn*() -> T` in bounds, where `Fn*` is one of the three "
+"flavors of existing function traits: `Fn`/`FnMut`/`FnOnce`."
+msgstr ""
+
+#: src/3668-async-closures.md:257
+msgid ""
+"This RFC specifies the modification to the _TraitBound_ nonterminal in the "
+"grammar:"
+msgstr ""
+
+#: src/3668-async-closures.md:259
+msgid ""
+"**<sup>Syntax</sup>** _TraitBound_ :     `async`<sup>?</sup> `?`<sup>?</sup> "
+"_ForLifetimes_<sup>?</sup> _TypePath_  \n"
+"  \\| `(` `async`<sup>?</sup> `?`<sup>?</sup> _ForLifetimes_<sup>?</sup> "
+"_TypePath_ `)`"
+msgstr ""
+
+#: src/3668-async-closures.md:264
+msgid ""
+"**note**: The grammar specifies that any `for<'a>` higher-ranked lifetimes "
+"come _after_ the `?` trait polarity. This seems inconsistent, but should be "
+"changed independently from this RFC. There's an open question about how to "
+"deal with the ordering problem of `?`, `for<'a>`, and `async`, or if we want "
+"to separate `async` traits into their own production rule that enforces the "
+"right ordering of `for<'a> async`."
+msgstr ""
+
+#: src/3668-async-closures.md:266
+msgid ""
+"Since the grammar doesn't distinguish parenthesized and angle-bracketed "
+"generics in `_TypePath_`, `async` as a trait bound modifier will be "
+"**accepted** in all trait bounds at _parsing_ time, but it will be "
+"**rejected** by the compiler _post-expansion_ if it's not attached to a "
+"parenthesized `Fn()` trait bound. Similarly, the combination of `async` and "
+"`?` is syntactically valid but semantically invalid, and will be rejected by "
+"the compiler post-expansion."
+msgstr ""
+
+#: src/3668-async-closures.md:268
+msgid ""
+"Users are able to write `async Fn*() -> T` trait bounds in all positions "
+"that trait bounds are allowed, for example:"
+msgstr ""
+
+#: src/3668-async-closures.md:278
+msgid "// Allowed syntactically; not currently object-safe:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:283
+msgid "When is `async Fn*()` implemented?"
+msgstr ""
+
+#: src/3668-async-closures.md:285
+msgid ""
+"All currently-stable callable types (i.e., closures, function items, "
+"function pointers, and `dyn Fn*` trait objects) automatically implement "
+"`async Fn*() -> T` if they implement `Fn*() -> Fut` for some output type "
+"`Fut`, and `Fut` implements `Future<Output = T>`."
+msgstr ""
+
+#: src/3668-async-closures.md:287
+msgid ""
+"This is to make sure that `async Fn*()` trait bounds have maximum "
+"compatibility with existing callable types which return futures, such as "
+"async function items and closures which return boxed futures. Async closures "
+"also implement `async Fn*()`, but their relationship to this trait is "
+"detailed later in the RFC -- specifically the relationship between the "
+"`CallRefFuture` and `CallOnceFuture` associated types."
+msgstr ""
+
+#: src/3668-async-closures.md:289
+msgid ""
+"These implementations are built-in, but can conceptually be understood as:"
+msgstr ""
+
+#: src/3668-async-closures.md:306
+msgid ""
+"And similarly for `AsyncFnMut` and `AsyncFn`, with the appropriate `FnMut` "
+"and `Fn` trait bounds, respectively."
+msgstr ""
+
+#: src/3668-async-closures.md:308
+msgid ""
+"**NOTE**: This only works currently for _concrete_ callable types -- for "
+"example, `impl Fn() -> impl Future<Output = ()>` does not implement `impl "
+"async Fn()`, due to the fact that these blanket impls do not exist in "
+"reality. This may be relaxed in the future. Users can work around this by "
+"wrapping their type in an async closure and calling it."
+msgstr ""
+
+#: src/3668-async-closures.md:310
+msgid ""
+"The reason that these implementations are built-in is because using blanket "
+"impls would cause overlap with the built-in implementation of `AsyncFn*` for "
+"async closures, which must have a distinct implementation to support self-"
+"borrowing futures."
+msgstr ""
+
+#: src/3668-async-closures.md:312
+msgid "Some stable types that implement `async Fn()` today include, e.g.:"
+msgstr ""
+
+#: src/3668-async-closures.md:315
+msgid "// Async functions:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:317
+msgid "// Functions that return a concrete future type:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:320
+msgid "// Closures that return an async block:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:325
+msgid "Notably, we can now express higher-ranked async callback bounds:"
+msgstr ""
+
+#: src/3668-async-closures.md:328
+msgid "// We could also use APIT: `mut f: impl async FnMut(&str)`.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:331
+msgid ""
+"//     ...which is sugar for:\n"
+"//  F: for<'a> async FnMut(&'a str),\n"
+msgstr ""
+
+#: src/3668-async-closures.md:343
+msgid "// Works for `async fn` that is higher-ranked.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:348
+msgid "Async closures"
+msgstr ""
+
+#: src/3668-async-closures.md:350
+msgid ""
+"Async closures were first specified in [RFC 2394](https://rust-lang.github."
+"io/rfcs/2394-async_await.html#async--closures). This RFC doesn't affect them "
+"syntactically, but it does lay out new rules for how they interact with "
+"`AsyncFn*` traits."
+msgstr ""
+
+#: src/3668-async-closures.md:352
+msgid ""
+"Like async functions, async closures return futures which execute the code "
+"in the body of the closure. Like closures, they are allowed to capture "
+"variables from the surrounding environment if they are mentioned in the body "
+"of the closure. Each variable is captured in the most permissive capture "
+"mode allowed, and this capture analysis generally follows the same rules as "
+"closures, including allowing disjoint captures per [RFC 2229](https://rust-"
+"lang.github.io/rfcs/2229-capture-disjoint-fields.html)."
+msgstr ""
+
+#: src/3668-async-closures.md:354
+msgid "Async closures allow self-borrows"
+msgstr ""
+
+#: src/3668-async-closures.md:356
+msgid ""
+"However, since async closures return a future instead of executing their "
+"bodies directly, the future corresponding to the body must _itself_ capture "
+"all of the closure's captures. These are captured with the most permissive "
+"capture mode allowed, which (unless the captures are being consumed by-"
+"value) necessitates borrowing from the closure itself."
+msgstr ""
+
+#: src/3668-async-closures.md:358 src/3668-async-closures.md:388
+#: src/3668-async-closures.md:423
+msgid "For example:"
+msgstr ""
+
+#: src/3668-async-closures.md:364
+msgid "\"\""
+msgstr ""
+
+#: src/3668-async-closures.md:368
+msgid ""
+"The closure captures `vec` with some `&'closure mut Vec<String>` which lives "
+"until the closure is dropped. Then every call to the closure reborrows that "
+"mutable reference `&'call mut Vec<String>` which lives until the future is "
+"dropped (e.g. `await`ed)."
+msgstr ""
+
+#: src/3668-async-closures.md:370
+msgid "As another example:"
+msgstr ""
+
+#: src/3668-async-closures.md:373
+msgid "\"Hello, world\""
+msgstr ""
+
+#: src/3668-async-closures.md:380
+msgid ""
+"The closure is marked with `move`, which means it takes ownership of the "
+"string by _value_. However, if the future also took ownership of the string "
+"_from_ the closure, then the closure would only be callable once. This is "
+"not a problem, since according to the usage of `string` in the closure body, "
+"the future only needs take a reference to it to call `ready`. Therefore, the "
+"future captures `&'call String` for some lifetime which lives until the "
+"future is dropped."
+msgstr ""
+
+#: src/3668-async-closures.md:382
+msgid "Closure kind analysis"
+msgstr ""
+
+#: src/3668-async-closures.md:384
+msgid ""
+"Similarly to regular closures, async closures always implement "
+"`AsyncFnOnce`. They additionally implement `AsyncFnMut` if they do not move "
+"any of their captured values, and `AsyncFn` if they additionally do not "
+"mutate their captured values."
+msgstr ""
+
+#: src/3668-async-closures.md:386
+msgid ""
+"Async closures unconditionally implement the (non-async) `FnOnce` trait. "
+"They implement `FnMut` and `Fn` if they do not move their captured values, "
+"mutate them, or borrow in the future any data from the closure. The future "
+"borrows data from the closure if the data being borrowed by the future is "
+"owned or if the borrow is mutable."
+msgstr ""
+
+#: src/3668-async-closures.md:391
+msgid ""
+"// Implements `async Fn()` along with `FnMut` and `Fn`\n"
+"// because it can copy the `&String` that it captures.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:395 src/3668-async-closures.md:404
+msgid "\"{s}\""
+msgstr ""
+
+#: src/3668-async-closures.md:398
+msgid ""
+"// Implements `async Fn()` but not `FnMut` or `Fn` because\n"
+"// it moves and owns a value of type `String`, and therefore\n"
+"// the future it returns needs to take a pointer to data\n"
+"// owned by the closure.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:407
+msgid ""
+"// Implements `async FnMut()` but not `FnMut` or `Fn`\n"
+"// because it needs to reborrow a mutable pointer to `s`.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:411
+msgid "'!'"
+msgstr ""
+
+#: src/3668-async-closures.md:415
+msgid ""
+"Specifics about the `AsyncFnOnce` implementation, `CallOnceFuture` vs "
+"`CallRefFuture`"
+msgstr ""
+
+#: src/3668-async-closures.md:417
+msgid ""
+"From a user's perspective, it makes sense that if they have an `async FnMut` "
+"closure then they should be able to \"call it only once\" in a way that is "
+"uniform with an `async FnOnce` closure. This is because an `FnOnce` is seen "
+"as less restrictive to the callee than `FnMut`, and we preserve that "
+"distinction with the `async Fn*` trait bounds."
+msgstr ""
+
+#: src/3668-async-closures.md:419
+msgid ""
+"If the closure is inferred to be `async Fn` or `async FnMut`, then the "
+"compiler needs to synthesize an `async FnOnce` implementation for the "
+"closure which returns a future that doesn't borrow any captured values from "
+"the closure, but instead _moves_ those captured values into the future. "
+"Synthesizing a distinct future that is returned by `async FnOnce` is "
+"necessary because the trait _consumes_ the closure when it is called "
+"(evident from the `self` receiver type in the method signature), meaning "
+"that a self-borrowing future would have references to dropped data. This is "
+"an interesting problem described in more detail in [compiler-errors' blog "
+"post written on async closures](https://hackmd.io/@compiler-errors/async-"
+"closures)."
+msgstr ""
+
+#: src/3668-async-closures.md:421
+msgid ""
+"This is reflected in the unstable trait implementations by the fact that "
+"`AsyncFnOnce::CallOnceFuture` is a distinct type from `AsyncFnMut::"
+"CallRefFuture`. While the latter is a generic-associated-type (GAT) due to "
+"supporting self-borrows of the called async closure, the former is not, "
+"since it must own all of the captures mentioned in the async closures' body."
+msgstr ""
+
+#: src/3668-async-closures.md:430
+msgid ""
+"// At this point, `s` is moved out of.  However, the\n"
+"// allocation for `s` is still live.  It just lives as a\n"
+"// captured field in `closure`.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:434
+msgid ""
+"// Manually call `AsyncFnOnce` -- this isn't stable since\n"
+"// `AsyncFnOnce` isn't stable, but it's useful for the demo.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:437
+msgid ""
+"// At this point, `closure` is dropped.  However, the\n"
+"// allocation for `s` is still live.  It now lives as a\n"
+"// captured field in `fut`.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:442
+msgid ""
+"// After the future is awaited, it's dropped.  At that\n"
+"// point, the allocation for `s` is dropped.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:447
+msgid ""
+"For the purposes of the compiler implementation, although these are distinct "
+"futures, they still have the same `Output` type (in other words, their "
+"futures await to the same type), and for types that have `async Fn*` "
+"implementations, the two future types _execute_ identically, since they "
+"execute the same future body. They only differ in their captures. Given that "
+"users usually do not care about the concrete future type itself, but only "
+"its final output type, and that both futures are fully anonymous, the fact "
+"that a different future is used when calling an `async FnMut` via "
+"`async_call_mut` vs `async_call_once` are not noticeable except for "
+"pathological examples."
+msgstr ""
+
+#: src/3668-async-closures.md:449
+msgid ""
+"Interaction with return-type notation, naming the future returned by calling"
+msgstr ""
+
+#: src/3668-async-closures.md:451
+msgid ""
+"With `async Fn() -> T` trait bounds, we don't know anything about the "
+"`Future` returned by calling the async closure other than that it's a "
+"`Future` and awaiting that future returns `T`."
+msgstr ""
+
+#: src/3668-async-closures.md:453
+msgid ""
+"This is not always sufficient, for example, if you want to spawn a future "
+"onto another thread:"
+msgstr ""
+
+#: src/3668-async-closures.md:461
+msgid ""
+"```\n"
+"error[E0277]: cannot be sent between threads safely\n"
+"   --> src/lib.rs\n"
+"    |\n"
+"    |     tokio::spawn(x(\"hello, world\")).await\n"
+"    |     ------------ ^^^^^^^^^^^^^^^^^ cannot be sent between threads "
+"safely\n"
+"    |     |\n"
+"    |     required by a bound introduced by this call\n"
+"```"
+msgstr ""
+
+#: src/3668-async-closures.md:471
+msgid ""
+"With the acceptance of the RTN (return-type notation) [RFC 3654](https://"
+"github.com/rust-lang/rfcs/pull/3654), this RFC specifies that users will be "
+"allowed to add RTN-like bounds to type parameters that are also bounded by "
+"`async Fn()`. Concretely, this bound expands to bound both `CallOnceFuture` "
+"and `CallRefFuture` (if the latter exists):"
+msgstr ""
+
+#: src/3668-async-closures.md:477
+msgid "// The future from calling `F` is `Send` and `'static`.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:479
+msgid ""
+"// Which expands to two bounds:\n"
+"    // `for<'a> <F as AsyncFnMut>::CallRefFuture<'a>: Send`\n"
+"    // `<F as AsyncFnOnce>::CallOnceFuture: Send`\n"
+"    // the latter is only if `F` is bounded with `async Fn` or `async "
+"FnMut`.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:488
+msgid ""
+"This bound is only valid if there is a corresponding `async Fn*()` trait "
+"bound."
+msgstr ""
+
+#: src/3668-async-closures.md:490
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3668-async-closures.md:493
+msgid "Why do we need a new set of `AsyncFn*` traits?"
+msgstr ""
+
+#: src/3668-async-closures.md:495
+msgid ""
+"As demonstrated in the motivation section, we need a set of traits that are "
+"_lending_ in order to represent futures which borrow from the closure's "
+"captures. This is described in more detail in [a blog post written on async "
+"closures](https://hackmd.io/@compiler-errors/async-closures)."
+msgstr ""
+
+#: src/3668-async-closures.md:499
+msgid ""
+"We technically only need to add `LendingFn` and `LendingFnMut` to our "
+"lattice of `Fn*` traits to support the specifics about async closures' self-"
+"borrowing pattern, leaving us with a hierarchy of traits like so:"
+msgstr ""
+
+#: src/3668-async-closures.md:519
+msgid ""
+"In this case, `async Fn()` would desugar to a `LendingFnMut` trait bound and "
+"a `FnOnce` trait bound, like:"
+msgstr ""
+
+#: src/3668-async-closures.md:523
+msgid "// is\n"
+msgstr ""
+
+#: src/3668-async-closures.md:529
+msgid ""
+"However, there are some concrete technical implementation details that limit "
+"our ability to use `LendingFn` ergonomically in the compiler today. These "
+"have to do with:"
+msgstr ""
+
+#: src/3668-async-closures.md:531
+msgid "Closure signature inference."
+msgstr ""
+
+#: src/3668-async-closures.md:532
+msgid "Limitations around higher-ranked trait bounds."
+msgstr ""
+
+#: src/3668-async-closures.md:533
+msgid "Shortcomings with error messages."
+msgstr ""
+
+#: src/3668-async-closures.md:535
+msgid ""
+"These limitations, plus the fact that the underlying trait should have no "
+"effect on the user experience of async closures and async `Fn` trait bounds, "
+"leads us to `AsyncFn*` for now. To ensure we can eventually move to these "
+"more general traits, we reserved the precise `AsyncFn*` trait definitions "
+"(including the associated types) as an implementation detail."
+msgstr ""
+
+#: src/3668-async-closures.md:537
+msgid "Why can't we just use `|| async {}`?"
+msgstr ""
+
+#: src/3668-async-closures.md:539
+msgid ""
+"`async ||` is analogous with `async fn`, and has an intuitive, first-class "
+"way to declare the return type of the future:"
+msgstr ""
+
+#: src/3668-async-closures.md:545
+msgid ""
+"There isn't currently a way to annotate the future's return type in a "
+"closure that returns a future:"
+msgstr ""
+
+#: src/3668-async-closures.md:548
+msgid "/* ??? */"
+msgstr ""
+
+#: src/3668-async-closures.md:551
+msgid ""
+"We could reuse `impl Future` to give users the ability to annotate the type "
+"of the future returned by the closure in this position, but it would require "
+"giving yet another subtly different meaning to `impl Trait`, since async "
+"closures return a _different_ type when being called by-ref or by-move."
+msgstr ""
+
+#: src/3668-async-closures.md:553
+msgid "This also would have subtle limitations, e.g.:"
+msgstr ""
+
+#: src/3668-async-closures.md:556
+msgid "// Easy to reanalyze as an async closure.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:558
+msgid ""
+"// Not possible to reanalyze as an async closure without a lot more work.\n"
+msgstr ""
+
+#: src/3668-async-closures.md:566
+msgid "Why not `F: AsyncFn() -> T`, naming `AsyncFn*` directly?"
+msgstr ""
+
+#: src/3668-async-closures.md:568
+msgid ""
+"(**note**: See the [naming blocking concern](#what-do-we-call-the-trait), "
+"which reflects that this remains an open question.)"
+msgstr ""
+
+#: src/3668-async-closures.md:570
+msgid ""
+"Reusing the `async` keyword allows users to understand what an `async Fn() -"
+"> T` trait bound does by analogy, since they already should know that adding "
+"`async` to some `fn foo() -> T` makes it return an `impl Future<Output = T>` "
+"instead of the type `T`."
+msgstr ""
+
+#: src/3668-async-closures.md:572
+msgid "Why do we even need `AsyncFnOnce`?"
+msgstr ""
+
+#: src/3668-async-closures.md:574
+msgid ""
+"We could desugar `async FnOnce() -> T` directly to `FnOnce<(), Output: "
+"Future<Output = T>>`. It seems overly complicated for an implementation "
+"detail, since users should never care what's _behind_ the `AsyncFnOnce` "
+"trait bound."
+msgstr ""
+
+#: src/3668-async-closures.md:576
+msgid ""
+"Why do we recommend the `AsyncFnOnce::Output` type remains unstable, unlike "
+"`FnOnce::Output`?"
+msgstr ""
+
+#: src/3668-async-closures.md:578
+msgid ""
+"As mentioned above, `FnOnce::Output` was stabilized in [\\#34365](https://"
+"github.com/rust-lang/rust/pull/34365) as an alternative to break ecosystem "
+"code when a bug was fixed to detect usage of unstable associated items in "
+"\"type-dependent\" associated type paths (e.g. `T::Output` that is not "
+"qualified with a trait). This allows the following code on stable:"
+msgstr ""
+
+#: src/3668-async-closures.md:589
+msgid ""
+"However, the stabilization of the assoicated type did not actually enable "
+"new things to be expressed, and instead `FnOnce::Output` just serves as a "
+"type alias for an existing type that may already be named."
+msgstr ""
+
+#: src/3668-async-closures.md:591
+msgid ""
+"This is because uniquely to `Fn*` trait bounds (compared to the other `std::"
+"ops::*` traits that define `Output` associated types, like `Add`), the "
+"associated type for `FnOnce::Output` is always constrained by the "
+"parenthesized generic syntax. In other words, given `F: Fn*() -> T`, `F::"
+"Output` can always be replaced by some type `T`, since `T` is necessary to "
+"complete the parenthesized trait bound syntax[^higher]. In that way, naming "
+"a type via the `Output` associated type is not more general or flexible than "
+"just naming the type itself:"
+msgstr ""
+
+#: src/3668-async-closures.md:593
+msgid ""
+"In fact, the `::Output` syntax doesn't even make it easier to name the "
+"return type of a higher-ranked `Fn` trait bound either: https://godbolt.org/"
+"z/1rTGhfr9x"
+msgstr ""
+
+#: src/3668-async-closures.md:600
+msgid "// Should just be rewritten like:\n"
+msgstr ""
+
+#: src/3668-async-closures.md:606
+msgid ""
+"Exposing the `Output` type for `AsyncFnOnce` complicates eventually moving "
+"onto other desugarings for `async Fn*`. For example, if `AsyncFnOnce` is "
+"replaced by a trait alias for `FnOnce`, it may change the meaning of "
+"`Output` in a way that would require extending the language or adding a hack "
+"into the compiler to preserve its meaning."
+msgstr ""
+
+#: src/3668-async-closures.md:608
+msgid ""
+"Given that expressivity isn't meaningfully impaired by keeping the `Output` "
+"associated type as unstable, we do not expect to stabilize this associated "
+"type at the same time as async closures, and a stabilization report for the "
+"associated type should mention how it affects future possibilities to change "
+"the desugaring of `async Fn*`."
+msgstr ""
+
+#: src/3668-async-closures.md:610
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3668-async-closures.md:613
+msgid "Users might confusedly write `|| async {}` over `async || {}`"
+msgstr ""
+
+#: src/3668-async-closures.md:615
+msgid ""
+"Users may be confused whether to write `|| async {}` or `async || {}`. The "
+"fact that `async || {}` has extra \"superpowers\" with respect to lending "
+"may lead to users hitting unnecessary errors if they invert the ordering."
+msgstr ""
+
+#: src/3668-async-closures.md:617
+msgid ""
+"We should be able to detect when users write `|| async {}` -- and "
+"subsequently hit borrow checker issues -- and give a useful error message to "
+"move the `async` keyword. We may also lint against `|| async {}` in code "
+"that _does_ pass, since it's not as expressive."
+msgstr ""
+
+#: src/3668-async-closures.md:619
+msgid ""
+"Users might write `F: Fn() -> Fut, Fut: Future<Output = T>` over `F: async "
+"Fn() -> T`"
+msgstr ""
+
+#: src/3668-async-closures.md:621
+msgid ""
+"A similar problem could occur if users try to write \"old style\" trait "
+"bounds with two generic parameters `F: Fn() -> Fut` and `Fut: Future<Output "
+"= T>`.  For example:"
+msgstr ""
+
+#: src/3668-async-closures.md:635
+msgid "This is problematic for two reasons:"
+msgstr ""
+
+#: src/3668-async-closures.md:637
+msgid ""
+"Although the `Fn` trait bound may be higher-ranked, the future that is "
+"returned cannot be, since we need to infer a single type parameter "
+"substitution for the `Future` bound to hold."
+msgstr ""
+
+#: src/3668-async-closures.md:638
+msgid ""
+"There's no way for an async closure to be lending in this case, so the "
+"expressivity of the closure is limited."
+msgstr ""
+
+#: src/3668-async-closures.md:640
+msgid ""
+"We can similarly implement a lint to detect cases where users write these "
+"two-part bounds and suggest that they instead write a single `async Fn() -> "
+"T` bound. This comes with the normal caveats of removing a type parameter "
+"from the function signature, e.g. semver incompatibility (since the type "
+"parameter may be turbofished). However, when users are designing a new API, "
+"they should always reach for `async Fn` trait bounds when they want to be "
+"generic over a closure that returns a future."
+msgstr ""
+
+#: src/3668-async-closures.md:642
+msgid "Lack of a desugaring"
+msgstr ""
+
+#: src/3668-async-closures.md:644
+msgid ""
+"It's not possible to directly name the future returned by calling some "
+"generic `T: async Fn()`. This means that it's not possible, for example, to "
+"convert `futures-rs`'s [`StreamExt::then` combinator](https://docs.rs/"
+"futures/0.3.30/futures/stream/trait.StreamExt.html#method.then), since the "
+"output future is referenced in the definition of [`Then`](https://docs.rs/"
+"futures-util/0.3.30/src/futures_util/stream/stream/then.rs.html#19) returned "
+"by the combinator."
+msgstr ""
+
+#: src/3668-async-closures.md:646
+msgid ""
+"For example, consider a `Then` combinator that allows mapping a stream under "
+"a future:"
+msgstr ""
+
+#: src/3668-async-closures.md:657
+msgid "/* how do we name this future type? */"
+msgstr ""
+
+#: src/3668-async-closures.md:662
+msgid ""
+"The first problem here is that the RTN [RFC 3654](https://github.com/rust-"
+"lang/rfcs/pull/3654) says that RTN is only allowed in _trait bound_ "
+"positions, so we can't use it to name the returned future in type position, "
+"like in this struct field, without further design work."
+msgstr ""
+
+#: src/3668-async-closures.md:664
+msgid ""
+"Secondly, even if we could name the `CallRefFuture` type directly, we still "
+"need a lifetime to plug into the GAT. Conceptually, the future lives for the "
+"transient period of processing a single element in the stream, which isn't "
+"representable with a lifetime argument. We would need some sort of `'unsafe` "
+"or unsafe binder type."
+msgstr ""
+
+#: src/3668-async-closures.md:666
+msgid ""
+"Fixing this is a follow-up goal that we're interested in pursuing in the "
+"near future. Design work regarding naming the future types in struct "
+"position can be done additively on top of what is exposed in this RFC, and "
+"ties into the larger question of how to use RTN in struct fields and other "
+"non-inference type positions."
+msgstr ""
+
+#: src/3668-async-closures.md:668
+msgid "Prior art"
+msgstr ""
+
+#: src/3668-async-closures.md:671
+msgid ""
+"[RFC 2394](https://rust-lang.github.io/rfcs/2394-async_await.html#async--"
+"closures) described async closures at a very high level, and expressed that "
+"users would very likely want this feature eventually. This RFC confirms that "
+"suspicion."
+msgstr ""
+
+#: src/3668-async-closures.md:673
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/3668-async-closures.md:676
+msgid "What do we call the trait?"
+msgstr ""
+
+#: src/3668-async-closures.md:678
+msgid ""
+"There is some discussion about whether to call the bound `T: AsyncFn()` or "
+"`T: async Fn()`. As stated above, there is not full consensus about whether "
+"`async Fn()` is the syntax we want to commit to name these bounds, but for "
+"the purposes of decoupling the fact that `async Fn` is the user-observable "
+"trait family, and `AsyncFn` is the traits of the implementation detail, this "
+"RFC names them separately."
+msgstr ""
+
+#: src/3668-async-closures.md:680
+msgid "`? for<'a>` and its interaction with `async`"
+msgstr ""
+
+#: src/3668-async-closures.md:682
+msgid ""
+"Currently on nightly, we parse the `async` trait bound modifier along with `?"
+"` (called polarity) _before_ the `for<'a>` lifetime binders. This probably "
+"should get fixed so that the binder occurs on the _outside_ of the trait, "
+"like so:"
+msgstr ""
+
+#: src/3668-async-closures.md:688
+msgid ""
+"(Which is semantically invalid but syntactically valid.) This is currently "
+"proposed in [rust-lang/rust#127054](https://github.com/rust-lang/rust/"
+"pull/127054), which should be decided before stabilization, and the "
+"stabilization report can re-confirm the correct ordering of `for<'a>` and "
+"`async`."
+msgstr ""
+
+#: src/3668-async-closures.md:690
+msgid "Where exactly is `async || {}` not backwards with `|| async {}`"
+msgstr ""
+
+#: src/3668-async-closures.md:692
+msgid ""
+"The stabilization report for async closures should thoroughly note any cases "
+"where rewriting `|| async {}` into `async || {}` causes errors, as they will "
+"be pitfalls for adoption of async closures."
+msgstr ""
+
+#: src/3668-async-closures.md:694
+msgid ""
+"One predicted shortcoming will likely be due to corner cases of closure "
+"signature inference and pre-async-closure trait bounds in a [previous "
+"section](#users-might-write-f-fn---fut-fut-futureoutput--t-over-f-async-fn---"
+"t). This is not necessarily a blocker, since as the ecosystem migrates to "
+"`async Fn()`\\-style trait bounds, closure signature inference will be "
+"restored."
+msgstr ""
+
+#: src/3668-async-closures.md:696
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3668-async-closures.md:699
+msgid "`gen Fn()`, `async gen Fn()`"
+msgstr ""
+
+#: src/3668-async-closures.md:701
+msgid ""
+"The existence of other coroutine-like modifiers, e.g. `gen` ([RFC 3513]"
+"(https://rust-lang.github.io/rfcs/3513-gen-blocks.html)) and `async gen`, "
+"suggests that we should also think about supporting these in closures and "
+"`Fn()` trait bounds."
+msgstr ""
+
+#: src/3668-async-closures.md:703
+msgid ""
+"This shouldn't be too difficult to support, and we can unify these further "
+"by moving on to a general `LendingFn*` trait. This has some implementation "
+"concerns, but should be doable in the long term."
+msgstr ""
+
+#: src/3668-async-closures.md:705
+msgid "`async` bound modifier on arbitrary traits"
+msgstr ""
+
+#: src/3668-async-closures.md:707
+msgid ""
+"There has been previous discussion of allowing `async` trait bounds on "
+"arbitrary traits, possibly based off a `?async` maybe-async genericity "
+"system."
+msgstr ""
+
+#: src/3668-async-closures.md:709
+msgid ""
+"This RFC neither requires this more general extension to the language to be "
+"implemented, nor does it necessarily preclude this being an eventual "
+"possibility, since `AsyncFn*` remains unstable to implement."
+msgstr ""
+
+#: src/3668-async-closures.md:711
+msgid "Making `async Fn()` object-safe"
+msgstr ""
+
+#: src/3668-async-closures.md:713
+msgid ""
+"Future work should be done to make `async Fn()` object-safe, so it can be "
+"used in `Box`, etc.  E.g.:"
+msgstr ""
+
+#: src/3668-async-closures.md:719
+msgid ""
+"This work will likely take a similar approach to making `async fn` in traits "
+"object-safe, since the major problem is how to \"erase\" the future returned "
+"by the async closure or callable, which differs for each implementation of "
+"the trait."
+msgstr ""
+
+#: src/3668-async-closures.md:721
+msgid "Changing the underlying definition to use `LendingFn*`"
+msgstr ""
+
+#: src/3668-async-closures.md:723
+msgid ""
+"As mentioned above, `async Fn*()` trait bounds can be adjusted to desugar to "
+"`LendingFn*` + `FnOnce` trait bounds, using associated-type-bounds like:"
+msgstr ""
+
+#: src/3668-async-closures.md:727
+msgid "// desugars to\n"
+msgstr ""
+
+#: src/3668-async-closures.md:733
+msgid ""
+"This should be doable in a way that does not affect existing code, but "
+"remain blocked on improvements to higher-ranked trait bounds around [GATs]"
+"(https://blog.rust-lang.org/2022/10/28/gats-stabilization.html#when-gats-go-"
+"wrong---a-few-current-bugs-and-limitations). Any changes along these lines "
+"remain implementation details unless we decide separately to stabilize more "
+"user-observable aspects of the `AsyncFn*` trait, which is not likely to "
+"happen soon."
+msgstr ""

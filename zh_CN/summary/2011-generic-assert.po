@@ -1,0 +1,206 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2011-generic-assert.md:1
+msgid "Feature Name: `generic_assert`"
+msgstr ""
+
+#: src/2011-generic-assert.md:2
+msgid "Start Date: 2017-05-24"
+msgstr ""
+
+#: src/2011-generic-assert.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2011](https://github.com/rust-lang/rfcs/pull/2011)"
+msgstr ""
+
+#: src/2011-generic-assert.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#44838](https://github.com/rust-lang/rust/"
+"issues/44838)"
+msgstr ""
+
+#: src/2011-generic-assert.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2011-generic-assert.md:9
+msgid ""
+"Make the `assert!` macro recognize more expressions (utilizing the power of "
+"procedural macros), and extend the readability of debug dumps."
+msgstr ""
+
+#: src/2011-generic-assert.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/2011-generic-assert.md:14
+msgid ""
+"While clippy warns about `assert!` usage that should be replaced by "
+"`assert_eq!`, it's quite annoying to migrate around."
+msgstr ""
+
+#: src/2011-generic-assert.md:16
+msgid ""
+"Unit test frameworks like [Catch](https://github.com/philsquared/Catch) for "
+"C++ does cool message printing already by using macros."
+msgstr ""
+
+#: src/2011-generic-assert.md:18
+msgid "Detailed design"
+msgstr ""
+
+#: src/2011-generic-assert.md:21
+msgid ""
+"We're going to parse AST and break up them by operators (excluding `.` (dot, "
+"member access operator)). Function calls and bracket surrounded blocks are "
+"considered as one block and don't get expanded. The exact expanding rules "
+"should be determined when implemented, but an example is provided for "
+"reference."
+msgstr ""
+
+#: src/2011-generic-assert.md:23
+msgid ""
+"On assertion failure, the expression itself is stringified, and another line "
+"with intermediate values are printed out. The values should be printed with "
+"`Debug`, and a plain text fallback if the following conditions fail:"
+msgstr ""
+
+#: src/2011-generic-assert.md:24
+msgid "the type doesn't implement `Debug`."
+msgstr ""
+
+#: src/2011-generic-assert.md:25
+msgid ""
+"the operator is non-comparison (those in `std::ops`) and the type (may also "
+"be a reference) doesn't implement `Copy`."
+msgstr ""
+
+#: src/2011-generic-assert.md:27
+msgid ""
+"To make sure that there's no side effects involved (e.g. running `next()` "
+"twice on `Iterator`), each value should be stored as temporaries and dumped "
+"on assertion failure."
+msgstr ""
+
+#: src/2011-generic-assert.md:29
+msgid ""
+"The new assert messages are likely to generate longer code, and it may be "
+"simplified for release builds (if benchmarks confirm the slowdown)."
+msgstr ""
+
+#: src/2011-generic-assert.md:31
+msgid "Examples"
+msgstr ""
+
+#: src/2011-generic-assert.md:33
+msgid ""
+"These examples are purely for reference. The implementor is free to change "
+"the rules."
+msgstr ""
+
+#: src/2011-generic-assert.md:47
+msgid "With addition operators:"
+msgstr ""
+
+#: src/2011-generic-assert.md:62
+msgid "Bool only:"
+msgstr ""
+
+#: src/2011-generic-assert.md:73
+msgid "With short-circuit:"
+msgstr ""
+
+#: src/2011-generic-assert.md:84
+msgid "With bracket blocks:"
+msgstr ""
+
+#: src/2011-generic-assert.md:98
+msgid "With fallback:"
+msgstr ""
+
+#: src/2011-generic-assert.md:111
+msgid "How We Teach This"
+msgstr ""
+
+#: src/2011-generic-assert.md:114
+msgid ""
+"Port the documentation (and optionally compiler source) to use `assert!`."
+msgstr ""
+
+#: src/2011-generic-assert.md:115
+msgid "Mark the old macros (`assert_{eq,ne}!`) as deprecated."
+msgstr ""
+
+#: src/2011-generic-assert.md:117
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2011-generic-assert.md:120
+msgid ""
+"This will generate a wave of deprecation warnings, which will be some cost "
+"for users to migrate. However, this doesn't mean that this is backward-"
+"incompatible, as long as the deprecated macros aren't removed."
+msgstr ""
+
+#: src/2011-generic-assert.md:121
+msgid ""
+"This has a potential performance degradation on complex expressions, due to "
+"creating more temporaries on stack (or register). However, if this had clear "
+"impacts confirmed through benchmarks, we should use some kind of alternative "
+"implementation for release builds."
+msgstr ""
+
+#: src/2011-generic-assert.md:123
+msgid "Alternatives"
+msgstr ""
+
+#: src/2011-generic-assert.md:126
+msgid ""
+"Defining via `macro_rules!` was considered, but the recursive macro can "
+"often reach the recursion limit."
+msgstr ""
+
+#: src/2011-generic-assert.md:127
+msgid ""
+"Negating the operator (`!=` to `==`) was considered, but this isn't suitable "
+"for all cases as not all types are total ordering."
+msgstr ""
+
+#: src/2011-generic-assert.md:129
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2011-generic-assert.md:132
+msgid "These questions should be settled during the implementation process."
+msgstr ""
+
+#: src/2011-generic-assert.md:134
+msgid "Error messages"
+msgstr ""
+
+#: src/2011-generic-assert.md:135
+msgid "Should we dump the AST as a formatted one?"
+msgstr ""
+
+#: src/2011-generic-assert.md:136
+msgid "How are we going to handle multi-line expressions?"
+msgstr ""
+
+#: src/2011-generic-assert.md:138
+msgid "Operators"
+msgstr ""
+
+#: src/2011-generic-assert.md:139
+msgid "Should we handle non-comparison operators?"
+msgstr ""

@@ -1,0 +1,175 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0840-no-panic-in-c-string.md:1
+msgid "Feature Name: non_panicky_cstring"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:2
+msgid "Start Date: 2015-02-13"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#840](https://github.com/rust-lang/rfcs/pull/840)"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#22470](https://github.com/rust-lang/rust/"
+"issues/22470)"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/0840-no-panic-in-c-string.md:8
+msgid ""
+"Remove panics from `CString::from_slice` and `CString::from_vec`, making "
+"these functions return `Result` instead."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:11
+msgid "Motivation"
+msgstr "動機"
+
+#: src/0840-no-panic-in-c-string.md:13
+msgid ""
+"As I shivered and brooded on the casting of that brain-blasting shadow, I "
+"knew that I had at last pried out one of earth’s supreme horrors—one of "
+"those nameless blights of outer voids whose faint daemon scratchings we "
+"sometimes hear on the farthest rim of space, yet from which our own finite "
+"vision has given us a merciful immunity."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:19
+msgid "— H. P. Lovecraft, <cite>The Lurking Fear</cite>"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:21
+msgid ""
+"Currently the functions that produce `std::ffi::CString` out of Rust byte "
+"strings panic when the input contains NUL bytes. As strings containing NULs "
+"are not commonly seen in real-world usage, it is easy for developers to "
+"overlook the potential panic unless they test for such atypical input."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:26
+msgid ""
+"The panic is particularly sneaky when hidden behind an API using regular "
+"Rust string types. Consider this example:"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:31
+msgid "// panic lurks here\n"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:36
+msgid ""
+"This implementation effectively imposes a requirement on the input string to "
+"contain no inner NUL bytes, which is generally permitted in pure Rust. This "
+"restriction is not apparent in the signature of the function and needs to be "
+"described in the documentation. Furthermore, the creator of the code may be "
+"oblivious to the potential panic."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:42
+msgid ""
+"The conventions on failure modes elsewhere in Rust libraries tend to limit "
+"panics to outcomes of programmer errors. Functions validating external data "
+"should return `Result` to allow graceful handling of the errors."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:46
+msgid "Detailed design"
+msgstr "詳細設計"
+
+#: src/0840-no-panic-in-c-string.md:48
+msgid ""
+"The return types of `CString::from_slice` and `CString::from_vec` is changed "
+"to `Result`:"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:58
+msgid ""
+"The error type `NulError` provides information on the position of the first "
+"NUL byte found in the string. `IntoCStrError` wraps `NulError` and also "
+"provides the `Vec` which has been moved into `CString::from_vec`."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:62
+msgid ""
+"`std::error::FromError` implementations are provided to convert the error "
+"types above to `std::io::Error` of the `InvalidInput` kind. This facilitates "
+"use of the conversion functions in input-processing code."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:66
+msgid "Proof-of-concept implementation"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:68
+msgid ""
+"The proposed changes are implemented in a crates.io project [c_string]"
+"(https://github.com/mzabaluev/rust-c-str), where the analog of `CString` is "
+"named `CStrBuf`."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:72
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:74
+msgid ""
+"The need to extract the data from a `Result` in the success case is "
+"annoying. However, it may be viewed as a speed bump to make the developer "
+"aware of a potential failure and to require an explicit choice on how to "
+"handle it. Even the least graceful way, a call to `unwrap`, makes the "
+"potential panic apparent in the code."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:80
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/0840-no-panic-in-c-string.md:82
+msgid ""
+"Non-panicky functions can be added alongside the existing functions, e.g., "
+"as `from_slice_failing`. Adding new functions complicates the API where "
+"little reason for that exists; composition is preferred to adding function "
+"variants. Longer function names, together with a less convenient return "
+"value, may deter people from using the safer functions."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:88
+msgid ""
+"The panicky functions could also be renamed to `unpack_slice` and "
+"`unpack_vec`, respectively, to highlight their conceptual proximity to "
+"`unpack`."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:91
+msgid ""
+"If the panicky behavior is preserved, plentiful possibilities for DoS "
+"attacks and other unforeseen failures in the field may be introduced by code "
+"oblivious to the input constraints."
+msgstr ""
+
+#: src/0840-no-panic-in-c-string.md:95
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/0840-no-panic-in-c-string.md:97
+msgid "None."
+msgstr ""

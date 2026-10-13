@@ -1,0 +1,2051 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:44Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2091-inline-semantic.md:1
+msgid "Feature Name: `track_caller`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:2
+msgid "Start Date: 2017-07-31"
+msgstr ""
+
+#: src/2091-inline-semantic.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2091](https://github.com/rust-lang/rfcs/pull/2091)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#47809](https://github.com/rust-lang/rust/"
+"issues/47809)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:8
+msgid "Summary"
+msgstr "摘要"
+
+#: src/2091-inline-semantic.md:11
+msgid ""
+"Enable accurate caller location reporting during panic in `{Option, Result}::"
+"{unwrap, expect}` with the following changes:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:14
+msgid ""
+"Support the `#[track_caller]` function attribute, which guarantees a "
+"function has access to the caller information."
+msgstr ""
+
+#: src/2091-inline-semantic.md:16
+msgid ""
+"Add an intrinsic function `caller_location()` (safe wrapper: `Location::"
+"caller()`) to retrieve the caller's source location."
+msgstr ""
+
+#: src/2091-inline-semantic.md:19
+msgid "Example:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:27 src/2091-inline-semantic.md:1145
+msgid "\"{}: oh no\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:36
+msgid "[Summary](#summary)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:37
+msgid "[Motivation](#motivation)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:38
+msgid "[Guide-level explanation](#guide-level-explanation)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:39
+msgid "[Let's reimplement `unwrap()`](#lets-reimplement-unwrap)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:40
+msgid "[Track the caller](#track-the-caller)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:41
+msgid "[Location type](#location-type)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:42
+msgid "[Propagation of tracker](#propagation-of-tracker)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:43
+msgid ""
+"[Why do we use implicit caller location](#why-do-we-use-implicit-caller-"
+"location)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:44
+msgid "[Reference-level explanation](#reference-level-explanation)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:45
+msgid ""
+"[Survey of panicking standard functions](#survey-of-panicking-standard-"
+"functions)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:46
+msgid "[Procedural attribute macro](#procedural-attribute-macro)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:47
+msgid "[Redirection (MIR inlining)](#redirection-mir-inlining)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:48
+msgid "[Standard libraries](#standard-libraries)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:49
+msgid "[“My fault” vs “Your fault”](#my-fault-vs-your-fault)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:50
+msgid "[Location detail control](#location-detail-control)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:51
+msgid "[Drawbacks](#drawbacks)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:52
+msgid "[Code bloat](#code-bloat)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:53
+msgid "[Narrow solution scope](#narrow-solution-scope)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:54
+msgid "[Confusing scoping rule](#confusing-scoping-rule)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:55
+msgid "[Rationale and alternatives](#rationale-and-alternatives)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:56
+msgid "[Rationale](#rationale)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:57
+msgid "[Alternatives](#alternatives)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:58
+msgid "[🚲 Name of everything 🚲](#-name-of-everything-)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:59
+msgid ""
+"[Using an ABI instead of an attribute](#using-an-abi-instead-of-an-attribute)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:60
+msgid ""
+"[Repurposing `file!()`, `line!()`, `column!()`](#repurposing-file-line-"
+"column)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:61
+msgid "[Inline MIR](#inline-mir)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:62
+msgid "[Default function arguments](#default-function-arguments)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:63
+msgid "[Semantic inlining](#semantic-inlining)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:64
+msgid "[Design-by-contract](#design-by-contract)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:65
+msgid "[Non-viable alternatives](#non-viable-alternatives)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:66
+msgid "[Macros](#macros)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:67
+msgid "[Backtrace](#backtrace)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:68
+msgid "[`SourceContext` generic parameter](#sourcecontext-generic-parameter)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:69
+msgid "[Unresolved questions](#unresolved-questions)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:73
+msgid "Motivation"
+msgstr "動機"
+
+#: src/2091-inline-semantic.md:76
+msgid ""
+"It is well-known that the error message reported by `unwrap()` is useless:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:83
+msgid ""
+"There have been numerous discussions ([a](https://internals.rust-lang.org/t/"
+"rfrfc-better-option-result-error-messages/2904), [b](https://internals.rust-"
+"lang.org/t/line-info-for-unwrap-expect/3753), [c](https://internals.rust-"
+"lang.org/t/better-panic-location-reporting-for-unwrap-and-friends/5042)) "
+"that want `unwrap()` and friends to provide better information to locate the "
+"panic. [RFC 1669](https://github.com/rust-lang/rfcs/pull/1669) attempted to "
+"address this by introducing the `unwrap!(x)` macro to the standard library, "
+"but it was closed since the `x.unwrap()` convention is too entrenched."
+msgstr ""
+
+#: src/2091-inline-semantic.md:88
+msgid ""
+"This RFC introduces line numbers into `unwrap()` without requiring users to "
+"adapt a new idiom, i.e. the user should be able to see the precise location "
+"without changing any source code."
+msgstr ""
+
+#: src/2091-inline-semantic.md:92
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2091-inline-semantic.md:95
+msgid "Let's reimplement `unwrap()`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:97
+msgid ""
+"`unwrap()` and `expect()` are two methods on `Option` and `Result` that are "
+"commonly used when you are _absolutely sure_ they contain a successful value "
+"and you want to extract it."
+msgstr ""
+
+#: src/2091-inline-semantic.md:101
+msgid "// 1.rs\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:104 src/2091-inline-semantic.md:147
+#: src/2091-inline-semantic.md:195 src/2091-inline-semantic.md:209
+#: src/2091-inline-semantic.md:215 src/2091-inline-semantic.md:216
+#: src/2091-inline-semantic.md:235
+msgid "\"args[1] = {}\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:105 src/2091-inline-semantic.md:148
+#: src/2091-inline-semantic.md:210 src/2091-inline-semantic.md:236
+msgid "\"args[2] = {}\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:106 src/2091-inline-semantic.md:149
+#: src/2091-inline-semantic.md:237
+msgid "\"args[3] = {}\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:110
+msgid ""
+"If the assumption is wrong, they will panic and tell you that an error is "
+"unexpected."
+msgstr ""
+
+#: src/2091-inline-semantic.md:134
+msgid ""
+"Let's say you are unhappy with these built-in functions, e.g. you want to "
+"provide an alternative error message:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:138
+msgid "// 2.rs\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:143 src/2091-inline-semantic.md:231
+#: src/2091-inline-semantic.md:286
+msgid "\"nothing to see here, move along\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:153
+msgid ""
+"This trivial implementation, however, will only report the panic that "
+"happens inside `my_unwrap`. This is pretty useless since it is the caller of "
+"`my_unwrap` that made the wrong assumption!"
+msgstr ""
+
+#: src/2091-inline-semantic.md:178
+msgid ""
+"The trivial solution would require the user to provide `file!()`, `line!()` "
+"and `column!()`. A slightly more ergonomic solution would be changing "
+"`my_unwrap` into a macro, allowing these constants to be automatically "
+"provided."
+msgstr ""
+
+#: src/2091-inline-semantic.md:186
+msgid "\"nothing to see at {}:{}:{}, move along\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:195
+msgid "//                                ^ tell user to add an `!`.\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:200
+msgid ""
+"What if you have already published the `my_unwrap` crate that has thousands "
+"of users, and you want to maintain API stability? Before Rust 1.XX, the "
+"builtin `unwrap()` had the same problem!"
+msgstr ""
+
+#: src/2091-inline-semantic.md:203
+msgid "Track the caller"
+msgstr ""
+
+#: src/2091-inline-semantic.md:205
+msgid ""
+"The reason the `my_unwrap!` macro works is because it copy-and-pastes the "
+"entire content of its macro definition every time it is used."
+msgstr ""
+
+#: src/2091-inline-semantic.md:212
+msgid "// is equivalent to:\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:220
+msgid ""
+"What if we could instruct the compiler to automatically fill in the file, "
+"line, and column? Rust 1.YY introduced the `#[track_caller]` attribute for "
+"exactly this reason:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:224
+msgid "// 3.rs\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:227
+msgid "// <-- Just add this!\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:241
+msgid ""
+"Now we have truly reproduced how the built-in `unwrap()` is implemented."
+msgstr ""
+
+#: src/2091-inline-semantic.md:265
+msgid ""
+"`#[track_caller]` is an automated version of what you've seen in the last "
+"section. The attribute copies `my_unwrap` to a new function "
+"`my_unwrap_at_source_location` which accepts the caller's location as an "
+"additional argument. The attribute also instructs the compiler to replace "
+"`my_unwrap(x)` with `my_unwrap_at_source_location(x, file!(), line!(), "
+"column!())` (sort of) whenever it sees it. This allows us to maintain the "
+"stability guarantee while allowing the user to get the new behavior with "
+"just one recompile."
+msgstr ""
+
+#: src/2091-inline-semantic.md:272
+msgid "Location type"
+msgstr ""
+
+#: src/2091-inline-semantic.md:274
+msgid ""
+"Let's enhance `my_unwrap` to also log a message to the log file before "
+"panicking. We would need to get the caller's location as a value. This is "
+"supported using the method `Location::caller()`:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:285
+msgid "\"unwrapping a None from {}:{}\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:292
+msgid "Propagation of tracker"
+msgstr ""
+
+#: src/2091-inline-semantic.md:294
+msgid ""
+"When your `#[track_caller]` function calls another `#[track_caller]` "
+"function, the caller location will be propagated downwards:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:301
+msgid "// line 4\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:303
+msgid "// line 6\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:306
+msgid ""
+"When you run this, the panic will refer to line 6, the original caller, "
+"instead of line 4 where `my_get_index` calls `my_unwrap`. When a library "
+"function is marked `#[track_caller]`, it is expected the function is short, "
+"and does not have any logic errors. This allows us to always track the "
+"caller on failure."
+msgstr ""
+
+#: src/2091-inline-semantic.md:311
+msgid ""
+"If a panic that refers to the local location is actually needed, you may "
+"workaround by wrapping the code in a closure which cannot track the caller:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:323
+msgid "Why do we use implicit caller location"
+msgstr ""
+
+#: src/2091-inline-semantic.md:325
+msgid ""
+"If you are learning Rust alongside other languages, you may wonder why Rust "
+"obtains the caller information in such a strange way. There are two "
+"restrictions that force us to adopt this solution:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:328
+msgid ""
+"Programmatic access to the stack backtrace is often used in interpreted or "
+"runtime-heavy languages like Python and Java. However, the stack backtrace "
+"is not suitable as the only solution for systems languages like Rust because "
+"optimization often collapses multiple levels of function calls.  In some "
+"embedded systems, the backtrace may even be unavailable!"
+msgstr ""
+
+#: src/2091-inline-semantic.md:333
+msgid ""
+"Solutions that use default function arguments alongside normal arguments are "
+"often used in languages that do not perform inference higher than statement "
+"level, e.g. Swift and C#. Rust does not (yet) support default function "
+"arguments or function overloading because they interfere with type "
+"inference, so such solutions are ruled out."
+msgstr ""
+
+#: src/2091-inline-semantic.md:338
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2091-inline-semantic.md:341
+msgid "Survey of panicking standard functions"
+msgstr ""
+
+#: src/2091-inline-semantic.md:343
+msgid ""
+"Many standard functions may panic. These are divided into three categories "
+"depending on whether they should receive caller information despite the "
+"inlining cost associated with it."
+msgstr ""
+
+#: src/2091-inline-semantic.md:346
+msgid ""
+"The list of functions is not exhaustive. Only those with a \"Panics\" "
+"section in the documentation are included."
+msgstr ""
+
+#: src/2091-inline-semantic.md:349
+msgid ""
+"**Must have.** These functions are designed to generate a panic, or used so "
+"often that indicating a panic happening from them often gives no useful "
+"information."
+msgstr ""
+
+#: src/2091-inline-semantic.md:352 src/2091-inline-semantic.md:375
+#: src/2091-inline-semantic.md:450
+msgid "Function"
+msgstr ""
+
+#: src/2091-inline-semantic.md:352 src/2091-inline-semantic.md:375
+#: src/2091-inline-semantic.md:450
+msgid "Panic condition"
+msgstr ""
+
+#: src/2091-inline-semantic.md:354
+msgid "`Option::expect`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:354 src/2091-inline-semantic.md:355
+msgid "self is None"
+msgstr ""
+
+#: src/2091-inline-semantic.md:355
+msgid "`Option::unwrap`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:356
+msgid "`Result::expect_err`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:356 src/2091-inline-semantic.md:358
+msgid "self is Ok"
+msgstr ""
+
+#: src/2091-inline-semantic.md:357
+msgid "`Result::expect`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:357 src/2091-inline-semantic.md:359
+msgid "self is Err"
+msgstr ""
+
+#: src/2091-inline-semantic.md:358
+msgid "`Result::unwrap_err`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:359
+msgid "`Result::unwrap`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:360
+msgid "`[T]::index_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:360 src/2091-inline-semantic.md:361
+#: src/2091-inline-semantic.md:425 src/2091-inline-semantic.md:431
+#: src/2091-inline-semantic.md:435
+msgid "range out of bounds"
+msgstr ""
+
+#: src/2091-inline-semantic.md:361
+msgid "`[T]::index`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:362
+msgid "`BTreeMap::index`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:362 src/2091-inline-semantic.md:363
+msgid "key not found"
+msgstr ""
+
+#: src/2091-inline-semantic.md:363
+msgid "`HashMap::index`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:364
+msgid "`str::index_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:364 src/2091-inline-semantic.md:365
+#: src/2091-inline-semantic.md:413 src/2091-inline-semantic.md:414
+#: src/2091-inline-semantic.md:415 src/2091-inline-semantic.md:421
+msgid "range out of bounds or off char boundary"
+msgstr ""
+
+#: src/2091-inline-semantic.md:365
+msgid "`str::index`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:366
+msgid "`VecDeque::index_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:366 src/2091-inline-semantic.md:367
+#: src/2091-inline-semantic.md:383 src/2091-inline-semantic.md:384
+#: src/2091-inline-semantic.md:385 src/2091-inline-semantic.md:402
+#: src/2091-inline-semantic.md:426 src/2091-inline-semantic.md:428
+#: src/2091-inline-semantic.md:432 src/2091-inline-semantic.md:433
+#: src/2091-inline-semantic.md:436 src/2091-inline-semantic.md:439
+#: src/2091-inline-semantic.md:440
+msgid "index out of bounds"
+msgstr ""
+
+#: src/2091-inline-semantic.md:367
+msgid "`VecDeque::index`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:369
+msgid ""
+"**Nice to have.** These functions are not commonly used, or the panicking "
+"condition is pretty rare. Often the panic information contains enough clue "
+"to fix the error without a backtrace. Inlining them would bloat the binary "
+"size without much benefit."
+msgstr ""
+
+#: src/2091-inline-semantic.md:377
+msgid "`std::env::args`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:377 src/2091-inline-semantic.md:379
+msgid "non UTF-8 values"
+msgstr ""
+
+#: src/2091-inline-semantic.md:378
+msgid "`std::env::set_var`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:378
+msgid "invalid key or value"
+msgstr ""
+
+#: src/2091-inline-semantic.md:379
+msgid "`std::env::vars`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:380
+msgid "`std::thread::spawn`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:380
+msgid "OS failed to create the thread"
+msgstr ""
+
+#: src/2091-inline-semantic.md:381
+msgid "`[T]::clone_from_slice`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:381 src/2091-inline-semantic.md:382
+msgid "slice lengths differ"
+msgstr ""
+
+#: src/2091-inline-semantic.md:382
+msgid "`[T]::copy_from_slice`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:383
+msgid "`[T]::rotate`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:384
+msgid "`[T]::split_at_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:385
+msgid "`[T]::swap`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:386
+msgid "`BinaryHeap::reserve_exact`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:386 src/2091-inline-semantic.md:387
+#: src/2091-inline-semantic.md:389 src/2091-inline-semantic.md:390
+#: src/2091-inline-semantic.md:404 src/2091-inline-semantic.md:405
+#: src/2091-inline-semantic.md:406 src/2091-inline-semantic.md:407
+#: src/2091-inline-semantic.md:408 src/2091-inline-semantic.md:410
+#: src/2091-inline-semantic.md:419 src/2091-inline-semantic.md:420
+#: src/2091-inline-semantic.md:424 src/2091-inline-semantic.md:427
+#: src/2091-inline-semantic.md:429 src/2091-inline-semantic.md:430
+#: src/2091-inline-semantic.md:434 src/2091-inline-semantic.md:437
+#: src/2091-inline-semantic.md:438 src/2091-inline-semantic.md:441
+msgid "capacity overflow"
+msgstr ""
+
+#: src/2091-inline-semantic.md:387
+msgid "`BinaryHeap::reserve`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:388
+msgid "`Duration::new`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:388
+msgid "arithmetic overflow"
+msgstr ""
+
+#: src/2091-inline-semantic.md:389
+msgid "`HashMap::reserve`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:390
+msgid "`HashSet::reserve`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:391
+msgid "`i32::overflowing_div`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:391 src/2091-inline-semantic.md:392
+#: src/2091-inline-semantic.md:393 src/2091-inline-semantic.md:394
+msgid "zero divisor"
+msgstr ""
+
+#: src/2091-inline-semantic.md:392
+msgid "`i32::overflowing_rem`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:393
+msgid "`i32::wrapping_div`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:394
+msgid "`i32::wrapping_rem`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:395
+msgid "`Instance::duration_since`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:395 src/2091-inline-semantic.md:396
+msgid "time travel"
+msgstr ""
+
+#: src/2091-inline-semantic.md:396
+msgid "`Instance::elapsed`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:397
+msgid "`Iterator::count`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:397 src/2091-inline-semantic.md:398
+#: src/2091-inline-semantic.md:399
+msgid "extremely long iterator"
+msgstr ""
+
+#: src/2091-inline-semantic.md:398
+msgid "`Iterator::enumerate`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:399
+msgid "`Iterator::position`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:400
+msgid "`Iterator::product`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:400 src/2091-inline-semantic.md:401
+msgid "arithmetic overflow in debug build"
+msgstr ""
+
+#: src/2091-inline-semantic.md:401
+msgid "`Iterator::sum`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:402
+msgid "`LinkedList::split_off`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:403
+msgid "`LocalKey::with`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:403
+msgid "TLS has been destroyed"
+msgstr ""
+
+#: src/2091-inline-semantic.md:404
+msgid "`RawVec::double_in_place`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:405
+msgid "`RawVec::double`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:406
+msgid "`RawVec::reserve_exact`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:407
+msgid "`RawVec::reserve_in_place`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:408
+msgid "`RawVec::reserve`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:409
+msgid "`RawVec::shrink_to_fit`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:409
+msgid "given amount is larger than current capacity"
+msgstr ""
+
+#: src/2091-inline-semantic.md:410
+msgid "`RawVec::with_capacity`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:411
+msgid "`RefCell::borrow_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:411
+msgid "a borrow or mutable borrow is active"
+msgstr ""
+
+#: src/2091-inline-semantic.md:412
+msgid "`RefCell::borrow`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:412
+msgid "a mutable borrow is active"
+msgstr ""
+
+#: src/2091-inline-semantic.md:413
+msgid "`str::split_at_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:414
+msgid "`str::split_at`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:415
+msgid "`String::drain`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:416
+msgid "`String::insert_str`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:416 src/2091-inline-semantic.md:417
+#: src/2091-inline-semantic.md:418 src/2091-inline-semantic.md:422
+msgid "index out of bounds or off char boundary"
+msgstr ""
+
+#: src/2091-inline-semantic.md:417
+msgid "`String::insert`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:418
+msgid "`String::remove`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:419
+msgid "`String::reserve_exact`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:420
+msgid "`String::reserve`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:421
+msgid "`String::splice`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:422
+msgid "`String::split_off`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:423
+msgid "`String::truncate`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:423
+msgid "off char boundary"
+msgstr ""
+
+#: src/2091-inline-semantic.md:424
+msgid "`Vec::append`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:425
+msgid "`Vec::drain`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:426
+msgid "`Vec::insert`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:427
+msgid "`Vec::push`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:428
+msgid "`Vec::remove`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:429
+msgid "`Vec::reserve_exact`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:430
+msgid "`Vec::reserve`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:431
+msgid "`Vec::splice`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:432
+msgid "`Vec::split_off`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:433
+msgid "`Vec::swap_remove`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:434
+msgid "`VecDeque::append`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:435
+msgid "`VecDeque::drain`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:436
+msgid "`VecDeque::insert`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:437
+msgid "`VecDeque::reserve_exact`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:438
+msgid "`VecDeque::reserve`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:439
+msgid "`VecDeque::split_off`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:440
+msgid "`VecDeque::swap`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:441
+msgid "`VecDeque::with_capacity`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:445
+msgid ""
+"**Not needed.** Panics from these indicate silly programmer error and the "
+"panic itself has enough clue to let programmers figure out where the error "
+"comes from."
+msgstr ""
+
+#: src/2091-inline-semantic.md:452
+msgid "`std::atomic::fence`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:452 src/2091-inline-semantic.md:461
+#: src/2091-inline-semantic.md:462 src/2091-inline-semantic.md:463
+#: src/2091-inline-semantic.md:464 src/2091-inline-semantic.md:472
+msgid "using invalid atomic ordering"
+msgstr ""
+
+#: src/2091-inline-semantic.md:453
+msgid "`std::char::from_digit`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:453 src/2091-inline-semantic.md:470
+#: src/2091-inline-semantic.md:471 src/2091-inline-semantic.md:476
+msgid "radix is outside `2 ..= 36`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:454
+msgid "`std::env::remove_var`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:454
+msgid "invalid key"
+msgstr ""
+
+#: src/2091-inline-semantic.md:455
+msgid "`std::format!`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:455 src/2091-inline-semantic.md:474
+msgid "the `fmt` method returns Err"
+msgstr ""
+
+#: src/2091-inline-semantic.md:456
+msgid "`std::panicking::set_hook`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:456 src/2091-inline-semantic.md:457
+msgid "called in panicking thread"
+msgstr ""
+
+#: src/2091-inline-semantic.md:457
+msgid "`std::panicking::take_hook`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:458
+msgid "`[T]::chunks_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:458 src/2091-inline-semantic.md:459
+msgid "chunk size == 0"
+msgstr ""
+
+#: src/2091-inline-semantic.md:459
+msgid "`[T]::chunks`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:460
+msgid "`[T]::windows`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:460
+msgid "window size == 0"
+msgstr ""
+
+#: src/2091-inline-semantic.md:461
+msgid "`AtomicUsize::compare_exchange_weak`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:462
+msgid "`AtomicUsize::compare_exchange`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:463
+msgid "`AtomicUsize::load`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:464
+msgid "`AtomicUsize::store`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:465
+msgid "`BorrowRef::clone`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:465
+msgid ""
+"borrow counter overflows, see [issue 33880](https://github.com/rust-lang/"
+"rust/issues/33880)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:466
+msgid "`BTreeMap::range_mut`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:466 src/2091-inline-semantic.md:467
+msgid "end of range before start of range"
+msgstr ""
+
+#: src/2091-inline-semantic.md:467
+msgid "`BTreeMap::range`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:468
+msgid "`char::encode_utf16`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:468
+msgid "dst buffer smaller than `[u16; 2]`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:469
+msgid "`char::encode_utf8`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:469
+msgid "dst buffer smaller than `[u8; 4]`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:470
+msgid "`char::is_digit`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:471
+msgid "`char::to_digit`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:472
+msgid "`compiler_fence`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:473
+msgid "`Condvar::wait`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:473
+msgid "waiting on multiple different mutexes"
+msgstr ""
+
+#: src/2091-inline-semantic.md:474
+msgid "`Display::to_string`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:475
+msgid "`ExactSizeIterator::len`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:475
+msgid "size_hint implemented incorrectly"
+msgstr ""
+
+#: src/2091-inline-semantic.md:476
+msgid "`i32::from_str_radix`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:477
+msgid "`Iterator::step_by`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:477
+msgid "step == 0"
+msgstr ""
+
+#: src/2091-inline-semantic.md:481
+msgid ""
+"This RFC only advocates adding the `#[track_caller]` attribute to the "
+"`unwrap` and `expect` functions. The `index` and `index_mut` functions "
+"should also have it if possible, but this is currently postponed as it is "
+"not investigated yet how to insert the transformation after monomorphization."
+msgstr ""
+
+#: src/2091-inline-semantic.md:486
+msgid "Procedural attribute macro"
+msgstr ""
+
+#: src/2091-inline-semantic.md:488
+msgid ""
+"The `#[track_caller]` attribute will modify a function at the AST and MIR "
+"levels without touching the type-checking (HIR level) or the low-level LLVM "
+"passes."
+msgstr ""
+
+#: src/2091-inline-semantic.md:491
+msgid ""
+"It will first wrap the body of the function in a closure, and then call it:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:498 src/2091-inline-semantic.md:538
+#: src/2091-inline-semantic.md:553 src/2091-inline-semantic.md:568
+msgid "// will become:\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:510
+msgid ""
+"This is to split the function into two: the function `foo` itself, and the "
+"closure `foo::{{closure}}` in it. (Technically: it is the simplest way to "
+"create two `DefId`s at the HIR level as far as I know.)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:514
+msgid ""
+"The function signature of `foo` remains unchanged, so typechecking can "
+"proceed normally. The attribute will be replaced by "
+"`#[rustc_implicit_caller_location]` to let the compiler internals continue "
+"to treat it specially. `#[inline]` is added so external crates can see "
+"through `foo` to find `foo::{{closure}}`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:519
+msgid ""
+"The closure `foo::{{closure}}` is a proper function so that the compiler can "
+"write calls directly to `foo::{{closure}}`, skipping `foo`. Multiple calls "
+"to `foo` from different locations can be done via calling `foo::{{closure}}` "
+"directly, instead of copying the function body every time which would bloat "
+"the binary size."
+msgstr ""
+
+#: src/2091-inline-semantic.md:524
+msgid ""
+"The intrinsic `caller_location()` is a placeholder which will be replaced by "
+"the actual caller location when one calls `foo::{{closure}}` directly."
+msgstr ""
+
+#: src/2091-inline-semantic.md:527
+msgid ""
+"Currently the `foo::{{closure}}` cannot inherit attributes defined on the "
+"main function. To prevent problems regarding ABI, using `#[naked]` or "
+"`extern \"ABI\"` together with `#[rustc_implicit_caller_location]` should "
+"raise an error."
+msgstr ""
+
+#: src/2091-inline-semantic.md:531
+msgid "Redirection (MIR inlining)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:533
+msgid ""
+"After all type-checking and validation is done, we can now inject the caller "
+"location. This is done by redirecting all calls to `foo` to `foo::{{closure}}"
+"`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:546
+msgid ""
+"We will further replace the `caller_location()` intrinsic according to where "
+"`foo` is called. If it is called from an ordinary function, it would be "
+"replaced by the callsite's location:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:550
+msgid "// for ordinary functions,\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:560
+msgid ""
+"If it is called from an `#[rustc_implicit_caller_location]`'s closure e.g. "
+"`foo::{{closure}}`, the intrinsic will be replaced by the closure argument "
+"`__location` instead, so that the caller location can propagate directly"
+msgstr ""
+
+#: src/2091-inline-semantic.md:565
+msgid "// for #[rustc_implicit_caller_location] closures,\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:575
+msgid ""
+"These steps are very similar to inlining, and thus the first proof-of-"
+"concept is implemented directly as a variant of the MIR inliner (but a "
+"separate pass). This also means the redirection pass currently suffers from "
+"all disadvantages of the MIR inliner, namely:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:579
+msgid ""
+"Locations will not be propagated into diverging functions (`fn() -> !`), "
+"since inlining them is not supported yet."
+msgstr ""
+
+#: src/2091-inline-semantic.md:582
+msgid ""
+"MIR passes are run _before_ monomorphization, meaning `#[track_caller]` "
+"currently **cannot** be used on trait items:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:590
+msgid "//~ ERROR: `#[track_caller]` is not supported for trait items yet.\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:595
+msgid ""
+"To support trait items, the redirection pass must be run as post-"
+"monomorphized MIR pass (which does not exist yet), or converted to queries "
+"provided after resolve, or a custom LLVM inlining pass which can extract the "
+"caller's source location. This prevents the `Index` trait from having "
+"`#[track_caller]` yet."
+msgstr ""
+
+#: src/2091-inline-semantic.md:600
+msgid ""
+"We cannot hack the impl resolution method into pre-monomorphization MIR pass "
+"because of deeply nested functions like"
+msgstr ""
+
+#: src/2091-inline-semantic.md:611
+msgid "// No one will know T is u32 before monomophization.\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:615
+msgid ""
+"Currently the redirection pass always runs before the inlining pass. If the "
+"redirection pass is run after the normal MIR inlining pass, the normal MIR "
+"inliner must treat `#[rustc_implicit_caller_location]` as `#[inline(never)]`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:619
+msgid ""
+"The closure `foo::{{closure}}` must never be inlined before the redirection "
+"pass."
+msgstr ""
+
+#: src/2091-inline-semantic.md:621
+msgid ""
+"When `#[rustc_implicit_caller_location]` functions are called dynamically, "
+"no inlining will occur, and thus it cannot take the location of the caller. "
+"Currently this will report where the function is declared. Taking the "
+"address of such functions must be allowed due to backward compatibility. (If "
+"a post-monomorphized MIR pass exists, methods via trait objects would be "
+"another case of calling `#[rustc_implicit_caller_location]` functions "
+"without caller location.)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:630
+msgid "// This must remain `true`.\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:632
+msgid "// The effect of these two calls must be the same.\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:635
+msgid "Standard libraries"
+msgstr ""
+
+#: src/2091-inline-semantic.md:637
+msgid ""
+"The `caller_location()` intrinsic returns the `Location` structure which "
+"encodes the file, line and column of the callsite. This shares the same "
+"structure as the existing type `std::panic::Location`. Therefore, the type "
+"is promoted to a lang-item, and moved into `core::panicking::Location`. It "
+"is re-exported from `libstd`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:642
+msgid ""
+"Thanks to how `#[track_caller]` is implemented, we could provide a safe "
+"wrapper around the `caller_location()` intrinsic:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:656
+msgid ""
+"The `panic!` macro is modified to use `Location::caller()` (or the intrinsic "
+"directly) so it can report the caller location inside `#[track_caller]`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:669
+msgid ""
+"Actually this is now more natural for `core::panicking::panic_fmt` to take "
+"`Location` directly instead of tuples, so one should consider changing their "
+"signature, but this is out-of-scope for this RFC."
+msgstr ""
+
+#: src/2091-inline-semantic.md:673
+msgid ""
+"`panic!` is often used outside of `#[track_caller]` functions. In those "
+"cases, the `caller_location()` intrinsic will pass unchanged through all MIR "
+"passes into trans. As a fallback, the intrinsic will expand to `Location "
+"{ file: file!(), line: line!(), col: column!() }` during trans."
+msgstr ""
+
+#: src/2091-inline-semantic.md:678
+msgid "“My fault” vs “Your fault”"
+msgstr ""
+
+#: src/2091-inline-semantic.md:680
+msgid ""
+"In a `#[track_caller]` function, we expect all panics being attributed to "
+"the caller (thus the attribute name). However, sometimes the code panics not "
+"due to the caller, but the implementation itself. It may be important to "
+"distinguish between \"my fault\" (implementation error) and \"your "
+"fault\" (caller violating API requirement). As an example,"
+msgstr ""
+
+#: src/2091-inline-semantic.md:691 src/2091-inline-semantic.md:760
+msgid "\"invalid window size\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:692
+msgid "// ^ triggering this panic is \"your fault\"\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:699 src/2091-inline-semantic.md:768
+msgid "\"why??\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:700
+msgid ""
+"// ^ triggering this panic is \"my fault\"\n"
+"            //   (yes this code is wrong and entry API should be used)\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:709
+msgid ""
+"One simple solution is to separate the \"my fault\" panic and \"your fault\" "
+"panic into two, but since [declarative macro 1.0 is insta-stable](https://"
+"github.com/rust-lang/rust/pull/39229#issuecomment-274348420), this RFC would "
+"prefer to postpone introducing any new public macros until \"Macros 2.0\" "
+"lands, where stability and scoping are better handled."
+msgstr ""
+
+#: src/2091-inline-semantic.md:713
+msgid ""
+"For comparison, the Swift language does [distinguish between the two kinds "
+"of panics semantically](https://stackoverflow.com/questions/29673027/"
+"difference-between-precondition-and-assert-in-swift). The \"your fault\" "
+"ones are called `precondition`, while the \"my fault\" ones are called "
+"`assert`, though they don't deal with caller location, and practically they "
+"are equivalent to Rust's `assert!` and `debug_assert!`. Nevertheless, this "
+"also suggests we can still separate existing panicking macros into the \"my "
+"fault\" and \"your fault\" camps accordingly:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:719
+msgid ""
+"Definitely \"my fault\" (use actual location): `debug_assert!` and friends, "
+"`unreachable!`, `unimplemented!`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:721
+msgid ""
+"Probably \"your fault\" (propagate caller location): `assert!` and friends, "
+"`panic!`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:723
+msgid ""
+"The question is, should calling `unwrap()`, `expect()` and `x[y]` "
+"(`index()`) be \"my fault\" or \"your fault\"? Let's consider existing "
+"implementation of `index()` methods:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:726
+msgid "// Vec::index\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:730
+msgid "// BTreeMap::index\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:733 src/2091-inline-semantic.md:996
+msgid "\"no entry found for key\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:735
+msgid "// Wtf8::index\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:738
+msgid "// is_code_point_boundary checks that the index is in [0, .len()]\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:747
+msgid ""
+"If they all get `#[track_caller]`, the `x[y]`, `expect()` and "
+"`slice_error_fail()` should all report \"your fault\", i.e. caller location "
+"should be propagated downstream. It does mean that the current default of "
+"caller-location-propagation-by-default is more common. This also means \"my "
+"fault\" happening during development may become harder to spot. This can be "
+"solved using `RUST_BACKTRACE=1`, or workaround by splitting into two "
+"functions:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:760
+msgid "// <-- your fault\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:768
+msgid "// <-- my fault (caller propagation can't go into closures)\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:776
+msgid ""
+"Anyway, treating everything as \"your fault\" will encourage that "
+"`#[track_caller]` functions should be short, which goes in line with the "
+"[\"must have\" list](#survey-of-panicking-standard-functions) in the RFC. "
+"Thus the RFC will remain advocating for propagating caller location "
+"implicitly."
+msgstr ""
+
+#: src/2091-inline-semantic.md:783
+msgid "Location detail control"
+msgstr ""
+
+#: src/2091-inline-semantic.md:785
+msgid ""
+"An unstable flag `-Z location-detail` is added to `rustc` to control how "
+"much factual detail will be emitted when using `caller_location()`. The user "
+"can toggle `file`, `line` and `column` separately, e.g. when compiling with:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:793
+msgid ""
+"only the line number will be real. The file and column will always be a "
+"dummy value like"
+msgstr ""
+
+#: src/2091-inline-semantic.md:798
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2091-inline-semantic.md:801
+msgid "Code bloat"
+msgstr ""
+
+#: src/2091-inline-semantic.md:803
+msgid ""
+"Previously, all calls to `unwrap()` and `expect()` referred to the same "
+"location. Therefore, the panicking branch will only needed to reuse a "
+"pointer to a single global tuple."
+msgstr ""
+
+#: src/2091-inline-semantic.md:806
+msgid ""
+"After this RFC is implemented, the panicking branch will need to allocate "
+"space to store the varying caller location, so the number of instructions "
+"per `unwrap()`/`expect()` will increase."
+msgstr ""
+
+#: src/2091-inline-semantic.md:809
+msgid ""
+"The optimizer will lose the opportunity to consolidate all jumps to the "
+"panicking branch. Before this RFC, LLVM would optimize `a.unwrap() + b."
+"unwrap()`, to something like"
+msgstr ""
+
+#: src/2091-inline-semantic.md:814 src/2091-inline-semantic.md:823
+#: src/2091-inline-semantic.md:826
+msgid "\"called `Option::unwrap()` on a `None` value\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:814
+msgid "\"src/libcore/option.rs\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:819
+msgid "After this RFC, LLVM can only lower this to"
+msgstr ""
+
+#: src/2091-inline-semantic.md:823 src/2091-inline-semantic.md:826
+msgid "\"1.rs\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:831
+msgid "One can use `-Z location-detail` to get the old optimization behavior."
+msgstr ""
+
+#: src/2091-inline-semantic.md:833
+msgid "Narrow solution scope"
+msgstr ""
+
+#: src/2091-inline-semantic.md:835
+msgid ""
+"`#[track_caller]` is only useful in solving the \"get caller location\" "
+"problem. Introducing an entirely new feature just for this problem seems "
+"wasteful."
+msgstr ""
+
+#: src/2091-inline-semantic.md:838
+msgid ""
+"[Default function arguments](#default-function-arguments) is another "
+"possible solution for this problem but with much wider application."
+msgstr ""
+
+#: src/2091-inline-semantic.md:841
+msgid "Confusing scoping rule"
+msgstr ""
+
+#: src/2091-inline-semantic.md:843
+msgid ""
+"Consts, statics and closures are separate MIR items, meaning the following "
+"marked places will _not_ get caller locations:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:849 src/2091-inline-semantic.md:850
+msgid "// will get actual location instead\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:851
+msgid "// this one will get caller location\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:855
+msgid ""
+"This is confusing, but if we don't support this, we will need two `panic!` "
+"macros which is not a better solution."
+msgstr ""
+
+#: src/2091-inline-semantic.md:858
+msgid ""
+"Clippy could provide a lint against using `Location::caller()` outside of "
+"`#[track_caller]`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:860
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2091-inline-semantic.md:863
+msgid "Rationale"
+msgstr ""
+
+#: src/2091-inline-semantic.md:865
+msgid "This RFC tries to abide by the following restrictions:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:867
+msgid ""
+"**Precise caller location**. Standard library functions which commonly panic "
+"will report the source location as where the user called them. The source "
+"location should never point inside the standard library. Examples of these "
+"functions include `Option::unwrap` and `HashMap::index`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:871
+msgid ""
+"**Source compatibility**. Users should never need to modify existing source "
+"code to benefit from the improved precision."
+msgstr ""
+
+#: src/2091-inline-semantic.md:874
+msgid ""
+"**Debug-info independence**. The precise caller location can still be "
+"reported even after stripping of debug information, which is very common on "
+"released software."
+msgstr ""
+
+#: src/2091-inline-semantic.md:877
+msgid ""
+"**Interface independence**. The implementation of a trait should be able to "
+"decide whether to accepts the caller information; it shouldn't require the "
+"trait itself to enforce it. It should not affect the signature of the "
+"function. This is an extension of rule 2, since the `Index` trait is "
+"involved in `HashMap::index`. The stability of `Index` must be upheld, e.g. "
+"it should remain object-safe, and existing implementations should not be "
+"forced to accept the caller location."
+msgstr ""
+
+#: src/2091-inline-semantic.md:884
+msgid ""
+"Restriction 4 \"interface independence\" is currently not implemented due to "
+"lack of post-monomorphized MIR pass, but implementing `#[track_caller]` as a "
+"language feature follows this restriction."
+msgstr ""
+
+#: src/2091-inline-semantic.md:888
+msgid "Alternatives"
+msgstr "替代方案"
+
+#: src/2091-inline-semantic.md:890
+msgid "🚲 Name of everything 🚲"
+msgstr ""
+
+#: src/2091-inline-semantic.md:892
+msgid "Is `#[track_caller]` an accurate description?"
+msgstr ""
+
+#: src/2091-inline-semantic.md:893
+msgid ""
+"Should we move `std::panic::Location` into `core`, or just use a 3-tuple to "
+"represent the location? Note that the former is advocated in [RFC 2070]"
+"(https://github.com/rust-lang/rfcs/pull/2070)."
+msgstr ""
+
+#: src/2091-inline-semantic.md:895
+msgid "Is `Location::caller()` properly named?"
+msgstr ""
+
+#: src/2091-inline-semantic.md:897
+msgid "Using an ABI instead of an attribute"
+msgstr ""
+
+#: src/2091-inline-semantic.md:900
+msgid "\"implicit-caller-location\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:901
+msgid "\"oh no\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:905
+msgid ""
+"Compared with attributes, an ABI is a more natural way to tell the post-"
+"typechecking steps about implicit parameters, pioneered by the `extern "
+"\"rust-call\"` ABI. However, creating a new ABI will change the type of the "
+"function as well, causing the following statement to fail:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:910
+msgid "//~^ ERROR: [E0308]: mismatched types\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:914
+msgid ""
+"Making this pass will require supporting implicitly coercing `extern "
+"\"implicit-caller-location\" fn` pointer to a normal function pointer. Also, "
+"an ABI is not powerful enough to implicitly insert a parameter, making it "
+"less competitive than just using an attribute."
+msgstr ""
+
+#: src/2091-inline-semantic.md:918
+msgid "Repurposing `file!()`, `line!()`, `column!()`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:920
+msgid ""
+"We could change the meaning of `file!()`, `line!()` and `column!()` so they "
+"are only converted to real constants after redirection (a MIR or trans pass) "
+"instead of early during macro expansion (an AST pass). Inside "
+"`#[track_caller]` functions, these macros behave as this RFC's "
+"`caller_location()`. The drawback is using these macro will have different "
+"values at compile time (e.g. inside `include!(file!())`) vs. runtime."
+msgstr ""
+
+#: src/2091-inline-semantic.md:926
+msgid "Inline MIR"
+msgstr ""
+
+#: src/2091-inline-semantic.md:928
+msgid ""
+"Introduced as an [alternative to RFC 1669](https://github.com/rust-lang/rfcs/"
+"pull/1669#issuecomment-231031865), instead of the `caller_location()` "
+"intrinsic, we could provide a full-fledged inline MIR macro `mir!` similar "
+"to the inline assembler:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:949 src/2091-inline-semantic.md:965
+msgid "\"{}:{}:{}: oh no\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:954
+msgid ""
+"The problem of `mir!` in this context is trying to kill a fly with a "
+"sledgehammer. `mir!` is a very generic mechanism which requires stabilizing "
+"the MIR syntax and considering the interaction with the surrounding code. "
+"Besides, `#[track_caller]` itself still exists and the magic constants "
+"`$CallerFile` etc are still magical."
+msgstr ""
+
+#: src/2091-inline-semantic.md:959
+msgid "Default function arguments"
+msgstr ""
+
+#: src/2091-inline-semantic.md:961
+msgid ""
+"Assume this is solved by implementing [RFC issue 323](https://github.com/"
+"rust-lang/rfcs/issues/323)."
+msgstr ""
+
+#: src/2091-inline-semantic.md:969
+msgid ""
+"Default arguments was a serious contender to the better-caller-location "
+"problem as this is usually how other languages solve it."
+msgstr ""
+
+#: src/2091-inline-semantic.md:972
+msgid "Language"
+msgstr ""
+
+#: src/2091-inline-semantic.md:972
+msgid "Syntax"
+msgstr ""
+
+#: src/2091-inline-semantic.md:974
+msgid "[Swift](https://developer.apple.com/swift/blog/?id=15)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:974
+msgid "`func unwrap(file: String = #file, line: Int = #line) -> T`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:975
+msgid "[D](https://dlang.org/spec/traits.html#specialkeywords)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:975
+msgid "`T unwrap(string file = __FILE__, size_t line = __LINE__)`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:976
+msgid ""
+"[C#](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/"
+"concepts/caller-information) 5+"
+msgstr ""
+
+#: src/2091-inline-semantic.md:976
+msgid ""
+"`T Unwrap([CallerFilePath] string file = \"<n/a>\", [CallerLineNumber] int "
+"line = 0)`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:977
+msgid ""
+"[Haskell](https://ghc.haskell.org/trac/ghc/wiki/ExplicitCallStack/"
+"ImplicitLocations) with GHC"
+msgstr ""
+
+#: src/2091-inline-semantic.md:977
+msgid "`unwrap :: (?callstack :: CallStack) => Maybe t -> t`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:978
+msgid ""
+"[C++](https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-"
+"_005f_005fbuiltin_005fLINE) with GCC 4.8+"
+msgstr ""
+
+#: src/2091-inline-semantic.md:978
+msgid ""
+"`T unwrap(const char* file = __builtin_FILE(), int line = __builtin_LINE())`"
+msgstr ""
+
+#: src/2091-inline-semantic.md:980
+msgid ""
+"A naive solution will violate restriction 4 \"interface independence\": "
+"adding the `file, line, column` arguments to `index()` will change its "
+"signature. This can be resolved if this is taken into account."
+msgstr ""
+
+#: src/2091-inline-semantic.md:992
+msgid ""
+"// This should satisfy the trait even if the trait specifies\n"
+"    // `fn index(&self, idx: Idx) -> &Self::Output`\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1001
+msgid ""
+"This can be resolved if the future default argument proposal takes this into "
+"account. But again, this feature itself is going to be large and "
+"controversial."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1004
+msgid "Semantic inlining"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1006
+msgid ""
+"Treat `#[track_caller]` as the same as a very forceful `#[inline(always)]`. "
+"This eliminates the procedural macro pass. This was the approach suggested "
+"in the first edition of this RFC, since the target functions (`unwrap`, "
+"`expect`, `index`) are just a few lines long. However, it experienced push-"
+"back from the community as:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1011
+msgid "Inlining causes debugging to be difficult."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1012
+msgid "It does not work with recursive functions."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1013
+msgid "People do want to apply the attribute to long functions."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1014
+msgid ""
+"The expected usage of \"semantic inlining\" and traditional inlining differ "
+"a lot, continue calling it inlining may confuse beginners."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1017
+msgid ""
+"Therefore the RFC is changed to the current form, and the inlining pass is "
+"now described as just an implementation detail."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1020
+msgid "Design-by-contract"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1022
+msgid ""
+"This is inspired when investigating the difference in [\"my fault\" vs "
+"\"your fault\"](#my-fault-vs-your-fault). We incorporate ideas from [design-"
+"by-contract](https://en.wikipedia.org/wiki/Design_by_contract) (DbC) by "
+"specifying that \"your fault\" is a kind of contract violation. "
+"Preconditions are listed as part of the function signature, e.g."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1028
+msgid "// declaration\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1030
+msgid "\"invalid file descriptor {}\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:1033
+msgid "// declaration + definition\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1035
+msgid "\"Trying to unwrap None\""
+msgstr ""
+
+#: src/2091-inline-semantic.md:1044
+msgid ""
+"Code that appears in the `#[precondition]` attribute should be copied to "
+"caller site, so when the precondition is violated, they can get the caller's "
+"location."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1047
+msgid ""
+"Specialization should be treated like subtyping, where preconditions can be "
+"_weakened_:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1066
+msgid "// ^ automatically inserted when the following is called...\n"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1071
+msgid ""
+"Before Rust 1.0, there was the [`hoare`](https://crates.io/crates/hoare) "
+"compiler plugin which introduces DbC using the similar syntax. However, the "
+"conditions are expanded inside the function, so the assertions will not fail "
+"with the caller's location. A proper solution will be similar to what this "
+"RFC proposes."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1078
+msgid "Non-viable alternatives"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1080
+msgid ""
+"Many alternatives have been proposed before but failed to satisfy the "
+"restrictions laid out in the [Rationale](#rationale) subsection, thus should "
+"_not_ be considered viable alternatives within this RFC, at least at the "
+"time being."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1084
+msgid "Macros"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1086
+msgid ""
+"The `unwrap!()` macro introduced in [RFC 1669](https://github.com/rust-lang/"
+"rfcs/pull/1669) allows the user to write `unwrap!(x)` instead of `x."
+"unwrap()`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1089
+msgid ""
+"A similar solution is introducing a `loc!()` macro that expands to `concat!"
+"(file!(), \":\", line!(), \":\", column!())`, so user writes `x.expect(loc!"
+"())` instead of `x.unwrap()`."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1093
+msgid ""
+"There is even the [`better_unwrap` crate](https://github.com/abonander/"
+"better_unwraps) that automatically rewrites all `unwrap()` and `expect()` "
+"inside a module to provide the caller location through a procedural "
+"attribute."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1097
+msgid ""
+"All of these are non-viable since they require the user to actively change "
+"their source code, thus violating restriction 2 \"source compatibility\", "
+"~~unless we are willing to drop the `!` from macros~~."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1101
+msgid ""
+"All pre-typeck rewrites are prone to false-positive failures affecting "
+"unrelated types that have an `unwrap()` method. Post-typeck rewrites are no "
+"different from this RFC."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1104
+msgid "Backtrace"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1106
+msgid ""
+"When given debug information (DWARF section/file on Linux, `*.pdb` file on "
+"Windows, `*.dSYM` folder on macOS), the program is able to obtain the source "
+"code location for each address. This solution is often used in runtime-heavy "
+"languages like Python, Java and [Go](https://golang.org/pkg/runtime/#Caller)."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1110
+msgid "For Rust, however:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1112
+msgid "The debug information is usually not provided in release mode."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1114
+msgid ""
+"In particular, `cargo` defaults to disabling debug symbols in release mode "
+"(this default can certainly be changed). `rustc` itself is tested in CI and "
+"distributed in release mode, so getting a usable location in release mode is "
+"a real concern (see also [RFC 1417](https://github.com/rust-lang/rfcs/"
+"issues/1417) for why it was disabled in the official distribution in the "
+"first place)."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1119
+msgid ""
+"Even if this is generated, the debug symbols are generally not distributed "
+"to end-users, which means the error reports will only contain numerical "
+"addresses. This can be seen as a benefit, as the implementation detail won't "
+"be exposed, but how to submit/analyze an error report would be out-of-scope "
+"for this RFC."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1124
+msgid ""
+"There are multiple issues preventing us from relying on debug info nowadays."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1126
+msgid ""
+"Issues [24346](https://github.com/rust-lang/rust/issues/24346)  (_Backtrace "
+"does not include file and line number on non-Linux platforms_) and [42295]"
+"(https://github.com/rust-lang/rust/issues/42295)  (_Slow backtrace on "
+"panic_) and are still not entirely fixed. Even after the debuginfo is "
+"properly handled, if we decide not to expose the whole the full stacktrace, "
+"we may still need to reopen pull request [40264](https://github.com/rust-"
+"lang/rust/issues/40264)  (_Ignore more frames on backtrace unwinding_)."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1131
+msgid ""
+"These signal that debuginfo support is not reliable enough if we want to "
+"solve the unwrap/expect issue now."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1134
+msgid ""
+"These drawbacks are the main reason why restriction 3 \"debug-info "
+"independence\" is added to the motivation."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1137
+msgid ""
+"(A debuginfo-based stack trace proposal can be found at [RFC 2154](https://"
+"github.com/rust-lang/rfcs/pull/2154).)"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1139
+msgid "`SourceContext` generic parameter"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1141
+msgid ""
+"Introduced as an [alternative in RFC 1669](https://github.com/rust-lang/rfcs/"
+"pull/1669#issuecomment-231896669), inspired by GHC's implicit parameter:"
+msgstr ""
+
+#: src/2091-inline-semantic.md:1149
+msgid ""
+"The `CallerSourceContext` lang item will instruct the compiler to create a "
+"new type implementing `SourceContext` whenever `unwrap()` is instantiated."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1152
+msgid ""
+"Unfortunately this violates restriction 4 \"interface independence\". This "
+"solution cannot apply to `HashMap::index` as this will require a change of "
+"the method signature of `index()` which has been stabilized. Methods "
+"applying this solution will also lose object-safety."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1156
+msgid ""
+"The same drawback exists if we base the solution on [RFC 2000](https://"
+"github.com/rust-lang/rfcs/pull/2000)  (_const generics_)."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1158
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/2091-inline-semantic.md:1161
+msgid ""
+"If we want to support adding `#[track_caller]` to trait methods, the "
+"redirection pass/query/whatever should be placed after monomorphization, not "
+"before. Currently the RFC simply prohibit applying `#[track_caller]` to "
+"trait methods as a future-proofing measure."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1165
+msgid "Diverging functions should be supported."
+msgstr ""
+
+#: src/2091-inline-semantic.md:1167
+msgid ""
+"The closure `foo::{{closure}}` should inherit most attributes applied to the "
+"function `foo`, in particular `#[inline]`, `#[cold]`, `#[naked]` and also "
+"the ABI. Currently a procedural macro won't see any of these, nor would "
+"there be anyway to apply these attributes to a closure. Therefore, "
+"`#[rustc_implicit_caller_location]` currently will reject `#[naked]` and "
+"ABI, and leaving `#[inline]` and `#[cold]` mean no-op. There is no semantic "
+"reason why these cannot be used though."
+msgstr ""

@@ -1,0 +1,516 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3184-thread-local-cell-methods.md:1
+msgid "Feature Name: thread_local_cell_methods"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:2
+msgid "Start Date: 2021-10-17"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3184](https://github.com/rust-lang/rfcs/pull/3184)"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#92122](https://github.com/rust-lang/rust/"
+"issues/92122)"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:9
+msgid ""
+"Adding methods to `LocalKey` for `LocalKey<Cell<T>>` and "
+"`LocalKey<RefCell<T>>` to make thread local cells easier to use."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:14
+msgid ""
+"Almost all real-world usages of `thread_local! {}` involve a `Cell` or "
+"`RefCell`. Using the resulting `LocalKey` from a `thread_local! {}` "
+"declaration gets verbose due to having to use `.with(|_| ..)`. (For context: "
+"`.with()` is necessary because there's no correct lifetime for the thread "
+"local value. This method makes sure that any borrows end before the thread "
+"ends.)"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:27
+#: src/3184-thread-local-cell-methods.md:47
+#: src/3184-thread-local-cell-methods.md:65
+#: src/3184-thread-local-cell-methods.md:95
+msgid "// ...\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:31
+msgid "\"{:?}\""
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:36
+msgid ""
+"In addition, using `.set()` on a thread local cell through `.with()` results "
+"in unnecessary initialization, since `.with` will trigger the lazy "
+"initialization, even though `.set()` will overwrite the value directly "
+"afterwards:"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:45
+msgid ""
+"// Ends up calling generate_id() the first time, while ignoring its result.\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:51
+msgid "Proposed additions"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:53
+msgid ""
+"We add `.set()`, `.get()`\\*, `.take()` and `.replace()` on "
+"`LocalKey<Cell<T>>` and `LocalKey<RefCell<T>>` such that they can used "
+"directly without using `.with()`:"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:55
+msgid "(\\* `.get()` only for `Cell`, not for `RefCell`.)"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:71
+msgid "For `.set()`, this _skips the initialization expression_:"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:75
+msgid "\"This thread doesn't have an ID yet!\""
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:79
+msgid "// ID.with(|id| ..) at this point would panic.\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:81
+msgid "// This does *not* result in a panic.\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:85
+msgid ""
+"In addition, we add `.with_ref` and `.with_mut` for `LocalKey<RefCell<T>>` "
+"to do `.with()` and `.borrow()` or `.borrow_mut()` at once:"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:101
+msgid "Full reference of the proposed additions"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:105
+msgid ""
+"/// Sets or initializes the contained value.\n"
+"    ///\n"
+"    /// Unlike the other methods, this will *not* run the lazy initializer "
+"of\n"
+"    /// the thread local. Instead, it will be directly initialized with the\n"
+"    /// given value if it wasn't initialized yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::Cell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: Cell<i32> = panic!(\"!\");\n"
+"    /// }\n"
+"    ///\n"
+"    /// // Calling X.get() here would result in a panic.\n"
+"    ///\n"
+"    /// X.set(123); // But X.set() is fine, as it skips the initializer "
+"above.\n"
+"    ///\n"
+"    /// assert_eq!(X.get(), 123);\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:133
+msgid ""
+"/// Returns a copy of the contained value.\n"
+"    ///\n"
+"    /// This will lazily initialize the value if this thread has not "
+"referenced\n"
+"    /// this key yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::Cell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: Cell<i32> = Cell::new(1);\n"
+"    /// }\n"
+"    ///\n"
+"    /// assert_eq!(X.get(), 1);\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:156
+msgid ""
+"/// Takes the contained value, leaving `Default::default()` in its place.\n"
+"    ///\n"
+"    /// This will lazily initialize the value if this thread has not "
+"referenced\n"
+"    /// this key yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::Cell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: Cell<Option<i32>> = Cell::new(Some(1));\n"
+"    /// }\n"
+"    ///\n"
+"    /// assert_eq!(X.take(), Some(1));\n"
+"    /// assert_eq!(X.take(), None);\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:180
+msgid ""
+"/// Replaces the contained value, returning the old value.\n"
+"    ///\n"
+"    /// This will lazily initialize the value if this thread has not "
+"referenced\n"
+"    /// this key yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::Cell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: Cell<i32> = Cell::new(1);\n"
+"    /// }\n"
+"    ///\n"
+"    /// assert_eq!(X.replace(2), 1);\n"
+"    /// assert_eq!(X.replace(3), 2);\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:208
+msgid ""
+"/// Acquires a reference to the contained value.\n"
+"    ///\n"
+"    /// This will lazily initialize the value if this thread has not "
+"referenced\n"
+"    /// this key yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the value is currently borrowed.\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Example\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::RefCell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: RefCell<Vec<i32>> = RefCell::new(Vec::new());\n"
+"    /// }\n"
+"    ///\n"
+"    /// X.with_ref(|v| assert!(v.is_empty()));\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:233
+msgid ""
+"/// Acquires a mutable reference to the contained value.\n"
+"    ///\n"
+"    /// This will lazily initialize the value if this thread has not "
+"referenced\n"
+"    /// this key yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the value is currently borrowed.\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Example\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::RefCell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: RefCell<Vec<i32>> = RefCell::new(Vec::new());\n"
+"    /// }\n"
+"    ///\n"
+"    /// X.with_mut(|v| v.push(1));\n"
+"    ///\n"
+"    /// X.with_ref(|v| assert_eq!(*v, vec![1]));\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:260
+msgid ""
+"/// Sets or initializes the contained value.\n"
+"    ///\n"
+"    /// Unlike the other methods, this will *not* run the lazy initializer "
+"of\n"
+"    /// the thread local. Instead, it will be directly initialized with the\n"
+"    /// given value if it wasn't initialized yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::RefCell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: RefCell<Vec<i32>> = panic!(\"!\");\n"
+"    /// }\n"
+"    ///\n"
+"    /// // Calling X.with() here would result in a panic.\n"
+"    ///\n"
+"    /// X.set(vec![1, 2, 3]); // But X.set() is fine, as it skips the "
+"initializer above.\n"
+"    ///\n"
+"    /// X.with_ref(|v| assert_eq!(*v, vec![1, 2, 3]));\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:288
+msgid ""
+"/// Takes the contained value, leaving `Default::default()` in its place.\n"
+"    ///\n"
+"    /// This will lazily initialize the value if this thread has not "
+"referenced\n"
+"    /// this key yet.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the value is currently borrowed.\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::RefCell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: RefCell<Vec<i32>> = RefCell::new(Vec::new());\n"
+"    /// }\n"
+"    ///\n"
+"    /// X.with_mut(|v| v.push(1));\n"
+"    ///\n"
+"    /// let a = X.take();\n"
+"    ///\n"
+"    /// assert_eq!(a, vec![1]);\n"
+"    ///\n"
+"    /// X.with_ref(|v| assert!(v.is_empty()));\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:319
+msgid ""
+"/// Replaces the contained value, returning the old value.\n"
+"    ///\n"
+"    /// # Panics\n"
+"    ///\n"
+"    /// Panics if the value is currently borrowed.\n"
+"    ///\n"
+"    /// Panics if the key currently has its destructor running,\n"
+"    /// and it **may** panic if the destructor has previously been run for "
+"this thread.\n"
+"    ///\n"
+"    /// # Examples\n"
+"    ///\n"
+"    /// ```\n"
+"    /// use std::cell::RefCell;\n"
+"    ///\n"
+"    /// thread_local! {\n"
+"    ///     static X: RefCell<Vec<i32>> = RefCell::new(Vec::new());\n"
+"    /// }\n"
+"    ///\n"
+"    /// let prev = X.replace(vec![1, 2, 3]);\n"
+"    /// assert!(prev.is_empty());\n"
+"    ///\n"
+"    /// X.with_ref(|v| assert_eq!(*v, vec![1, 2, 3]));\n"
+"    /// ```\n"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:346
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:349
+msgid ""
+"We can no longer use the method names `set`, `get`, etc. on `LocalKey<T>` "
+"(if `T` can include `Cell` or `RefCell`)."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:351
+msgid ""
+"It might encourage code that's less efficient on some platforms. A single "
+"`THREAD_LOCAL.with(|x| ..)` is more efficient than using multiple `.set()` "
+"and `.get()` (etc.), since it needs to look up the thread local address "
+"every time, which is not free on all platforms."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:355
+msgid "Alternatives"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:357
+msgid "Alternatives for making it easier to work with thread local cells:"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:359
+msgid "Don't do anything, and keep wrapping everything in `.with(|x| ..)`."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:361
+msgid ""
+"Somehow invent and implement the `'thread` or `'caller` lifetime, removing "
+"the need for `.with(|x| ..)`."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:363
+msgid ""
+"Add `THREAD_LOCAL.borrow()` and `THREAD_LOCAL.borrow_mut()`, just like "
+"`RefCell` has."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:365
+msgid ""
+"This wouldn't be sound. One could move the returned proxy object into a "
+"thread local that outlives this thread local. (Or just `Box::leak()` it.)"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:369
+msgid "Alternatives for avoiding the initializer:"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:371
+msgid "Add a `LocalKey<T>::try_initialize` method."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:373
+msgid ""
+"This will be bit more complicated to implement efficiently. (A `LocalKey` "
+"just contains a single function pointer to the thread-local-address-getter, "
+"which is often optimized out. This doesn't play nice with being generic over "
+"the initialization function.)"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:377
+msgid ""
+"Thread locals with a `const` initializer (currently unstable, but likely "
+"stabilized soon) do not have the concept of being 'uninitialized' and do not "
+"run any lazy initialization. With `.set()` for `LocalKey<Cell<T>>`, that "
+"doesn't make a difference, as overwriting the const-initialized value has "
+"the same effect. However, for the generic `LocalKey<T>` we cannot allow "
+"changes without internal mutability, meaning that we can allow "
+"initialization (like `.try_initialize()`), but not changing it later (like `."
+"set()`). Since a `const` initialized thread local does not know whether its "
+"value has been observed yet, we can't do anything other than implement `."
+"try_initialize()` by always failing or panicking."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:385
+msgid ""
+"Even if this function existed, it would still be nice to have a simple "
+"`THREAD_LOCAL.set(..)`."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:387
+msgid "Prior art"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:390
+msgid ""
+"[`scoped-tls`](https://docs.rs/scoped-tls/1.0.0/scoped_tls/struct.ScopedKey."
+"html) provides 'scoped thread locals' which must be `.set()` before using "
+"them. (They will panic otherwise.)"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:393
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:396
+msgid ""
+"Should we use the names `with_borrow` and `with_borrow_mut` instead of "
+"`with_ref` and `with_mut`, to match `RefCell`'s method names?"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:397
+msgid ""
+"Do we also want anything for `UnsafeCell`? Maybe `LocalKey<UnsafeCell<T>>::"
+"get()` to get the `*mut T`, just like `UnsafeCell<T>::get()`."
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:398
+msgid ""
+"Are there any other types commonly used as thread locals for which we should "
+"do something similar?"
+msgstr ""
+
+#: src/3184-thread-local-cell-methods.md:399
+msgid ""
+"Should `.set` skip the initializer, or not? We should consider this question "
+"again at stabilization time, and we should listen for anyone reporting "
+"concerns here (especially if it caused semantically unexpected behavior)."
+msgstr ""
