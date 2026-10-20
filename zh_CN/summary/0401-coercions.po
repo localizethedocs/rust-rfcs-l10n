@@ -1,0 +1,783 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:42Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/0401-coercions.md:1
+msgid "Start Date: 2014-10-30"
+msgstr ""
+
+#: src/0401-coercions.md:2
+msgid "RFC PR #: https://github.com/rust-lang/rfcs/pull/401"
+msgstr ""
+
+#: src/0401-coercions.md:3
+msgid "Rust Issue #: https://github.com/rust-lang/rust/issues/18469"
+msgstr ""
+
+#: src/0401-coercions.md:5
+msgid "Summary"
+msgstr ""
+
+#: src/0401-coercions.md:7
+msgid ""
+"Describe the various kinds of type conversions available in Rust and suggest "
+"some tweaks."
+msgstr ""
+
+#: src/0401-coercions.md:10
+msgid ""
+"Provide a mechanism for smart pointers to be part of the DST coercion system."
+msgstr ""
+
+#: src/0401-coercions.md:12
+msgid "Reform coercions from functions to closures."
+msgstr ""
+
+#: src/0401-coercions.md:14
+msgid ""
+"The `transmute` intrinsic and other unsafe methods of type conversion are "
+"not covered by this RFC."
+msgstr ""
+
+#: src/0401-coercions.md:18
+msgid "Motivation"
+msgstr ""
+
+#: src/0401-coercions.md:20
+msgid ""
+"It is often useful to convert a value from one type to another. This "
+"conversion might be implicit or explicit and may or may not involve some "
+"runtime action. Such conversions are useful for improving reuse of code, and "
+"avoiding unsafe transmutes."
+msgstr ""
+
+#: src/0401-coercions.md:25
+msgid ""
+"Our current rules around type conversions are not well-described. The "
+"different conversion mechanisms interact poorly and the implementation is "
+"somewhat ad-hoc."
+msgstr ""
+
+#: src/0401-coercions.md:28
+msgid "Detailed design"
+msgstr ""
+
+#: src/0401-coercions.md:30
+msgid ""
+"Rust has several kinds of type conversion: subtyping, coercion, and casting. "
+"Subtyping and coercion are implicit, there is no syntax. Casting is "
+"explicit, using the `as` keyword. The syntax for a cast expression is:"
+msgstr ""
+
+#: src/0401-coercions.md:38
+msgid ""
+"Where `e` is any valid expression and `U` is any valid type (note that we "
+"restrict in type checking the valid types for `U`)."
+msgstr ""
+
+#: src/0401-coercions.md:41
+msgid ""
+"These conversions (and type equality) form a total order in terms of their "
+"strength. For any types `T` and `U`, if `T == U` then `T` is also a subtype "
+"of `U`. If `T` is a subtype of `U`, then `T` coerces to `U`, and if `T` "
+"coerces to `U`, then `T` can be cast to `U`."
+msgstr ""
+
+#: src/0401-coercions.md:46
+msgid ""
+"There is an additional kind of coercion which does not fit into that total "
+"order"
+msgstr ""
+
+#: src/0401-coercions.md:47
+msgid ""
+"implicit coercions of receiver expressions. (I will use 'expression "
+"coercion' when I need to distinguish coercions in non-receiver position from "
+"coercions of receivers). All expression coercions are valid receiver "
+"coercions, but not all receiver coercions are valid casts."
+msgstr ""
+
+#: src/0401-coercions.md:52
+msgid ""
+"Finally, I will discuss function polymorphism, which is something of a "
+"coercion edge case."
+msgstr ""
+
+#: src/0401-coercions.md:55
+msgid "Subtyping"
+msgstr ""
+
+#: src/0401-coercions.md:57
+msgid ""
+"Subtyping is implicit and can occur at any stage in type checking or "
+"inference. Subtyping in Rust is very restricted and occurs only due to "
+"variance with respect to lifetimes and between types with higher ranked "
+"lifetimes. If we were to erase lifetimes from types, then the only subtyping "
+"would be due to type equality."
+msgstr ""
+
+#: src/0401-coercions.md:64
+msgid "Coercions"
+msgstr ""
+
+#: src/0401-coercions.md:66
+msgid ""
+"A coercion is implicit and has no syntax. A coercion can only occur at "
+"certain coercion sites in a program, these are typically places where the "
+"desired type is explicit or can be derived by propagation from explicit "
+"types (without type inference). The base cases are:"
+msgstr ""
+
+#: src/0401-coercions.md:71
+msgid ""
+"In `let` statements where an explicit type is given: in `let _: U = e;`, `e` "
+"is coerced to have type `U`"
+msgstr ""
+
+#: src/0401-coercions.md:74
+msgid "In statics and consts, similarly to `let` statements"
+msgstr ""
+
+#: src/0401-coercions.md:76
+msgid ""
+"In argument position for function calls. The value being coerced is the "
+"actual parameter and it is coerced to the type of the formal parameter. For "
+"example, where `foo` is defined as `fn foo(x: U) { ... }` and is called with "
+"`foo(e);`, `e` is coerced to have type `U`"
+msgstr ""
+
+#: src/0401-coercions.md:81
+msgid ""
+"Where a field of a struct or variant is instantiated. E.g., where `struct "
+"Foo { x: U }` and the instantiation is `Foo { x: e }`, `e` is coerced to "
+"have type `U`"
+msgstr ""
+
+#: src/0401-coercions.md:85
+msgid ""
+"The result of a function, either the final line of a block if it is not "
+"semi- colon terminated or any expression in a `return` statement. For "
+"example, for `fn foo() -> U { e }`, `e` is coerced to have type `U`"
+msgstr ""
+
+#: src/0401-coercions.md:89
+msgid ""
+"If the expression in one of these coercion sites is a coercion-propagating "
+"expression, then the relevant sub-expressions in that expression are also "
+"coercion sites. Propagation recurses from these new coercion sites. "
+"Propagating expressions and their relevant sub-expressions are:"
+msgstr ""
+
+#: src/0401-coercions.md:94
+msgid ""
+"Array literals, where the array has type `[U, ..n]`, each sub-expression in "
+"the array literal is a coercion site for coercion to type `U`"
+msgstr ""
+
+#: src/0401-coercions.md:97
+msgid ""
+"Array literals with repeating syntax, where the array has type `[U, ..n]`, "
+"the repeated sub-expression is a coercion site for coercion to type `U`"
+msgstr ""
+
+#: src/0401-coercions.md:100
+msgid ""
+"Tuples, where a tuple is a coercion site to type `(U_0, U_1, ..., U_n)`, "
+"each sub-expression is a coercion site for the respective type, e.g., the "
+"zero-th sub-expression is a coercion site to `U_0`"
+msgstr ""
+
+#: src/0401-coercions.md:104
+msgid ""
+"The box expression, if the expression has type `Box<U>`, the sub-expression "
+"is a coercion site to `U` (I expect this to be generalised when `box` "
+"expressions are)"
+msgstr ""
+
+#: src/0401-coercions.md:108
+msgid ""
+"Parenthesised sub-expressions (`(e)`), if the expression has type `U`, then "
+"the sub-expression is a coercion site to `U`"
+msgstr ""
+
+#: src/0401-coercions.md:111
+msgid ""
+"Blocks, if a block has type `U`, then the last expression in the block (if "
+"it is not semicolon-terminated) is a coercion site to `U`. This includes "
+"blocks which are part of control flow statements, such as `if`/`else`, if "
+"the block has a known type."
+msgstr ""
+
+#: src/0401-coercions.md:117
+msgid ""
+"Note that we do not perform coercions when matching traits (except for "
+"receivers, see below). If there is an impl for some type `U`, and `T` "
+"coerces to `U`, that does not constitute an implementation for `T`. For "
+"example, the following will not type check, even though it is OK to coerce "
+"`t` to `&T` and there is an impl for `&T`:"
+msgstr ""
+
+#: src/0401-coercions.md:134
+msgid "//~ ERROR failed to find an implementation of trait Trait for &mut T\n"
+msgstr ""
+
+#: src/0401-coercions.md:138
+msgid ""
+"In a cast expression, `e as U`, the compiler will first attempt to coerce "
+"`e` to `U`, and only if that fails will the conversion rules for casts (see "
+"below) be applied."
+msgstr ""
+
+#: src/0401-coercions.md:142
+msgid "Coercion is allowed between the following types:"
+msgstr ""
+
+#: src/0401-coercions.md:144
+msgid "`T` to `U` if `T` is a subtype of `U` (the 'identity' case)"
+msgstr ""
+
+#: src/0401-coercions.md:146
+msgid ""
+"`T_1` to `T_3` where `T_1` coerces to `T_2` and `T_2` coerces to `T_3` "
+"(transitivity case)"
+msgstr ""
+
+#: src/0401-coercions.md:149
+msgid "`&mut T` to `&T`"
+msgstr ""
+
+#: src/0401-coercions.md:151
+msgid "`*mut T` to `*const T`"
+msgstr ""
+
+#: src/0401-coercions.md:153
+msgid "`&T` to `*const T`"
+msgstr ""
+
+#: src/0401-coercions.md:155
+msgid "`&mut T` to `*mut T`"
+msgstr ""
+
+#: src/0401-coercions.md:157
+msgid ""
+"`T` to `fn` if `T` is a closure that does not capture any local variables in "
+"its environment."
+msgstr ""
+
+#: src/0401-coercions.md:160
+msgid ""
+"`T` to `U` if `T` implements `CoerceUnsized<U>` (see below) and `T = Foo<..."
+">` and `U = Foo<...>` (for any `Foo`, when we get HKT I expect this could be "
+"a constraint on the `CoerceUnsized` trait, rather than being checked here)"
+msgstr ""
+
+#: src/0401-coercions.md:164
+msgid ""
+"From TyCtor(`T`) to TyCtor(coerce_inner(`T`)) (these coercions could be "
+"provided by implementing `CoerceUnsized` for all instances of TyCtor) where "
+"TyCtor(`T`) is one of `&T`, `&mut T`, `*const T`, `*mut T`, or `Box<T>`."
+msgstr ""
+
+#: src/0401-coercions.md:168
+msgid "And where coerce_inner is defined as:"
+msgstr ""
+
+#: src/0401-coercions.md:170
+msgid "coerce_inner(`[T, ..n]`) = `[T]`;"
+msgstr ""
+
+#: src/0401-coercions.md:172
+msgid ""
+"coerce_inner(`T`) = `U` where `T` is a concrete type which implements the "
+"trait `U`;"
+msgstr ""
+
+#: src/0401-coercions.md:175
+msgid "coerce_inner(`T`) = `U` where `T` is a sub-trait of `U`;"
+msgstr ""
+
+#: src/0401-coercions.md:177
+msgid ""
+"coerce_inner(`Foo<..., T, ...>`) = `Foo<..., coerce_inner(T), ...>` where "
+"`Foo` is a struct and only the last field has type `T` and `T` is not part "
+"of the type of any other fields;"
+msgstr ""
+
+#: src/0401-coercions.md:181
+msgid "coerce_inner(`(..., T)`) = `(..., coerce_inner(T))`."
+msgstr ""
+
+#: src/0401-coercions.md:183
+msgid ""
+"Note that coercing from sub-trait to a super-trait is a new coercion and is "
+"non- trivial. One implementation strategy which avoids re-computation of "
+"vtables is given in RFC PR #250."
+msgstr ""
+
+#: src/0401-coercions.md:187
+msgid ""
+"A note for the future: although there hasn't been an RFC nor much "
+"discussion, it is likely that post-1.0 we will add type ascription to the "
+"language (see #354). That will (probably) allow any expression to be "
+"annotated with a type (e.g, `foo(a, b: T, c)` a function call where the "
+"second argument has a type annotation)."
+msgstr ""
+
+#: src/0401-coercions.md:193
+msgid ""
+"Type ascription is purely descriptive and does not cast the sub-expression "
+"to the required type. However, it seems sensible that type ascription would "
+"be a coercion site, and thus type ascription would be a way to make implicit "
+"coercions explicit. There is a danger that such coercions would be confused "
+"with casts. I hope the rule that casting should change the type and type "
+"ascription should not is enough of a discriminant. Perhaps we will need a "
+"style guideline to encourage either casts or type ascription to force an "
+"implicit coercion. Perhaps type ascription should not be a coercion site. Or "
+"perhaps we don't need type ascription at all if we allow trivial casts."
+msgstr ""
+
+#: src/0401-coercions.md:204
+msgid "Custom unsizing coercions"
+msgstr ""
+
+#: src/0401-coercions.md:206
+msgid ""
+"It should be possible to coerce smart pointers (e.g., `Rc`) in the same way "
+"as the built-in pointers. In order to do so, we provide two traits and an "
+"intrinsic to allow users to make their smart pointers work with the "
+"compiler's coercions. It might be possible to implement some of the "
+"coercions described for built-in pointers using this machinery, and whether "
+"that is a good idea or not is an implementation detail."
+msgstr ""
+
+#: src/0401-coercions.md:213
+msgid ""
+"```\n"
+"// Cannot be impl'ed - it really is quite a magical trait, see the cases "
+"below.\n"
+"trait Unsize<Sized? U> for Sized? {}\n"
+"```"
+msgstr ""
+
+#: src/0401-coercions.md:218
+msgid ""
+"The `Unsize` trait is a marker trait and a lang item. It should not be "
+"implemented by users and user implementations will be ignored. The compiler "
+"will assume the following implementations, these correspond to the "
+"definition of coerce_inner, above; note that these cannot be expressed in "
+"real Rust:"
+msgstr ""
+
+#: src/0401-coercions.md:223
+msgid ""
+"```\n"
+"impl<T, n: int> Unsize<[T]> for [T, ..n] {}\n"
+"\n"
+"// Where T is a trait\n"
+"impl<Sized? T, U: T> Unsize<T> for U {}\n"
+"\n"
+"// Where T and U are traits\n"
+"impl<Sized? T, Sized? U: T> Unsize<T> for U {}\n"
+"\n"
+"// Where T and U are structs ... following the rules for coerce_inner\n"
+"impl Unsize<T> for U {}\n"
+"\n"
+"impl Unsize<(..., T)> for (..., U)\n"
+"    where U: Unsize(T) {}\n"
+"```"
+msgstr ""
+
+#: src/0401-coercions.md:239
+msgid ""
+"The `CoerceUnsized` trait should be implemented by smart pointers and "
+"containers which want to be part of the coercions system."
+msgstr ""
+
+#: src/0401-coercions.md:248
+msgid ""
+"To help implement `CoerceUnsized`, we provide an intrinsic - "
+"`fat_pointer_convert`. This takes and returns raw pointers. The common case "
+"will be to take a thin pointer, unsize the contents, and return a fat "
+"pointer. But the exact behaviour depends on the types involved. This will "
+"perform any computation associated with a coercion (for example, adjusting "
+"or creating vtables). The implementation of fat_pointer_convert will match "
+"what the compiler must do in coerce_inner as described above."
+msgstr ""
+
+#: src/0401-coercions.md:261
+msgid "Here is an example implementation of `CoerceUnsized` for `Rc`:"
+msgstr ""
+
+#: src/0401-coercions.md:274
+msgid "Coercions of receiver expressions"
+msgstr ""
+
+#: src/0401-coercions.md:276
+msgid ""
+"These coercions occur when matching the type of the receiver of a method "
+"call with the self type (i.e., the type of `e` in `e.m(...)`) or in field "
+"access. These coercions can be thought of as a feature of the `.` operator, "
+"they do not apply when using the UFCS form with the self argument in "
+"argument position. Only an expression before the dot is coerced as a "
+"receiver. When using the UFCS form of method call, arguments are only "
+"coerced according to the expression coercion rules. This matches the rules "
+"for dispatch - dynamic dispatch only happens using the `.` operator, not the "
+"UFCS form."
+msgstr ""
+
+#: src/0401-coercions.md:285
+msgid ""
+"In method calls the target type of the coercion is the concrete type of the "
+"impl in which the method is defined, modified by the type of `self`. "
+"Assuming the impl is for `T`, the target type is given by:"
+msgstr ""
+
+#: src/0401-coercions.md:289
+msgid "self"
+msgstr ""
+
+#: src/0401-coercions.md:289
+msgid "target type"
+msgstr ""
+
+#: src/0401-coercions.md:291
+msgid "`self`"
+msgstr ""
+
+#: src/0401-coercions.md:291
+msgid "`T`"
+msgstr ""
+
+#: src/0401-coercions.md:292
+msgid "`&self`"
+msgstr ""
+
+#: src/0401-coercions.md:292
+msgid "`&T`"
+msgstr ""
+
+#: src/0401-coercions.md:293
+msgid "`&mut self`"
+msgstr ""
+
+#: src/0401-coercions.md:293
+msgid "`&mut T`"
+msgstr ""
+
+#: src/0401-coercions.md:294
+msgid "`self: Box<Self>`"
+msgstr ""
+
+#: src/0401-coercions.md:294
+msgid "`Box<T>`"
+msgstr ""
+
+#: src/0401-coercions.md:296
+msgid ""
+"and likewise with any variations of the self type we might add in the future."
+msgstr ""
+
+#: src/0401-coercions.md:298
+msgid ""
+"For field access, the target type is `&T`, `&mut T` for field assignment, "
+"where `T` is a struct with the named field."
+msgstr ""
+
+#: src/0401-coercions.md:301
+msgid ""
+"A receiver coercion consists of some number of dereferences (either compiler "
+"built-in (of a borrowed reference or `Box` pointer, not raw pointers) or "
+"custom, given by the `Deref` trait), one or zero applications of "
+"`coerce_inner` or use of the `CoerceUnsized` trait (as defined above, note "
+"that this requires we are at a type which has neither references nor "
+"dereferences at the top level), and up to two address-of operations (i.e., "
+"`T` to `&T`, `&mut T`, `*const T`, or `*mut T`, with a fresh lifetime.). The "
+"usual mutability rules for taking a reference apply. (Note that the "
+"implementation of the coercion isn't so simple, it is embedded in the search "
+"for candidate methods, but from the point of view of type conversions, that "
+"is not relevant)."
+msgstr ""
+
+#: src/0401-coercions.md:312
+msgid ""
+"Alternatively, a receiver coercion may be thought of as a two stage process. "
+"First, we dereference and then take the address until the source type has "
+"the same shape (i.e., has the same kind and number of indirection) as the "
+"target type. Then we try to coerce the adjusted source type to the target "
+"type using the usual coercion machinery. I believe, but have not proved, "
+"that these two descriptions are equivalent."
+msgstr ""
+
+#: src/0401-coercions.md:320
+msgid "Casts"
+msgstr ""
+
+#: src/0401-coercions.md:322
+msgid ""
+"Casting is indicated by the `as` keyword. A cast `e as U` is valid if one of "
+"the following holds:"
+msgstr ""
+
+#: src/0401-coercions.md:325
+msgid "`e` has type `T` and `T` coerces to `U`; _coercion-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:326
+msgid ""
+"`e` has type `*T`, `U` is `*U_0`, and either `U_0: Sized` or "
+"unsize_kind(`T`) = unsize_kind(`U_0`); _ptr-ptr-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:328
+msgid ""
+"`e` has type `*T` and `U` is a numeric type, while `T: Sized`; _ptr-addr-"
+"cast_"
+msgstr ""
+
+#: src/0401-coercions.md:329
+msgid ""
+"`e` is an integer and `U` is `*U_0`, while `U_0: Sized`; _addr-ptr-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:330
+msgid "`e` has type `T` and `T` and `U` are any numeric types; _numeric-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:331
+msgid "`e` is a C-like enum and `U` is an integer type; _enum-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:332
+msgid "`e` has type `bool` or `char` and `U` is an integer; _prim-int-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:333
+msgid "`e` has type `u8` and `U` is `char`; _u8-char-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:334
+msgid "`e` has type `&[T; n]` and `U` is `*const T`; _array-ptr-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:335
+msgid ""
+"`e` is a function pointer type and `U` has type `*T`, while `T: Sized`; "
+"_fptr-ptr-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:337
+msgid "`e` is a function pointer type and `U` is an integer; _fptr-addr-cast_"
+msgstr ""
+
+#: src/0401-coercions.md:339
+msgid ""
+"where `&.T` and `*T` are references of either mutability, and where "
+"unsize_kind(`T`) is the kind of the unsize info in `T` - the vtable for a "
+"trait definition (e.g. `fmt::Display` or `Iterator`, not "
+"`Iterator<Item=u8>`) or a length (or `()` if `T: Sized`)."
+msgstr ""
+
+#: src/0401-coercions.md:344
+msgid ""
+"Note that lengths are not adjusted when casting raw slices - `T: *const "
+"[u16] as *const [u8]` creates a slice that only includes half of the "
+"original memory."
+msgstr ""
+
+#: src/0401-coercions.md:348
+msgid ""
+"Casting is not transitive, that is, even if `e as U1 as U2` is a valid "
+"expression, `e as U2` is not necessarily so (in fact it will only be valid "
+"if `U1` coerces to `U2`)."
+msgstr ""
+
+#: src/0401-coercions.md:352
+msgid "A cast may require a runtime conversion."
+msgstr ""
+
+#: src/0401-coercions.md:354
+msgid ""
+"There will be a lint for trivial casts. A trivial cast is a cast `e as T` "
+"where `e` has type `U` and `U` is a subtype of `T`. The lint will be warn by "
+"default."
+msgstr ""
+
+#: src/0401-coercions.md:358
+msgid "Function type polymorphism"
+msgstr ""
+
+#: src/0401-coercions.md:360
+msgid ""
+"Currently, functions may be used where a closure is expected by coercing a "
+"function to a closure. We will remove this coercion and instead use the "
+"following scheme:"
+msgstr ""
+
+#: src/0401-coercions.md:364
+msgid ""
+"Every function item has its own fresh type. This type cannot be written by "
+"the programmer (i.e., it is expressible but not denotable)."
+msgstr ""
+
+#: src/0401-coercions.md:366
+msgid ""
+"Conceptually, for each fresh function type, there is an automatically "
+"generated implementation of the `Fn`, `FnMut`, and `FnOnce` traits."
+msgstr ""
+
+#: src/0401-coercions.md:368
+msgid ""
+"All function types are implicitly coercible to a `fn()` type with the "
+"corresponding parameter types."
+msgstr ""
+
+#: src/0401-coercions.md:370
+msgid ""
+"Conceptually, there is an implementation of `Fn`, `FnMut`, and `FnOnce` for "
+"every `fn()` type."
+msgstr ""
+
+#: src/0401-coercions.md:372
+msgid ""
+"`Fn`, `FnMut`, or `FnOnce` trait objects and references to type parameters "
+"bounded by these traits may be considered to have the corresponding unboxed "
+"closure type. This is a desugaring (alias), rather than a coercion. This is "
+"an existing part of the unboxed closures work."
+msgstr ""
+
+#: src/0401-coercions.md:377
+msgid ""
+"These steps should allow for functions to be stored in variables with both "
+"closure and function type. It also allows variables with function type to be "
+"stored as a variable with closure type. Note that these have different "
+"dynamic semantics, as described below. For example,"
+msgstr ""
+
+#: src/0401-coercions.md:382
+msgid ""
+"```\n"
+"fn foo() { ... }         // `foo` has a fresh and non-denotable type.\n"
+"\n"
+"fn main() {\n"
+"    let x: fn() = foo;   // `foo` is coerced to `fn()`.\n"
+"    let y: || = x;       // `x` is coerced to `&Fn` (a closure object),\n"
+"                         // legal due to the `fn()` auto-impls.\n"
+"\n"
+"    let z: || = foo;     // `foo` is coerced to `&T` where `T` is fresh and\n"
+"                         // bounded by `Fn`. Legal due to the fresh "
+"function\n"
+"                         // type auto-impls.\n"
+"}\n"
+"```"
+msgstr ""
+
+#: src/0401-coercions.md:396
+msgid ""
+"The two kinds of auto-generated impls are rather different: the first case "
+"(for the fresh and non-denotable function types) is a static call to `Fn::"
+"Call`, which in turn calls the function with the given arguments. The first "
+"call would be inlined (in fact, the impls and calls to them may be special-"
+"cased by the compiler). In the second case (for `fn()` types), we must "
+"execute a virtual call to find the implementing method and then call the "
+"function itself because the function is 'wrapped' in a closure object."
+msgstr ""
+
+#: src/0401-coercions.md:405
+msgid "Changes required"
+msgstr ""
+
+#: src/0401-coercions.md:407
+msgid "Add cast from unsized slices to raw pointers (`&[V] to *V`);"
+msgstr ""
+
+#: src/0401-coercions.md:409
+msgid "allow coercions as casts and add lint for trivial casts;"
+msgstr ""
+
+#: src/0401-coercions.md:411
+msgid "ensure we support all coercion sites;"
+msgstr ""
+
+#: src/0401-coercions.md:413
+msgid "remove \\[T, ..n\\] to &\\[T\\]/\\*\\[T\\] coercions;"
+msgstr ""
+
+#: src/0401-coercions.md:415
+msgid "add raw pointer coercions;"
+msgstr ""
+
+#: src/0401-coercions.md:417
+msgid "add sub-trait coercions;"
+msgstr ""
+
+#: src/0401-coercions.md:419
+msgid "add unsized tuple coercions;"
+msgstr ""
+
+#: src/0401-coercions.md:421
+msgid "add all transitive coercions;"
+msgstr ""
+
+#: src/0401-coercions.md:423
+msgid ""
+"receiver coercions - add referencing to raw pointers, remove triple "
+"referencing for slices;"
+msgstr ""
+
+#: src/0401-coercions.md:426
+msgid "remove function coercions, add function type polymorphism;"
+msgstr ""
+
+#: src/0401-coercions.md:428
+msgid "add DST/custom coercions."
+msgstr ""
+
+#: src/0401-coercions.md:431
+msgid "Drawbacks"
+msgstr ""
+
+#: src/0401-coercions.md:433
+msgid ""
+"We are adding and removing some coercions. There is always a trade-off with "
+"implicit coercions on making Rust ergonomic vs making it hard to comprehend "
+"due to magical conversions. By changing this balance we might be making some "
+"things worse."
+msgstr ""
+
+#: src/0401-coercions.md:439
+msgid "Alternatives"
+msgstr ""
+
+#: src/0401-coercions.md:441
+msgid "These rules could be tweaked in any number of ways."
+msgstr ""
+
+#: src/0401-coercions.md:443
+msgid ""
+"Specifically for the DST custom coercions, the compiler could throw an error "
+"if it finds a user-supplied implementation of the `Unsize` trait, rather "
+"than silently ignoring them."
+msgstr ""
+
+#: src/0401-coercions.md:447
+msgid "Amendments"
+msgstr ""
+
+#: src/0401-coercions.md:449
+msgid ""
+"Updated by [\\#1558](https://github.com/rust-lang/rfcs/pull/1558), which "
+"allows coercions from a non-capturing closure to a function pointer."
+msgstr ""
+
+#: src/0401-coercions.md:452
+msgid "Unresolved questions"
+msgstr ""

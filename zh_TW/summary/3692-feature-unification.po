@@ -1,0 +1,577 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:46Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3692-feature-unification.md:1
+msgid "Feature Name: `feature-unification`"
+msgstr ""
+
+#: src/3692-feature-unification.md:2
+msgid "Start Date: 2024-09-11"
+msgstr ""
+
+#: src/3692-feature-unification.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3692](https://github.com/rust-lang/rfcs/pull/3692)"
+msgstr ""
+
+#: src/3692-feature-unification.md:4
+msgid ""
+"Tracking Issue: [rust-lang/cargo#14774](https://github.com/rust-lang/cargo/"
+"issues/14774)"
+msgstr ""
+
+#: src/3692-feature-unification.md:6
+msgid "Summary"
+msgstr "摘要"
+
+#: src/3692-feature-unification.md:9
+msgid ""
+"Give users control over the feature unification that happens based on the "
+"packages they select."
+msgstr ""
+
+#: src/3692-feature-unification.md:10
+msgid ""
+"A way for `cargo check -p foo -p bar` to build like `cargo check -p foo && "
+"cargo check -p bar`"
+msgstr ""
+
+#: src/3692-feature-unification.md:11
+msgid ""
+"A way for `cargo check -p foo` to build `foo` as if `cargo check --"
+"workspace` was used"
+msgstr ""
+
+#: src/3692-feature-unification.md:13
+msgid "Related issues:"
+msgstr ""
+
+#: src/3692-feature-unification.md:14
+msgid ""
+"[\\#5210: Resolve feature and optional dependencies for workspace as a whole]"
+"(https://github.com/rust-lang/cargo/issues/5210)"
+msgstr ""
+
+#: src/3692-feature-unification.md:15
+msgid ""
+"[\\#4463: Feature selection in workspace depends on the set of packages "
+"compiled](https://github.com/rust-lang/cargo/issues/4463)"
+msgstr ""
+
+#: src/3692-feature-unification.md:16
+msgid ""
+"[\\#8157: --bin B resolves features differently than -p B in a workspace]"
+"(https://github.com/rust-lang/cargo/issues/8157)"
+msgstr ""
+
+#: src/3692-feature-unification.md:17
+msgid ""
+"[\\#13844: The cargo build --bins re-builds binaries again after cargo build "
+"--all-targets](https://github.com/rust-lang/cargo/issues/13844)"
+msgstr ""
+
+#: src/3692-feature-unification.md:19
+msgid "Motivation"
+msgstr "動機"
+
+#: src/3692-feature-unification.md:22
+msgid ""
+"Today, when Cargo is building, features in dependencies are enabled based on "
+"the set of packages selected to build. This is an attempt to balance"
+msgstr ""
+
+#: src/3692-feature-unification.md:24
+msgid ""
+"Build speed: we should reuse builds between packages within the same "
+"invocation"
+msgstr ""
+
+#: src/3692-feature-unification.md:25
+msgid "Ability to verify features for a given package"
+msgstr ""
+
+#: src/3692-feature-unification.md:27
+msgid "This isn't always ideal."
+msgstr ""
+
+#: src/3692-feature-unification.md:29
+msgid ""
+"If a user is building an application, they may be jumping around the "
+"application's components which are packages within the workspace. The final "
+"artifact is the same but Cargo will select different features depending on "
+"which package they are currently building, causing build churn for the same "
+"set of dependencies that, in the end, will only be used with the same set of "
+"features. The \"cargo-workspace-hack\" is a pattern that has existed for "
+"years (e.g. [`rustc-workspace-hack`](https://crates.io/crates/rustc-"
+"workspace-hack)) where users have all workspace members that depend on a "
+"generated package that depends on direct-dependencies in the workspace along "
+"with their features. Tools like [`cargo-hakari`](https://crates.io/crates/"
+"cargo-hakari) automate this process. To allow others to pull in a package "
+"depending on a workspace-hack package as a git dependency, you then need to "
+"publish the workspace-hack as an empty package with no dependencies and then "
+"locally patch in the real instance of it."
+msgstr ""
+
+#: src/3692-feature-unification.md:39
+msgid ""
+"This also makes testing of features more difficult because a user can't just "
+"run `cargo check --workspace` to verify that the correct set of features are "
+"enabled. This has led to the rise of tools like [cargo-hack](https://crates."
+"io/crates/cargo-hack) which de-unify packages."
+msgstr ""
+
+#: src/3692-feature-unification.md:42
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3692-feature-unification.md:46
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3692-feature-unification.md:49
+msgid "We'll add two new modes to feature unification:"
+msgstr ""
+
+#: src/3692-feature-unification.md:51
+msgid ""
+"**Unify features across the workspace, independent of the selected packages**"
+msgstr ""
+
+#: src/3692-feature-unification.md:53
+msgid "This would be built-in support for \"cargo-workspace-hack\"."
+msgstr ""
+
+#: src/3692-feature-unification.md:55
+msgid "This would require effectively changing from"
+msgstr ""
+
+#: src/3692-feature-unification.md:56 src/3692-feature-unification.md:61
+msgid "Resolve dependencies"
+msgstr ""
+
+#: src/3692-feature-unification.md:57
+msgid "Filter dependencies down for current build-target and selected packages"
+msgstr ""
+
+#: src/3692-feature-unification.md:58 src/3692-feature-unification.md:63
+msgid "Resolve features"
+msgstr ""
+
+#: src/3692-feature-unification.md:60
+msgid "To"
+msgstr ""
+
+#: src/3692-feature-unification.md:62
+msgid "Filter dependencies down for current build-target"
+msgstr ""
+
+#: src/3692-feature-unification.md:64
+msgid "Filter for selected packages"
+msgstr ""
+
+#: src/3692-feature-unification.md:66
+msgid ""
+"The same result can be achieved with `cargo check --workspace`, but with "
+"fewer packages built. Therefore, no fundamentally new \"mode\" is being "
+"introduced."
+msgstr ""
+
+#: src/3692-feature-unification.md:70
+msgid "**Features will be evaluated for each package in isolation**"
+msgstr ""
+
+#: src/3692-feature-unification.md:72
+msgid ""
+"This will require building duplicate copies of build units when there are "
+"disjoint sets of features."
+msgstr ""
+
+#: src/3692-feature-unification.md:74
+msgid "For example, this could be implemented as either"
+msgstr ""
+
+#: src/3692-feature-unification.md:75
+msgid ""
+"Loop over the packages, resolving, and then run a build plan for that package"
+msgstr ""
+
+#: src/3692-feature-unification.md:76
+msgid ""
+"Resolve for each package and generate everything into the same build plan"
+msgstr ""
+
+#: src/3692-feature-unification.md:78
+msgid ""
+"This is not prescriptive of the implementation but to illustrate what the "
+"feature does. The initial implementation may be sub-optimal. Likely, the "
+"implementation could be improved over time."
+msgstr ""
+
+#: src/3692-feature-unification.md:82
+msgid ""
+"The same result can be achieved with `cargo check -p foo && cargo check -p "
+"bar`, but with the potential for optimizing the build further. Therefore, no "
+"fundamentally new \"mode\" is being introduced."
+msgstr ""
+
+#: src/3692-feature-unification.md:86
+msgid "**Note:** these features do not need to be stabilized together."
+msgstr ""
+
+#: src/3692-feature-unification.md:88
+msgid "`resolver.feature-unification`"
+msgstr ""
+
+#: src/3692-feature-unification.md:90
+msgid ""
+"_(update to [Configuration](https://doc.rust-lang.org/cargo/reference/config."
+"html))_"
+msgstr ""
+
+#: src/3692-feature-unification.md:92
+msgid "Type: string"
+msgstr ""
+
+#: src/3692-feature-unification.md:93
+msgid "Default: \"selected\""
+msgstr ""
+
+#: src/3692-feature-unification.md:94
+msgid "Environment: `CARGO_RESOLVER_FEATURE_UNIFICATION`"
+msgstr ""
+
+#: src/3692-feature-unification.md:96
+msgid ""
+"Specify which packages participate in [feature unification](https://doc.rust-"
+"lang.org/cargo/reference/features.html#feature-unification)."
+msgstr ""
+
+#: src/3692-feature-unification.md:98
+msgid ""
+"`selected`: merge dependency features from all package specified for the "
+"current build"
+msgstr ""
+
+#: src/3692-feature-unification.md:99
+msgid ""
+"`workspace`: merge dependency features across all workspace members, "
+"regardless of which packages are specified for the current build"
+msgstr ""
+
+#: src/3692-feature-unification.md:100
+msgid ""
+"`package`: dependency features are only considered on a package-by-package "
+"basis, preferring duplicate builds of dependencies when different sets of "
+"feature are activated by the packages."
+msgstr ""
+
+#: src/3692-feature-unification.md:102
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3692-feature-unification.md:105
+msgid "This increases entropy within Cargo and the universe at large."
+msgstr ""
+
+#: src/3692-feature-unification.md:107
+msgid ""
+"As `workspace` unifcation builds dependencies the same way as `--workspace`, "
+"it has the same drawbacks as `--workspace`, including"
+msgstr ""
+
+#: src/3692-feature-unification.md:108
+msgid ""
+"If a build would fail with `--workspace`, then it will fail with `workspace` "
+"unification as well."
+msgstr ""
+
+#: src/3692-feature-unification.md:109
+msgid ""
+"For example, if two packages in a workspace enable mutually exclusive "
+"features, builds will fail with both `--workspace` and `workspace` "
+"unification. Officially, features are supposed to be additive, making "
+"mutually exclusive features officially unsupported. Instead, effort should "
+"be put towards [official mutually exclusive globals](https://internals.rust-"
+"lang.org/t/pre-rfc-mutually-excusive-global-features/19618)."
+msgstr ""
+
+#: src/3692-feature-unification.md:112
+msgid ""
+"If `--workspace` would produce an invalid binary for your requirements, then "
+"it will do so with `workspace` unification as well."
+msgstr ""
+
+#: src/3692-feature-unification.md:113
+msgid ""
+"For example, if you have regular packages and a `no_std` package in the same "
+"workspace, the `no_std` package may end up with dependnencies built with "
+"`std` features."
+msgstr ""
+
+#: src/3692-feature-unification.md:115
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3692-feature-unification.md:118
+msgid "This is done in the config instead of the manifest:"
+msgstr ""
+
+#: src/3692-feature-unification.md:119
+msgid "As this can change from run to run, this covers more use cases."
+msgstr ""
+
+#: src/3692-feature-unification.md:120
+msgid ""
+"As this fits easily into the `resolver` table, there is less design work."
+msgstr ""
+
+#: src/3692-feature-unification.md:122
+msgid ""
+"We could extend this with configuration to exclude packages for the various "
+"use cases mentioned. Supporting excludes adds environment/project "
+"configuration complexity as well as implementation complexity."
+msgstr ""
+
+#: src/3692-feature-unification.md:125
+msgid ""
+"This field will not apply to `cargo install` to match the behavior of "
+"`resolver.incompatible-rust-versions`."
+msgstr ""
+
+#: src/3692-feature-unification.md:127
+msgid ""
+"The `workspace` setting breaks down if there are more than one "
+"\"application\" in a workspace, particularly if there are shared "
+"dependencies with intentionally disjoint feature sets. What this use case is "
+"really modeling is being able to tell Cargo \"build package X as if its a "
+"dependency of package Y\". There are many similar use cases to this (e.g. "
+"[cargo#2644](https://github.com/rust-lang/cargo/issues/2644), [cargo#14434]"
+"(https://github.com/rust-lang/cargo/issues/14434)). While a solution that "
+"targeted this higher-level need would cover more uses cases, there is a lot "
+"more work to do within the design space and it could end up being more "
+"unwieldy. The solution offered in this RFC is simple in that it is just a re-"
+"framing of what already happens on the command line."
+msgstr ""
+
+#: src/3692-feature-unification.md:136
+msgid "Prior art"
+msgstr ""
+
+#: src/3692-feature-unification.md:139
+msgid ""
+"[`cargo-hakari`](https://crates.io/crates/cargo-hakari) is a \"cargo-"
+"workspace-hack\" generator that builds a graph off of `cargo metadata` and "
+"re-implements feature unification."
+msgstr ""
+
+#: src/3692-feature-unification.md:141
+msgid ""
+"[cargo-hack](https://crates.io/crates/cargo-hack) can run each selected "
+"package in a separate `cargo` invocation to prevent unification."
+msgstr ""
+
+#: src/3692-feature-unification.md:143
+msgid "Unresolved questions"
+msgstr "未解決的問題"
+
+#: src/3692-feature-unification.md:146
+msgid "How to name the config field to not block the future possibilities"
+msgstr ""
+
+#: src/3692-feature-unification.md:148
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3692-feature-unification.md:151
+msgid "Support in manifests"
+msgstr ""
+
+#: src/3692-feature-unification.md:153
+msgid "Add a related field to manifests that the config can override."
+msgstr ""
+
+#: src/3692-feature-unification.md:155
+msgid "Dependency version unification"
+msgstr ""
+
+#: src/3692-feature-unification.md:157
+msgid ""
+"Unlike feature unification, dependency versions are always unified across "
+"the entire workspace, making `Cargo.lock` the same regardless of which "
+"package you select or how you build."
+msgstr ""
+
+#: src/3692-feature-unification.md:161
+msgid ""
+"This can mask minimal-version bugs. If a version-req is lower than it needs, "
+"`-Zminimal-versions` won't resolve down to that to show the problem if "
+"another version req in the workspace is higher. We have `-Zdirect-minimal-"
+"versions` which will error if workspace members do not have the lowest "
+"version reqs of all of the workspace but that is brittle."
+msgstr ""
+
+#: src/3692-feature-unification.md:165
+msgid ""
+"If you have a workspace with multiple MSRVs, you can't verify your MSRV if "
+"you set a high-MSRV package's version req for a dependency that invalidates "
+"the MSRV-requirements of a low-MSRV package."
+msgstr ""
+
+#: src/3692-feature-unification.md:169
+msgid ""
+"We could offer an opt-in to per-package `Cargo.lock` files.  For builds, "
+"this could be implemented similar to `resolver.feature-unification = "
+"\"package\"`."
+msgstr ""
+
+#: src/3692-feature-unification.md:172
+msgid "This could run into problems with"
+msgstr ""
+
+#: src/3692-feature-unification.md:173
+msgid "`cargo update` being workspace-focused"
+msgstr ""
+
+#: src/3692-feature-unification.md:174
+msgid "third-party updating tools"
+msgstr ""
+
+#: src/3692-feature-unification.md:176
+msgid ""
+"As for the MSRV-case, this would only help if you develop with the latest "
+"versions locally and then have a job that resolves down to your MSRVs."
+msgstr ""
+
+#: src/3692-feature-unification.md:179
+msgid "Unify features in other settings"
+msgstr ""
+
+#: src/3692-feature-unification.md:181
+msgid ""
+"[`workspace.resolver = \"2\"`](https://doc.rust-lang.org/cargo/reference/"
+"resolver.html#features) removed unification from the following scenarios"
+msgstr ""
+
+#: src/3692-feature-unification.md:182
+msgid "Cross-platform build-target unification"
+msgstr ""
+
+#: src/3692-feature-unification.md:183
+msgid "`build-dependencies` / `dependencies` unification"
+msgstr ""
+
+#: src/3692-feature-unification.md:184
+msgid ""
+"`dev-dependencies` / `dependencies` unification unless a dev build-target is "
+"enabled"
+msgstr ""
+
+#: src/3692-feature-unification.md:186
+msgid ""
+"Depending on how we design this, the solution might be good enough to re-"
+"evaluate [build-target features](https://github.com/rust-lang/rfcs/"
+"pull/3374) as we could offer a way for users to opt-out of build-target "
+"unification."
+msgstr ""
+
+#: src/3692-feature-unification.md:191
+msgid ""
+"Like with `resolver.incompatible-rust-version`, a solution for this would "
+"override the defaults of `workspace.resolver`."
+msgstr ""
+
+#: src/3692-feature-unification.md:193
+msgid ""
+"`cargo hakari` gives control over `build-dependencies` / `dependencies` "
+"unification with [`unify-target-host`](https://docs.rs/cargo-hakari/latest/"
+"cargo_hakari/config/index.html#unify-target-host):"
+msgstr ""
+
+#: src/3692-feature-unification.md:195
+msgid ""
+"[`none`](https://docs.rs/hakari/0.17.4/hakari/enum.UnifyTargetHost."
+"html#variant.None): Perform no unification across the target and host "
+"feature sets."
+msgstr ""
+
+#: src/3692-feature-unification.md:196
+msgid "The same as `resolver = \"2\"`"
+msgstr ""
+
+#: src/3692-feature-unification.md:197
+msgid ""
+"[`unify-if-both`](https://docs.rs/hakari/0.17.4/hakari/enum.UnifyTargetHost."
+"html#variant.UnifyIfBoth): Perform unification across target and host "
+"feature sets, but only if a dependency is built on both the platform-target "
+"and the host."
+msgstr ""
+
+#: src/3692-feature-unification.md:198
+msgid ""
+"[`replicate-target-on-host`](https://docs.rs/hakari/0.17.4/hakari/enum."
+"UnifyTargetHost.html#variant.ReplicateTargetOnHost): Perform unification "
+"across platform-target and host feature sets, and also replicate all target-"
+"only lines to the host."
+msgstr ""
+
+#: src/3692-feature-unification.md:199
+msgid ""
+"[`auto`](https://docs.rs/hakari/0.17.4/hakari/enum.UnifyTargetHost."
+"html#variant.Auto) (default): select `replicate-target-on-host` if a "
+"workspace member may be built for the host (used as a proc-macro or build-"
+"dependency)"
+msgstr ""
+
+#: src/3692-feature-unification.md:201
+msgid ""
+"`unify-target-host` might be somewhat related to [`-Ztarget-applies-to-host`]"
+"(https://doc.rust-lang.org/nightly/cargo/reference/unstable.html#target-"
+"applies-to-host)"
+msgstr ""
+
+#: src/3692-feature-unification.md:203
+msgid ""
+"For Oxide `unify-target-host` reduced build units from 1900 to 1500, "
+"dramatically improving compile times, see https://github.com/oxidecomputer/"
+"omicron/pull/4535 If integrated into cargo, there would no longer be a use "
+"case for the current maintainer of `cargo-hakari` to continue maintenance."
+msgstr ""
+
+#: src/3692-feature-unification.md:206
+msgid ""
+"If we supported `dev-dependencies` / `dependencies` like `resolver = \"1\"`, "
+"it could help with cases like `cargo miri` where through `dev-dependencies` "
+"a `libc` feature is enabled. preventing reuse of builds between `cargo "
+"build` and `cargo test` for local development."
+msgstr ""
+
+#: src/3692-feature-unification.md:211
+msgid ""
+"In helping this case, we should make clear that this can also break people"
+msgstr ""
+
+#: src/3692-feature-unification.md:212
+msgid ""
+"`fail` injects failures into your production code, only wanting it enabled "
+"for tests"
+msgstr ""
+
+#: src/3692-feature-unification.md:213
+msgid "Tests generally enabled `std` on dependencies for `no_std` packages"
+msgstr ""
+
+#: src/3692-feature-unification.md:214
+msgid ""
+"We were told of use cases around private keys where `Clone` is only provided "
+"when testing but not for production to help catch the leaking of secrets"
+msgstr ""

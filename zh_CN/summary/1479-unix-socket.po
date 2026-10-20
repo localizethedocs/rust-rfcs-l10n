@@ -1,0 +1,496 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:43Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/1479-unix-socket.md:1
+msgid "Feature Name: `unix_socket`"
+msgstr ""
+
+#: src/1479-unix-socket.md:2
+msgid "Start Date: 2016-01-25"
+msgstr ""
+
+#: src/1479-unix-socket.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#1479](https://github.com/rust-lang/rfcs/pull/1479)"
+msgstr ""
+
+#: src/1479-unix-socket.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#32312](https://github.com/rust-lang/rust/"
+"issues/32312)"
+msgstr ""
+
+#: src/1479-unix-socket.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/1479-unix-socket.md:9
+msgid ""
+"[Unix domain sockets](https://en.wikipedia.org/wiki/Unix_domain_socket) "
+"provide a commonly used form of IPC on Unix-derived systems. This RFC "
+"proposes move the [unix_socket](https://crates.io/crates/unix_socket/) "
+"nursery crate into the `std::os::unix` module."
+msgstr ""
+
+#: src/1479-unix-socket.md:14
+msgid "Motivation"
+msgstr ""
+
+#: src/1479-unix-socket.md:17
+msgid ""
+"Unix sockets are a common form of IPC on unixy systems. Databases like "
+"PostgreSQL and Redis allow connections via Unix sockets, and Servo uses them "
+"to communicate with subprocesses. Even though Unix sockets are not present "
+"on Windows, their use is sufficiently widespread to warrant inclusion in the "
+"platform-specific sections of the standard library."
+msgstr ""
+
+#: src/1479-unix-socket.md:23
+msgid "Detailed design"
+msgstr ""
+
+#: src/1479-unix-socket.md:26
+msgid ""
+"Unix sockets can be configured with the `SOCK_STREAM`, `SOCK_DGRAM`, and "
+"`SOCK_SEQPACKET` types. `SOCK_STREAM` creates a connection-oriented socket "
+"that behaves like a TCP socket, `SOCK_DGRAM` creates a packet-oriented "
+"socket that behaves like a UDP socket, and `SOCK_SEQPACKET` provides "
+"something of a hybrid between the other two - a connection-oriented, "
+"reliable, ordered stream of delimited packets. `SOCK_SEQPACKET` support has "
+"not yet been implemented in the unix_socket crate, so only the first two "
+"socket types will initially be supported in the standard library."
+msgstr ""
+
+#: src/1479-unix-socket.md:35
+msgid ""
+"While a TCP or UDP socket would be identified by a IP address and port "
+"number, Unix sockets are typically identified by a filesystem path. For "
+"example, a Postgres server will listen on a Unix socket located at `/run/"
+"postgresql/.s.PGSQL.5432` in some configurations. However, the `socketpair` "
+"function can make a pair of _unnamed_ connected Unix sockets not associated "
+"with a filesystem path. In addition, Linux provides a separate _abstract_ "
+"namespace not associated with the filesystem, indicated by a leading null "
+"byte in the address. In the initial implementation, the abstract namespace "
+"will not be supported - the various socket constructors will check for and "
+"reject addresses with interior null bytes."
+msgstr ""
+
+#: src/1479-unix-socket.md:46
+msgid ""
+"A `std::os::unix::net` module will be created with the following contents:"
+msgstr ""
+
+#: src/1479-unix-socket.md:48
+msgid "The `UnixStream` type mirrors `TcpStream`:"
+msgstr ""
+
+#: src/1479-unix-socket.md:55
+msgid ""
+"/// Connects to the socket named by `path`.\n"
+"    ///\n"
+"    /// `path` may not contain any null bytes.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:62
+msgid ""
+"/// Creates an unnamed pair of connected sockets.\n"
+"    ///\n"
+"    /// Returns two `UnixStream`s which are connected to each other.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:69
+msgid ""
+"/// Creates a new independently owned handle to the underlying socket.\n"
+"    ///\n"
+"    /// The returned `UnixStream` is a reference to the same stream that "
+"this\n"
+"    /// object references. Both handles will read and write the same stream "
+"of\n"
+"    /// data, and options set on one stream will be propagated to the other\n"
+"    /// stream.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:79
+msgid "/// Returns the socket address of the local half of this connection.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:84
+msgid "/// Returns the socket address of the remote half of this connection.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:89
+msgid ""
+"/// Sets the read timeout for the socket.\n"
+"    ///\n"
+"    /// If the provided value is `None`, then `read` calls will block\n"
+"    /// indefinitely. It is an error to pass the zero `Duration` to this\n"
+"    /// method.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:98
+msgid ""
+"/// Sets the write timeout for the socket.\n"
+"    ///\n"
+"    /// If the provided value is `None`, then `write` calls will block\n"
+"    /// indefinitely. It is an error to pass the zero `Duration` to this\n"
+"    /// method.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:107 src/1479-unix-socket.md:384
+msgid "/// Returns the read timeout of this socket.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:112 src/1479-unix-socket.md:389
+msgid "/// Returns the write timeout of this socket.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:117 src/1479-unix-socket.md:235
+#: src/1479-unix-socket.md:394
+msgid "/// Moves the socket into or out of nonblocking mode.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:122 src/1479-unix-socket.md:240
+#: src/1479-unix-socket.md:399
+msgid "/// Returns the value of the `SO_ERROR` option.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:127
+msgid ""
+"/// Shuts down the read, write, or both halves of this connection.\n"
+"    ///\n"
+"    /// This function will cause all pending and future I/O calls on the\n"
+"    /// specified portions to immediately return with an appropriate value\n"
+"    /// (see the documentation of `Shutdown`).\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:166
+msgid "Differences from `TcpStream`:"
+msgstr ""
+
+#: src/1479-unix-socket.md:167
+msgid "`connect` takes an `AsRef<Path>` rather than a `ToSocketAddrs`."
+msgstr ""
+
+#: src/1479-unix-socket.md:168 src/1479-unix-socket.md:431
+msgid ""
+"The `pair` method creates a pair of connected, unnamed sockets, as this is "
+"commonly used for IPC."
+msgstr ""
+
+#: src/1479-unix-socket.md:170 src/1479-unix-socket.md:433
+msgid ""
+"The `SocketAddr` returned by the `local_addr` and `peer_addr` methods is "
+"different."
+msgstr ""
+
+#: src/1479-unix-socket.md:172
+msgid ""
+"The `set_nonblocking` and `take_error` methods are not currently present on "
+"`TcpStream` but are provided in the `net2` crate and are being proposed for "
+"addition to the standard library in a separate RFC."
+msgstr ""
+
+#: src/1479-unix-socket.md:176
+msgid ""
+"As noted above, a Unix socket can either be unnamed, be associated with a "
+"path on the filesystem, or (on Linux) be associated with an ID in the "
+"abstract namespace. The `SocketAddr` struct is fairly simple:"
+msgstr ""
+
+#: src/1479-unix-socket.md:186
+msgid "/// Returns true if the address is unnamed.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:191
+msgid ""
+"/// Returns the contents of this address if it corresponds to a filesystem "
+"path.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:198
+msgid "The `UnixListener` type mirrors the `TcpListener` type:"
+msgstr ""
+
+#: src/1479-unix-socket.md:205
+msgid ""
+"/// Creates a new `UnixListener` bound to the specified socket.\n"
+"    ///\n"
+"    /// `path` may not contain any null bytes.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:212
+msgid ""
+"/// Accepts a new incoming connection to this listener.\n"
+"    ///\n"
+"    /// This function will block the calling thread until a new Unix "
+"connection\n"
+"    /// is established. When established, the corersponding `UnixStream` "
+"and\n"
+"    /// the remote peer's address will be returned.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:221
+msgid ""
+"/// Creates a new independently owned handle to the underlying socket.\n"
+"    ///\n"
+"    /// The returned `UnixListener` is a reference to the same socket that "
+"this\n"
+"    /// object references. Both handles can be used to accept incoming\n"
+"    /// connections and options set on one listener will affect the other.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:230
+msgid "/// Returns the local socket address of this listener.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:245
+msgid ""
+"/// Returns an iterator over incoming connections.\n"
+"    ///\n"
+"    /// The iterator will never return `None` and will also not yield the\n"
+"    /// peer's `SocketAddr` structure.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:267
+msgid "Differences from `TcpListener`:"
+msgstr ""
+
+#: src/1479-unix-socket.md:268 src/1479-unix-socket.md:428
+msgid "`bind` takes an `AsRef<Path>` rather than a `ToSocketAddrs`."
+msgstr ""
+
+#: src/1479-unix-socket.md:269
+msgid "The `SocketAddr` type is different."
+msgstr ""
+
+#: src/1479-unix-socket.md:270
+msgid ""
+"The `set_nonblocking` and `take_error` methods are not currently present on "
+"`TcpListener` but are provided in the `net2` crate and are being proposed "
+"for addition to the standard library in a separate RFC."
+msgstr ""
+
+#: src/1479-unix-socket.md:274
+msgid "Finally, the `UnixDatagram` type mirrors the `UpdSocket` type:"
+msgstr ""
+
+#: src/1479-unix-socket.md:281
+msgid ""
+"/// Creates a Unix datagram socket bound to the given path.\n"
+"    ///\n"
+"    /// `path` may not contain any null bytes.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:288
+msgid "/// Creates a Unix Datagram socket which is not bound to any address.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:293
+msgid ""
+"/// Create an unnamed pair of connected sockets.\n"
+"    ///\n"
+"    /// Returns two `UnixDatagrams`s which are connected to each other.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:300
+msgid ""
+"/// Creates a new independently owned handle to the underlying socket.\n"
+"    ///\n"
+"    /// The returned `UnixDatagram` is a reference to the same stream that "
+"this\n"
+"    /// object references. Both handles will read and write the same stream "
+"of\n"
+"    /// data, and options set on one stream will be propagated to the other\n"
+"    /// stream.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:310
+msgid ""
+"/// Connects the socket to the specified address.\n"
+"    ///\n"
+"    /// The `send` method may be used to send data to the specified "
+"address.\n"
+"    /// `recv` and `recv_from` will only receive data from that address.\n"
+"    ///\n"
+"    /// `path` may not contain any null bytes.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:320
+msgid "/// Returns the address of this socket.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:325
+msgid ""
+"/// Returns the address of this socket's peer.\n"
+"    ///\n"
+"    /// The `connect` method will connect the socket to a peer.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:332
+msgid ""
+"/// Receives data from the socket.\n"
+"    ///\n"
+"    /// On success, returns the number of bytes read and the address from\n"
+"    /// whence the data came.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:340
+msgid ""
+"/// Receives data from the socket.\n"
+"    ///\n"
+"    /// On success, returns the number of bytes read.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:347
+msgid ""
+"/// Sends data on the socket to the specified address.\n"
+"    ///\n"
+"    /// On success, returns the number of bytes written.\n"
+"    ///\n"
+"    /// `path` may not contain any null bytes.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:356
+msgid ""
+"/// Sends data on the socket to the socket's peer.\n"
+"    ///\n"
+"    /// The peer address may be set by the `connect` method, and this "
+"method\n"
+"    /// will return an error if the socket has not already been connected.\n"
+"    ///\n"
+"    /// On success, returns the number of bytes written.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:366
+msgid ""
+"/// Sets the read timeout for the socket.\n"
+"    ///\n"
+"    /// If the provided value is `None`, then `recv` and `recv_from` calls "
+"will\n"
+"    /// block indefinitely. It is an error to pass the zero `Duration` to "
+"this\n"
+"    /// method.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:375
+msgid ""
+"/// Sets the write timeout for the socket.\n"
+"    ///\n"
+"    /// If the provided value is `None`, then `send` and `send_to` calls "
+"will\n"
+"    /// block indefinitely. It is an error to pass the zero `Duration` to "
+"this\n"
+"    /// method.\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:404
+msgid ""
+"/// Shut down the read, write, or both halves of this connection.\n"
+"    ///\n"
+"    /// This function will cause all pending and future I/O calls on the\n"
+"    /// specified portions to immediately return with an appropriate value\n"
+"    /// (see the documentation of `Shutdown`).\n"
+msgstr ""
+
+#: src/1479-unix-socket.md:427
+msgid "Differences from `UdpSocket`:"
+msgstr ""
+
+#: src/1479-unix-socket.md:429
+msgid ""
+"The `unbound` method creates an unbound socket, as a Unix socket does not "
+"need to be bound to send messages."
+msgstr ""
+
+#: src/1479-unix-socket.md:435
+msgid ""
+"The `connect`, `send`, `recv`, `set_nonblocking`, and `take_error` methods "
+"are not currently present on `UdpSocket` but are provided in the `net2` "
+"crate and are being proposed for addition to the standard library in a "
+"separate RFC."
+msgstr ""
+
+#: src/1479-unix-socket.md:439
+msgid "Functionality not present"
+msgstr ""
+
+#: src/1479-unix-socket.md:441
+msgid "Some functionality is notably absent from this proposal:"
+msgstr ""
+
+#: src/1479-unix-socket.md:443
+msgid ""
+"Linux's abstract namespace is not supported. Functionality may be added in "
+"the future via extension traits in `std::os::linux::net`."
+msgstr ""
+
+#: src/1479-unix-socket.md:445
+msgid ""
+"No support for `SOCK_SEQPACKET` sockets is proposed, as it has not yet been "
+"implemented. Since it is connection oriented, there will be a socket type "
+"`UnixSeqPacket` and a listener type `UnixSeqListener`. The naming of the "
+"listener is a bit unfortunate, but use of `SOCK_SEQPACKET` is rare compared "
+"to `SOCK_STREAM` so naming priority can go to that version."
+msgstr ""
+
+#: src/1479-unix-socket.md:450
+msgid ""
+"Unix sockets support file descriptor and credential transfer, but these will "
+"not initially be supported as the `sendmsg`/`recvmsg` interface is complex "
+"and bindings will need some time to prototype."
+msgstr ""
+
+#: src/1479-unix-socket.md:454
+msgid ""
+"These features can bake in the `rust-lang-nursery/unix-socket` as they're "
+"developed."
+msgstr ""
+
+#: src/1479-unix-socket.md:457
+msgid "Drawbacks"
+msgstr ""
+
+#: src/1479-unix-socket.md:460
+msgid ""
+"While there is precedent for platform specific components in the standard "
+"library, this will be the by far the largest platform specific addition."
+msgstr ""
+
+#: src/1479-unix-socket.md:463
+msgid "Alternatives"
+msgstr ""
+
+#: src/1479-unix-socket.md:466
+msgid "Unix socket support could be left out of tree."
+msgstr ""
+
+#: src/1479-unix-socket.md:468
+msgid ""
+"The naming convention of `UnixStream` and `UnixDatagram` doesn't perfectly "
+"mirror `TcpStream` and `UdpSocket`, but `UnixStream` and `UnixSocket` seems "
+"way too confusing."
+msgstr ""
+
+#: src/1479-unix-socket.md:472
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/1479-unix-socket.md:475
+msgid ""
+"Is `std::os::unix::net` the right name for this module? It's not strictly "
+"\"networking\" as all communication is local to one machine. `std::os::unix::"
+"unix` is more accurate but weirdly repetitive and the extension trait module "
+"`std::os::linux::unix` is even weirder. `std::os::unix::socket` is an "
+"option, but seems like too general of a name for specifically `AF_UNIX` "
+"sockets as opposed to _all_ sockets."
+msgstr ""

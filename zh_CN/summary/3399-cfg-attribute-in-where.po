@@ -1,0 +1,220 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/3399-cfg-attribute-in-where.md:1
+msgid "Feature Name: `cfg_attribute_in_where`"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:2
+msgid "Start Date: 2023-03-11"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#3399](https://github.com/rust-lang/rfcs/pull/3399)"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#115590](https://github.com/rust-lang/rust/"
+"issues/115590)"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:9
+msgid ""
+"Let's make it more elegant to conditionally compile trait bounds by allowing "
+"cfg-attributes directly in where clauses."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:11
+msgid "Motivation"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:14
+msgid ""
+"Currently, there is limited support for conditionally compiling trait "
+"bounds. Rust already supports using cfg-attributes in angle-bracketed "
+"bounds, so the following implementation is possible but unwieldy, and grows "
+"combinatorically with multiple independent compilation condition/bound pairs:"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:25
+msgid ""
+"This also can't be used for bounds on associated types or other more "
+"complicated left-hand items that can only occur in full where bounds."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:27
+msgid ""
+"Another somewhat-common approach is to create a dummy trait that "
+"conditionally branches and implement that, like so:"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:42
+msgid ""
+"However, this boilerplate does not grow well for multiple conditionally-"
+"compiled requirements, becoming rather soupy even at N = 2:"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:66
+msgid ""
+"Other alternative ways of achieving this also exist, but are typically macro "
+"heavy and difficult to implement or check. Importantly, this functionality "
+"already exists in the language, but quickly grows out of reasonable scope to "
+"ergonomically implement."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:69
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:72
+msgid ""
+"`where` clauses can use cfg-attributes on individual trait bounds, like so:"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:81
+msgid "or on functions, including multiple cfg-attributes on a single bound:"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:93
+msgid "and in other situations where `where` clauses apply."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:95
+msgid ""
+"During compilation, all cfg-attributes on a where bound are evaluated. If "
+"the evaluation result is false, then the bound in question is not compiled "
+"and the bound does not apply to the given type. This may cause errors if "
+"code that relies on those bounds is not itself also conditionally compiled. "
+"For anyone familiar with cfg-attributes already, this should behave "
+"similarly to how they are used in, say, struct fields or on function "
+"signatures."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:100
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:103
+msgid ""
+"In positions that accept where clauses, such as trait implementations and "
+"function signatures, individual clauses can now be decorated with cfg-"
+"attributes. The cfg-attribute must be on the left hand of the colon (e.g. "
+"`#[cfg(...)] T: Foo` rather than `T: #[cfg(...)] Foo`) and applies to that "
+"one bound, up to the comma or end of the where section. Each bound "
+"collection will be conditionally compiled depending on the conditions "
+"specified in the cfg arguments. Note that this may cause a where clause to "
+"conditionally compile as having no bound entries (i.e. an empty where "
+"clause), but this has been allowed in Rust since 1.16 and already occurs "
+"from time to time when using macros."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:109
+msgid "Drawbacks"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:112
+msgid ""
+"As with any feature, this adds complication to the language and grammar. In "
+"general, conditionally compiled trait bounds can create unintended "
+"interactions or constraints on code based on compilation targets or "
+"combinations of features. The drawbacks to this proposed code path already "
+"apply to the existing workarounds used to achieve the same functionality."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:116
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:119
+msgid ""
+"This functionality can already be achieved in Rust, but not elegantly, and "
+"without a clear relationship between the written code and its intent. The "
+"two main alternatives are dummy traits and cfg-attributes in angle-bracketed "
+"bounds. Compared to using dummy traits, adding a cfg-attribute in a where "
+"clause makes the intent immediately local and more directly associates it "
+"with the piece of code it's intended to control. Compared to using cfg-"
+"attributes in angle-bracketed bounds, adding a cfg-attribute in a where "
+"clause means each bound can be individually toggled without the need for "
+"combinatoric combinations of conditions, and allows conditional compilation "
+"on bounds with nontrivial item paths."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:126
+msgid ""
+"The need for conditionally compiling trait bounds can arise in applications "
+"with different deployment targets or that want to release builds with "
+"different sets of functionality (e.g. client, server, editor, demo, etc.). "
+"It would be useful to support cfg-attributes directly here without requiring "
+"workarounds to achieve this functionality. Macros, proc macros, and so on "
+"are also ways to conditionally compile where clauses, but these also "
+"introduce at least one level of obfuscation from the core goal. Finally, "
+"traits can be wholly duplicated under different cfg-attributes, but this "
+"scales poorly with both the size and intricacy of the trait and the number "
+"of interacting attributes (which may grow combinatorically), and can "
+"introduce a maintenance burden from repeated code."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:133
+msgid "Prior art"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:136
+msgid ""
+"I'm not aware of any prior work in adding this to the language. Languages "
+"with preprocessors could support this with something like:"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:146
+msgid ""
+"but that's not the way I would expect Rust to provide this kind of "
+"functionality."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:148
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:151
+msgid ""
+"In theory, I don't see any harm in cfg-attributes decorating individual "
+"bounds on the right hand side of the colon. Is it worth adding that "
+"potential feature as well? Personally, I don't see it as being worth the "
+"added complexity given that you can have multiple individual bound "
+"declarations for the same item. Doing so would also create an inconsistency, "
+"given that this isn't currently allowed in angle-bracketed bounds either."
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:156
+msgid ""
+"rustfmt is supposed to be able to format the where clause somehow, do we "
+"expect it to (try to) put the attribute on the same line, or would it always "
+"prefer the attribute on separate lines?"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:158
+msgid "Future possibilities"
+msgstr ""
+
+#: src/3399-cfg-attribute-in-where.md:161
+msgid ""
+"Conditional bounds on where clauses could also be used for [trivial bounds]"
+"(https://github.com/rust-lang/rust/issues/48214). I don't believe any extra "
+"support would be needed here since the conditional compilation would occur "
+"at the grammar level rather than the type level."
+msgstr ""

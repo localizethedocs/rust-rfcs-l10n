@@ -1,0 +1,397 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: The Rust RFC Book\n"
+"POT-Creation-Date: 2025-12-22T09:04:45Z\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/2920-inline-const.md:1
+msgid "Feature Name: `inline_const`"
+msgstr ""
+
+#: src/2920-inline-const.md:2
+msgid "Start Date: 2020-04-30"
+msgstr ""
+
+#: src/2920-inline-const.md:3
+msgid ""
+"RFC PR: [rust-lang/rfcs#2920](https://github.com/rust-lang/rfcs/pull/2920)"
+msgstr ""
+
+#: src/2920-inline-const.md:4
+msgid ""
+"Rust Issue: [rust-lang/rust#76001](https://github.com/rust-lang/rust/"
+"issues/76001)"
+msgstr ""
+
+#: src/2920-inline-const.md:6
+msgid "Summary"
+msgstr ""
+
+#: src/2920-inline-const.md:9
+msgid ""
+"Adds a new syntactical element called an \"inline `const`\", written as "
+"`const { ... }`, which instructs the compiler to execute the contents of the "
+"block at compile-time. An inline `const` can be used as an expression or "
+"anywhere in a pattern where a named `const` would be allowed."
+msgstr ""
+
+#: src/2920-inline-const.md:31
+msgid "\"FOO\""
+msgstr ""
+
+#: src/2920-inline-const.md:32
+msgid "\"BAR\""
+msgstr ""
+
+#: src/2920-inline-const.md:39
+msgid "Motivation"
+msgstr ""
+
+#: src/2920-inline-const.md:42
+msgid ""
+"Rust has `const` items, which are guaranteed to be initialized at compile-"
+"time. Because of this, they can do things that normal variables cannot.  For "
+"example, a reference in a `const` initializer has the `'static` lifetime, "
+"and a `const` can be used as an array initializer even if the type of the "
+"array is not `Copy` (with [RFC 2203](https://github.com/rust-lang/rfcs/"
+"pull/2203))."
+msgstr ""
+
+#: src/2920-inline-const.md:58
+msgid "// `Range` is not `Copy`\n"
+msgstr ""
+
+#: src/2920-inline-const.md:63
+msgid ""
+"Writing out a `const` declaration every time we need a long-lived reference "
+"or a non-`Copy` array initializer can be annoying. To improve the situation, "
+"[RFC 1414](https://github.com/rust-lang/rfcs/pull/1414) introduced rvalue "
+"static promotion to extend lifetimes, and [RFC 2203](https://github.com/rust-"
+"lang/rfcs/pull/2203) extended the concept of promotion to array "
+"initializers. As a result, the previous example can be written more "
+"concisely."
+msgstr ""
+
+#: src/2920-inline-const.md:81
+msgid ""
+"However, the fact that we are executing the array initializer or expression "
+"after the `&` at compile-time is not obvious to the user. To avoid violating "
+"their assumptions, we are very careful to promote only in cases where the "
+"user cannot possibly tell that their code is not executing at runtime. This "
+"means a [long list of rules](https://github.com/rust-lang/const-eval/blob/"
+"master/promotion.md#promotability) for determining the promotability of "
+"expressions, and it means expressions that call a `const fn` or that result "
+"in a type with a `Drop` impl need to use a named `const` declaration."
+msgstr ""
+
+#: src/2920-inline-const.md:91
+msgid "Guide-level explanation"
+msgstr ""
+
+#: src/2920-inline-const.md:94
+msgid ""
+"This proposal is a middle ground, which is less verbose than named constants "
+"but more obvious and expressive than promotion. In expression context, it "
+"behaves much like the user had written the following, where `Ty` is the "
+"inferred type of the code within the inline `const` expression (represented "
+"by the ellipsis):"
+msgstr ""
+
+#: src/2920-inline-const.md:104
+msgid ""
+"With this extension to the language, users can ensure that their code "
+"executes at compile-time without needing to declare a separate `const` item "
+"that is only used once."
+msgstr ""
+
+#: src/2920-inline-const.md:118
+msgid "Patterns"
+msgstr ""
+
+#: src/2920-inline-const.md:120
+msgid ""
+"Patterns are another context that require a named `const` when using complex "
+"expressions.  Unlike in the expression context, where promotion is sometimes "
+"applicable, there is no other choice here."
+msgstr ""
+
+#: src/2920-inline-const.md:128 src/2920-inline-const.md:140
+msgid "\"three cubed\""
+msgstr ""
+
+#: src/2920-inline-const.md:134
+msgid ""
+"If that `const` is only used inside a single pattern, writing the code using "
+"an inline `const` block makes it easier to scan."
+msgstr ""
+
+#: src/2920-inline-const.md:146
+msgid "Reference-level explanation"
+msgstr ""
+
+#: src/2920-inline-const.md:149
+msgid ""
+"This RFC extends the [grammar for expressions](https://doc.rust-lang.org/"
+"stable/reference/expressions.html#expressions) to be,"
+msgstr ""
+
+#: src/2920-inline-const.md:153
+msgid ""
+"```\n"
+"ExpressionWithBlock :\n"
+"   OuterAttribute*†\n"
+"   (\n"
+"        BlockExpression\n"
+"      | AsyncBlockExpression\n"
+"      | UnsafeBlockExpression\n"
+"      | ConstBlockExpression // new\n"
+"      | LoopExpression\n"
+"      | IfExpression\n"
+"      | IfLetExpression\n"
+"      | MatchExpression\n"
+"   )\n"
+"\n"
+"ConstBlockExpression: `const` BlockExpression // new\n"
+"```"
+msgstr ""
+
+#: src/2920-inline-const.md:170
+msgid ""
+"This RFC extends the [grammar for patterns](https://doc.rust-lang.org/stable/"
+"reference/patterns.html) to be,"
+msgstr ""
+
+#: src/2920-inline-const.md:174
+msgid ""
+"```\n"
+"Pattern :\n"
+"     LiteralPattern\n"
+"   | IdentifierPattern\n"
+"   | WildcardPattern\n"
+"   | RangePattern\n"
+"   | ReferencePattern\n"
+"   | StructPattern\n"
+"   | TupleStructPattern\n"
+"   | TuplePattern\n"
+"   | GroupedPattern\n"
+"   | SlicePattern\n"
+"   | PathPattern\n"
+"   | MacroInvocation\n"
+"   | ConstBlockExpression // new\n"
+"\n"
+"RangePatternBound :\n"
+"     CHAR_LITERAL\n"
+"   | BYTE_LITERAL\n"
+"   | -? INTEGER_LITERAL\n"
+"   | -? FLOAT_LITERAL\n"
+"   | PathInExpression\n"
+"   | QualifiedPathInExpression\n"
+"   | ConstBlockExpression // new\n"
+"```"
+msgstr ""
+
+#: src/2920-inline-const.md:200
+msgid ""
+"In both the expression and pattern context, an inline `const` behaves as if "
+"the user had declared a uniquely named constant in the containing scope and "
+"referenced it."
+msgstr ""
+
+#: src/2920-inline-const.md:204
+msgid "Generic Parameters"
+msgstr ""
+
+#: src/2920-inline-const.md:206
+msgid ""
+"For now, inline `const` expressions and patterns cannot refer to in-scope "
+"generic parameters. As of this writing, the same restriction applies to "
+"array length expressions, which seem like a good precedent for this RFC. As "
+"far as I know, this is only a temporary restriction; the long-term goal is "
+"to allow array length expressions to use generic parameters. When this "
+"happens, inline `const` expressions and patterns will also be allowed to "
+"refer to in-scope generics."
+msgstr ""
+
+#: src/2920-inline-const.md:216 src/2920-inline-const.md:217
+msgid "// NOT ALLOWED (for now)\n"
+msgstr ""
+
+#: src/2920-inline-const.md:221
+msgid "Containing `unsafe`"
+msgstr ""
+
+#: src/2920-inline-const.md:223
+msgid ""
+"At present, containing `unsafe` blocks do not apply to array length "
+"expressions inside:"
+msgstr ""
+
+#: src/2920-inline-const.md:228 src/2920-inline-const.md:240
+msgid "// ERROR\n"
+msgstr ""
+
+#: src/2920-inline-const.md:233
+msgid ""
+"I find this somewhat strange, but consistency is important, so inline "
+"`const` expressions should behave the same way. The following would also "
+"fail to compile:"
+msgstr ""
+
+#: src/2920-inline-const.md:245
+msgid ""
+"If [\\#72359](https://github.com/rust-lang/rust/issues/72359) is considered "
+"a bug and resolved, that change would also apply to inline `const` "
+"expressions and patterns."
+msgstr ""
+
+#: src/2920-inline-const.md:250
+msgid "Drawbacks"
+msgstr ""
+
+#: src/2920-inline-const.md:253
+msgid ""
+"This excludes other uses of the `const` keyword in expressions and patterns. "
+"I'm not aware of any other proposals that would take advantage of this."
+msgstr ""
+
+#: src/2920-inline-const.md:256
+msgid ""
+"This would also be the first use of type inference for const initializers. "
+"Type inference for named constants was proposed in [RFC 1349](https://github."
+"com/rust-lang/rfcs/issues/1349). I don't believe the blockers for this were "
+"technical, so I think this is possible."
+msgstr ""
+
+#: src/2920-inline-const.md:262
+msgid "Rationale and alternatives"
+msgstr ""
+
+#: src/2920-inline-const.md:265
+msgid ""
+"The main alternative is the status quo. Maintaining it will likely result in "
+"promotion being used for more contexts. The lang-team decided to [explore "
+"this approach](https://github.com/rust-lang/rust/"
+"pull/70042#issuecomment-612221597) instead."
+msgstr ""
+
+#: src/2920-inline-const.md:270
+msgid ""
+"It would also possible to separate out the parts of this RFC relating to "
+"patterns so that they can be decided upon separately."
+msgstr ""
+
+#: src/2920-inline-const.md:273
+msgid "Prior art"
+msgstr ""
+
+#: src/2920-inline-const.md:276
+msgid ""
+"Zig has the `comptime` keyword that [works similarly](https://kristoff.it/"
+"blog/what-is-zig-comptime/#compile-time-function-calls) when it appears "
+"before a block."
+msgstr ""
+
+#: src/2920-inline-const.md:279
+msgid "I'm not aware of equivalents in other languages."
+msgstr ""
+
+#: src/2920-inline-const.md:281
+msgid ""
+"AFAIK, this was [first proposed](https://internals.rust-lang.org/t/quick-"
+"thought-const-blocks/7803/9) by **@scottmcm**."
+msgstr ""
+
+#: src/2920-inline-const.md:286
+msgid "Unresolved questions"
+msgstr ""
+
+#: src/2920-inline-const.md:289
+msgid "Naming"
+msgstr ""
+
+#: src/2920-inline-const.md:291
+msgid ""
+"I prefer the name inline `const`, since it signals that there is no "
+"difference between a named `const` and an inline one."
+msgstr ""
+
+#: src/2920-inline-const.md:294
+msgid ""
+"**@scottmcm** prefers \"`const` block\", which is closer to the syntax and "
+"parallels the current terminology of `async` block and `unsafe` block. It "
+"also avoids any accidental conflation with the `#[inline]` attribute, which "
+"is unrelated. Additionally, it doesn't extend nicely to the single-"
+"expression variant discussed in [future possibilities](#future-"
+"possibilities)."
+msgstr ""
+
+#: src/2920-inline-const.md:300
+msgid ""
+"**@RalfJung** prefers \"anonymous `const`\". **@scottmcm** mentioned in "
+"Zulip that this could be confused with the `const _: () = ...;` syntax "
+"introduced in [RFC 2526](https://github.com/rust-lang/rfcs/pull/2526). The "
+"reference refers to these as \"unnamed\" constants."
+msgstr ""
+
+#: src/2920-inline-const.md:306
+msgid "Lints about placement of inline `const`"
+msgstr ""
+
+#: src/2920-inline-const.md:308
+msgid ""
+"An inline `const` is eligible for promotion in an implicit context (just "
+"like a named `const`), so the following are all guaranteed to work:"
+msgstr ""
+
+#: src/2920-inline-const.md:314
+msgid "// If RFC 2203 is stabilized\n"
+msgstr ""
+
+#: src/2920-inline-const.md:320
+msgid ""
+"I don't have strong feelings about which version should be preferred. "
+"**@RalfJung** points out that `&const { 4 + 2 }` is more readable than "
+"`const { &(4 + 2) }`."
+msgstr ""
+
+#: src/2920-inline-const.md:324
+msgid ""
+"Note that it may be possible for RFC 2203 to use the explicit rules for "
+"promotability when `T: !Copy`. In this case, the last part of the example "
+"above could simply be written as `[Vec::new(); 3]`."
+msgstr ""
+
+#: src/2920-inline-const.md:328
+msgid ""
+"Inline `const`s are allowed within `const` and `static` initializers, just "
+"as we currently allow nested `const` declarations. Whether to lint against "
+"inline `const` expressions inside a `const` or `static` is also an open "
+"question."
+msgstr ""
+
+#: src/2920-inline-const.md:332
+msgid "Future possibilities"
+msgstr ""
+
+#: src/2920-inline-const.md:335
+msgid ""
+"It would be possible to allow the syntax `const expr` for an inline `const` "
+"that consists of a single expression. This is analogous to the single "
+"expression variant of closures: `|| 42`. This is backwards compatible with "
+"the current proposal."
+msgstr ""
+
+#: src/2920-inline-const.md:339
+msgid ""
+"At some point (an edition boundary?), we may want to narrow the scope of "
+"expressions that are eligible for implicit promotion. Inline `const` "
+"expressions would be the recommended replacement for expressions that were "
+"no longer eligible."
+msgstr ""
